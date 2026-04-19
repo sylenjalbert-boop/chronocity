@@ -300,39 +300,23 @@
             .tile-cell { width:44px !important; height:44px !important; font-size:12px !important; }
             #equip-panel { order:3 !important; flex:1 !important; min-width:120px !important; overflow:hidden !important; max-height:280px !important; }
             .eq-panel { max-height:230px !important; overflow-y:auto !important; }
-            /* Donjon paysage : colonne gauche combattants, droite contrôles */
-            #dungeon-screen { display:flex !important; flex-direction:row !important; overflow:hidden !important; height:100vh !important; }
-            #dungeon-header { flex:0 0 auto !important; writing-mode:vertical-lr !important; padding:4px !important; font-size:9px; min-width:24px; overflow:hidden; }
-            #dungeon-header .tl-label, #dungeon-header #dng-room-info { display:none !important; }
-
-            /* Colonne gauche : combattants */
-            #dungeon-body {
-                flex:0 0 48% !important;
-                flex-direction:column !important;
-                align-items:stretch !important;
-                padding:4px 6px !important;
-                gap:4px !important;
-                overflow-y:auto !important;
-                align-self:flex-start !important;
-                max-height:100vh !important;
-            }
-            #dng-avatar-side { flex-direction:row !important; gap:6px !important; align-items:center !important; width:100% !important; flex:none !important; }
-            #dng-avatar-side img { width:44px !important; height:44px !important; flex-shrink:0 !important; }
-            #dng-avatar-side .dng-hp-bar-wrap { flex:1 !important; width:auto !important; }
-            #dng-avatar-threshold { flex-direction:row !important; gap:3px; align-items:center; justify-content:flex-end; }
-            #dungeon-log { width:100% !important; flex:none !important; max-height:50px !important; font-size:9px !important; }
-            #dng-enemy-threshold { flex-direction:row !important; gap:3px; align-items:center; }
-            #dng-enemies-zone { width:100% !important; flex:none !important; }
-
-            /* Colonne droite : historique + jauge + boutons */
-            #dng-history-row { flex:0 0 auto !important; padding:3px 4px !important; }
-            .dng-hdie { width:19px !important; height:19px !important; font-size:10px !important; }
-            #dng-timing-wrap { flex:0 0 auto !important; padding:0 4px 2px !important; }
+            /* Donjon paysage */
+            #dungeon-screen { overflow-y:scroll !important; }
+            #dungeon-header { padding:3px 8px !important; flex-shrink:0; }
+            #dungeon-header .tl-label { display:none !important; }
+            #dungeon-body { flex:0 0 auto !important; flex-direction:row !important; align-items:flex-start !important; padding:4px !important; gap:4px !important; }
+            #dng-avatar-side { flex:0 0 72px !important; }
+            #dng-avatar-side img { width:44px !important; height:44px !important; }
+            #dungeon-log { flex:0 0 70px !important; width:70px !important; max-height:80px !important; font-size:8px !important; }
+            #dng-enemies-zone { flex:1 !important; max-width:none !important; }
+            #dng-hist-wrap { flex-shrink:0; padding:2px 6px !important; }
+            .dng-hdie { width:20px !important; height:20px !important; font-size:10px !important; }
+            #dng-timing-wrap { flex-shrink:0; padding:0 6px 2px !important; }
             #dng-bar { height:32px !important; }
-            #dng-result { height:14px !important; margin:1px 0 !important; font-size:12px !important; }
-            #dungeon-actions { flex:0 0 auto !important; padding:2px 4px 4px !important; gap:3px !important; }
-            .dng-btn { font-size:9px !important; padding:3px 4px !important; min-width:46px !important; }
-            #dng-btn-attack { font-size:10px !important; padding:4px 0 !important; }
+            #dng-result { height:16px !important; margin:1px 0 !important; }
+            #dungeon-actions { flex-shrink:0; padding:2px 6px 4px !important; gap:3px !important; }
+            .dng-btn { font-size:9px !important; padding:3px 4px !important; min-width:48px !important; }
+            #dng-btn-attack { font-size:11px !important; padding:5px 0 !important; }
         }
     </style>
 </head>
