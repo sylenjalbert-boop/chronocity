@@ -255,12 +255,23 @@
             #build-popup { width:92vw !important; max-width:92vw !important; left:4vw !important; transform:none !important; }
             #army-modal > div { width:96vw !important; max-height:88vh !important; }
             #end-inner { width:96vw !important; max-height:92vh !important; }
-            #dungeon-body { flex:0 0 auto !important; flex-direction:column !important; align-items:stretch !important; padding:6px !important; gap:6px !important; }
-            #dng-avatar-side { flex:none !important; width:100% !important; flex-direction:row !important; align-items:center !important; gap:8px; }
-            #dng-avatar-side img { width:56px !important; height:56px !important; flex-shrink:0; }
-            #dng-avatar-side .dng-hp-bar-wrap { flex:1; width:auto !important; }
-            #dungeon-log { max-height:60px !important; font-size:9px !important; width:100% !important; flex:none !important; }
-            #dng-enemies-zone { width:100% !important; max-width:100% !important; flex:none !important; }
+            #dungeon-body { flex:0 0 auto !important; flex-direction:row !important; align-items:flex-start !important; padding:4px 6px !important; gap:4px !important; }
+            /* Avatar compact à gauche */
+            #dng-avatar-side { flex:0 0 90px !important; min-width:90px !important; max-width:90px !important; }
+            #dng-avatar-side img { width:60px !important; height:60px !important; }
+            #dng-avatar-side .dng-hp-bar-wrap { width:85px !important; }
+            /* Seuil avatar */
+            #dng-avatar-threshold { min-width:32px !important; }
+            #thr-your-atk { font-size:18px !important; }
+            /* Log petit au centre */
+            #dungeon-log { flex:1 !important; width:auto !important; max-height:80px !important; font-size:9px !important; }
+            /* Seuil ennemi */
+            #dng-enemy-threshold { min-width:32px !important; }
+            #thr-enemy-val { font-size:18px !important; }
+            /* Zone ennemis à droite */
+            #dng-enemies-zone { flex:0 0 110px !important; max-width:110px !important; }
+            #dng-enemies-zone .dng-fighter { min-width:0 !important; }
+            #dng-enemies-zone img { width:70px !important; height:70px !important; }
             .dng-btn { font-size:11px !important; padding:5px 6px !important; min-width:60px !important; }
         }
         @media (max-width:400px) {
@@ -289,24 +300,39 @@
             .tile-cell { width:44px !important; height:44px !important; font-size:12px !important; }
             #equip-panel { order:3 !important; flex:1 !important; min-width:120px !important; overflow:hidden !important; max-height:280px !important; }
             .eq-panel { max-height:230px !important; overflow-y:auto !important; }
-            /* Donjon paysage */
-            #dungeon-screen { overflow-y:scroll !important; }
-            #dungeon-header { padding:3px 8px !important; flex-shrink:0; }
-            #dungeon-header .tl-label { display:none !important; }
-            #dungeon-body { flex:0 0 auto !important; flex-direction:row !important; align-items:flex-start !important; padding:4px !important; gap:4px !important; }
-            #dng-avatar-side { flex:0 0 72px !important; }
-            #dng-avatar-side img { width:44px !important; height:44px !important; }
-            #dungeon-log { flex:0 0 70px !important; width:70px !important; max-height:80px !important; font-size:8px !important; }
-            #dng-enemies-zone { flex:1 !important; max-width:none !important; }
-            #dng-hist-wrap { flex-shrink:0; padding:2px 6px !important; }
-            .dng-hdie { width:20px !important; height:20px !important; font-size:10px !important; }
-            #dng-timing-wrap { flex-shrink:0; padding:0 6px 2px !important; }
+            /* Donjon paysage : colonne gauche combattants, droite contrôles */
+            #dungeon-screen { display:flex !important; flex-direction:row !important; overflow:hidden !important; height:100vh !important; }
+            #dungeon-header { flex:0 0 auto !important; writing-mode:vertical-lr !important; padding:4px !important; font-size:9px; min-width:24px; overflow:hidden; }
+            #dungeon-header .tl-label, #dungeon-header #dng-room-info { display:none !important; }
+
+            /* Colonne gauche : combattants */
+            #dungeon-body {
+                flex:0 0 48% !important;
+                flex-direction:column !important;
+                align-items:stretch !important;
+                padding:4px 6px !important;
+                gap:4px !important;
+                overflow-y:auto !important;
+                align-self:flex-start !important;
+                max-height:100vh !important;
+            }
+            #dng-avatar-side { flex-direction:row !important; gap:6px !important; align-items:center !important; width:100% !important; flex:none !important; }
+            #dng-avatar-side img { width:44px !important; height:44px !important; flex-shrink:0 !important; }
+            #dng-avatar-side .dng-hp-bar-wrap { flex:1 !important; width:auto !important; }
+            #dng-avatar-threshold { flex-direction:row !important; gap:3px; align-items:center; justify-content:flex-end; }
+            #dungeon-log { width:100% !important; flex:none !important; max-height:50px !important; font-size:9px !important; }
+            #dng-enemy-threshold { flex-direction:row !important; gap:3px; align-items:center; }
+            #dng-enemies-zone { width:100% !important; flex:none !important; }
+
+            /* Colonne droite : historique + jauge + boutons */
+            #dng-history-row { flex:0 0 auto !important; padding:3px 4px !important; }
+            .dng-hdie { width:19px !important; height:19px !important; font-size:10px !important; }
+            #dng-timing-wrap { flex:0 0 auto !important; padding:0 4px 2px !important; }
             #dng-bar { height:32px !important; }
-            #dng-thr-info { padding:2px 4px !important; margin-bottom:2px !important; }
-            #dng-result { height:16px !important; margin:1px 0 !important; }
-            #dungeon-actions { flex-shrink:0; padding:2px 6px 4px !important; gap:3px !important; }
-            .dng-btn { font-size:9px !important; padding:3px 4px !important; min-width:48px !important; }
-            #dng-btn-attack { font-size:11px !important; padding:5px 0 !important; }
+            #dng-result { height:14px !important; margin:1px 0 !important; font-size:12px !important; }
+            #dungeon-actions { flex:0 0 auto !important; padding:2px 4px 4px !important; gap:3px !important; }
+            .dng-btn { font-size:9px !important; padding:3px 4px !important; min-width:46px !important; }
+            #dng-btn-attack { font-size:10px !important; padding:4px 0 !important; }
         }
     </style>
 </head>
@@ -487,7 +513,7 @@
                 <div id="dng-extra-front" style="display:flex;gap:4px;flex-wrap:wrap"></div>
             </div>
             <!-- Rang arrière -->
-            <div id="dng-back-row" style="display:flex;gap:4px;flex-wrap:wrap;justify-content:center;opacity:.7">
+            <div id="dng-back-row" style="display:flex;gap:4px;flex-wrap:wrap;justify-content:center;opacity:.85;border-top:1px dashed #2a1a3a;padding-top:4px;margin-top:2px">
                 <div id="dng-extra-back"></div>
             </div>
         </div>
@@ -903,6 +929,9 @@ let avatarMaxHp = 0;      // bloqué pour la saison suivante si envoyé contre l
 let avatarSentToHorde = false;  // a-t-il participé au combat de horde ?
 let ownedEquipment = {};        // équipements déjà achetés
 let hordeAggressiveness = 0;
+let hordePrevSeason = []; // horde complète de la saison précédente
+let hordeCurrentAdditions = []; // additions visibles de la saison en cours
+let hordeCurrentSeason = 0; // saison des dernières additions
 // Nouveau système horde/armée
 let cityArmy = [];       // unités défensives recrutées (persistent)
 let hordeArmy = [];      // unités de la horde (s'accumulent)
@@ -1206,25 +1235,31 @@ function showTurnAnimation(turnNum, season, callback) {
             const seasonIdx = (currentSeason - 1) % 4;
             const sNames = ['Printemps','Été','Automne','Hiver'];
 
-            // Ajouter les unités visibles à la horde connue
+            // Sauvegarder la horde de S-1 avant d'ajouter les nouvelles unités
+            hordePrevSeason = [...hordeArmy];
+            hordeCurrentAdditions = [...fog.visible];
+            hordeCurrentSeason = currentSeason;
+
+            // Ajouter les unités à la horde totale
             hordeArmy.push(...fog.visible);
-            // Stocker les cachées pour révélation au combat
             hordeHiddenUnits.push(...fog.hidden);
             hordeHiddenCount = fog.hiddenCount;
             hordeRevealed = true;
             hordeAggressiveness = hordeArmy.length + hordeHiddenUnits.length;
 
-            let msg = 'Vos éclaireurs reviennent ! [' + sNames[seasonIdx] + '] ';
+            let msg = '🔭 Éclaireurs [' + sNames[seasonIdx] + '] — ';
+            if (hordePrevSeason.length > 0) {
+                msg += 'Horde existante : ' + hordePrevSeason.length + ' unité(s). ';
+            }
             if (fog.hidden.length === 0) {
-                msg += 'La horde a reçu ' + newUnits.length + ' renforts : ' +
-                       fog.visible.map(u=>u.icon+u.name).join(', ');
+                msg += 'Renforts : ' + newUnits.map(u=>u.icon+u.name).join(', ');
             } else {
-                msg += fog.visible.length + ' renforts identifiés : ' +
+                msg += fog.visible.length + ' renfort(s) identifié(s) : ' +
                        fog.visible.map(u=>u.icon+u.name).join(', ');
                 if (fog.countKnown) {
-                    msg += ' — ' + fog.hidden.length + ' troupe(s) non identifiée(s) détectée(s).';
+                    msg += ' + ' + fog.hidden.length + ' non identifié(s).';
                 } else {
-                    msg += ' — présence de troupes non identifiées, nombre inconnu.';
+                    msg += ' + présence inconnue.';
                 }
             }
             addLog(msg);
@@ -1450,6 +1485,9 @@ function closeHordeBattle() {
     hordeArmy = [];
     hordeHiddenUnits = [];
     hordeRevealed = false;
+    hordePrevSeason = [];
+    hordeCurrentAdditions = [];
+    hordeCurrentSeason = 0;
     currentTurn = 10;
     nextTurn();
 }
@@ -2325,6 +2363,13 @@ function dungeonBarClick() {
     }
     dngPushHist(dngTiming.histPlayer,zlabel,null);
     dngRenderHist();
+    // Vérifier si on peut frapper la cible (rang arrière nécessite arme distance)
+    const _targetIsBack = dungeonState.enemies && dungeonState.enemies.back &&
+                          dungeonState.enemies.back.indexOf(dungeonState.enemy) !== -1;
+    if (_targetIsBack && !avatarRanged) {
+        dngLog('⚠ Cible au rang arrière — arme à distance requise !', 'dlog-bad');
+        finishRound(); return;
+    }
     if(dmg>0){
         dungeonState.enemy.hp-=dmg;
         dungeonShowDmg('enemy',dmg,'#4cff8a');
@@ -3298,6 +3343,7 @@ function closeDungeon() {
 let rageAvailable  = false;
 let healAvailable  = false;
 let avatarRanged   = false; // true si arme distance équipée
+let avatarPiercing = false; // Arbalète : touche aussi le 2e rang
 // Glyphes (items à usage unique achetés en boutique, rechargeable)
 let glyphFireball   = 0; // nb de charges
 // Usage compétences par combat (reset à chaque nouveau combat)
@@ -3326,8 +3372,8 @@ const EQUIPMENT_CATALOG = [
       desc:'ATK +3, distance',
       apply: () => { atk+=3; avatarRanged=true; addLog('🏹 Arc elfique équipé. ATK+3, portée distance.'); } },
     { id:'Arbalete',    name:'Arbalète lourde',  gold:70,  mana:0,  pop:0, req:'archerie',
-      desc:'ATK +2, Dmg +2, distance',
-      apply: () => { atk+=2; avatarDmg+=2; avatarRanged=true; addLog('🏹 Arbalète équipée. ATK+2, Dmg+2, distance.'); } },
+      desc:'ATK +2, Dmg +2, distance, perçant (touche aussi le 2e rang)',
+      apply: () => { atk+=2; avatarDmg+=2; avatarRanged=true; avatarPiercing=true; addLog('🏹 Arbalète équipée. ATK+2, Dmg+2, distance, perçant.'); } },
     // ── Armure ──
     { id:'Bouclier',    name:'Bouclier léger',   gold:40,  mana:0,  pop:0, req:null,
       desc:'Protection +1',
@@ -3695,28 +3741,55 @@ function renderArmyTabCity() {
     el.innerHTML = html;
 }
 
+function renderHordeTable(units, countered_fn) {
+    if (units.length === 0) return '<p style="color:#666;font-style:italic;font-size:11px">Aucune unité.</p>';
+    let h = '<table style="width:100%;font-size:12px;border-collapse:collapse">';
+    h += '<tr style="color:#9a8a6a;border-bottom:1px solid #333"><th style="text-align:left">Unité</th><th>ATK</th><th>Mag</th><th>Trait</th><th>Qté</th></tr>';
+    const counts = {};
+    units.forEach(function(u) { const k=u.name; counts[k]=(counts[k]||{u,n:0}); counts[k].n++; });
+    Object.values(counts).forEach(function(obj) {
+        const u=obj.u, n=obj.n;
+        const trait = u.traits[0]||'';
+        const countered = countered_fn(trait);
+        h += '<tr style="border-bottom:1px solid #1a1a2a">'+
+            '<td style="padding:3px 0">'+u.icon+' '+u.name+'</td>'+
+            '<td style="text-align:center;color:#ff8080">'+u.atk+'</td>'+
+            '<td style="text-align:center;color:#cc88ff">'+u.atkMag+'</td>'+
+            '<td><span style="font-size:10px;padding:1px 4px;border-radius:3px;background:'+(countered?'#0a2a1a':'#2a0a0a')+';color:'+(countered?'#4cffaa':'#ff6060')+'">'+trait+(countered?' ✓':'')+'</span></td>'+
+            '<td style="text-align:center;color:#ff8080;font-weight:bold">×'+n+'</td></tr>';
+    });
+    h += '</table>';
+    return h;
+}
+
 function renderArmyTabHorde() {
     const el = document.getElementById('army-tab-horde');
     if (!hordeRevealed) {
         el.innerHTML = '<p style="color:#9a8a6a;font-style:italic">Horde non encore révélée (tour 5).</p>';
         return;
     }
+    const sNames = ['Printemps','Été','Automne','Hiver'];
+    const countered_fn = function(trait) {
+        return cityArmy.some(function(c){ return c.traits.some(function(t){ return COUNTER_RULES[t]===trait; }); });
+    };
     const hp = calcHordePower();
-    let html = '<p style="font-size:13px;color:#9a8a6a;margin-bottom:10px">Puissance identifiée : <b style="color:#ff6060">'+hp+'</b>'+(hordeHiddenUnits.length>0?' <span style="color:#888">(+??? cachée)</span>':'')+'</p>';
-    html += '<table style="width:100%;font-size:12px;border-collapse:collapse">';
-    html += '<tr style="color:#9a8a6a;border-bottom:1px solid #333"><th style="text-align:left">Unité</th><th>ATK</th><th>Mag</th><th>Trait</th><th>Qté</th></tr>';
-    const counts = {};
-    hordeArmy.forEach(u => { const k=u.name; counts[k]=(counts[k]||{u,n:0}); counts[k].n++; });
-    Object.values(counts).forEach(({u,n}) => {
-        const trait = u.traits[0]||'';
-        const countered = cityArmy.some(c=>c.traits.some(t=>COUNTER_RULES[t]===trait));
-        html += '<tr style="border-bottom:1px solid #1a1a2a">'+
-            '<td style="padding:4px 0">'+u.icon+' '+u.name+'</td>'+
-            '<td style="text-align:center;color:#ff8080">'+u.atk+'</td>'+
-            '<td style="text-align:center;color:#cc88ff">'+u.atkMag+'</td>'+
-            '<td><span style="font-size:10px;padding:1px 4px;border-radius:3px;background:'+(countered?'#0a2a1a':'#2a0a0a')+';color:'+(countered?'#4cffaa':'#ff6060')+'">'+trait+(countered?' ✓':'')+'</span></td>'+
-            '<td style="text-align:center;color:#ff8080;font-weight:bold">×'+n+'</td></tr>';
-    });
+    let html = '<p style="font-size:12px;color:#9a8a6a;margin-bottom:8px">Puissance identifiée : <b style="color:#ff6060">'+hp+'</b>'+(hordeHiddenUnits.length>0?' <span style="color:#888">(+? cachée)</span>':'')+'</p>';
+
+    // Section S-1 : horde existante avant les additions
+    if (hordePrevSeason.length > 0) {
+        html += '<div style="font-family:Cinzel,serif;font-size:9px;color:#c06030;letter-spacing:1px;padding:4px 0 2px;border-bottom:1px solid #2a1a0a;margin-bottom:4px">⚔ HORDE SAISON PRÉCÉDENTE ('+hordePrevSeason.length+' unités)</div>';
+        html += renderHordeTable(hordePrevSeason, countered_fn);
+    }
+
+    // Section S : additions de la saison en cours
+    if (hordeCurrentAdditions.length > 0) {
+        const sIdx = (hordeCurrentSeason-1)%4;
+        html += '<div style="font-family:Cinzel,serif;font-size:9px;color:#ff6030;letter-spacing:1px;padding:6px 0 2px;border-bottom:1px solid #2a1a0a;margin-bottom:4px;margin-top:6px">🆕 RENFORTS S'+hordeCurrentSeason+' — '+sNames[sIdx]+'</div>';
+        html += renderHordeTable(hordeCurrentAdditions, countered_fn);
+    } else if (hordePrevSeason.length === 0) {
+        // Première saison : afficher toute la horde
+        html += renderHordeTable(hordeArmy, countered_fn);
+    }
     // Cachées
     if (hordeHiddenUnits.length > 0 || hordeHiddenCount > 0) {
         const seasonIdx = (currentSeason-1)%4;
