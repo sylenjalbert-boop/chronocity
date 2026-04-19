@@ -239,151 +239,72 @@
         .meta-cat-title{font-family:'Cinzel',serif;font-size:9px;font-weight:bold;color:var(--gold);letter-spacing:1.5px;text-transform:uppercase;padding:7px 0 3px;border-bottom:1px solid var(--border);margin-bottom:5px;}
         ::-webkit-scrollbar{width:4px;}::-webkit-scrollbar-track{background:var(--bg-root);}::-webkit-scrollbar-thumb{background:var(--border-g);border-radius:2px;}
 
-        /* ============================================================
-           RESPONSIVE MOBILE
-           ============================================================ */
-
-        /* PORTRAIT */
         @media (max-width: 700px) {
             body { height:auto !important; overflow-x:hidden !important; overflow-y:auto !important; }
             #main-content { overflow:visible !important; flex:none !important; }
             #main-layout  { overflow:visible !important; flex:none !important; padding:4px; gap:4px; }
-
-            /* Colonne : res-panel EN PREMIER, puis grille, puis équipement */
-            #main-content-row {
-                flex-direction:column !important;
-                overflow:visible !important;
-                flex:none !important;
-                gap:6px;
-            }
-            #res-panel  { order:1 !important; flex:none !important; width:100% !important;
-                          max-height:none !important; overflow-y:visible !important; padding:8px !important; }
+            #main-content-row { flex-direction:column !important; overflow:visible !important; flex:none !important; gap:6px; }
+            #res-panel  { order:1 !important; flex:none !important; width:100% !important; max-height:none !important; overflow-y:visible !important; }
             #game-area  { order:2 !important; align-self:center; }
-            #equip-panel{ order:3 !important; flex:none !important; width:100% !important;
-                          max-height:240px !important; overflow:hidden !important; }
+            #equip-panel{ order:3 !important; flex:none !important; width:100% !important; max-height:240px !important; overflow:hidden !important; }
             .eq-panel   { max-height:190px !important; overflow-y:auto !important; }
-
             #action-bar { flex-direction:column; gap:4px; }
             #action-bar .action-section { flex:none; }
-            #tile-grid  { grid-template-columns:repeat(5,56px) !important;
-                          grid-template-rows:repeat(5,56px) !important; gap:3px !important; }
+            #tile-grid  { grid-template-columns:repeat(5,56px) !important; grid-template-rows:repeat(5,56px) !important; gap:3px !important; }
             .tile-cell  { width:56px !important; height:56px !important; font-size:15px !important; }
-
             #build-popup { width:92vw !important; max-width:92vw !important; left:4vw !important; transform:none !important; }
             #army-modal > div { width:96vw !important; max-height:88vh !important; }
             #end-inner { width:96vw !important; max-height:92vh !important; }
-
-            /* Donjon */
             #dungeon-body { flex-direction:column !important; align-items:stretch !important; padding:6px !important; gap:6px !important; }
-            #dng-avatar-side { flex:none !important; width:100% !important; flex-direction:row !important; align-items:center !important; gap:8px; min-width:0; }
+            #dng-avatar-side { flex:none !important; width:100% !important; flex-direction:row !important; align-items:center !important; gap:8px; }
             #dng-avatar-side img { width:56px !important; height:56px !important; flex-shrink:0; }
             #dng-avatar-side .dng-hp-bar-wrap { flex:1; width:auto !important; }
-            #dungeon-log { max-height:60px !important; font-size:9px !important; flex:none !important; width:100% !important; }
+            #dungeon-log { max-height:60px !important; font-size:9px !important; width:100% !important; flex:none !important; }
             #dng-enemies-zone { width:100% !important; max-width:100% !important; flex:none !important; }
             .dng-btn { font-size:11px !important; padding:5px 6px !important; min-width:60px !important; }
         }
-
-        /* TRÈS PETIT */
         @media (max-width:400px) {
             #tile-grid { grid-template-columns:repeat(5,46px) !important; grid-template-rows:repeat(5,46px) !important; }
             .tile-cell { width:46px !important; height:46px !important; font-size:13px !important; }
         }
 
-        /* PAYSAGE — tout tient dans l'écran sous la frise */
-        @media (orientation:landscape) and (max-width:900px) {
 
-            /* Body et main-content occupent exactement le viewport */
-            body          { height:100vh !important; overflow:hidden !important; }
-            #main-content { flex:1 !important; overflow:hidden !important; display:flex !important; }
-            #main-layout  { flex:1 !important; overflow:hidden !important; padding:3px; gap:3px; display:flex !important; flex-direction:column !important; }
-
-            /* Action-bar compacte en ligne */
-            #action-bar { flex-shrink:0; flex-direction:row !important; gap:3px; overflow-x:auto; }
-            #action-bar .action-section { flex:1; min-width:90px; }
+        /* PAYSAGE mobile */
+        @media (orientation:landscape) and (max-width:1024px) and (max-height:600px) {
+            body { height:100vh !important; overflow:hidden !important; }
+            #main-content { overflow:hidden !important; flex:1 !important; }
+            #main-layout { overflow:hidden !important; flex:1 !important; padding:3px; gap:3px; }
+            #action-bar { flex-direction:row !important; flex-shrink:0; gap:3px; overflow-x:auto; }
+            #action-bar .action-section { flex:1; min-width:80px; }
             .action-section-title { font-size:9px !important; }
-            .action-main-btn { padding:3px 6px !important; font-size:10px !important; }
-
-            /* Main-content-row prend tout l'espace restant sous l'action-bar */
-            #main-content-row {
-                flex:1 !important;
-                overflow:hidden !important;
-                flex-direction:row !important;
-                align-items:stretch !important;
-                gap:4px;
-                min-height:0;
-            }
-
-            /* Res-panel : colonne fixe à gauche, scrollable */
-            #res-panel {
-                order:1 !important;
-                flex:0 0 120px !important;
-                max-height:100% !important;
-                overflow-y:auto !important;
-                padding:5px !important;
-                font-size:9px !important;
-            }
-            #res-panel .res-title { font-size:9px !important; padding:3px 0 2px !important; }
-            #res-panel .res-row   { font-size:9px !important; }
-
-            /* Grille centrée */
-            #game-area  { order:2 !important; flex:0 0 auto; align-self:center; }
-            #tile-grid  {
-                grid-template-columns:repeat(5,44px) !important;
-                grid-template-rows:repeat(5,44px) !important;
-                gap:2px !important;
-            }
-            .tile-cell  { width:44px !important; height:44px !important; font-size:12px !important; }
-
-            /* Equip-panel : prend le reste */
-            #equip-panel {
-                order:3 !important;
-                flex:1 !important;
-                min-width:0;
-                max-height:100% !important;
-                overflow:hidden !important;
-            }
-            .eq-panel { max-height:calc(100% - 40px) !important; overflow-y:auto !important; }
-
-            /* Donjon en paysage — tout en colonne scrollable */
-            #dungeon-screen { overflow-y:auto !important; overflow-x:hidden !important; }
-            #dungeon-header { padding:5px 10px !important; flex-wrap:wrap; gap:6px; }
-            #dungeon-header .dng-step { display:none; }
-            #dungeon-header .dng-step:nth-child(-n+4) { display:flex; }
-
-            #dungeon-body {
-                flex-direction:row !important;
-                align-items:flex-start !important;
-                padding:4px !important;
-                gap:4px !important;
-                flex:0 0 auto !important;
-            }
-            #dng-avatar-side { flex:0 0 75px !important; min-width:75px; }
+            .action-main-btn { padding:3px 5px !important; font-size:10px !important; }
+            #main-content-row { flex-direction:row !important; flex:1 !important; overflow:hidden !important; align-items:stretch; gap:4px; min-height:0; }
+            #res-panel { order:1 !important; flex:0 0 115px !important; overflow-y:auto !important; max-height:100% !important; padding:5px !important; font-size:9px !important; }
+            #res-panel .res-sub { display:none !important; }
+            #game-area { order:2 !important; flex:0 0 auto; align-self:center; }
+            #tile-grid { grid-template-columns:repeat(5,44px) !important; grid-template-rows:repeat(5,44px) !important; gap:2px !important; }
+            .tile-cell { width:44px !important; height:44px !important; font-size:12px !important; }
+            #equip-panel { order:3 !important; flex:1 !important; overflow:hidden !important; max-height:100% !important; }
+            .eq-panel { max-height:calc(100% - 36px) !important; overflow-y:auto !important; }
+            /* Donjon paysage */
+            #dungeon-screen { overflow-y:scroll !important; }
+            #dungeon-header { padding:3px 8px !important; flex-shrink:0; }
+            #dungeon-header .tl-label { display:none !important; }
+            #dungeon-body { flex:0 0 auto !important; flex-direction:row !important; padding:4px !important; gap:4px !important; }
+            #dng-avatar-side { flex:0 0 72px !important; }
             #dng-avatar-side img { width:44px !important; height:44px !important; }
-            #dng-avatar-side .dng-hp-bar-wrap { width:70px !important; }
-            #dungeon-log { max-height:80px !important; flex:1 !important; font-size:9px !important; }
-            #dng-enemies-zone { flex:0 0 auto !important; max-width:160px !important; }
-
-            /* Historique dés compact */
-            #dng-hist-wrap { padding:2px 8px !important; }
-            #dng-hist-player, #dng-hist-enemy { min-height:24px !important; }
-            .dng-hdie { width:22px !important; height:22px !important; font-size:11px !important; }
-
-            /* Jauge compacte */
-            #dng-timing-wrap { padding:0 8px 3px !important; }
-            #dng-thr-info { padding:2px 6px !important; margin-bottom:3px !important; }
-            #dng-bar { height:36px !important; }
-
-            /* Actions toujours visibles */
-            #dungeon-actions {
-                flex-direction:column !important;
-                padding:0 8px 6px !important;
-                gap:4px !important;
-                flex:0 0 auto !important;
-            }
-            #dng-skills-row, #dng-glyphs-row { gap:3px !important; }
-            .dng-btn { font-size:10px !important; padding:4px 5px !important; min-width:55px !important; }
+            #dungeon-log { flex:0 0 70px !important; width:70px !important; max-height:80px !important; font-size:8px !important; }
+            #dng-enemies-zone { flex:1 !important; max-width:none !important; }
+            #dng-hist-wrap { flex-shrink:0; padding:2px 6px !important; }
+            .dng-hdie { width:20px !important; height:20px !important; font-size:10px !important; }
+            #dng-timing-wrap { flex-shrink:0; padding:0 6px 2px !important; }
+            #dng-bar { height:32px !important; }
+            #dng-thr-info { padding:2px 4px !important; margin-bottom:2px !important; }
+            #dng-result { height:16px !important; margin:1px 0 !important; }
+            #dungeon-actions { flex-shrink:0; padding:2px 6px 4px !important; gap:3px !important; }
+            .dng-btn { font-size:9px !important; padding:3px 4px !important; min-width:48px !important; }
+            #dng-btn-attack { font-size:11px !important; padding:5px 0 !important; }
         }
-
     </style>
 </head>
 <body>
@@ -531,7 +452,7 @@
         </div>
 
         <!-- LOG au centre -->
-        <div id="dungeon-log" style="flex:1;min-width:0;max-height:160px;overflow-y:auto;background:var(--bg-card);border:1px solid var(--border);border-radius:6px;padding:6px 8px;font-size:11px;line-height:1.6;align-self:stretch"></div>
+        <div id="dungeon-log" style="flex:0 0 80px;width:80px;max-height:100px;overflow-y:auto;background:var(--bg-card);border:1px solid var(--border);border-radius:6px;padding:4px 6px;font-size:10px;line-height:1.5;align-self:stretch"></div>
 
         <!-- Zone ennemis -->
         <div id="dng-enemies-zone" style="flex:0 0 auto;display:flex;flex-direction:column;gap:6px;min-width:120px;max-width:260px">
@@ -3066,7 +2987,6 @@ function dungeonShowDmg(who, amount, color) {
     side.style.position = 'relative';
     side.appendChild(el);
     setTimeout(function(){ el.remove(); }, 1100);
-    // Recul de l'image
     const img = side.querySelector('img') || side.querySelector('.dng-emoji');
     if (img) {
         img.classList.remove('recoil-right','recoil-left');
