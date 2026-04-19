@@ -238,6 +238,110 @@
         .meta-buy-btn:disabled{opacity:.3;cursor:not-allowed;}
         .meta-cat-title{font-family:'Cinzel',serif;font-size:9px;font-weight:bold;color:var(--gold);letter-spacing:1.5px;text-transform:uppercase;padding:7px 0 3px;border-bottom:1px solid var(--border);margin-bottom:5px;}
         ::-webkit-scrollbar{width:4px;}::-webkit-scrollbar-track{background:var(--bg-root);}::-webkit-scrollbar-thumb{background:var(--border-g);border-radius:2px;}
+
+        /* ============================================================
+           RESPONSIVE MOBILE
+           ============================================================ */
+        @media (max-width: 700px) {
+
+            /* Layout principal en colonne */
+            #main-layout { padding:4px; gap:4px; }
+
+            /* Barre d'actions : empilée en colonne, plus compacte */
+            #action-bar { flex-direction:column; gap:4px; }
+            #action-bar .action-section { flex:none; }
+            #sec-build { order:1; }
+            #sec-tile  { order:2; }
+            #sec-tax   { order:3; }
+
+            /* Contenu principal : colonne au lieu de ligne */
+            #main-content-row {
+                flex-direction:column;
+                overflow:visible;
+                gap:6px;
+            }
+
+            /* Grille : tuiles plus petites */
+            #tile-grid {
+                grid-template-columns: repeat(5, 58px) !important;
+                grid-template-rows:    repeat(5, 58px) !important;
+                gap:3px !important;
+            }
+            #game-area { align-self:center; }
+
+            /* Ressources : bande horizontale scrollable en haut */
+            #res-panel {
+                flex:none !important;
+                width:100% !important;
+                max-height:none !important;
+                display:flex;
+                flex-wrap:wrap;
+                gap:4px 10px;
+                padding:6px 8px;
+                order:-1;
+            }
+            #res-panel .res-title { width:100%; margin:0; font-size:9px; }
+            #res-panel .res-row   { flex:0 0 auto; font-size:10px; }
+            #res-panel .res-sub   { display:none; }
+            /* Cacher le log dans res-panel sur mobile (il est dans le donjon) */
+            #res-panel #log-content,
+            #res-panel .res-title:last-of-type { display:none; }
+
+            /* Équipement/armée : pleine largeur */
+            #equip-panel {
+                flex:none !important;
+                width:100% !important;
+                max-height:220px;
+            }
+
+            /* Donjon : colonne sur mobile */
+            #dungeon-body {
+                flex-direction:column !important;
+                align-items:center !important;
+                padding:8px !important;
+                gap:8px !important;
+            }
+            #dng-avatar-side { flex:none !important; width:100% !important; flex-direction:row !important; gap:10px; align-items:center; }
+            #dng-avatar-side img { width:60px !important; height:60px !important; }
+            #dng-avatar-side .dng-hp-bar-wrap { width:100%; }
+
+            #dungeon-log { max-height:70px !important; font-size:9px !important; }
+
+            #dng-enemies-zone { width:100% !important; max-width:100% !important; }
+            #dng-front-row, #dng-back-row { justify-content:center; }
+
+            /* Actions donjon : plus compact */
+            #dungeon-actions { padding:0 8px 8px !important; }
+            .dng-btn { font-size:11px !important; padding:6px 8px !important; min-width:70px !important; }
+
+            /* Jauge timing : pleine largeur */
+            #dng-timing-wrap { padding:0 8px 6px !important; }
+
+            /* Header donjon */
+            #dungeon-header { padding:4px 8px !important; flex-wrap:wrap; gap:4px; }
+
+            /* Tuiles de la grille */
+            .tile-cell { width:58px !important; height:58px !important; font-size:16px !important; }
+
+            /* Popups : pleine largeur */
+            #build-popup { width:90vw !important; max-width:90vw !important; }
+            #explore-popup, #horde-popup, #error-popup { max-width:92vw !important; }
+
+            /* Modale armée */
+            #army-modal > div { width:96vw !important; max-height:90vh !important; }
+
+            /* Écran de fin */
+            #end-inner { width:96vw !important; max-height:92vh !important; }
+        }
+
+        @media (max-width: 400px) {
+            #tile-grid {
+                grid-template-columns: repeat(5, 48px) !important;
+                grid-template-rows:    repeat(5, 48px) !important;
+            }
+            .tile-cell { width:48px !important; height:48px !important; font-size:14px !important; }
+        }
+
     </style>
 </head>
 <body>
