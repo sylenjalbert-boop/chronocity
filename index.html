@@ -271,21 +271,24 @@
 
         /* PAYSAGE mobile */
         @media (orientation:landscape) and (max-width:1024px) and (max-height:600px) {
-            body { height:100vh !important; overflow:hidden !important; }
-            #main-content { overflow:hidden !important; flex:1 !important; }
-            #main-layout { overflow:hidden !important; flex:1 !important; padding:3px; gap:3px; }
+            /* Laisser le body scroller en paysage */
+            body { height:auto !important; overflow-y:auto !important; overflow-x:hidden !important; }
+            #main-content { overflow:visible !important; flex:none !important; }
+            #main-layout { overflow:visible !important; flex:none !important; padding:3px; gap:3px; }
+            /* Action-bar en ligne compacte */
             #action-bar { flex-direction:row !important; flex-shrink:0; gap:3px; overflow-x:auto; }
             #action-bar .action-section { flex:1; min-width:80px; }
             .action-section-title { font-size:9px !important; }
             .action-main-btn { padding:3px 5px !important; font-size:10px !important; }
-            #main-content-row { flex-direction:row !important; flex:1 !important; overflow-y:auto !important; overflow-x:hidden !important; align-items:flex-start; gap:4px; flex-wrap:wrap; }
-            #res-panel { order:1 !important; flex:0 0 115px !important; overflow-y:auto !important; max-height:none !important; padding:5px !important; font-size:9px !important; }
+            /* Contenu en ligne, scroll vertical si besoin */
+            #main-content-row { flex-direction:row !important; flex:none !important; overflow:visible !important; align-items:flex-start; gap:4px; flex-wrap:nowrap; }
+            #res-panel { order:1 !important; flex:0 0 115px !important; overflow-y:auto !important; max-height:320px !important; padding:5px !important; font-size:9px !important; }
             #res-panel .res-sub { display:none !important; }
             #game-area { order:2 !important; flex:0 0 auto; align-self:flex-start; }
             #tile-grid { grid-template-columns:repeat(5,44px) !important; grid-template-rows:repeat(5,44px) !important; gap:2px !important; }
             .tile-cell { width:44px !important; height:44px !important; font-size:12px !important; }
-            #equip-panel { order:3 !important; flex:1 !important; min-width:120px !important; overflow:hidden !important; max-height:none !important; }
-            .eq-panel { max-height:200px !important; overflow-y:auto !important; }
+            #equip-panel { order:3 !important; flex:1 !important; min-width:120px !important; overflow:hidden !important; max-height:280px !important; }
+            .eq-panel { max-height:230px !important; overflow-y:auto !important; }
             /* Donjon paysage */
             #dungeon-screen { overflow-y:scroll !important; }
             #dungeon-header { padding:3px 8px !important; flex-shrink:0; }
