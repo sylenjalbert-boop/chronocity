@@ -314,22 +314,38 @@
                 padding:4px 8px !important;
                 gap:4px !important;
             }
-            /* Avatar compact */
-            #dng-avatar-side { flex:0 0 80px !important; min-width:80px !important; gap:4px !important; }
-            #dng-avatar-side img { width:52px !important; height:52px !important; }
+            /* Avatar : annuler le flex-direction:row du portrait, revenir en colonne */
+            #dng-avatar-side {
+                flex:0 0 90px !important;
+                min-width:90px !important;
+                flex-direction:column !important;
+                align-items:center !important;
+                gap:4px !important;
+            }
+            #dng-avatar-side img { width:60px !important; height:60px !important; }
             #dng-avatar-side .dng-name { font-size:9px !important; }
             #dng-avatar-side .dng-stats { font-size:8px !important; }
-            #dng-avatar-side .dng-hp-bar-wrap { width:75px !important; }
-            /* Seuil avatar */
-            #dng-avatar-threshold { min-width:28px !important; }
-            #dng-avatar-threshold #thr-your-atk { font-size:16px !important; }
+            #dng-avatar-side .dng-hp-bar-wrap { width:80px !important; }
+            /* Seuil avatar : colonne verticale */
+            #dng-avatar-threshold {
+                min-width:32px !important;
+                flex-direction:column !important;
+                align-items:center !important;
+                justify-content:center !important;
+            }
+            #dng-avatar-threshold #thr-your-atk { font-size:18px !important; }
             /* Log compact */
             #dungeon-log { flex:0 0 60px !important; width:60px !important; max-height:90px !important; font-size:8px !important; }
-            /* Seuil ennemi */
-            #dng-enemy-threshold { min-width:28px !important; }
-            #dng-enemy-threshold #thr-enemy-val { font-size:16px !important; }
+            /* Seuil ennemi : colonne verticale */
+            #dng-enemy-threshold {
+                min-width:32px !important;
+                flex-direction:column !important;
+                align-items:center !important;
+                justify-content:center !important;
+            }
+            #dng-enemy-threshold #thr-enemy-val { font-size:18px !important; }
             /* Zone ennemis */
-            #dng-enemies-zone { flex:1 !important; max-width:none !important; }
+            #dng-enemies-zone { flex:1 !important; max-width:45% !important; }
             .dng-fighter { min-width:70px !important; }
             .dng-fighter img { width:52px !important; height:52px !important; }
             .dng-fighter .dng-name { font-size:9px !important; }
@@ -1501,11 +1517,12 @@ function closeHordeBattle() {
     updateArmyPanels();
     updateStats();
     if (fortifications <= 0) { showDefeatScreen(); return; }
-    // Vider la horde pour la prochaine saison
-    hordeArmy = [];
+    // Conserver hordeArmy pour la prochaine saison (accumulation inter-saisons)
+    // Juste vider les cachés et reset l'état d'affichage
     hordeHiddenUnits = [];
+    hordeHiddenCount = 0;
     hordeRevealed = false;
-    hordePrevSeason = [];
+    hordePrevSeason = [...hordeArmy]; // la horde actuelle devient la "précédente"
     hordeCurrentAdditions = [];
     hordeCurrentSeason = 0;
     currentTurn = 10;
@@ -3802,19 +3819,22 @@ function renderArmyTabHorde() {
     const hp = calcHordePower();
     let html = '<p style="font-size:12px;color:#9a8a6a;margin-bottom:8px">Puissance identifiée : <b style="color:#ff6060">'+hp+'</b>'+(hordeHiddenUnits.length>0?' <span style="color:#888">(+? cachée)</span>':'')+'</p>';
 
-    // Section S-1 : horde existante avant les additions
-    if (hordePrevSeason.length > 0) {
-        html += '<div style="font-family:Cinzel,serif;font-size:9px;color:#c06030;letter-spacing:1px;padding:4px 0 2px;border-bottom:1px solid #2a1a0a;margin-bottom:4px">⚔ HORDE SAISON PRÉCÉDENTE ('+hordePrevSeason.length+' unités)</div>';
-        html += renderHordeTable(hordePrevSeason, countered_fn);
-    }
+    // Horde totale = horde S-1 + renforts S en cours
+    // On affiche la liste complète avec les renforts mis en évidence
+    const sIdx = hordeCurrentSeason > 0 ? (hordeCurrentSeason-1)%4 : -1;
+    const currentAddNames = new Set(hordeCurrentAdditions.map(function(u,i){ return u.name+'_'+i; }));
 
-    // Section S : additions de la saison en cours
-    if (hordeCurrentAdditions.length > 0) {
-        const sIdx = (hordeCurrentSeason-1)%4;
-        html += '<div style="font-family:Cinzel,serif;font-size:9px;color:#ff6030;letter-spacing:1px;padding:6px 0 2px;border-bottom:1px solid #2a1a0a;margin-bottom:4px;margin-top:6px">🆕 RENFORTS S'+hordeCurrentSeason+' — '+sNames[sIdx]+'</div>';
+    if (hordeCurrentAdditions.length > 0 && hordePrevSeason.length > 0) {
+        // S2+ : montrer S-1 puis renforts S
+        html += '<div style="font-family:Cinzel,serif;font-size:9px;color:#9a8060;letter-spacing:1px;padding:3px 0 2px;border-bottom:1px solid #2a1a0a;margin-bottom:4px">⚔ HORDE S'+(hordeCurrentSeason-1)+' ('+hordePrevSeason.length+' unités connues)</div>';
+        html += renderHordeTable(hordePrevSeason, countered_fn);
+        html += '<div style="font-family:Cinzel,serif;font-size:9px;color:#ff7030;letter-spacing:1px;padding:5px 0 2px;border-bottom:1px solid #2a1a0a;margin-bottom:4px;margin-top:6px">🆕 RENFORTS S'+hordeCurrentSeason+' — '+sNames[sIdx]+' (+'+hordeCurrentAdditions.length+' visibles'+(hordeHiddenCount>0?', +'+hordeHiddenCount+' cachés':'')+')</div>';
         html += renderHordeTable(hordeCurrentAdditions, countered_fn);
-    } else if (hordePrevSeason.length === 0) {
-        // Première saison : afficher toute la horde
+        html += '<div style="font-family:Cinzel,serif;font-size:9px;color:#ff4040;letter-spacing:1px;padding:5px 0 2px;border-bottom:1px solid #2a1a0a;margin-bottom:4px;margin-top:6px">⚠ TOTAL HORDE S'+hordeCurrentSeason+' : '+hordeArmy.length+' unités connues</div>';
+    } else {
+        // S1 : afficher directement
+        const sLabel = hordeCurrentSeason > 0 ? 'HORDE S'+hordeCurrentSeason+(sIdx>=0?' — '+sNames[sIdx]:'') : 'HORDE';
+        html += '<div style="font-family:Cinzel,serif;font-size:9px;color:#ff6030;letter-spacing:1px;padding:3px 0 2px;border-bottom:1px solid #2a1a0a;margin-bottom:4px">⚔ '+sLabel+' ('+hordeArmy.length+' unités)</div>';
         html += renderHordeTable(hordeArmy, countered_fn);
     }
     // Cachées
