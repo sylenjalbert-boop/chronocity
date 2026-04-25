@@ -34,6 +34,11 @@
         .tl-connector{height:2px;background:var(--border);flex:0 0 8px;margin-bottom:14px;}
         .tl-connector.done{background:var(--teal-l);}
         #explore-popup{display:none;position:fixed;top:60px;left:50%;transform:translateX(-50%);border-radius:8px;padding:14px 22px;z-index:9999;min-width:240px;max-width:360px;text-align:center;animation:slideDown .25s ease;}
+
+        body.processing #main-content-row{filter:blur(2px);pointer-events:none;transition:filter 0.2s;}
+        body.processing #sec-build{filter:blur(2px);pointer-events:none;transition:filter 0.2s;}
+        body.processing #sec-tax{filter:blur(2px);pointer-events:none;transition:filter 0.2s;}
+        body.processing:not(.waiting-dungeon) #sec-tile{filter:blur(2px);pointer-events:none;transition:filter 0.2s;}
         #explore-popup .ep-icon{font-size:34px;margin-bottom:5px;}
         #explore-popup .ep-title{font-family:'Cinzel',serif;font-weight:bold;font-size:15px;margin-bottom:6px;}
         #explore-popup .ep-bonus{font-size:20px;font-weight:bold;margin:3px 0;}
@@ -268,10 +273,11 @@
             /* Seuil ennemi */
             #dng-enemy-threshold { min-width:32px !important; }
             #thr-enemy-val { font-size:18px !important; }
-            /* Zone ennemis à droite */
-            #dng-enemies-zone { flex:0 0 110px !important; max-width:110px !important; }
-            #dng-enemies-zone .dng-fighter { min-width:0 !important; }
-            #dng-enemies-zone img { width:70px !important; height:70px !important; }
+            /* Zone ennemis : grille 2×3 compacte */
+            #dng-enemies-zone { width:100% !important; max-width:100% !important; flex:none !important; }
+            #dng-enemy-grid { gap:3px !important; }
+            #dng-enemy-grid img { max-width:60px !important; height:50px !important; }
+            #dng-enemy-grid > div { min-height:70px !important; }
             .dng-btn { font-size:11px !important; padding:5px 6px !important; min-width:60px !important; }
         }
         @media (max-width:400px) {
@@ -344,13 +350,11 @@
                 justify-content:center !important;
             }
             #dng-enemy-threshold #thr-enemy-val { font-size:18px !important; }
-            /* Zone ennemis */
-            #dng-enemies-zone { flex:1 !important; max-width:45% !important; }
-            .dng-fighter { min-width:70px !important; }
-            .dng-fighter img { width:52px !important; height:52px !important; }
-            .dng-fighter .dng-name { font-size:9px !important; }
-            .dng-fighter .dng-stats { font-size:8px !important; }
-            .dng-fighter .dng-hp-bar-wrap { width:65px !important; }
+            /* Zone ennemis : grille 2×3 compacte */
+            #dng-enemies-zone { flex:1 !important; max-width:45% !important; min-width:160px; }
+            #dng-enemy-grid { gap:2px !important; }
+            #dng-enemy-grid img { max-width:50px !important; height:40px !important; }
+            #dng-enemy-grid > div { min-height:60px !important; font-size:8px !important; }
 
             /* Historique dés compact */
             #dng-history-row { padding:2px 8px !important; }
@@ -535,24 +539,21 @@
         </div>
 
         <!-- Zone ennemis -->
-        <div id="dng-enemies-zone" style="flex:0 0 auto;display:flex;flex-direction:column;gap:6px;min-width:120px;max-width:260px">
-            <!-- Rang avant -->
-            <div id="dng-front-row" style="display:flex;gap:4px;flex-wrap:wrap;justify-content:center">
-                <div class="dng-fighter" id="dng-enemy-side" style="flex:0 0 auto">
-                    <div class="dng-name" id="dng-enemy-name"></div>
-                    <div class="dng-emoji" id="dng-enemy-emoji"></div>
-                    <div class="dng-hp-bar-wrap"><div class="dng-hp-bar" id="dng-enemy-hp-bar" style="background:#e05050;width:100%"></div></div>
-                    <div class="dng-hp-text" id="dng-enemy-hp-text"></div>
-                    <div class="dng-stats" id="dng-enemy-stats"></div>
-                    
-                </div>
-                <div id="dng-extra-front" style="display:flex;gap:4px;flex-wrap:wrap"></div>
+        <div id="dng-enemies-zone" style="flex:0 0 auto;min-width:220px;max-width:300px">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:2px;margin-bottom:3px">
+                <div style="font-size:9px;color:#9a8a6a;text-align:center;font-family:Cinzel,serif">⚔ Avant</div>
+                <div style="font-size:9px;color:#666;text-align:center;font-family:Cinzel,serif">↓ Arrière</div>
             </div>
-            <!-- Rang arrière -->
-            <div id="dng-back-row" style="display:flex;gap:4px;flex-wrap:wrap;justify-content:center;opacity:.85;border-top:1px dashed #2a1a3a;padding-top:4px;margin-top:2px">
-                <div id="dng-extra-back"></div>
+            <div id="dng-enemy-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:4px;"></div>
+            <div style="display:none">
+                <div id="dng-enemy-name"></div>
+                <div id="dng-enemy-emoji"></div>
+                <div class="dng-hp-bar-wrap"><div class="dng-hp-bar" id="dng-enemy-hp-bar" style="background:#e05050;width:100%"></div></div>
+                <div id="dng-enemy-hp-text"></div>
+                <div id="dng-enemy-stats"></div>
             </div>
         </div>
+
 
         <div id="dungeon-reward">
             <h3 id="dr-title"></h3>
@@ -796,11 +797,12 @@
         <div id="action-bar">
 
             <!-- Section TUILE -->
-            <div class="action-section" id="sec-tile">
+            <div class="action-section" id="sec-tile" style="display:flex;flex-direction:column;">
                 <div class="action-section-title">🗺 Tuile</div>
                 <div id="tile-preview-card"></div>
                 <button class="action-main-btn" id="btn-reveal-tile" onclick="doRevealTile()">Révéler</button>
-                <div id="tile-action-hint" class="action-hint"></div>
+                <div id="tile-action-hint" class="action-hint" style="flex:1"></div>
+                <div id="tile-skip-btn"></div>
             </div>
 
             <!-- Section CONSTRUIRE -->
@@ -973,6 +975,22 @@ let cityArmy = [];       // unités défensives recrutées (persistent)
 let hordeArmy = [];      // unités de la horde (s'accumulent)
 let hordeRevealed = false; // dévoilée au tour 5
 let turnProcessing = false; // verrou : empêche les clics multiples pendant un tour
+let waitingDungeon = false;  // attend le choix donjon — bloque tout sauf les boutons donjon
+function setTurnProcessing(val) {
+    turnProcessing = val;
+    if (val) document.body.classList.add('processing');
+    else if (!waitingDungeon) document.body.classList.remove('processing');
+}
+function setWaitingDungeon(val) {
+    waitingDungeon = val;
+    if (val) {
+        document.body.classList.add('processing');
+        document.body.classList.add('waiting-dungeon');
+    } else {
+        document.body.classList.remove('waiting-dungeon');
+        if (!turnProcessing) document.body.classList.remove('processing');
+    }
+}
 let actionBuildingSelected = null; // bâtiment en attente de placement sur tuile
 
 // ===== SYSTÈME TUILES =====
@@ -1002,7 +1020,12 @@ const tileState = Array.from({length:25}, (_,i) => ({
 
 function getTileSlots(tileIdx) {
     const t = tileState[tileIdx];
-    if (!t.type || !TILE_TYPES[t.type]) return 0;
+    if (!t.type) return 0;
+    if (t.type === 'Ville') {
+        // La tuile Ville utilise les emplacements bonus de la méta
+        return getMeta().city.space || 0;
+    }
+    if (!TILE_TYPES[t.type]) return 0;
     return TILE_TYPES[t.type].slots;
 }
 
@@ -1310,7 +1333,7 @@ function showTurnAnimation(turnNum, season, callback) {
             addLog('⚔ La horde approche ! Préparez vos défenses et cliquez ⚔ dans la frise quand vous êtes prêt.');
         }
         updateStats();
-        turnProcessing = false; // déverrouiller : le tour est résolu
+        setTurnProcessing(false); // déverrouiller : le tour est résolu
     });
 }
 
@@ -1436,17 +1459,22 @@ function showAvatarExplorePrompt(tile) {
 function skipDungeon() {
     const hint = document.getElementById('tile-action-hint');
     if (hint) hint.innerHTML = '';
+    const skip = document.getElementById('tile-skip-btn');
+    if (skip) skip.innerHTML = '';
+    hideExplorePopup();
+    setWaitingDungeon(false);
+    setTurnProcessing(true);
     nextTurn();
 }
 
 function offerDungeon() {
     const hint = document.getElementById('tile-action-hint');
     if (hint) hint.innerHTML = '';
-    addLog("L'avatar découvre l'entrée d'un donjon !");
-    showExplorePopup('Donjon', currentTurn + '+ salles | Butin rare', "Des flambeaux illuminent un couloir sombre...");
-    setTimeout(() => {
-        openDungeon(() => { nextTurn(); });
-    }, 1200);
+    const skip = document.getElementById('tile-skip-btn');
+    if (skip) skip.innerHTML = '';
+    hideExplorePopup(); // retire le flou // s'assurer que le flou est retiré
+    addLog("L'avatar entre dans le donjon !");
+    openDungeon(() => { nextTurn(); });
 }
 
 function avatarExplore(yes) {
@@ -2417,20 +2445,17 @@ function dungeonBarClick() {
     if(dmg>0){
         dungeonState.enemy.hp-=dmg;
         dungeonShowDmg('enemy',dmg,'#4cff8a');
-        const es=document.getElementById('dng-enemy-side');if(es)es.classList.add('shake');setTimeout(()=>{if(es)es.classList.remove('shake');},300);
     }
     dngFlashBar(fc);
     const rb=document.getElementById('dng-result');if(rb){rb.className=bcls;rb.textContent=badge;}
-    document.getElementById('dng-enemy-hp-text').textContent=`HP: ${Math.max(0,dungeonState.enemy.hp)}/${dungeonState.enemy.maxHp}`;
-    dungeonUpdateHpBar('enemy',dungeonState.enemy.hp,dungeonState.enemy.maxHp);
+    renderEnemyPanel(); // met à jour la grille + barres HP
     if(dungeonState.enemy.hp<=0){
         dungeonState.enemy.hp=0;
-        // Synchroniser aussi dans enemies.front/back
         ['front','back'].forEach(rank => {
             const e = dungeonState.enemies[rank].find(x=>x===dungeonState.enemy);
             if(e) e.hp=0;
         });
-        dungeonUpdateHpBar('enemy',0,dungeonState.enemy.maxHp);
+        renderEnemyPanel();
         dngLog(dungeonState.enemy.name+' vaincu !','dlog-good');
         if(checkAllEnemiesDead()) return;
     }
@@ -2670,58 +2695,95 @@ function renderEnemyPanel() {
     const back  = dungeonState.enemies.back.filter(e=>e.hp>0);
     if (front.length === 0 && back.length === 0) { checkAllEnemiesDead(); return; }
 
-    // Cible principale
     const target = front[dungeonState.targetIdx] || front[0] || back[0];
     if (!target) { checkAllEnemiesDead(); return; }
     dungeonState.enemy = target;
-    const isCible = dungeonState.isMulti && (front.length + back.length) > 1;
-    document.getElementById('dng-enemy-name').textContent  = target.name + (isCible ? ' 🎯' : '');
-    const _imgSrc = getMonsterImg(target.name);
-    const _emojiEl = document.getElementById('dng-enemy-emoji');
-    if (_imgSrc) {
-        _emojiEl.innerHTML = '<img src="'+_imgSrc+'" style="width:70px;height:70px;object-fit:contain;border-radius:6px">';
-        _emojiEl.style.fontSize = '';
-    } else {
-        _emojiEl.innerHTML = '';
-        _emojiEl.textContent = target.emoji;
-        _emojiEl.style.fontSize = '60px';
-    }
+
+    // Mettre à jour les éléments cachés pour compatibilité
+    document.getElementById('dng-enemy-name').textContent = target.name;
     document.getElementById('dng-enemy-hp-text').textContent = 'HP: '+Math.max(0,target.hp)+'/'+target.maxHp;
-    document.getElementById('dng-enemy-stats').textContent  = 'ATK: '+target.atk+' | Dmg: '+target.dmg+' | DEF: '+target.def+' | Prot: '+target.protection;
-    dungeonUpdateHpBar('enemy', target.hp, target.maxHp);
-    // Style cible
-    const es = document.getElementById('dng-enemy-side');
-    if(es) es.style.borderColor = isCible ? '#4cffaa' : 'transparent';
+    document.getElementById('dng-enemy-stats').textContent = 'ATK: '+target.atk+' | Dmg: '+target.dmg+' | DEF: '+target.def+' | Prot: '+target.protection;
+    // Remplir la grille 2×3
+    const grid = document.getElementById('dng-enemy-grid');
+    if (!grid) return;
+    grid.innerHTML = '';
 
-    // Ennemis supplémentaires — rang avant
-    const extraFront = document.getElementById('dng-extra-front');
-    if(extraFront) {
-        extraFront.innerHTML = '';
-        front.forEach((e, i) => {
-            if(e === target) return; // déjà affiché
-            const card = makeEnemyMiniCard(e, i, false);
-            extraFront.appendChild(card);
-        });
+    for (let row = 0; row < 3; row++) {
+        // Cellule front (colonne gauche)
+        const fEnemy = front[row] || null;
+        const fCell  = makeGridCell(fEnemy, false, row);
+        grid.appendChild(fCell);
+        // Cellule back (colonne droite)
+        const bEnemy = back[row] || null;
+        const bCell  = makeGridCell(bEnemy, true, row);
+        grid.appendChild(bCell);
     }
-    // Rang arrière
-    const extraBack = document.getElementById('dng-extra-back');
-    const backRow = document.getElementById('dng-back-row');
-    if(extraBack) {
-        extraBack.innerHTML = '';
-        if(back.length > 0) {
-            const lbl = document.createElement('div');
-            lbl.style.cssText='font-size:9px;color:#7a6a50;text-align:center;width:100%;margin-bottom:2px';
-            lbl.textContent='↓ Rang arrière';
-            extraBack.appendChild(lbl);
-            back.forEach((e,i) => {
-                const card = makeEnemyMiniCard(e, -1-i, true);
-                extraBack.appendChild(card);
-            });
-        }
-    }
-    if(backRow) backRow.style.display = back.length > 0 ? '' : 'none';
 
-    renderTargetSelector();
+    // Mettre à jour seuil ennemi dans threshold
+    const el_val = document.getElementById('thr-enemy-val');
+    if (el_val && target) {
+        const et = hitThresholdForEnemy(target, def);
+        el_val.textContent = et + '+';
+        el_val.style.color = et<=3?'#ff4040':et<=4?'#ff8080':'#ffb040';
+    }
+}
+
+function makeGridCell(e, isBack, row) {
+    const cell = document.createElement('div');
+    if (!e) {
+        // Cellule vide
+        cell.style.cssText = 'border:1px dashed #1a1212;border-radius:6px;min-height:80px;opacity:.3;background:#0a0808;';
+        return cell;
+    }
+
+    const isTarget = (e === dungeonState.enemy);
+    const canTarget = !isBack || avatarRanged;
+    const imgSrc = getMonsterImg(e.name);
+
+    // Calculer seuil pour toucher (ennemi vers avatar)
+    const et = hitThresholdForEnemy(e, def);
+    const thrLabel = et + '+';
+    const thrColor = et<=3?'#ff6060':et<=4?'#ff9060':'#ffb080';
+
+    // HP bar couleur
+    const hpPct = Math.max(0, e.hp / e.maxHp * 100);
+    const hpColor = hpPct > 50 ? '#c04040' : hpPct > 25 ? '#c07020' : '#ff2020';
+
+    cell.style.cssText = 'border:2px solid '+(isTarget?'#4cffaa':isBack?'#1a0a0a':'#2a1a2a')+
+        ';border-radius:6px;padding:3px;cursor:'+(canTarget?'pointer':'not-allowed')+
+        ';background:'+(isTarget?'#0a1a0a':'#0a0808')+
+        ';opacity:'+(canTarget?'1':'.5')+';position:relative;';
+
+    // Seuil affiché à GAUCHE pour front, à DROITE pour back
+    const thrStyle = isBack
+        ? 'position:absolute;right:2px;top:2px;font-size:9px;font-weight:bold;color:'+thrColor+';background:rgba(0,0,0,0.7);padding:0 2px;border-radius:3px;line-height:1.4'
+        : 'position:absolute;left:2px;top:2px;font-size:9px;font-weight:bold;color:'+thrColor+';background:rgba(0,0,0,0.7);padding:0 2px;border-radius:3px;line-height:1.4';
+
+    const imgHtml = imgSrc
+        ? '<img src="'+imgSrc+'" style="width:100%;max-width:80px;height:60px;object-fit:contain;border-radius:4px;display:block;margin:0 auto">'
+        : '<div style="font-size:30px;text-align:center;line-height:60px">'+e.emoji+'</div>';
+
+    cell.innerHTML =
+        '<div style="'+thrStyle+'">'+thrLabel+'</div>'+
+        imgHtml+
+        '<div style="font-size:8px;color:#aaa;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+e.name+'</div>'+
+        '<div style="background:#1a0a0a;border-radius:3px;height:4px;margin:2px 0;overflow:hidden">'+
+            '<div style="background:'+hpColor+';height:100%;width:'+hpPct+'%;transition:width .3s"></div>'+
+        '</div>'+
+        '<div style="font-size:8px;color:#888;text-align:center">'+e.hp+'/'+e.maxHp+'</div>';
+
+    if (canTarget) {
+        cell.onclick = function() {
+            if (!isBack) {
+                const origIdx = dungeonState.enemies.front.indexOf(e);
+                dungeonState.targetIdx = origIdx;
+            }
+            dungeonState.enemy = e;
+            renderEnemyPanel();
+            dngSetupZones();
+        };
+    }
+    return cell;
 }
 
 function makeEnemyMiniCard(e, idx, isBack) {
@@ -2806,19 +2868,26 @@ function checkAllEnemiesDead() {
     const frontLiving = dungeonState.enemies.front.filter(e=>e.hp>0);
     const backLiving  = dungeonState.enemies.back.filter(e=>e.hp>0);
 
-    if (frontLiving.length === 0 && backLiving.length > 0) {
+    // Nettoyer les morts des tableaux (garder uniquement les vivants)
+    dungeonState.enemies.front = dungeonState.enemies.front.filter(e=>e.hp>0);
+    dungeonState.enemies.back  = dungeonState.enemies.back.filter(e=>e.hp>0);
+
+    const cleanFront = dungeonState.enemies.front;
+    const cleanBack  = dungeonState.enemies.back;
+
+    if (cleanFront.length === 0 && cleanBack.length > 0) {
         // Tout le back passe devant
-        dungeonState.enemies.front = backLiving;
+        dungeonState.enemies.front = cleanBack;
         dungeonState.enemies.back  = [];
         dngLog('⚠ Rang avant vide — le rang arrière avance !', 'dlog-info');
-    } else if (frontLiving.length < backLiving.length) {
-        // Rééquilibrer : déplacer autant d'unités que nécessaire du back vers front
-        const toMove = backLiving.length - frontLiving.length;
+    } else if (cleanFront.length < cleanBack.length) {
+        // Rééquilibrer
+        const toMove = cleanBack.length - cleanFront.length;
         for (let i = 0; i < toMove; i++) {
-            const moved = dungeonState.enemies.back.find(e=>e.hp>0);
+            const moved = dungeonState.enemies.back[0];
             if (moved) {
                 dungeonState.enemies.front.push(moved);
-                dungeonState.enemies.back = dungeonState.enemies.back.filter(e=>e!==moved);
+                dungeonState.enemies.back.shift();
                 dngLog(moved.emoji+' '+moved.name+' avance au rang avant !', 'dlog-info');
             }
         }
@@ -3082,17 +3151,40 @@ function dungeonUpdateHpBar(who, hp, max) {
 }
 
 function dungeonShowDmg(who, amount, color) {
-    const side = document.getElementById('dng-'+who+'-side');
+    let side;
+    if (who === 'enemy') {
+        // Trouver la cellule de la cible dans la grille
+        const grid = document.getElementById('dng-enemy-grid');
+        if (grid) {
+            const cells = grid.querySelectorAll('[data-enemy-idx]');
+            const target = dungeonState.enemy;
+            const frontIdx = dungeonState.enemies.front.indexOf(target);
+            const backIdx  = dungeonState.enemies.back.indexOf(target);
+            // col gauche = front (row*2), col droite = back (row*2+1)
+            let cellIdx = -1;
+            if (frontIdx !== -1) cellIdx = frontIdx * 2;
+            else if (backIdx !== -1) cellIdx = backIdx * 2 + 1;
+            if (cellIdx >= 0 && grid.children[cellIdx]) {
+                side = grid.children[cellIdx];
+            } else {
+                side = grid;
+            }
+        }
+    } else {
+        side = document.getElementById('dng-avatar-side');
+    }
     if (!side) return;
+
     const el = document.createElement('div');
     el.className = 'dng-dmg';
     el.textContent = (amount > 0 ? '-' : '+') + Math.abs(amount);
     el.style.color = color;
-    el.style.left = (35 + Math.random()*30) + '%';
-    el.style.top  = (20 + Math.random()*20) + '%';
-    side.style.position = 'relative';
+    el.style.left = (20 + Math.random()*40) + '%';
+    el.style.top  = (10 + Math.random()*30) + '%';
+    if (getComputedStyle(side).position === 'static') side.style.position = 'relative';
     side.appendChild(el);
     setTimeout(function(){ el.remove(); }, 1100);
+
     const img = side.querySelector('img') || side.querySelector('.dng-emoji');
     if (img) {
         img.classList.remove('recoil-right','recoil-left');
@@ -3358,7 +3450,9 @@ function dungeonAvatarDied() {
 
 function closeDungeon() {
     document.getElementById('dungeon-screen').classList.remove('show');
-    turnProcessing = false;
+    setWaitingDungeon(false);
+    setTurnProcessing(false);
+    document.body.classList.remove('processing', 'waiting-dungeon');
     // Annuler les bonus temporaires du donjon (hors boss)
     if (dungeonTempAtk  > 0) { atk        -= dungeonTempAtk;  addLog('⚔ Bonus ATK donjon (+'+dungeonTempAtk+') expiré.'); }
     if (dungeonTempDmg  > 0) { avatarDmg  -= dungeonTempDmg;  addLog('🗡 Bonus Dmg donjon (+'+dungeonTempDmg+') expiré.'); }
@@ -4077,6 +4171,11 @@ const exploreThemes = {
     'Gobelins':  { icon: '👺', bg: '#3a0a0a', border: '#e05050', color: '#ffd0d0' },
     'Donjon':    { icon: '🏰', bg: '#1a0a2a', border: '#c080ff', color: '#e8d0ff' },
 };
+function hideExplorePopup() {
+    const p = document.getElementById('explore-popup');
+    if (p) p.style.display = 'none';
+}
+
 function showExplorePopup(effectName, bonusText, desc) {
     const theme = exploreThemes[effectName] || { icon: '?', bg: '#222', border: '#888', color: '#eee' };
     const popup = document.getElementById('explore-popup');
@@ -4229,14 +4328,14 @@ function renderTilePreview() {
 }
 
 function doRevealTile() {
-    if (turnProcessing) return;
+    if (turnProcessing || waitingDungeon) return;
     if (currentTurn === 10) {
         addLog("⚔ Impossible d'explorer — la Horde attaque ! Lancez le combat.");
         return;
     }
     const unrevealedIdxs = tileState.map((_,i)=>i).filter(i=>i!==12&&!tileState[i].revealed);
     if (unrevealedIdxs.length === 0) return;
-    turnProcessing = true;
+    setTurnProcessing(true);
     // Choisir une tuile aléatoire non révélée
     const idx = unrevealedIdxs[Math.floor(Math.random()*unrevealedIdxs.length)];
     if (!nextTileType) generateNextTile();
@@ -4290,22 +4389,28 @@ function applyTileReveal(idx, forceType) {
     renderTileGrid();
     renderTilePreview();
     renderBuildPanelList();
+    // Retirer le flou d'exploration
+    hideExplorePopup();
     // Proposer donjon ou nextTurn
     const turnAtClick = currentTurn;
     const exploreTurns = [1,3,7,9];
     randomWeather();
     if (exploreTurns.includes(turnAtClick) && !avatarBlocked) {
-        // Afficher le bouton donjon dans le hint après révélation
+        // Tour exploration : proposer donjon ou skip (qui appellera nextTurn)
         setTimeout(function() {
             const hint = document.getElementById('tile-action-hint');
             if (hint) {
                 hint.innerHTML =
-                    '<button onclick="offerDungeon()" style="background:linear-gradient(135deg,#1a0a2a,#2a1040);color:#c080ff;border:1px solid #6040a0;border-radius:5px;padding:4px 10px;cursor:pointer;font-size:11px;font-family:Cinzel,serif;width:100%;margin-top:3px">🏰 Partir en Donjon</button>' +
-                    '<button onclick="skipDungeon()" style="background:#0e0c0a;color:#7a6a50;border:1px solid #2e2518;border-radius:5px;padding:4px 10px;cursor:pointer;font-size:11px;font-family:Cinzel,serif;width:100%;margin-top:3px">↩ Continuer sans donjon</button>';
+                    '<button onclick="offerDungeon()" style="background:linear-gradient(135deg,#1a0a2a,#2a1040);color:#c080ff;border:1px solid #6040a0;border-radius:5px;padding:4px 10px;cursor:pointer;font-size:11px;font-family:Cinzel,serif;width:100%;margin-top:3px">🏰 Partir en Donjon</button>';
+                const skipBtn = document.getElementById('tile-skip-btn');
+                if (skipBtn) skipBtn.innerHTML = '<button onclick="skipDungeon()" style="background:linear-gradient(135deg,#2a1200,#4a2200);color:#ffaa40;border:1px solid #c06010;border-radius:5px;padding:6px 10px;cursor:pointer;font-size:11px;font-family:Cinzel,serif;width:100%;margin-top:4px;letter-spacing:0.5px;box-shadow:0 0 8px rgba(200,80,0,0.3)">✦ Continuer sans donjon</button>';
             }
-            turnProcessing = false; // débloquer pour permettre les actions
+            setTurnProcessing(false);
+            setWaitingDungeon(true);
         }, 1000);
     } else {
+        // Tour non-exploration : action prise, bloquer jusqu'à nextTurn
+        // turnProcessing reste true jusqu'à ce que nextTurn le remet à false
         setTimeout(() => nextTurn(), 2200);
     }
 };
@@ -4427,12 +4532,12 @@ function renderBuildTilePicker(el, buildingName) {
 // ---- Section IMPÔTS ----
 
 function doTaxAndClose() {
-    if (turnProcessing) return;
+    if (turnProcessing || waitingDungeon) { addLog("⏳ Choisissez d'abord votre option donjon."); return; }
     if (currentTurn === 10) {
         addLog('⚔ Impossible de percevoir — la Horde attaque ! Lancez le combat.');
         return;
     }
-    turnProcessing = true;
+    setTurnProcessing(true);
     collect();
     updateStats();
     setTimeout(() => nextTurn(), 400);
@@ -4653,7 +4758,6 @@ function confirmTilePlacement(name, tileIdx) {
     actionBuildingSelected = null;
     const banner = document.getElementById('tile-place-banner');
     if (banner) banner.classList.remove('active');
-    turnProcessing = true;
     buyBuilding(name, tileIdx);
 }
 // ===== FIN PLACEMENT =====
@@ -4689,8 +4793,19 @@ function renderTileGrid() {
                 cell.innerHTML = '<div style="font-size:22px">🏰</div><div style="font-size:8px;color:#ffd060;font-weight:bold">Ville</div>';
             };
             cell.appendChild(cityImg);
-            if (placingMode) cell.classList.add('tile-locked-build');
-            else cell.onclick = () => showCitySummary();
+            if (placingMode) {
+                const freeSlots = getTileFreeSlots(i);
+                if (freeSlots > 0) {
+                    cell.classList.add('tile-placeable');
+                    cell.title = 'Ville (' + freeSlots + ' emplacement libre)';
+                    cell.onclick = (function(bName, idx){ return () => confirmTilePlacement(bName, idx); })(actionBuildingSelected, i);
+                } else {
+                    cell.classList.add('tile-locked-build');
+                    cell.title = 'Aucun emplacement libre';
+                }
+            } else {
+                cell.onclick = () => showCitySummary();
+            }
 
         } else if (!t.revealed) {
             cell.classList.add('tile-unrevealed');
@@ -4841,6 +4956,7 @@ function runCombatHorde() {
 }
 
 function buyBuilding(name, tileIdx) {
+    if (turnProcessing || waitingDungeon) { addLog("⏳ Choisissez d'abord votre option donjon."); return; }
     // Trouver le coût dans renderBuildPanelList buildings array
     const buildings = [
         { name:'Ferme',              gold:30,  pop:0,  mana:0  },
@@ -4854,12 +4970,12 @@ function buyBuilding(name, tileIdx) {
         { name:'Temple',             gold:130, pop:20, mana:40 },
     ];
     const b = buildings.find(x => x.name === name);
-    if (!b) { addLog('Bâtiment inconnu : ' + name); turnProcessing = false; return; }
+    if (!b) { addLog('Bâtiment inconnu : ' + name); setTurnProcessing(false); return; }
     if (gold < b.gold || population < b.pop || mana < b.mana) {
         showErrorPopup(name, b.gold, b.pop, b.mana);
-        turnProcessing = false; return;
+        setTurnProcessing(false); return;
     }
-    if (space <= 0) { showErrorPopup(name, b.gold, b.pop, b.mana); turnProcessing = false; return; }
+    if (space <= 0) { showErrorPopup(name, b.gold, b.pop, b.mana); setTurnProcessing(false); return; }
 
     gold -= b.gold; population -= b.pop; mana -= b.mana;
 
@@ -4887,7 +5003,8 @@ function buyBuilding(name, tileIdx) {
     showBuildPopup(name);
     addLog('🏗 ' + name + ' construit !');
     updateStats();
-    turnProcessing = false;
+    renderTileGrid();
+    renderBuildPanelList();
     setTimeout(() => nextTurn(), 400);
 }
 
