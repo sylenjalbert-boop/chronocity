@@ -260,24 +260,28 @@
             #build-popup { width:92vw !important; max-width:92vw !important; left:4vw !important; transform:none !important; }
             #army-modal > div { width:96vw !important; max-height:88vh !important; }
             #end-inner { width:96vw !important; max-height:92vh !important; }
+            /* Donjon portrait : colonne = avatar | seuils+log | ennemis */
             #dungeon-body { flex:0 0 auto !important; flex-direction:row !important; align-items:flex-start !important; padding:4px 6px !important; gap:4px !important; }
-            /* Avatar compact à gauche */
-            #dng-avatar-side { flex:0 0 90px !important; min-width:90px !important; max-width:90px !important; }
-            #dng-avatar-side img { width:60px !important; height:60px !important; }
-            #dng-avatar-side .dng-hp-bar-wrap { width:85px !important; }
-            /* Seuil avatar */
-            #dng-avatar-threshold { min-width:32px !important; }
-            #thr-your-atk { font-size:18px !important; }
-            /* Log petit au centre */
-            #dungeon-log { flex:1 !important; width:auto !important; max-height:80px !important; font-size:9px !important; }
-            /* Seuil ennemi */
-            #dng-enemy-threshold { min-width:32px !important; }
-            #thr-enemy-val { font-size:18px !important; }
+            /* Avatar compact */
+            #dng-avatar-side { flex:0 0 80px !important; min-width:80px !important; max-width:80px !important; }
+            #dng-avatar-side img { width:52px !important; height:52px !important; }
+            #dng-avatar-side .dng-hp-bar-wrap { width:76px !important; }
+            #dng-avatar-side .dng-name { font-size:9px !important; }
+            #dng-avatar-side .dng-stats { font-size:7px !important; line-height:1.3 !important; }
+            /* Seuils */
+            #dng-avatar-threshold { min-width:28px !important; flex-direction:column !important; }
+            #thr-your-atk { font-size:16px !important; }
+            #dng-enemy-threshold { min-width:28px !important; flex-direction:column !important; }
+            #thr-enemy-val { font-size:16px !important; }
+            /* Log */
+            #dungeon-log { width:60px !important; flex:0 0 60px !important; max-height:90px !important; font-size:8px !important; }
             /* Zone ennemis : grille 2×3 compacte */
-            #dng-enemies-zone { width:100% !important; max-width:100% !important; flex:none !important; }
-            #dng-enemy-grid { gap:3px !important; }
-            #dng-enemy-grid img { max-width:60px !important; height:50px !important; }
-            #dng-enemy-grid > div { min-height:70px !important; }
+            #dng-enemies-zone { flex:0 0 auto !important; min-width:120px !important; max-width:160px !important; }
+            #dng-enemy-grid { gap:2px !important; }
+            #dng-enemy-grid img { max-width:none !important; width:100% !important; height:38px !important; }
+            #dng-enemy-grid > div { min-height:62px !important; padding:2px !important; }
+            #dng-enemy-grid .cell-name { font-size:7px !important; }
+            #dng-enemy-grid .cell-thr { font-size:8px !important; }
             .dng-btn { font-size:11px !important; padding:5px 6px !important; min-width:60px !important; }
         }
         @media (max-width:400px) {
