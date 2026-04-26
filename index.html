@@ -3278,66 +3278,52 @@ function dungeonUpdateHpBar(who, hp, max) {
 }
 
 function dungeonShowDmg(who, amount, color) {
-    let side;
     if (who === 'enemy') {
-        // Trouver la cellule de la cible dans la grille
+        const target = dungeonState.enemy;
+        const fi = dungeonState.enemies.front.indexOf(target);
+        const bi = dungeonState.enemies.back.indexOf(target);
+        const cellIdx = fi !== -1 ? fi*2 : bi !== -1 ? bi*2+1 : -1;
         const grid = document.getElementById('dng-enemy-grid');
-        if (grid) {
-            const cells = grid.querySelectorAll('[data-enemy-idx]');
-            const target = dungeonState.enemy;
-            const frontIdx = dungeonState.enemies.front.indexOf(target);
-            const backIdx  = dungeonState.enemies.back.indexOf(target);
-            // col gauche = front (row*2), col droite = back (row*2+1)
-            let cellIdx = -1;
-            if (frontIdx !== -1) cellIdx = frontIdx * 2;
-            else if (backIdx !== -1) cellIdx = backIdx * 2 + 1;
-            if (cellIdx >= 0 && grid.children[cellIdx]) {
-                side = grid.children[cellIdx];
-            } else {
-                side = grid;
-            }
+        const cell = (grid && cellIdx >= 0) ? grid.children[cellIdx] : null;
+        if (!cell) return;
+
+        // Chiffre de dégât sur la cellule
+        const el = document.createElement('div');
+        el.className = 'dng-dmg';
+        el.textContent = (amount > 0 ? '-' : '+') + Math.abs(amount);
+        el.style.color = color;
+        el.style.left = (20 + Math.random()*40) + '%';
+        el.style.top  = '10%';
+        cell.appendChild(el);
+        setTimeout(function(){ el.remove(); }, 1100);
+
+        // Recoil sur l'image uniquement
+        const imgId = fi !== -1 ? 'dng-monster-img-f'+fi : 'dng-monster-img-b'+bi;
+        const img = document.getElementById(imgId);
+        if (img) {
+            img.classList.remove('recoil-right','recoil-left');
+            void img.offsetWidth;
+            img.classList.add('recoil-right');
+            setTimeout(function(){ img.classList.remove('recoil-right'); }, 380);
         }
     } else {
-        side = document.getElementById('dng-avatar-side');
-    }
-    // Pour les ennemis : attacher le chiffre à la cellule de la grille
-    let dmgParent = side;
-    if (who === 'enemy') {
-        const target = dungeonState.enemy;
-        const fi = dungeonState.enemies.front.indexOf(target);
-        const bi = dungeonState.enemies.back.indexOf(target);
-        let cellIdx = fi !== -1 ? fi*2 : bi !== -1 ? bi*2+1 : -1;
-        const grid = document.getElementById('dng-enemy-grid');
-        if (grid && cellIdx >= 0 && grid.children[cellIdx]) dmgParent = grid.children[cellIdx];
-    }
-    if (!dmgParent) return;
-
-    const el = document.createElement('div');
-    el.className = 'dng-dmg';
-    el.textContent = (amount > 0 ? '-' : '+') + Math.abs(amount);
-    el.style.color = color;
-    el.style.left = (20 + Math.random()*40) + '%';
-    el.style.top  = (10 + Math.random()*30) + '%';
-    if (getComputedStyle(dmgParent).position === 'static') dmgParent.style.position = 'relative';
-    dmgParent.appendChild(el);
-    setTimeout(function(){ el.remove(); }, 1100);
-
-    // Pour les ennemis : cibler l'image directement par son id
-    let img;
-    if (who === 'enemy') {
-        const target = dungeonState.enemy;
-        const fi = dungeonState.enemies.front.indexOf(target);
-        const bi = dungeonState.enemies.back.indexOf(target);
-        const imgId = fi !== -1 ? 'dng-monster-img-f'+fi : bi !== -1 ? 'dng-monster-img-b'+bi : null;
-        img = imgId ? document.getElementById(imgId) : null;
-    } else {
-        img = side ? (side.querySelector('img') || side.querySelector('.dng-emoji')) : null;
-    }
-    if (img) {
-        img.classList.remove('recoil-right','recoil-left');
-        void img.offsetWidth;
-        img.classList.add(who === 'enemy' ? 'recoil-right' : 'recoil-left');
-        setTimeout(function(){ img.classList.remove('recoil-right','recoil-left'); }, 380);
+        const side = document.getElementById('dng-avatar-side');
+        if (!side) return;
+        const el = document.createElement('div');
+        el.className = 'dng-dmg';
+        el.textContent = (amount > 0 ? '-' : '+') + Math.abs(amount);
+        el.style.color = color;
+        el.style.left = (20 + Math.random()*40) + '%';
+        el.style.top  = '10%';
+        side.appendChild(el);
+        setTimeout(function(){ el.remove(); }, 1100);
+        const img = side.querySelector('img') || side.querySelector('.dng-emoji');
+        if (img) {
+            img.classList.remove('recoil-right','recoil-left');
+            void img.offsetWidth;
+            img.classList.add('recoil-left');
+            setTimeout(function(){ img.classList.remove('recoil-left'); }, 380);
+        }
     }
 }
 
