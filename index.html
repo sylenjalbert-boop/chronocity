@@ -295,8 +295,6 @@
             #dng-enemy-threshold #thr-enemy-val { font-size:15px !important; }
             #dng-enemies-zone { display:none !important; }
             #dungeon-reward { display:none !important; }
-            #dng-history-row { flex:0 0 auto !important; padding:2px 6px !important; }
-            #dng-hist-player, #dng-hist-enemy { min-height:20px !important; }
             .dng-hdie { width:17px !important; height:17px !important; font-size:9px !important; }
             #dng-timing-wrap { flex:0 0 auto !important; padding:0 6px 2px !important; }
             #dng-bar { height:30px !important; }
@@ -306,7 +304,6 @@
             #dng-btn-attack { display:none !important; }
             /* Jauge cachée par défaut sur mobile — visible via .attack-active */
             #dng-timing-wrap { display:none !important; }
-            #dng-history-row { display:none !important; }
             #dungeon-screen.attack-active #dng-timing-wrap { display:block !important; }
             #dungeon-screen.attack-active #dng-btn-attack-mobile { display:none !important; }
             #dungeon-screen:not(.attack-active) #dng-btn-attack-mobile { display:block !important; }
@@ -395,8 +392,6 @@
             #dng-enemy-grid > div { min-height:60px !important; font-size:8px !important; }
 
             /* Historique dés compact */
-            #dng-history-row { padding:2px 8px !important; }
-            #dng-hist-player, #dng-hist-enemy { min-height:24px !important; }
             .dng-hdie { width:20px !important; height:20px !important; font-size:10px !important; }
 
             /* Jauge compacte */
@@ -556,7 +551,8 @@
             <div class="dng-hp-bar-wrap"><div class="dng-hp-bar" id="dng-avatar-hp-bar" style="background:#4caf7d;width:100%"></div></div>
             <div class="dng-hp-text" id="dng-avatar-hp-text"></div>
             <div class="dng-stats" id="dng-avatar-stats"></div>
-            
+            <div id="dng-hist-player-inline" style="display:flex;gap:2px;flex-wrap:wrap;justify-content:center;margin-top:3px;min-height:18px"></div>
+            <div id="dng-avatar-action-log" style="font-size:8px;color:#9a8a6a;text-align:center;margin-top:2px;min-height:14px;line-height:1.3"></div>
         </div>
 
         <div id="dng-hist-avatar-wrap" style="display:none"></div>
@@ -606,20 +602,9 @@
     </div>
 
     <!-- Historique dés -->
-    <div id="dng-history-row" style="display:flex;gap:6px;padding:4px 20px 8px;align-items:flex-end">
-        <div style="flex:1;display:flex;flex-direction:column;gap:4px">
-            <div style="font-size:10px;color:#8a7a60;text-align:center">Timing joueur</div>
-            <div id="dng-hist-player" style="display:flex;gap:4px;justify-content:center;min-height:32px"></div>
-        </div>
-        <div style="font-size:11px;color:#a09070;align-self:center;padding:0 4px;margin-bottom:0">vs</div>
-        <div style="flex:1;display:flex;flex-direction:column;gap:4px">
-            <div style="font-size:10px;color:#8a7a60;text-align:center">Dés ennemi</div>
-            <div id="dng-hist-enemy" style="display:flex;gap:4px;justify-content:center;min-height:32px"></div>
-        </div>
-    </div>
 
-    <!-- Barre de timing -->
-    <div id="dng-timing-wrap" style="padding:0 20px 6px">
+    <div id="dng-history-row" style="display:none"><div id="dng-hist-player" style="display:none"></div><div id="dng-hist-enemy" style="display:none"></div></div>
+    <div id="dng-timing-wrap" style="padding:0 20px 6px;display:none">
         <div id="dng-timing-label" style="font-size:12px;color:#9a8a6a;text-align:center;margin-bottom:6px;height:16px"></div>
         <div id="dng-bar" style="position:relative;width:100%;height:48px;background:#111;border-radius:10px;overflow:hidden;cursor:crosshair;border:2px solid #5a5a8a;transition:border-color .2s">
             <div class="dng-zone dng-z-miss" id="dng-zm1"></div>
@@ -2470,6 +2455,35 @@ function dngRenderHist() {
     }
     render(dngTiming.histPlayer,'dng-hist-player','player');
     render(dngTiming.histEnemy,'dng-hist-enemy','enemy');
+    // Inline : dés joueur sous avatar
+    render(dngTiming.histPlayer,'dng-hist-player-inline','player');
+    // Inline : dés ennemi sous la cellule de la cible (sans label seuil)
+    if (dungeonState.enemy) {
+        const front = dungeonState.enemies.front;
+        const back  = dungeonState.enemies.back;
+        const fi = front.indexOf(dungeonState.enemy);
+        const bi = back.indexOf(dungeonState.enemy);
+        let diceId = null;
+        if (fi !== -1) diceId = 'dng-hist-enemy-f' + fi;
+        else if (bi !== -1) diceId = 'dng-hist-enemy-b' + bi;
+        if (diceId) {
+            const el = document.getElementById(diceId);
+            if (el) {
+                el.innerHTML = '';
+                const slots = Array(dngTiming.MAX).fill(null);
+                dngTiming.histEnemy.forEach(function(item,i){ slots[dngTiming.MAX-dngTiming.histEnemy.length+i]=item; });
+                slots.forEach(function(item,i){
+                    const d = document.createElement('div');
+                    if (!item) { d.className='dng-hdie empty'; d.textContent='—'; }
+                    else {
+                        d.className = 'dng-hdie enemy' + (i===dngTiming.MAX-1?' new':'');
+                        d.textContent = item.val; // pas de label seuil
+                    }
+                    el.appendChild(d);
+                });
+            }
+        }
+    }
 }
 
 function dungeonBarClick() {
@@ -2514,6 +2528,7 @@ function dungeonBarClick() {
     }
     dngFlashBar(fc);
     const rb=document.getElementById('dng-result');if(rb){rb.className=bcls;rb.textContent=badge;}
+    const al=document.getElementById('dng-avatar-action-log');if(al){al.textContent=badge;al.style.color=bcls.includes('good')?'#4cffaa':bcls.includes('bad')?'#ff6060':'#ffb040';}
     renderEnemyPanel(); // met à jour la grille + barres HP
     if(dungeonState.enemy.hp<=0){
         dungeonState.enemy.hp=0;
@@ -2818,7 +2833,7 @@ function makeGridCell(e, isBack, row) {
     cell.style.cssText = 'border:2px solid '+(isTarget?'#4cffaa':isBack?'#1a0a0a':'#2a1a2a')+
         ';border-radius:6px;padding:3px;cursor:'+(canTarget?'pointer':'not-allowed')+
         ';background:'+(isTarget?'#0a1a0a':'#0a0808')+
-        ';opacity:'+(canTarget?'1':'.5')+';position:relative;';
+        ';opacity:'+(canTarget?'1':'.5')+';position:relative;overflow:visible;';
 
     // Seuil affiché à GAUCHE pour front, à DROITE pour back
     const thrStyle = isBack
@@ -2829,9 +2844,14 @@ function makeGridCell(e, isBack, row) {
         ? '<img src="'+imgSrc+'" style="width:100%;max-width:80px;height:60px;object-fit:contain;border-radius:4px;display:block;margin:0 auto">'
         : '<div style="font-size:30px;text-align:center;line-height:60px">'+e.emoji+'</div>';
 
+    // ID unique pour les dés de cet ennemi
+    const enemyDiceId = 'dng-hist-enemy-' + (isBack ? 'b' : 'f') + row;
+    cell.setAttribute('data-dice-id', enemyDiceId);
+
     cell.innerHTML =
         '<div style="'+thrStyle+'">'+thrLabel+'</div>'+
         imgHtml+
+        '<div id="'+enemyDiceId+'" style="display:flex;gap:2px;flex-wrap:wrap;justify-content:center;min-height:18px;margin-bottom:2px"></div>'+
         '<div style="font-size:8px;color:#aaa;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+e.name+'</div>'+
         '<div style="background:#1a0a0a;border-radius:3px;height:4px;margin:2px 0;overflow:hidden">'+
             '<div style="background:'+hpColor+';height:100%;width:'+hpPct+'%;transition:width .3s"></div>'+
@@ -3096,10 +3116,15 @@ function triggerRoundEffects() {
 
 function dngShowAttackBtn(show) {
     const btn = document.getElementById('dng-btn-attack');
+    const tw  = document.getElementById('dng-timing-wrap');
     const lbl = document.getElementById('dng-timing-label');
-    if (btn) {
-        btn.disabled = !show;
-        btn.style.opacity = show ? '1' : '0.3';
+    if (show) {
+        if (btn) { btn.disabled = false; btn.style.display = ''; btn.style.opacity = '1'; }
+        if (tw)  tw.style.display = 'none';
+        document.getElementById('dungeon-screen').classList.remove('attack-active');
+    } else {
+        if (btn) { btn.disabled = true; btn.style.display = 'none'; }
+        if (tw)  tw.style.display = '';
     }
     if (lbl && show) { lbl.textContent = ''; }
 }
@@ -3107,10 +3132,11 @@ function dngShowAttackBtn(show) {
 function dungeonStartAttack(e) {
     if (e) e.stopPropagation();
     const btn = document.getElementById('dng-btn-attack');
-    if (btn) btn.disabled = true;
+    if (btn) { btn.disabled = true; btn.style.display = 'none'; }
+    const tw = document.getElementById('dng-timing-wrap');
+    if (tw) tw.style.display = '';
     moveMobileEnemies();
     document.getElementById('dungeon-screen').classList.add('attack-active');
-    dngShowAttackBtn(false);
     dngSetupZones();
     dngStartAnim();
 }
