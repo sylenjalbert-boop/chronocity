@@ -283,6 +283,40 @@
             #dng-enemy-grid .cell-name { font-size:7px !important; }
             #dng-enemy-grid .cell-thr { font-size:8px !important; }
             .dng-btn { font-size:11px !important; padding:5px 6px !important; min-width:60px !important; }
+            /* ── Combat mobile portrait ── */
+            #dungeon-screen { display:flex !important; flex-direction:column !important; overflow-y:auto !important; }
+            #dungeon-body { flex:0 0 auto !important; flex-direction:row !important; align-items:flex-start !important; padding:5px !important; gap:4px !important; }
+            #dng-avatar-side { flex:0 0 85px !important; }
+            #dng-avatar-side img { width:65px !important; height:65px !important; }
+            #dng-avatar-threshold { min-width:26px !important; }
+            #dng-avatar-threshold #thr-your-atk { font-size:15px !important; }
+            #dungeon-log { flex:1 !important; width:auto !important; max-height:75px !important; font-size:9px !important; }
+            #dng-enemy-threshold { min-width:26px !important; }
+            #dng-enemy-threshold #thr-enemy-val { font-size:15px !important; }
+            #dng-enemies-zone { display:none !important; }
+            #dungeon-reward { display:none !important; }
+            #dng-history-row { flex:0 0 auto !important; padding:2px 6px !important; }
+            #dng-hist-player, #dng-hist-enemy { min-height:20px !important; }
+            .dng-hdie { width:17px !important; height:17px !important; font-size:9px !important; }
+            #dng-timing-wrap { flex:0 0 auto !important; padding:0 6px 2px !important; }
+            #dng-bar { height:30px !important; }
+            #dng-timing-label { height:12px !important; margin-bottom:2px !important; font-size:10px !important; }
+            #dng-result { height:14px !important; margin:1px 0 !important; font-size:11px !important; }
+            #dungeon-actions { flex:0 0 auto !important; padding:2px 6px 4px !important; gap:3px !important; }
+            #dng-btn-attack { display:none !important; }
+            /* Jauge cachée par défaut sur mobile — visible via .attack-active */
+            #dng-timing-wrap { display:none !important; }
+            #dng-history-row { display:none !important; }
+            #dungeon-screen.attack-active #dng-timing-wrap { display:block !important; }
+            #dungeon-screen.attack-active #dng-btn-attack-mobile { display:none !important; }
+            #dungeon-screen:not(.attack-active) #dng-btn-attack-mobile { display:block !important; }
+            .dng-btn { font-size:9px !important; padding:3px 4px !important; min-width:44px !important; }
+            #dng-hist-avatar-wrap { display:flex !important; gap:3px; flex-wrap:wrap; justify-content:center; padding:2px 4px; }
+            #dng-hist-enemy-wrap { display:flex !important; gap:3px; flex-wrap:wrap; justify-content:center; padding:2px 4px 4px; }
+            #dng-enemies-mobile-wrap { display:block !important; padding:4px 6px !important; width:100% !important; order:99; }
+            #dng-enemies-mobile-wrap #dng-enemy-grid { grid-template-columns:1fr 1fr !important; gap:3px !important; }
+            #dng-enemies-mobile-wrap #dng-enemy-grid > div { min-height:70px !important; }
+            #dng-enemies-mobile-wrap #dng-enemy-grid img { height:48px !important; width:100% !important; max-width:none !important; }
         }
         @media (max-width:400px) {
             #tile-grid { grid-template-columns:repeat(5,46px) !important; grid-template-rows:repeat(5,46px) !important; }
@@ -525,6 +559,7 @@
             
         </div>
 
+        <div id="dng-hist-avatar-wrap" style="display:none"></div>
         <!-- Seuil avatar (à droite du panneau avatar) -->
         <div id="dng-avatar-threshold" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-width:36px;flex-shrink:0">
             <div style="font-size:8px;color:#7a6a50;text-align:center;white-space:nowrap">Vous<br>touchez</div>
@@ -614,6 +649,7 @@
         <!-- Ligne 1 : Attaquer + Fuir -->
         <div style="display:flex;gap:8px;justify-content:center">
             <button class="dng-btn dng-btn-attack" id="dng-btn-attack" onclick="dungeonStartAttack(event)" style="flex:1;font-size:14px;padding:10px 0">⚔ Attaquer</button>
+            <button class="dng-btn dng-btn-attack" id="dng-btn-attack-mobile" onclick="dungeonStartAttack(event)" style="display:none;flex:1;font-size:13px;padding:8px 0">⚔ Attaquer</button>
             <button class="dng-btn dng-btn-flee" id="dng-btn-flee" onclick="dungeonFlee()" style="min-width:80px">🏃 Fuir</button>
         </div>
 
@@ -2261,24 +2297,26 @@ const dngTiming = {
 };
 
 function moveMobileEnemies() {
-    const isMobilePortrait = window.innerWidth < 600 && window.innerHeight > window.innerWidth;
-    const wrap = document.getElementById('dng-enemies-mobile-wrap');
-    const zone = document.getElementById('dng-enemies-zone');
-    const body = document.getElementById('dungeon-body');
+    const isMobilePortrait = window.innerWidth < 700 && window.innerHeight > window.innerWidth;
+    const wrap  = document.getElementById('dng-enemies-mobile-wrap');
+    const zone  = document.getElementById('dng-enemies-zone');
+    const body  = document.getElementById('dungeon-body');
+    const histP = document.getElementById('dng-hist-player');
+    const histE = document.getElementById('dng-hist-enemy');
+    const wrapP = document.getElementById('dng-hist-avatar-wrap');
+    const wrapE = document.getElementById('dng-hist-enemy-wrap');
     if (!wrap || !zone) return;
     if (isMobilePortrait) {
-        // Déplacer zone ennemis dans le wrapper mobile
         if (zone.parentNode !== wrap) wrap.appendChild(zone);
-        zone.style.display = '';
-        zone.style.width = '100%';
-        zone.style.maxWidth = 'none';
-        zone.style.minWidth = '0';
+        zone.style.cssText = 'display:block;width:100%;max-width:none;min-width:0';
+        if (histP && wrapP && histP.parentNode !== wrapP) wrapP.appendChild(histP);
+        if (histE && wrapE && histE.parentNode !== wrapE) wrapE.appendChild(histE);
     } else {
-        // Remettre dans dungeon-body
         if (zone.parentNode !== body) body.appendChild(zone);
-        zone.style.width = '';
-        zone.style.maxWidth = '';
-        zone.style.minWidth = '';
+        zone.style.cssText = '';
+        const histRow = document.getElementById('dng-history-row');
+        if (histP && histRow && histP.parentNode !== histRow) histRow.insertBefore(histP, histRow.firstChild);
+        if (histE && histRow && histE.parentNode !== histRow) histRow.appendChild(histE);
     }
 }
 
@@ -2435,6 +2473,7 @@ function dngRenderHist() {
 }
 
 function dungeonBarClick() {
+    document.getElementById('dungeon-screen').classList.remove('attack-active');
     if(dngTiming.phase!=='timing') return;
     dngStopAnim();
     dngShowAttackBtn(false); // garder jauge visible pendant résolution
@@ -3066,9 +3105,11 @@ function dngShowAttackBtn(show) {
 }
 
 function dungeonStartAttack(e) {
-    if (e) e.stopPropagation(); // ne pas déclencher le clic global
+    if (e) e.stopPropagation();
     const btn = document.getElementById('dng-btn-attack');
     if (btn) btn.disabled = true;
+    moveMobileEnemies();
+    document.getElementById('dungeon-screen').classList.add('attack-active');
     dngShowAttackBtn(false);
     dngSetupZones();
     dngStartAnim();
