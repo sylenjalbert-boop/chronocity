@@ -606,6 +606,7 @@
         </div>
     </div>
 
+    <div id="dng-enemies-mobile-wrap" style="display:none"></div>
     <div id="dng-result" style="text-align:center;font-size:15px;font-weight:500;height:26px;margin:4px 0;padding:0 20px"></div>
 
     <div id="dungeon-actions" style="flex-direction:column;gap:6px;padding:0 20px 10px">
@@ -2258,6 +2259,28 @@ const dngTiming = {
     phase:'idle', perf:0, norm:0, half:0, missW:0,
     histPlayer:[], histEnemy:[], MAX:5
 };
+
+function moveMobileEnemies() {
+    const isMobilePortrait = window.innerWidth < 600 && window.innerHeight > window.innerWidth;
+    const wrap = document.getElementById('dng-enemies-mobile-wrap');
+    const zone = document.getElementById('dng-enemies-zone');
+    const body = document.getElementById('dungeon-body');
+    if (!wrap || !zone) return;
+    if (isMobilePortrait) {
+        // Déplacer zone ennemis dans le wrapper mobile
+        if (zone.parentNode !== wrap) wrap.appendChild(zone);
+        zone.style.display = '';
+        zone.style.width = '100%';
+        zone.style.maxWidth = 'none';
+        zone.style.minWidth = '0';
+    } else {
+        // Remettre dans dungeon-body
+        if (zone.parentNode !== body) body.appendChild(zone);
+        zone.style.width = '';
+        zone.style.maxWidth = '';
+        zone.style.minWidth = '';
+    }
+}
 
 function dngSetupZones() {
     const t = hitThreshold(atk, dungeonState.enemy ? dungeonState.enemy.def : 2, true);
