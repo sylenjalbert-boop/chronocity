@@ -603,9 +603,20 @@
     <!-- Historique dés -->
 
     <div id="dng-history-row" style="display:none"><div id="dng-hist-player" style="display:none"></div><div id="dng-hist-enemy" style="display:none"></div></div>
-    <div id="dng-timing-wrap" style="padding:0 20px 6px;display:none">
-        <div id="dng-timing-label" style="font-size:12px;color:#9a8a6a;text-align:center;margin-bottom:6px;height:16px"></div>
+
+
+    <div id="dng-enemies-mobile-wrap" style="display:none"></div>
+    <div id="dng-result" style="text-align:center;font-size:15px;font-weight:500;height:26px;margin:4px 0;padding:0 20px"></div>
+
+    <div id="dungeon-actions" style="flex-direction:column;gap:6px;padding:0 20px 10px">
+
+        <!-- Ligne 1 : Attaquer + Fuir -->
+        <div style="display:flex;gap:8px;justify-content:center">
+            <button class="dng-btn dng-btn-attack" id="dng-btn-attack" onclick="dungeonStartAttack(event)" style="flex:1;font-size:14px;padding:10px 0">⚔ Attaquer</button>
+            <div id="dng-timing-wrap" style="display:none;flex:1">
+        <div id="dng-timing-label" style="display:none"></div>
         <div id="dng-bar" style="position:relative;width:100%;height:48px;background:#111;border-radius:10px;overflow:hidden;cursor:crosshair;border:2px solid #5a5a8a;transition:border-color .2s">
+            <div id="dng-bar-label" style="display:none;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:11px;color:rgba(210,195,160,0.85);pointer-events:none;white-space:nowrap;z-index:5;text-shadow:0 0 8px rgba(0,0,0,0.8)">🖱 Cliquez pour frapper</div>
             <div class="dng-zone dng-z-miss" id="dng-zm1"></div>
             <div class="dng-zone dng-z-half" id="dng-zh1"></div>
             <div class="dng-zone dng-z-norm" id="dng-zn1"></div>
@@ -624,15 +635,6 @@
             <div id="dng-flash" style="position:absolute;top:0;left:0;width:100%;height:100%;border-radius:8px;opacity:0;pointer-events:none;z-index:1"></div>
         </div>
     </div>
-
-    <div id="dng-enemies-mobile-wrap" style="display:none"></div>
-    <div id="dng-result" style="text-align:center;font-size:15px;font-weight:500;height:26px;margin:4px 0;padding:0 20px"></div>
-
-    <div id="dungeon-actions" style="flex-direction:column;gap:6px;padding:0 20px 10px">
-
-        <!-- Ligne 1 : Attaquer + Fuir -->
-        <div style="display:flex;gap:8px;justify-content:center">
-            <button class="dng-btn dng-btn-attack" id="dng-btn-attack" onclick="dungeonStartAttack(event)" style="flex:1;font-size:14px;padding:10px 0">⚔ Attaquer</button>
             <button class="dng-btn dng-btn-attack" id="dng-btn-attack-mobile" onclick="dungeonStartAttack(event)" style="display:none;flex:1;font-size:13px;padding:8px 0">⚔ Attaquer</button>
             <button class="dng-btn dng-btn-flee" id="dng-btn-flee" onclick="dungeonFlee()" style="min-width:80px">🏃 Fuir</button>
         </div>
@@ -2365,7 +2367,8 @@ function dngStartAnim() {
     }, 150);
     const speedMultiplier = 0.7;
     const lbl=document.getElementById('dng-timing-label');
-    if(lbl){lbl.textContent='🖱 Cliquez n\'importe où pour frapper !';lbl.style.animation='pulse .8s infinite';}
+    if(lbl){lbl.textContent='';}
+    const barLbl=document.getElementById('dng-bar-label');if(barLbl){barLbl.style.display='block';}
     const bar=document.getElementById('dng-bar');
     if(bar){bar.style.borderColor='#5a5a8a';bar.style.cursor='crosshair';}
     const scr=document.getElementById('dungeon-screen');
@@ -2528,16 +2531,24 @@ function dungeonBarClick() {
     dngFlashBar(fc);
     const rb=document.getElementById('dng-result');if(rb){rb.className=bcls;rb.textContent=badge;}
     const al=document.getElementById('dng-avatar-action-log');if(al){al.textContent=badge;al.style.color=bcls.includes('good')?'#4cffaa':bcls.includes('bad')?'#ff6060':'#ffb040';}
-    renderEnemyPanel(); // met à jour la grille + barres HP
     if(dungeonState.enemy.hp<=0){
         dungeonState.enemy.hp=0;
         ['front','back'].forEach(rank => {
             const e = dungeonState.enemies[rank].find(x=>x===dungeonState.enemy);
             if(e) e.hp=0;
         });
-        renderEnemyPanel();
         dngLog(dungeonState.enemy.name+' vaincu !','dlog-good');
-        if(checkAllEnemiesDead()) return;
+        // Délai pour laisser l'animation de recul se terminer avant de rééquilibrer
+        setTimeout(function(){ if(checkAllEnemiesDead()) return; }, 400);
+    } else {
+        // Mettre à jour la HP bar immédiatement sans reconstruire la cellule
+        const _te = dungeonState.enemy;
+        const _fi = dungeonState.enemies.front.indexOf(_te);
+        const _bi = dungeonState.enemies.back.indexOf(_te);
+        if (_fi !== -1) updateGridCellHp(_te, false, _fi);
+        else if (_bi !== -1) updateGridCellHp(_te, true, _bi);
+        // Re-render complet après l'animation recoil
+        setTimeout(function(){ renderEnemyPanel(); }, 400);
     }
     // Riposte : tous les ennemis vivants attaquent séquentiellement
     setTimeout(function() {
@@ -2770,13 +2781,32 @@ function getAllLivingEnemies() {
     ];
 }
 
+function updateGridCellHp(e, isBack, row) {
+    // Met à jour uniquement la HP bar d'une cellule existante sans la reconstruire
+    const grid = document.getElementById('dng-enemy-grid');
+    if (!grid) return;
+    const cellIdx = isBack ? row * 2 + 1 : row * 2;
+    const cell = grid.children[cellIdx];
+    if (!cell || !e) return;
+    const hpPct = Math.max(0, e.hp / e.maxHp * 100);
+    const hpColor = hpPct > 50 ? '#c04040' : hpPct > 25 ? '#c07020' : '#ff2020';
+    const fill = cell.querySelector('.hp-fill');
+    if (fill) { fill.style.width = hpPct + '%'; fill.style.background = hpColor; }
+    const hpText = cell.querySelectorAll('div');
+    hpText.forEach(function(d) {
+        if (d.textContent === (e.hp+1)+'/'+e.maxHp || d.textContent === (e.hp)+'/'+e.maxHp || d.textContent === (e.hp+2)+'/'+e.maxHp) {
+            d.textContent = e.hp + '/' + e.maxHp;
+        }
+    });
+}
+
 function renderEnemyPanel() {
     const front = dungeonState.enemies.front.filter(e=>e.hp>0);
     const back  = dungeonState.enemies.back.filter(e=>e.hp>0);
-    if (front.length === 0 && back.length === 0) { checkAllEnemiesDead(); return; }
+    if (front.length === 0 && back.length === 0) return;
 
     const target = front[dungeonState.targetIdx] || front[0] || back[0];
-    if (!target) { checkAllEnemiesDead(); return; }
+    if (!target) return;
     dungeonState.enemy = target;
 
     // Mettre à jour les éléments cachés pour compatibilité
@@ -2806,6 +2836,8 @@ function renderEnemyPanel() {
         el_val.textContent = et + '+';
         el_val.style.color = et<=3?'#ff4040':et<=4?'#ff8080':'#ffb040';
     }
+    // Remettre les dés dans les cellules après reconstruction
+    dngRenderHist();
 }
 
 function makeGridCell(e, isBack, row) {
@@ -2839,9 +2871,10 @@ function makeGridCell(e, isBack, row) {
         ? 'position:absolute;right:2px;top:2px;font-size:9px;font-weight:bold;color:'+thrColor+';background:rgba(0,0,0,0.7);padding:0 2px;border-radius:3px;line-height:1.4'
         : 'position:absolute;left:2px;top:2px;font-size:9px;font-weight:bold;color:'+thrColor+';background:rgba(0,0,0,0.7);padding:0 2px;border-radius:3px;line-height:1.4';
 
+    const imgId = 'dng-monster-img-' + (isBack ? 'b' : 'f') + row;
     const imgHtml = imgSrc
-        ? '<img src="'+imgSrc+'" style="width:100%;max-width:80px;height:60px;object-fit:contain;border-radius:4px;display:block;margin:0 auto">'
-        : '<div style="font-size:30px;text-align:center;line-height:60px">'+e.emoji+'</div>';
+        ? '<img id="'+imgId+'" src="'+imgSrc+'" style="width:100%;max-width:80px;height:60px;object-fit:contain;border-radius:4px;display:block;margin:0 auto">'
+        : '<div id="'+imgId+'" style="font-size:30px;text-align:center;line-height:60px">'+e.emoji+'</div>';
 
     // ID unique pour les dés de cet ennemi
     const enemyDiceId = 'dng-hist-enemy-' + (isBack ? 'b' : 'f') + row;
@@ -3125,7 +3158,8 @@ function dngShowAttackBtn(show) {
         if (btn) { btn.disabled = true; btn.style.display = 'none'; }
         if (tw)  tw.style.display = '';
     }
-    if (lbl && show) { lbl.textContent = ''; }
+    if (lbl) { lbl.textContent = ''; }
+    const bl=document.getElementById('dng-bar-label');if(bl)bl.style.display='none';
 }
 
 function dungeonStartAttack(e) {
@@ -3266,7 +3300,17 @@ function dungeonShowDmg(who, amount, color) {
     } else {
         side = document.getElementById('dng-avatar-side');
     }
-    if (!side) return;
+    // Pour les ennemis : attacher le chiffre à la cellule de la grille
+    let dmgParent = side;
+    if (who === 'enemy') {
+        const target = dungeonState.enemy;
+        const fi = dungeonState.enemies.front.indexOf(target);
+        const bi = dungeonState.enemies.back.indexOf(target);
+        let cellIdx = fi !== -1 ? fi*2 : bi !== -1 ? bi*2+1 : -1;
+        const grid = document.getElementById('dng-enemy-grid');
+        if (grid && cellIdx >= 0 && grid.children[cellIdx]) dmgParent = grid.children[cellIdx];
+    }
+    if (!dmgParent) return;
 
     const el = document.createElement('div');
     el.className = 'dng-dmg';
@@ -3274,11 +3318,21 @@ function dungeonShowDmg(who, amount, color) {
     el.style.color = color;
     el.style.left = (20 + Math.random()*40) + '%';
     el.style.top  = (10 + Math.random()*30) + '%';
-    if (getComputedStyle(side).position === 'static') side.style.position = 'relative';
-    side.appendChild(el);
+    if (getComputedStyle(dmgParent).position === 'static') dmgParent.style.position = 'relative';
+    dmgParent.appendChild(el);
     setTimeout(function(){ el.remove(); }, 1100);
 
-    const img = side.querySelector('img') || side.querySelector('.dng-emoji');
+    // Pour les ennemis : cibler l'image directement par son id
+    let img;
+    if (who === 'enemy') {
+        const target = dungeonState.enemy;
+        const fi = dungeonState.enemies.front.indexOf(target);
+        const bi = dungeonState.enemies.back.indexOf(target);
+        const imgId = fi !== -1 ? 'dng-monster-img-f'+fi : bi !== -1 ? 'dng-monster-img-b'+bi : null;
+        img = imgId ? document.getElementById(imgId) : null;
+    } else {
+        img = side ? (side.querySelector('img') || side.querySelector('.dng-emoji')) : null;
+    }
     if (img) {
         img.classList.remove('recoil-right','recoil-left');
         void img.offsetWidth;
