@@ -3473,7 +3473,7 @@ function dungeonShowDmg(who, amount, color) {
 function dungeonUseSkill(type) {
     // Compétence permanente — utilise l'action (riposte ennemie suit), 1× par combat
     if (!dungeonState.active) return;
-    const metaMap = { fireball:'Fireball', bless:'Benediction', rage:'Rage' };
+    const metaMap = { fireball:'Fireball', bless:'Benediction', rage:'Rage', heal:'Soin' };
     const metaId = metaMap[type];
     if (!hasMetaSkill(metaId)) return;
     if (skillUsed[metaId]) { dngLog('Compétence déjà utilisée ce combat.', 'dlog-info'); return; }
