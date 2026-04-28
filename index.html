@@ -3729,10 +3729,11 @@ const UNIT_CATALOG = [
 const HORDE_UNITS = {
     gobelin:   { name:'Gobelin',        icon:'👺', atk:2, atkMag:0, traits:['infanterie'],  tier:1 },
     orc:       { name:'Orc',            icon:'👊', atk:3, atkMag:0, traits:['infanterie'],  tier:1 },
-    archerGob: { name:'Archer Gobelin', icon:'🏹', atk:3, atkMag:0, traits:['distance'],    tier:2 },
+    archerGob: { name:'Archer Gobelin', icon:'🏹', atk:3, atkMag:0, traits:['distance'],    tier:3 },
     cavalier:  { name:'Cavalier Orc',   icon:'🐴', atk:4, atkMag:0, traits:['cavalerie'],   tier:2 },
     vouivre:   { name:'Vouivre',        icon:'🐲', atk:4, atkMag:0, traits:['vol'],          tier:3 },
-    pillard:   { name:'Pillard',        icon:'🔥', atk:2, atkMag:0, traits:['pillard'],      tier:3 },
+    pillard:   { name:'Pillard',        icon:'🔥', atk:2, atkMag:0, traits:['pillard'],      tier:2 },
+    sapeur:    { name:'Sapeur Gobelin', icon:'⛏', atk:2, atkMag:0, traits:['sapeur'],       tier:3 },
     squelette: { name:'Squelette',      icon:'💀', atk:2, atkMag:0, traits:['mort-vivant'],  tier:4 },
     demon:     { name:'Démon',          icon:'😈', atk:3, atkMag:4, traits:['demon'],        tier:4 },
 };
@@ -3744,24 +3745,25 @@ const COUNTER_RULES = {
     'anti-distance':   'distance',
     'anti-pillard':    'pillard',
     'anti-mort-vivant':'mort-vivant',
+    'anti-sapeur':     'sapeur',
     'anti-demon':      'demon',
 };
 
 // Bonus offensifs si non contré
 const HORDE_BONUS = {
     'cavalerie':   (u) => u.atk * 2,   // ATK ×2
-    'vol':         (u) => u.atk,        // +ATK full
+    'vol':         (u) => 0,            // effet spécial : détruit unité ennemie la plus forte
     'distance':    (u) => u.atk * 2,    // ATK ×2
     'pillard':     (u) => 0,            // effet spécial (pas de bonus ATK)
     'mort-vivant': (u) => 0,            // effet spécial
-    'demon':       (u) => u.atkMag * 2, // ATKmag ×2
+    'demon':       (u) => 0,            // effet spécial : annule les unités infanterie
 };
 
 function generateHordeForSeason(season) {
     // Pools de troupes par tier
     const tier1 = [HORDE_UNITS.gobelin, HORDE_UNITS.orc];
-    const tier2 = [HORDE_UNITS.archerGob, HORDE_UNITS.cavalier, HORDE_UNITS.gobelin];
-    const tier3 = [HORDE_UNITS.vouivre, HORDE_UNITS.pillard, HORDE_UNITS.archerGob, HORDE_UNITS.cavalier];
+    const tier2 = [HORDE_UNITS.pillard, HORDE_UNITS.cavalier, HORDE_UNITS.gobelin];
+    const tier3 = [HORDE_UNITS.vouivre, HORDE_UNITS.archerGob, HORDE_UNITS.cavalier, HORDE_UNITS.sapeur];
     const tier4 = [HORDE_UNITS.squelette, HORDE_UNITS.demon, HORDE_UNITS.vouivre, HORDE_UNITS.cavalier];
     const allTiers = [...tier1, ...tier2, ...tier3, ...tier4];
 
@@ -3901,10 +3903,51 @@ function resolveBattle() {
         hordeLog.push(msg);
     });
 
+    const cityLog = [];
+    // ── Effet VOL : chaque vouivre non contrée détruit l'unité de ville la plus forte ──
+    const volUnits = hordeArmy.filter(u => u.traits.includes('vol'));
+    const antiVolCount = antiCounts['anti-vol'] || 0;
+    const volUncontested = Math.max(0, volUnits.length - antiVolCount);
+    if (volUnits.length > 0) {
+        const countered = Math.min(antiVolCount, volUnits.length);
+        if (countered > 0) cityLog.push('🏹 Anti-vol neutralise ' + countered + '/' + volUnits.length + ' vouivre(s)');
+        if (volUncontested > 0 && cityArmy.length > 0) {
+            const sortedCity = [...cityArmy].sort((a,b) => (b.atk+b.atkMag) - (a.atk+a.atkMag));
+            const toDestroy = Math.min(volUncontested, sortedCity.length);
+            sortedCity.slice(0, toDestroy).forEach(u => {
+                const uidx = cityArmy.findIndex(x => x === u);
+                if (uidx !== -1) cityArmy.splice(uidx, 1);
+                cityLog.push('🐲 Vol : ' + u.icon + ' ' + u.name + ' (ATK ' + (u.atk+u.atkMag) + ') éliminé(e) !');
+                addLog('🐲 Vouivre élimine ' + u.name + ' avant le combat !');
+            });
+            updateArmyPanels();
+        }
+    }
+
+    // ── Effet DEMON : si au moins un démon non contré, les unités infanterie ne comptent pas ──
+    const demonUnits = hordeArmy.filter(u => u.traits.includes('demon'));
+    const antiDemonCount = antiCounts['anti-demon'] || 0;
+    let demonActive = false;
+    if (demonUnits.length > 0) {
+        const countered = Math.min(antiDemonCount, demonUnits.length);
+        if (countered > 0) cityLog.push('✝ Anti-démon neutralise ' + countered + '/' + demonUnits.length + ' démon(s)');
+        if (demonUnits.length > antiDemonCount) {
+            // Au moins un démon passe → toute l'infanterie neutralisée
+            demonActive = true;
+            const infantCount = cityArmy.filter(u => u.traits.includes('infanterie')).length;
+            cityLog.push('😈 Démon : ' + infantCount + ' unité(s) infanterie neutralisée(s) !');
+            addLog('😈 La présence démoniaque paralyse les unités infanterie de la ville !');
+        }
+    }
+
     // Puissance ville
     let cityAtk = (window._metaCityPower || 0);
-    const cityLog = cityAtk > 0 ? ['Puissance bonus (méta) : +'+cityAtk] : [];
+    if (cityAtk > 0) cityLog.push('Puissance bonus (méta) : +'+cityAtk);
     cityArmy.forEach(u => {
+        if (demonActive && u.traits.includes('infanterie')) {
+            cityLog.push(u.icon+' '+u.name+' : +0 (neutralisé par démon)');
+            return; // ne contribue pas
+        }
         const base = u.atk + u.atkMag;
         cityAtk += base;
         cityLog.push(u.icon+' '+u.name+' : +'+base);
