@@ -738,11 +738,9 @@
         </div>
 
         <!-- Ligne 3 : Glyphes (hors action — consomme 1 charge) -->
-        <div id="dng-potions-row" style="display:none;flex-direction:row;gap:4px;flex-wrap:wrap">
-            <div style="font-size:9px;color:#9a8a6a;width:100%">🧪 Potions (hors action)</div>
-        </div>
+        <div id="dng-potions-row" style="display:none;flex-direction:row;gap:4px;flex-wrap:wrap"></div>
         <div id="dng-glyphs-row" style="display:none;flex-direction:column;gap:4px">
-            <div style="font-size:9px;color:#8888ff;text-align:center;letter-spacing:1px;font-family:Cinzel,serif;padding:2px 0">✦ GLYPHES — hors action (usage unique)</div>
+            <div style="font-size:9px;color:#8888ff;text-align:center;letter-spacing:1px;font-family:Cinzel,serif;padding:2px 0">✦ GLYPHES &amp; POTIONS — hors action</div>
             <div style="display:flex;gap:6px;justify-content:center;flex-wrap:wrap">
                 <button class="dng-btn" id="dng-glyph-fireball" onclick="dungeonUseGlyph('fireball')" style="background:#1a0a04;color:#ff9060;border:1px solid #602010;min-width:90px">🔥 BdF <span id="gc-fireball"></span></button>
                 <button class="dng-btn" id="dng-glyph-bless"    onclick="dungeonUseGlyph('bless')"    style="background:#0e0a02;color:#ffd060;border:1px solid #604000;min-width:90px">🌟 Béné <span id="gc-bless"></span></button>
@@ -1035,7 +1033,7 @@ document.addEventListener('DOMContentLoaded', () => {
     applyMetaBonuses();
     avatarMaxHp = 9 + (window._metaHpBonus || 0);
     // Les glyphes viennent uniquement de la boutique — reset au démarrage
-    glyphFireball = glyphHeal = glyphRage = glyphBless = 0;
+    glyphFireball = glyphRage = glyphBless = 0;
     avatarHp = avatarMaxHp;
     // Garnison de départ
     if (window._metaGarrison && window._metaGarrison.length > 0) {
@@ -2079,7 +2077,7 @@ const BONUS_ROOMS = [
           const tier = currentSeason <= 1 ? 1 : currentSeason <= 2 ? 2 : 3;
           const opts = [
               { label:'🔥 Glyphe Boule de Feu', apply:()=>{ glyphFireball=Math.min(1,glyphFireball+1); return 'Glyphe Boule de Feu obtenu !'; } },
-              { label:'💊 Glyphe Soin',         apply:()=>{ glyphHeal=Math.min(1,glyphHeal+1); return 'Glyphe Soin obtenu !'; } },
+              { label:'🧪 Potion de Soin',       apply:()=>{ potionHeal++; return 'Potion de Soin obtenue !'; } },
           ];
           if (tier >= 2) opts.push({ label:'🌟 Glyphe Bénédiction', apply:()=>{ glyphBless=Math.min(1,glyphBless+1); return 'Glyphe Bénédiction obtenu !'; } });
           if (tier >= 3) opts.push({ label:'💢 Glyphe Rage',        apply:()=>{ glyphRage=Math.min(1,glyphRage+1); return 'Glyphe Rage obtenu !'; } });
@@ -3325,7 +3323,7 @@ function getSkillLevel(id) {
 function updateGlyphButtons() {
     const fighting = dungeonState.active;
     const metaSkills = { fireball:'Fireball', bless:'Benediction', rage:'Rage', heal:'Soin' };
-    const glyphs = { fireball:glyphFireball, bless:glyphBless, rage:glyphRage, heal:glyphHeal };
+    const glyphs = { fireball:glyphFireball, bless:glyphBless, rage:glyphRage };
 
     // Afficher/masquer les sections compétences et glyphes
     const skillsRow  = document.getElementById('dng-skills-row');
@@ -3475,7 +3473,7 @@ function dungeonShowDmg(who, amount, color) {
 function dungeonUseSkill(type) {
     // Compétence permanente — utilise l'action (riposte ennemie suit), 1× par combat
     if (!dungeonState.active) return;
-    const metaMap = { fireball:'Fireball', bless:'Benediction', rage:'Rage', heal:'Soin' };
+    const metaMap = { fireball:'Fireball', bless:'Benediction', rage:'Rage' };
     const metaId = metaMap[type];
     if (!hasMetaSkill(metaId)) return;
     if (skillUsed[metaId]) { dngLog('Compétence déjà utilisée ce combat.', 'dlog-info'); return; }
@@ -3547,7 +3545,7 @@ function dungeonUseSkill(type) {
 function dungeonUseGlyph(type) {
     // Glyphe — hors action (pas de riposte ennemie)
     if (!dungeonState.active) return;
-    const glyphMap = { fireball:glyphFireball, bless:glyphBless, rage:glyphRage, heal:glyphHeal };
+    const glyphMap = { fireball:glyphFireball, bless:glyphBless, rage:glyphRage };
     if (glyphMap[type] <= 0) return;
 
     if (type === 'fireball') {
@@ -3774,96 +3772,96 @@ let glyphBless      = 0;
 
 const EQUIPMENT_CATALOG = [
     // ── Armes 1 main ──
-    { id:'Epee',        name:'Épée en fer',      slot:'weapon_main', gold:30,  mana:0,  pop:0, req:null,
+    { id:'Epee',        name:'Épée en fer',      slot:'weapon_main', gold:90,  mana:0,  pop:0, req:null,
       icon:'⚔', desc:'ATK +1, Dmg +1',
       apply: () => { atk+=1; avatarDmg+=1; },
       remove: () => { atk-=1; avatarDmg-=1; } },
-    { id:'Dague',       name:'Dague acérée',     slot:'weapon_main', gold:25,  mana:0,  pop:0, req:null,
+    { id:'Dague',       name:'Dague acérée',     slot:'weapon_main', gold:75,  mana:0,  pop:0, req:null,
       icon:'🗡', desc:'ATK +2, Dmg +1',
       apply: () => { atk+=2; avatarDmg+=1; },
       remove: () => { atk-=2; avatarDmg-=1; } },
-    { id:'EpeeRunique', name:'Épée runique',     slot:'weapon_main', gold:80,  mana:20, pop:0, req:'tourmagie',
+    { id:'EpeeRunique', name:'Épée runique',     slot:'weapon_main', gold:240,  mana:60, pop:0, req:'tourmagie',
       icon:'✨', desc:'ATK +2, Dmg +2, Magique',
       apply: () => { atk+=2; avatarDmg+=2; avatarMagicWeapon=true; },
       remove: () => { atk-=2; avatarDmg-=2; avatarMagicWeapon=false; } },
     // ── Armes 2 mains ──
-    { id:'Hache', is2h:true,       name:'Hache de guerre',  slot:'weapon_main', gold:40,  mana:0,  pop:0, req:null,
+    { id:'Hache', is2h:true,       name:'Hache de guerre',  slot:'weapon_main', gold:120,  mana:0,  pop:0, req:null,
       icon:'🪓', desc:'Dmg +2, ATK -1',
       apply: () => { avatarDmg+=2; atk-=1; },
       remove: () => { avatarDmg-=2; atk+=1; } },
-    { id:'Arc', is2h:true,         name:'Arc elfique',      slot:'weapon_main', gold:50,  mana:0,  pop:0, req:'archerie',
+    { id:'Arc', is2h:true,         name:'Arc elfique',      slot:'weapon_main', gold:150,  mana:0,  pop:0, req:'archerie',
       icon:'🏹', desc:'ATK +3, Distance',
       apply: () => { atk+=3; avatarRanged=true; },
       remove: () => { atk-=3; avatarRanged=false; } },
-    { id:'Arbalete', is2h:true,    name:'Arbalète lourde',  slot:'weapon_main', gold:70,  mana:0,  pop:0, req:'archerie',
+    { id:'Arbalete', is2h:true,    name:'Arbalète lourde',  slot:'weapon_main', gold:210,  mana:0,  pop:0, req:'archerie',
       icon:'🏹', desc:'ATK +2, Dmg +2, Distance, Perçant',
       apply: () => { atk+=2; avatarDmg+=2; avatarRanged=true; avatarPiercing=true; },
       remove: () => { atk-=2; avatarDmg-=2; avatarRanged=false; avatarPiercing=false; } },
-    { id:'Faux', is2h:true,        name:'Faux de guerre',   slot:'weapon_main', gold:65,  mana:0,  pop:0, req:null,
+    { id:'Faux', is2h:true,        name:'Faux de guerre',   slot:'weapon_main', gold:195,  mana:0,  pop:0, req:null,
       icon:'⚰', desc:'ATK -1, Dmg +1, Frappe toute la colonne avant',
       apply: () => { atk-=1; avatarDmg+=1; avatarScythe=true; },
       remove: () => { atk+=1; avatarDmg-=1; avatarScythe=false; } },
     // ── Boucliers / Arme secondaire ──
-    { id:'Bouclier',    name:'Bouclier léger',   slot:'weapon_off', gold:40,  mana:0,  pop:0, req:null,
+    { id:'Bouclier',    name:'Bouclier léger',   slot:'weapon_off', gold:120,  mana:0,  pop:0, req:null,
       icon:'🛡', desc:'Protection +1',
       apply: () => { protection+=1; },
       remove: () => { protection-=1; } },
-    { id:'Pavois',      name:'Pavois',            slot:'weapon_off', gold:55,  mana:0,  pop:0, req:'caserne',
+    { id:'Pavois',      name:'Pavois',            slot:'weapon_off', gold:165,  mana:0,  pop:0, req:'caserne',
       icon:'🛡', desc:'Protection +1, +3 vs Distance',
       apply: () => { protection+=1; avatarAntiRange=true; },
       remove: () => { protection-=1; avatarAntiRange=false; } },
     // ── Armures ──
-    { id:'Cuir',        name:'Armure de cuir',   slot:'armor', gold:35,  mana:0,  pop:0, req:null,
+    { id:'Cuir',        name:'Armure de cuir',   slot:'armor', gold:105,  mana:0,  pop:0, req:null,
       icon:'🥋', desc:'DEF +1, HP max +3',
       apply: () => { def+=1; avatarMaxHp+=3; avatarHp=Math.min(avatarHp+3,avatarMaxHp); },
       remove: () => { def-=1; avatarMaxHp=Math.max(1,avatarMaxHp-3); avatarHp=Math.min(avatarHp,avatarMaxHp); } },
-    { id:'Mailles',     name:'Cotte de mailles', slot:'armor', gold:60,  mana:0,  pop:0, req:'caserne',
+    { id:'Mailles',     name:'Cotte de mailles', slot:'armor', gold:180,  mana:0,  pop:0, req:'caserne',
       icon:'⛓', desc:'DEF +2, Protection +1, HP max +3',
       apply: () => { def+=2; protection+=1; avatarMaxHp+=3; avatarHp=Math.min(avatarHp+3,avatarMaxHp); },
       remove: () => { def-=2; protection-=1; avatarMaxHp=Math.max(1,avatarMaxHp-3); avatarHp=Math.min(avatarHp,avatarMaxHp); } },
-    { id:'BouclierR',   name:'Bouclier runique', slot:'weapon_off', gold:90,  mana:30, pop:0, req:'tourmagie',
+    { id:'BouclierR',   name:'Bouclier runique', slot:'weapon_off', gold:270,  mana:90, pop:0, req:'tourmagie',
       icon:'🔮', desc:'Prot +2, bonus timing ×0.5→×1',
       apply: () => { protection+=2; timingHalfBonus=true; },
       remove: () => { protection-=2; timingHalfBonus=false; } },
     // ── Colliers ──
-    { id:'CollierDef',  name:'Collier de défense',   slot:'necklace', gold:40, mana:0, pop:0, req:null,
+    { id:'CollierDef',  name:'Collier de défense',   slot:'necklace', gold:120, mana:0, pop:0, req:null,
       icon:'📿', desc:'DEF +1',
       apply: () => { def+=1; }, remove: () => { def-=1; } },
-    { id:'CollierAtk',  name:"Collier d'attaque",   slot:'necklace', gold:40, mana:0, pop:0, req:null,
+    { id:'CollierAtk',  name:"Collier d'attaque",   slot:'necklace', gold:120, mana:0, pop:0, req:null,
       icon:'📿', desc:'ATK +1',
       apply: () => { atk+=1; }, remove: () => { atk-=1; } },
-    { id:'CollierProt', name:'Collier de protection',slot:'necklace', gold:40, mana:0, pop:0, req:null,
+    { id:'CollierProt', name:'Collier de protection',slot:'necklace', gold:120, mana:0, pop:0, req:null,
       icon:'📿', desc:'Protection +1',
       apply: () => { protection+=1; }, remove: () => { protection-=1; } },
-    { id:'CollierBeni', name:'Collier béni',         slot:'necklace', gold:70, mana:30, pop:0, req:'eglise',
+    { id:'CollierBeni', name:'Collier béni',         slot:'necklace', gold:210, mana:90, pop:0, req:'eglise',
       icon:'✝', desc:'Immunité baisse ATK (Liche)',
       apply: () => { avatarBlessedNecklace=true; }, remove: () => { avatarBlessedNecklace=false; } },
     // ── Ceintures ──
-    { id:'CeintureHP',     name:'Ceinture de vigueur',  slot:'belt', gold:35, mana:0, pop:0, req:null,
+    { id:'CeintureHP',     name:'Ceinture de vigueur',  slot:'belt', gold:105, mana:0, pop:0, req:null,
       icon:'🪢', desc:'HP max +3',
       apply: () => { avatarMaxHp+=3; avatarHp=Math.min(avatarHp+3,avatarMaxHp); },
       remove: () => { avatarMaxHp=Math.max(1,avatarMaxHp-3); avatarHp=Math.min(avatarHp,avatarMaxHp); } },
-    { id:'CeinturePoison', name:'Ceinture anti-poison',  slot:'belt', gold:50, mana:0, pop:0, req:null,
+    { id:'CeinturePoison', name:'Ceinture anti-poison',  slot:'belt', gold:150, mana:0, pop:0, req:null,
       icon:'🪢', desc:'Immunité poison (araignée, trappe)',
       apply: () => { avatarImmunePoison=true; }, remove: () => { avatarImmunePoison=false; } },
-    { id:'CeintureStun',   name:'Ceinture anti-stun',    slot:'belt', gold:50, mana:0, pop:0, req:null,
+    { id:'CeintureStun',   name:'Ceinture anti-stun',    slot:'belt', gold:150, mana:0, pop:0, req:null,
       icon:'🪢', desc:'Immunité stun (troll)',
       apply: () => { avatarImmuneStun=true; }, remove: () => { avatarImmuneStun=false; } },
     // ── Glyphes ──
-    { id:'Fireball',    name:'Glyphe de Boule de Feu', slot:'glyph', gold:50,  mana:20, pop:0, req:null,
-      icon:'🔥', desc:'4 dégâts directs — usage unique',
+    { id:'Fireball',    name:'Glyphe de Boule de Feu', slot:'glyph', gold:150,  mana:60, pop:0, req:null,
+      icon:'🔥', desc:'4 dégâts directs',
       apply: () => { glyphFireball++; }, isGlyph:true },
-    { id:'Rage',        name:'Glyphe de Rage',          slot:'glyph', gold:45,  mana:0,  pop:0, req:'caserne',
-      icon:'💢', desc:'Dégâts ×2 pendant 2 rounds — usage unique',
+    { id:'Rage',        name:'Glyphe de Rage',          slot:'glyph', gold:135,  mana:0,  pop:0, req:'caserne',
+      icon:'💢', desc:'Dégâts ×2 pendant 2 rounds',
       apply: () => { glyphRage++; }, isGlyph:true },
-    { id:'PotionSoin',  name:'Potion de Soin',     slot:'potion', gold:30, mana:0, pop:0, req:null,
-      icon:'🧪', desc:'+3 HP en combat, hors action — usage unique',
+    { id:'PotionSoin',  name:'Potion de Soin',     slot:'potion', gold:90, mana:0, pop:0, req:null,
+      icon:'🧪', desc:'+3 HP en combat, hors action',
       apply: () => { potionHeal++; }, isPotion:true },
-    { id:'PotionPoison', name:'Potion Anti-Poison',  slot:'potion', gold:40, mana:0, pop:0, req:null,
-      icon:'🟢', desc:'Annule le poison actif, hors action — usage unique',
+    { id:'PotionPoison', name:'Potion Anti-Poison',  slot:'potion', gold:120, mana:0, pop:0, req:null,
+      icon:'🟢', desc:'Annule le poison actif, hors action',
       apply: () => { potionAntiPoison++; }, isPotion:true },
-    { id:'Bless',       name:'Glyphe de Bénédiction',   slot:'glyph', gold:60,  mana:30, pop:0, req:'eglise',
-      icon:'🌟', desc:'Zone ×1→×1.5 — usage unique',
+    { id:'Bless',       name:'Glyphe de Bénédiction',   slot:'glyph', gold:180,  mana:90, pop:0, req:'eglise',
+      icon:'🌟', desc:'Zone ×1→×1.5',
       apply: () => { glyphBless++; }, isGlyph:true },
 ];
 
@@ -3873,15 +3871,15 @@ function buyEquipment(name, costGold, costMana=0, costPop=0) {
     if (gold < costGold || mana < costMana || population < costPop) {
         addLog('Ressources insuffisantes pour acheter ' + name + '.'); return;
     }
-    // Glyphes : 1 seule charge max
-    if (item.isGlyph) {
-        const cur = {Fireball:glyphFireball, Benediction:glyphBless, Rage:glyphRage, Soin:glyphHeal}[item.id] || 0;
-        if (cur >= 1) { addLog('Vous avez déjà ce glyphe. Utilisez-le d\'abord.'); return; }
-    } else if (ownedEquipment[item.id]) { addLog(name + ' déjà possédé.'); return; }
+    // Items normaux : achat unique
+    if (!item.isGlyph && !item.isPotion && ownedEquipment[item.id]) {
+        addLog(name + ' déjà possédé.'); return;
+    }
     gold -= costGold; mana -= costMana; population -= costPop;
-    if (!item.isGlyph) ownedEquipment[item.id] = true;
+    ownedEquipment[item.id] = true;
     item.apply();
     updateStats();
+    addLog('✅ ' + name + ' acheté !');
 }
 
 // ===== SYSTÈME ARMÉE & HORDE =====
