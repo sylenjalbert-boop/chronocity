@@ -186,7 +186,7 @@
         .door-badge{position:absolute;top:-7px;left:50%;transform:translateX(-50%);background:var(--red-l);color:#fff;font-family:'Cinzel',serif;font-size:9px;font-weight:bold;padding:2px 7px;border-radius:8px;white-space:nowrap;}
         .door-title{font-family:'Cinzel',serif;font-size:15px;font-weight:bold;color:var(--purple-l);}
         .door-subtitle{font-size:11px;color:var(--text-m);}
-        #room-special{display:none;position:absolute;top:0;left:0;width:100%;height:100%;background:#060408;z-index:10;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:22px;}
+        #room-special{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(6,4,8,0.96);z-index:12000;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:22px;}
         #room-special.show{display:flex;}
         .rs-icon{font-size:52px;}.rs-title{font-family:'Cinzel',serif;font-size:18px;font-weight:bold;}
         .rs-desc{font-size:12px;color:var(--text-m);text-align:center;max-width:260px;}
@@ -704,20 +704,24 @@
         <div id="dng-timing-label" style="display:none"></div>
         <div id="dng-bar" style="position:relative;width:100%;height:48px;background:#111;border-radius:10px;overflow:hidden;cursor:crosshair;border:2px solid #5a5a8a;transition:border-color .2s">
             <div id="dng-bar-label" style="display:none;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:11px;color:rgba(210,195,160,0.85);pointer-events:none;white-space:nowrap;z-index:5;text-shadow:0 0 8px rgba(0,0,0,0.8)">🖱 Cliquez pour frapper</div>
-            <div class="dng-zone dng-z-miss" id="dng-zm1"></div>
+            <div class="dng-zone dng-z-miss" id="dng-za1"></div>
             <div class="dng-zone dng-z-half" id="dng-zh1"></div>
             <div class="dng-zone dng-z-norm" id="dng-zn1"></div>
-            <div class="dng-zone dng-z-perf" id="dng-zp"></div>
+            <div class="dng-zone dng-z-miss" id="dng-zm1"></div>
+            <div class="dng-zone dng-z-perf" id="dng-zp1"></div>
+            <div class="dng-zone dng-z-miss" id="dng-zm2"></div>
             <div class="dng-zone dng-z-norm" id="dng-zn2"></div>
             <div class="dng-zone dng-z-half" id="dng-zh2"></div>
-            <div class="dng-zone dng-z-miss" id="dng-zm2"></div>
-            <div class="dng-zlbl" id="dng-lm1" style="color:#ff5050">0</div>
+            <div class="dng-zone dng-z-miss" id="dng-za2"></div>
+            <div class="dng-zlbl" id="dng-la1" style="color:#ff5050">×0</div>
             <div class="dng-zlbl" id="dng-lh1" style="color:#ffb040">×0.5</div>
             <div class="dng-zlbl" id="dng-ln1" style="color:#a0e040">×1</div>
-            <div class="dng-zlbl" id="dng-lp"  style="color:#4cffaa">×1.5</div>
+            <div class="dng-zlbl" id="dng-lm1" style="color:#ff5050">×0</div>
+            <div class="dng-zlbl" id="dng-lp1" style="color:#4cffaa">×1.2</div>
+            <div class="dng-zlbl" id="dng-lm2" style="color:#ff5050">×0</div>
             <div class="dng-zlbl" id="dng-ln2" style="color:#a0e040">×1</div>
             <div class="dng-zlbl" id="dng-lh2" style="color:#ffb040">×0.5</div>
-            <div class="dng-zlbl" id="dng-lm2" style="color:#ff5050">0</div>
+            <div class="dng-zlbl" id="dng-la2" style="color:#ff5050">×0</div>
             <div id="dng-cursor" style="position:absolute;top:0;width:3px;height:100%;background:#fff;border-radius:2px;pointer-events:none;box-shadow:0 0 8px #ffffffaa;z-index:3;left:0%"></div>
             <div id="dng-flash" style="position:absolute;top:0;left:0;width:100%;height:100%;border-radius:8px;opacity:0;pointer-events:none;z-index:1"></div>
         </div>
@@ -2444,21 +2448,42 @@ function moveMobileEnemies() {
 
 function dngSetupZones() {
     const t = hitThreshold(atk, dungeonState.enemy ? dungeonState.enemy.def : 2, true);
-    const pm={2:16,3:11,4:8,5:6,6:4};
-    const nm={2:13,3:10,4:8,5:7,6:6};
-    const hm={2:11,3:10,4:9,5:9,6:8};
-    const sm={2:0.55,3:0.70,4:0.85,5:1.0,6:1.2};
-    dngTiming.perf=pm[t];dngTiming.norm=nm[t];dngTiming.half=hm[t];
-    dngTiming.missW=(100-dngTiming.perf-2*dngTiming.norm-2*dngTiming.half)/2;
-    dngTiming.speed=sm[t];
-    const ms=dngTiming.missW,hl=ms+dngTiming.half,nl=hl+dngTiming.norm,pl=nl;
-    const pe=pl+dngTiming.perf,n2=pe,h2=n2+dngTiming.norm,m2=h2+dngTiming.half;
-    const setZ=(id,l,w)=>{const el=document.getElementById(id);if(el){el.style.left=l+'%';el.style.width=w+'%';}};
-    setZ('dng-zm1',0,ms);setZ('dng-zh1',ms,dngTiming.half);setZ('dng-zn1',hl,dngTiming.norm);
-    setZ('dng-zp',pl,dngTiming.perf);setZ('dng-zn2',n2,dngTiming.norm);setZ('dng-zh2',h2,dngTiming.half);setZ('dng-zm2',m2,ms);
-    const setL=(id,l,w)=>{const el=document.getElementById(id);if(el){el.style.left=(l+w/2)+'%';el.style.display=w<6?'none':'block';}};
-    setL('dng-lm1',0,ms);setL('dng-lh1',ms,dngTiming.half);setL('dng-ln1',hl,dngTiming.norm);
-    setL('dng-lp',pl,dngTiming.perf);setL('dng-ln2',n2,dngTiming.norm);setL('dng-lh2',h2,dngTiming.half);setL('dng-lm2',m2,ms);
+    // Vitesse constante plus rapide
+    dngTiming.speed = 1.4;
+    // % de la barre selon seuil de toucher
+    const hitPct  = {2:83, 3:67, 4:50, 5:33, 6:17}[t] || 50;
+    const missPct = 100 - hitPct;
+    // 9 zones : ×0 | ×0.5 | ×1 | ×0 | ×1.2 | ×0 | ×1 | ×0.5 | ×0
+    // Miss = 4 zones : 2 extrêmes + 2 séparateurs entre ×1 et ×1.2
+    const mExt  = missPct * 0.35;  // miss extrême (×2)
+    const mSep  = missPct * 0.15;  // miss séparateur entre ×1 et ×1.2 (×2)
+    // Hit = 5 zones : ×0.5(15%) ×1(20%) ×1.2(10%) de chaque côté (symétrique autour de ×1.2 central)
+    const halfW = hitPct * 0.15;
+    const normW = hitPct * 0.20;
+    const perfW = hitPct * 0.10 / 2; // ×1.2 central partagé en 2
+    const zones9 = [
+        {id:'dng-za1', lid:'dng-la1', w:mExt,      mult:0},
+        {id:'dng-zh1', lid:'dng-lh1', w:halfW,     mult:0.5},
+        {id:'dng-zn1', lid:'dng-ln1', w:normW,     mult:1},
+        {id:'dng-zm1', lid:'dng-lm1', w:mSep,      mult:0},
+        {id:'dng-zp1', lid:'dng-lp1', w:perfW*2,   mult:1.2},
+        {id:'dng-zm2', lid:'dng-lm2', w:mSep,      mult:0},
+        {id:'dng-zn2', lid:'dng-ln2', w:normW,     mult:1},
+        {id:'dng-zh2', lid:'dng-lh2', w:halfW,     mult:0.5},
+        {id:'dng-za2', lid:'dng-la2', w:mExt,      mult:0},
+    ];
+    let p = 0;
+    zones9.forEach(function(z) {
+        const el = document.getElementById(z.id);
+        if (el) { el.style.left=p+'%'; el.style.width=z.w+'%'; }
+        const ll = document.getElementById(z.lid);
+        if (ll) { ll.style.left=(p+z.w/2)+'%'; ll.style.display=z.w<4?'none':'block'; }
+        p += z.w;
+    });
+    dngTiming.zones9 = zones9.map(function(z,i){
+        let cum = zones9.slice(0,i).reduce(function(a,b){return a+b.w;},0);
+        return {pos:cum, w:z.w, mult:z.mult};
+    });
     // Seuil pour l'avatar toucher l'ennemi
     const el_atk = document.getElementById('thr-your-atk');
     if (el_atk) {
@@ -2477,17 +2502,22 @@ function dngSetupZones() {
 }
 
 function dngGetZone(pos) {
-    const ms=dngTiming.missW,hl=ms+dngTiming.half,nl=hl+dngTiming.norm,pl=nl;
-    const pe=pl+dngTiming.perf,n2=pe,h2=n2+dngTiming.norm,m2=h2+dngTiming.half;
-    let zone;
-    if(pos<ms||pos>=m2) zone='miss';
-    else if(pos<hl||(pos>=h2&&pos<m2)) zone='half';
-    else if(pos<pl||(pos>=n2&&pos<h2)) zone='normal';
-    else zone='perfect';
-    // Modificateurs d'équipements
-    if(zone==='half'   && timingHalfBonus)   zone='normal';  // Bouclier runique
-    if(zone==='normal' && timingNormalBonus) zone='perfect'; // Bénédiction
-    return zone;
+    if (dngTiming.zones9) {
+        for (let i = 0; i < dngTiming.zones9.length; i++) {
+            const z = dngTiming.zones9[i];
+            if (pos >= z.pos && pos < z.pos + z.w) {
+                let mult = z.mult;
+                if (mult === 0)   return 'miss';
+                if (mult === 0.5 && timingHalfBonus)   mult = 1;
+                if (mult === 1   && timingNormalBonus) mult = 1.2;
+                if (mult === 0.5) return 'half';
+                if (mult === 1)   return 'normal';
+                return 'perfect'; // 1.2
+            }
+        }
+        return 'miss';
+    }
+    return 'miss';
 }
 
 function dngStartAnim() {
@@ -2647,9 +2677,9 @@ function dungeonBarClick() {
         badge=`×1 — ${dmg} dégât`;bcls='dng-r-norm';fc='#1a3000';zlabel='×1';
         dngLog(`Vous : ×1 → -${dmg} HP`,'dlog-good');
     } else {
-        dmg=Math.ceil(base*1.5);
-        badge=`⭐ ×1.5 — ${dmg} dégâts !`;bcls='dng-r-perf';fc='#003820';zlabel='×1.5';
-        dngLog(`Vous : ×1.5 PARFAIT → -${dmg} HP !`,'dlog-good');
+        dmg=Math.ceil(base*1.2);
+        badge=`✦ ×1.2 — ${dmg} dégâts !`;bcls='dng-r-perf';fc='#003820';zlabel='×1.2';
+        dngLog(`Vous : ×1.2 PARFAIT → -${dmg} HP !`,'dlog-good');
     }
     dngPushHist(dngTiming.histPlayer,zlabel,null);
     dngRenderHist();
