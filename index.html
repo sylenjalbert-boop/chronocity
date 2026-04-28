@@ -411,6 +411,19 @@
 <body>
 
 <!-- Popup exploration -->
+
+<!-- ═══ MENU SAUVEGARDE ═══ -->
+<div id="save-menu" style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);
+     background:#0a0818;border:1px solid #3a2a5a;border-radius:12px;padding:16px 20px;
+     z-index:10000;flex-direction:column;gap:8px;min-width:300px;max-width:360px;
+     box-shadow:0 0 40px rgba(80,40,120,0.4)">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+        <div style="font-family:Cinzel,serif;font-size:14px;color:#c0a060;letter-spacing:1px">💾 Sauvegardes</div>
+        <button onclick="hideSaveMenu()" style="background:none;border:none;color:#6a5a80;font-size:18px;cursor:pointer">✕</button>
+    </div>
+    <div id="save-slots"></div>
+</div>
+
 <div id="explore-popup">
     <div class="ep-icon" id="ep-icon"></div>
     <div class="ep-title" id="ep-title"></div>
@@ -688,6 +701,7 @@
 <div id="timeline">
     <div id="timeline-season">Saison 1</div>
     <div style="font-family:Cinzel,serif;font-size:9px;color:#3a3050;margin-left:auto;padding-left:8px;white-space:nowrap">v0.9</div>
+    <button onclick="toggleSaveMenu()" style="background:none;border:none;color:#6a5a80;font-size:16px;cursor:pointer;padding:0 4px;line-height:1" title="Sauvegardes">💾</button>
     <div id="timeline-steps"></div>
 </div>
 
