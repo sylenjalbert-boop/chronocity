@@ -406,7 +406,29 @@
             .dng-btn { font-size:9px !important; padding:3px 5px !important; min-width:52px !important; }
             #dng-btn-attack { font-size:11px !important; padding:5px 0 !important; }
         }
-    </style>
+    
+        .ew-slot {
+            display:flex;justify-content:space-between;align-items:center;
+            padding:5px 8px;border:1px solid #2a1a3a;border-radius:6px;
+            font-size:10px;color:#7a6a8a;cursor:pointer;
+            background:#0c0818;transition:border-color .15s,background .15s;
+            min-height:28px;
+        }
+        .ew-slot:hover { border-color:#6040a0;background:#130e1e; }
+        .ew-slot.equipped { border-color:#4cffaa;background:#081808;color:#d4c49a; }
+        .ew-slot-item { font-size:9px;color:#4cffaa;font-weight:bold;text-align:right;max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
+        .ew-item-btn {
+            display:flex;align-items:center;gap:6px;padding:6px 8px;
+            border:1px solid #2a1a3a;border-radius:6px;cursor:pointer;
+            background:#0c0818;font-size:11px;color:#d4c49a;
+            transition:border-color .15s,background .15s;
+        }
+        .ew-item-btn:hover { border-color:#6040a0;background:#130e1e; }
+        .ew-item-btn.selected { border-color:#4cffaa;background:#081808; }
+        .ew-item-btn.locked { opacity:.4;cursor:default; }
+        .ew-item-btn .ew-item-desc { font-size:9px;color:#6a5a7a;margin-top:1px; }
+
+        </style>
 </head>
 <body>
 
@@ -431,6 +453,48 @@
     <div style="border-top:1px solid #2a2040;margin-top:4px;padding-top:10px;display:flex;gap:8px">
         <button onclick="newGameFromSaveMenu()" style="flex:1;background:linear-gradient(135deg,#0a1a0a,#1a2a0a);color:#4cffaa;border:1px solid #2a5a2a;border-radius:6px;padding:7px 0;font-family:Cinzel,serif;font-size:11px;cursor:pointer">✦ Nouvelle Partie</button>
         <button onclick="resetAllMetaFromMenu()" style="flex:1;background:linear-gradient(135deg,#1a0a0a,#2a0a0a);color:#ff6060;border:1px solid #5a2a2a;border-radius:6px;padding:7px 0;font-family:Cinzel,serif;font-size:11px;cursor:pointer">⚠ Reset run</button>
+    </div>
+</div>
+
+
+<!-- ═══ FENÊTRE ÉQUIPEMENT AVATAR ═══ -->
+<div id="equip-window" style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#080810;border:1px solid #3a2a5a;border-radius:14px;padding:0;z-index:10000;width:min(96vw,560px);max-height:90vh;overflow-y:auto;box-shadow:0 0 40px rgba(60,30,100,0.5);flex-direction:column">
+    <!-- Header -->
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 16px;border-bottom:1px solid #1a1228;background:#0c0818;border-radius:14px 14px 0 0">
+        <div style="font-family:Cinzel,serif;font-size:15px;color:#c0a060;letter-spacing:1px">⚔ Équipement de l'Avatar</div>
+        <button onclick="closeEquipWindow()" style="background:none;border:none;color:#6a5a80;font-size:20px;cursor:pointer;line-height:1">✕</button>
+    </div>
+    <div style="display:flex;gap:0;flex-wrap:wrap">
+        <!-- Colonne gauche : avatar + slots -->
+        <div style="flex:0 0 200px;padding:12px;border-right:1px solid #1a1228">
+            <!-- Avatar image -->
+            <div style="width:120px;height:120px;margin:0 auto 12px;background:#0a0818;border:2px solid #2a1a3a;border-radius:10px;overflow:hidden;display:flex;align-items:center;justify-content:center">
+                <img id="ew-avatar-img" src="" style="width:100%;height:100%;object-fit:cover" onerror="this.style.display='none'">
+                <div id="ew-avatar-emoji" style="font-size:50px;display:none">🧙</div>
+            </div>
+            <!-- Slots équipement -->
+            <div style="display:flex;flex-direction:column;gap:5px">
+                <div style="font-size:9px;color:#4a3a5a;text-align:center;letter-spacing:1px;margin-bottom:2px">ÉQUIPEMENT</div>
+                <div class="ew-slot" id="slot-weapon1"    data-slot="weapon1"    onclick="openSlotPicker('weapon1')"   >🗡 Arme principale<span class="ew-slot-item"></span></div>
+                <div class="ew-slot" id="slot-weapon2h"   data-slot="weapon2h"   onclick="openSlotPicker('weapon2h')"  >⚔ Arme 2 mains<span class="ew-slot-item"></span></div>
+                <div class="ew-slot" id="slot-shield"     data-slot="shield"     onclick="openSlotPicker('shield')"    >🛡 Bouclier<span class="ew-slot-item"></span></div>
+                <div class="ew-slot" id="slot-armor"      data-slot="armor"      onclick="openSlotPicker('armor')"     >🥋 Armure<span class="ew-slot-item"></span></div>
+                <div class="ew-slot" id="slot-necklace"   data-slot="necklace"   onclick="openSlotPicker('necklace')"  >📿 Collier<span class="ew-slot-item"></span></div>
+                <div class="ew-slot" id="slot-belt"       data-slot="belt"       onclick="openSlotPicker('belt')"      >🪢 Ceinture<span class="ew-slot-item"></span></div>
+                <div style="font-size:9px;color:#4a3a5a;text-align:center;letter-spacing:1px;margin:4px 0 2px">ACTIFS</div>
+                <div class="ew-slot" id="slot-glyph"      data-slot="glyph"      onclick="openSlotPicker('glyph')"     >🔮 Glyphe<span class="ew-slot-item"></span></div>
+            </div>
+        </div>
+        <!-- Colonne droite : stats + picker -->
+        <div style="flex:1;min-width:200px;padding:12px;display:flex;flex-direction:column;gap:8px">
+            <!-- Stats avatar -->
+            <div id="ew-stats" style="background:#0a0812;border:1px solid #1a1228;border-radius:8px;padding:8px 10px;font-size:11px;line-height:2"></div>
+            <!-- Picker items -->
+            <div id="ew-picker" style="display:none;flex-direction:column;gap:4px">
+                <div id="ew-picker-title" style="font-size:10px;color:#9a8a6a;font-family:Cinzel,serif;margin-bottom:4px"></div>
+                <div id="ew-picker-items" style="display:flex;flex-direction:column;gap:4px;max-height:200px;overflow-y:auto"></div>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -1017,7 +1081,12 @@ let avatarBlockedSeason = -1; // saison pendant laquelle l'avatar a été bloqu�
 let avatarHp = 0;       // initialisé après chargement
 let avatarMaxHp = 0;      // bloqué pour la saison suivante si envoyé contre la horde
 let avatarSentToHorde = false;  // a-t-il participé au combat de horde ?
-let ownedEquipment = {};        // équipements déjà achetés
+let ownedEquipment = {};        // équipements achetés {id: true}
+let equippedItems = {             // items actuellement équipés par slot
+    weapon1: null, weapon2h: null, shield: null,
+    armor: null, necklace: null, belt: null,
+    glyph: null
+};
 let hordeAggressiveness = 0;
 let runDeaths = 0;        // morts dans ce run
 let runDustSpent = 0;     // poussière dépensée dans ce run
@@ -3676,8 +3745,14 @@ function closeDungeon() {
 // ===== CATALOGUE ÉQUIPEMENTS AVATAR =====
 let rageAvailable  = false;
 let healAvailable  = false;
-let avatarRanged   = false; // true si arme distance équipée
-let avatarPiercing = false; // Arbalète : touche aussi le 2e rang
+let avatarRanged        = false;
+let avatarPiercing      = false;
+let avatarScythe        = false; // Faux : touche toute la colonne avant
+let avatarMagicWeapon   = false; // Arme magique (épée runique)
+let avatarAntiRange     = false; // Pavois : bonus vs distance
+let avatarBlessedNecklace = false; // Collier béni : immunité baisse ATK liche
+let avatarImmunePoison  = false; // Immunité poison
+let avatarImmuneStun    = false; // Immunité stun
 // Glyphes (items à usage unique achetés en boutique, rechargeable)
 let glyphFireball   = 0; // nb de charges
 // Usage compétences par combat (reset à chaque nouveau combat)
@@ -3688,52 +3763,94 @@ let glyphBless      = 0;
 
 const EQUIPMENT_CATALOG = [
     // ── Armes 1 main ──
-    { id:'Epee',        name:'Épée en fer',      gold:30,  mana:0,  pop:0, req:null,
-      desc:'ATK +1, Dmg +1',
-      apply: () => { atk+=1; avatarDmg+=1; addLog('⚔ Épée en fer équipée. ATK+1, Dmg+1.'); } },
-    { id:'Dague',       name:'Dague acérée',     gold:25,  mana:0,  pop:0, req:null,
-      desc:'ATK +2, Dmg +1',
-      apply: () => { atk+=2; avatarDmg+=1; addLog('🗡 Dague acérée équipée. ATK+2, Dmg+1.'); } },
-    { id:'EpeeRunique', name:'Épée runique',     gold:80,  mana:20, pop:0, req:'tourmagie',
-      desc:'ATK +2, Dmg +2',
-      apply: () => { atk+=2; avatarDmg+=2; addLog('✨ Épée runique équipée. ATK+2, Dmg+2.'); } },
+    { id:'Epee',        name:'Épée en fer',      slot:'weapon1', gold:30,  mana:0,  pop:0, req:null,
+      icon:'⚔', desc:'ATK +1, Dmg +1',
+      apply: () => { atk+=1; avatarDmg+=1; },
+      remove: () => { atk-=1; avatarDmg-=1; } },
+    { id:'Dague',       name:'Dague acérée',     slot:'weapon1', gold:25,  mana:0,  pop:0, req:null,
+      icon:'🗡', desc:'ATK +2, Dmg +1',
+      apply: () => { atk+=2; avatarDmg+=1; },
+      remove: () => { atk-=2; avatarDmg-=1; } },
+    { id:'EpeeRunique', name:'Épée runique',     slot:'weapon1', gold:80,  mana:20, pop:0, req:'tourmagie',
+      icon:'✨', desc:'ATK +2, Dmg +2, Magique',
+      apply: () => { atk+=2; avatarDmg+=2; avatarMagicWeapon=true; },
+      remove: () => { atk-=2; avatarDmg-=2; avatarMagicWeapon=false; } },
     // ── Armes 2 mains ──
-    { id:'Hache',       name:'Hache de guerre',  gold:40,  mana:0,  pop:0, req:null,
-      desc:'Dmg +2, ATK -1',
-      apply: () => { avatarDmg+=2; atk-=1; addLog('🪓 Hache de guerre équipée. Dmg+2, ATK-1.'); } },
-    // ── Distance ──
-    { id:'Arc',         name:'Arc elfique',      gold:50,  mana:0,  pop:0, req:'archerie',
-      desc:'ATK +3, distance',
-      apply: () => { atk+=3; avatarRanged=true; addLog('🏹 Arc elfique équipé. ATK+3, portée distance.'); } },
-    { id:'Arbalete',    name:'Arbalète lourde',  gold:70,  mana:0,  pop:0, req:'archerie',
-      desc:'ATK +2, Dmg +2, distance, perçant (touche aussi le 2e rang)',
-      apply: () => { atk+=2; avatarDmg+=2; avatarRanged=true; avatarPiercing=true; addLog('🏹 Arbalète équipée. ATK+2, Dmg+2, distance, perçant.'); } },
-    // ── Armure ──
-    { id:'Bouclier',    name:'Bouclier léger',   gold:40,  mana:0,  pop:0, req:null,
-      desc:'Protection +1',
-      apply: () => { protection+=1; addLog('🛡 Bouclier léger équipé. Protection+1.'); } },
-    { id:'Cuir',        name:'Armure de cuir',   gold:35,  mana:0,  pop:0, req:null,
-      desc:'DEF +1, HP max +3',
-      apply: () => { def+=1; avatarMaxHp+=3; avatarHp=Math.min(avatarHp+3,avatarMaxHp); addLog('🥋 Armure de cuir équipée. DEF+1, HPmax+3.'); } },
-    { id:'Mailles',     name:'Cotte de mailles', gold:60,  mana:0,  pop:0, req:'caserne',
-      desc:'DEF +2, Protection +1',
-      apply: () => { def+=2; protection+=1; addLog('⛓ Cotte de mailles équipée. DEF+2, Prot+1.'); } },
-    { id:'BouclierR',   name:'Bouclier runique', gold:90,  mana:30, pop:0, req:'tourmagie',
-      desc:'Prot +2, zone ×0.5→×1',
-      apply: () => { protection+=2; timingHalfBonus=true; addLog('🔮 Bouclier runique équipé. Prot+2, bonus timing.'); } },
-    // ── Objets / Sorts ──
-    { id:'Fireball',    name:'Glyphe de Boule de Feu',     gold:50,  mana:20, pop:0, req:null,
-      desc:'4 dégâts directs — usage unique (glyphe)',
-      apply: () => { glyphFireball++; addLog('🔥 Glyphe de Boule de Feu chargé (×'+glyphFireball+').'); }, isGlyph:true },
-    { id:'Benediction', name:'Glyphe de Bénédiction',      gold:60,  mana:30, pop:0, req:'eglise',
-      desc:'Zone ×1 → ×1.5 (timing)',
-      apply: () => { timingNormalBonus=true; addLog('🌟 Bénédiction obtenue. Bonus timing ×1→×1.5.'); } },
-    { id:'Rage',        name:'Glyphe de Rage',   gold:45,  mana:0,  pop:0, req:'caserne',
-      desc:'Dégâts ×2 pendant 2 rounds — usage unique (glyphe)',
-      apply: () => { glyphRage++; addLog('💢 Glyphe de Rage chargé (×'+glyphRage+').'); }, isGlyph:true },
-    { id:'Soin',        name:'Glyphe de Soin',      gold:30,  mana:10, pop:0, req:null,
-      desc:'+3 HP en combat — usage unique (glyphe)',
-      apply: () => { glyphHeal++; addLog('💊 Glyphe de Soin chargé (×'+glyphHeal+').'); }, isGlyph:true },
+    { id:'Hache',       name:'Hache de guerre',  slot:'weapon2h', gold:40,  mana:0,  pop:0, req:null,
+      icon:'🪓', desc:'Dmg +2, ATK -1',
+      apply: () => { avatarDmg+=2; atk-=1; },
+      remove: () => { avatarDmg-=2; atk+=1; } },
+    { id:'Arc',         name:'Arc elfique',      slot:'weapon2h', gold:50,  mana:0,  pop:0, req:'archerie',
+      icon:'🏹', desc:'ATK +3, Distance',
+      apply: () => { atk+=3; avatarRanged=true; },
+      remove: () => { atk-=3; avatarRanged=false; } },
+    { id:'Arbalete',    name:'Arbalète lourde',  slot:'weapon2h', gold:70,  mana:0,  pop:0, req:'archerie',
+      icon:'🏹', desc:'ATK +2, Dmg +2, Distance, Perçant',
+      apply: () => { atk+=2; avatarDmg+=2; avatarRanged=true; avatarPiercing=true; },
+      remove: () => { atk-=2; avatarDmg-=2; avatarRanged=false; avatarPiercing=false; } },
+    { id:'Faux',        name:'Faux de guerre',   slot:'weapon2h', gold:65,  mana:0,  pop:0, req:null,
+      icon:'⚰', desc:'ATK -1, Dmg +1, Frappe toute la colonne avant',
+      apply: () => { atk-=1; avatarDmg+=1; avatarScythe=true; },
+      remove: () => { atk+=1; avatarDmg-=1; avatarScythe=false; } },
+    // ── Boucliers / Arme secondaire ──
+    { id:'Bouclier',    name:'Bouclier léger',   slot:'shield', gold:40,  mana:0,  pop:0, req:null,
+      icon:'🛡', desc:'Protection +1',
+      apply: () => { protection+=1; },
+      remove: () => { protection-=1; } },
+    { id:'Pavois',      name:'Pavois',            slot:'shield', gold:55,  mana:0,  pop:0, req:'caserne',
+      icon:'🛡', desc:'Protection +1, +3 vs Distance',
+      apply: () => { protection+=1; avatarAntiRange=true; },
+      remove: () => { protection-=1; avatarAntiRange=false; } },
+    // ── Armures ──
+    { id:'Cuir',        name:'Armure de cuir',   slot:'armor', gold:35,  mana:0,  pop:0, req:null,
+      icon:'🥋', desc:'DEF +1, HP max +3',
+      apply: () => { def+=1; avatarMaxHp+=3; avatarHp=Math.min(avatarHp+3,avatarMaxHp); },
+      remove: () => { def-=1; avatarMaxHp=Math.max(1,avatarMaxHp-3); avatarHp=Math.min(avatarHp,avatarMaxHp); } },
+    { id:'Mailles',     name:'Cotte de mailles', slot:'armor', gold:60,  mana:0,  pop:0, req:'caserne',
+      icon:'⛓', desc:'DEF +2, Protection +1, HP max +3',
+      apply: () => { def+=2; protection+=1; avatarMaxHp+=3; avatarHp=Math.min(avatarHp+3,avatarMaxHp); },
+      remove: () => { def-=2; protection-=1; avatarMaxHp=Math.max(1,avatarMaxHp-3); avatarHp=Math.min(avatarHp,avatarMaxHp); } },
+    { id:'BouclierR',   name:'Bouclier runique', slot:'shield', gold:90,  mana:30, pop:0, req:'tourmagie',
+      icon:'🔮', desc:'Prot +2, bonus timing ×0.5→×1',
+      apply: () => { protection+=2; timingHalfBonus=true; },
+      remove: () => { protection-=2; timingHalfBonus=false; } },
+    // ── Colliers ──
+    { id:'CollierDef',  name:'Collier de défense',   slot:'necklace', gold:40, mana:0, pop:0, req:null,
+      icon:'📿', desc:'DEF +1',
+      apply: () => { def+=1; }, remove: () => { def-=1; } },
+    { id:'CollierAtk',  name:"Collier d'attaque",   slot:'necklace', gold:40, mana:0, pop:0, req:null,
+      icon:'📿', desc:'ATK +1',
+      apply: () => { atk+=1; }, remove: () => { atk-=1; } },
+    { id:'CollierProt', name:'Collier de protection',slot:'necklace', gold:40, mana:0, pop:0, req:null,
+      icon:'📿', desc:'Protection +1',
+      apply: () => { protection+=1; }, remove: () => { protection-=1; } },
+    { id:'CollierBeni', name:'Collier béni',         slot:'necklace', gold:70, mana:30, pop:0, req:'eglise',
+      icon:'✝', desc:'Immunité baisse ATK (Liche)',
+      apply: () => { avatarBlessedNecklace=true; }, remove: () => { avatarBlessedNecklace=false; } },
+    // ── Ceintures ──
+    { id:'CeintureHP',     name:'Ceinture de vigueur',  slot:'belt', gold:35, mana:0, pop:0, req:null,
+      icon:'🪢', desc:'HP max +3',
+      apply: () => { avatarMaxHp+=3; avatarHp=Math.min(avatarHp+3,avatarMaxHp); },
+      remove: () => { avatarMaxHp=Math.max(1,avatarMaxHp-3); avatarHp=Math.min(avatarHp,avatarMaxHp); } },
+    { id:'CeinturePoison', name:'Ceinture anti-poison',  slot:'belt', gold:50, mana:0, pop:0, req:null,
+      icon:'🪢', desc:'Immunité poison (araignée, trappe)',
+      apply: () => { avatarImmunePoison=true; }, remove: () => { avatarImmunePoison=false; } },
+    { id:'CeintureStun',   name:'Ceinture anti-stun',    slot:'belt', gold:50, mana:0, pop:0, req:null,
+      icon:'🪢', desc:'Immunité stun (troll)',
+      apply: () => { avatarImmuneStun=true; }, remove: () => { avatarImmuneStun=false; } },
+    // ── Glyphes ──
+    { id:'Fireball',    name:'Glyphe de Boule de Feu', slot:'glyph', gold:50,  mana:20, pop:0, req:null,
+      icon:'🔥', desc:'4 dégâts directs — usage unique',
+      apply: () => { glyphFireball++; }, isGlyph:true },
+    { id:'Rage',        name:'Glyphe de Rage',          slot:'glyph', gold:45,  mana:0,  pop:0, req:'caserne',
+      icon:'💢', desc:'Dégâts ×2 pendant 2 rounds — usage unique',
+      apply: () => { glyphRage++; }, isGlyph:true },
+    { id:'Soin',        name:'Glyphe de Soin',          slot:'glyph', gold:30,  mana:10, pop:0, req:null,
+      icon:'💊', desc:'+3 HP en combat — usage unique',
+      apply: () => { glyphHeal++; }, isGlyph:true },
+    { id:'Bless',       name:'Glyphe de Bénédiction',   slot:'glyph', gold:60,  mana:30, pop:0, req:'eglise',
+      icon:'🌟', desc:'Zone ×1→×1.5 — usage unique',
+      apply: () => { glyphBless++; }, isGlyph:true },
 ];
 
 function buyEquipment(name, costGold, costMana=0, costPop=0) {
@@ -5564,6 +5681,153 @@ function metaBuyCityLevel() {
     renderMetaCity();
 }
 
+
+// ═══════════════════════════════════════════════
+// FENÊTRE ÉQUIPEMENT
+// ═══════════════════════════════════════════════
+const SLOT_LABELS = {
+    weapon1:'Arme principale', weapon2h:'Arme 2 mains',
+    shield:'Bouclier', armor:'Armure',
+    necklace:'Collier', belt:'Ceinture', glyph:'Glyphe'
+};
+
+function openEquipWindow() {
+    const w = document.getElementById('equip-window');
+    if (!w) return;
+    w.style.display = 'flex';
+    renderEquipWindow();
+}
+
+function closeEquipWindow() {
+    const w = document.getElementById('equip-window');
+    if (w) w.style.display = 'none';
+    document.getElementById('ew-picker').style.display = 'none';
+}
+
+function renderEquipWindow() {
+    // Stats
+    const statsEl = document.getElementById('ew-stats');
+    if (statsEl) {
+        statsEl.innerHTML =
+            '<div style="display:grid;grid-template-columns:1fr 1fr;gap:2px">' +
+            statRow('⚔ ATK', atk) + statRow('🗡 Dégâts', avatarDmg) +
+            statRow('🛡 DEF', def) + statRow('💫 Prot', protection) +
+            statRow('❤ HP', avatarHp+'/'+avatarMaxHp) +
+            statRow('🏹 Distance', avatarRanged?'Oui':'Non') +
+            (avatarScythe ? statRow('⚰ Faux','Oui') : '') +
+            (avatarMagicWeapon ? statRow('✨ Mag','Oui') : '') +
+            (avatarBlessedNecklace ? statRow('✝ Béni','Oui') : '') +
+            (avatarImmunePoison ? statRow('🟢 Poison','Immu') : '') +
+            (avatarImmuneStun ? statRow('💨 Stun','Immu') : '') +
+            '</div>';
+    }
+    // Slots
+    Object.keys(SLOT_LABELS).forEach(function(slot) {
+        const el = document.getElementById('slot-' + slot);
+        if (!el) return;
+        const itemId = equippedItems[slot];
+        const span = el.querySelector('.ew-slot-item');
+        if (itemId) {
+            const item = EQUIPMENT_CATALOG.find(function(i){ return i.id === itemId; });
+            el.classList.add('equipped');
+            if (span) span.textContent = (item ? item.icon+' '+item.name : itemId);
+        } else {
+            el.classList.remove('equipped');
+            if (span) span.textContent = '';
+        }
+    });
+    // Avatar img
+    const imgEl = document.getElementById('ew-avatar-img');
+    const avatarImg = document.getElementById('dng-avatar-img') || document.querySelector('#dng-avatar-side img');
+    if (imgEl && avatarImg) { imgEl.src = avatarImg.src; imgEl.style.display='block'; }
+}
+
+function statRow(label, val) {
+    return '<div style="padding:2px 4px;color:#9a8a6a;font-size:10px">'+label+'</div>' +
+           '<div style="padding:2px 4px;color:#d4c49a;font-weight:bold;font-size:10px">'+val+'</div>';
+}
+
+function openSlotPicker(slot) {
+    const picker = document.getElementById('ew-picker');
+    const title = document.getElementById('ew-picker-title');
+    const items = document.getElementById('ew-picker-items');
+    if (!picker || !items) return;
+
+    title.textContent = SLOT_LABELS[slot] + " — choisir un item";
+    items.innerHTML = '';
+
+    // Option : retirer l'item équipé
+    const currentId = equippedItems[slot];
+    if (currentId) {
+        const unequipBtn = document.createElement('div');
+        unequipBtn.className = 'ew-item-btn';
+        unequipBtn.style.cssText += ';border-color:#5a2a2a;color:#ff8080';
+        unequipBtn.innerHTML = "❌ Retirer l'équipement actuel";
+        unequipBtn.onclick = function() { unequipSlot(slot); };
+        items.appendChild(unequipBtn);
+    }
+
+    // Items disponibles pour ce slot
+    const available = EQUIPMENT_CATALOG.filter(function(i) {
+        return i.slot === slot && ownedEquipment[i.id] && !i.isGlyph;
+    });
+    const glyphs = slot === 'glyph' ? EQUIPMENT_CATALOG.filter(function(i) {
+        return i.isGlyph && (glyphFireball>0||glyphHeal>0||glyphRage>0||glyphBless>0);
+    }) : [];
+    const all = [...available, ...glyphs];
+
+    if (all.length === 0 && !currentId) {
+        const empty = document.createElement('div');
+        empty.style.cssText = 'color:#4a3a5a;font-size:11px;padding:8px;text-align:center';
+        empty.textContent = 'Aucun item disponible pour ce slot';
+        items.appendChild(empty);
+    }
+
+    all.forEach(function(item) {
+        // Vérifier si déjà équipé dans un autre slot
+        const equippedElsewhere = Object.entries(equippedItems).some(function(e){ return e[0]!==slot && e[1]===item.id; });
+        const isEquipped = equippedItems[slot] === item.id;
+        const btn = document.createElement('div');
+        btn.className = 'ew-item-btn' + (isEquipped?' selected':'') + (equippedElsewhere?' locked':'');
+        btn.innerHTML = '<span style="font-size:16px">' + (item.icon||'📦') + '</span>' +
+            '<div><div>' + item.name + '</div><div class="ew-item-desc">' + item.desc + '</div></div>' +
+            (isEquipped ? '<span style="color:#4cffaa;font-size:10px">✓</span>' : '');
+        if (!equippedElsewhere) {
+            btn.onclick = function() { equipItem(slot, item.id); };
+        }
+        items.appendChild(btn);
+    });
+
+    picker.style.display = 'flex';
+}
+
+function equipItem(slot, itemId) {
+    // Déséquiper l'ancien
+    unequipSlot(slot, true);
+    // Équiper le nouveau
+    equippedItems[slot] = itemId;
+    const item = EQUIPMENT_CATALOG.find(function(i){ return i.id === itemId; });
+    if (item && item.apply) item.apply();
+    updateStats();
+    renderEquipWindow();
+    if (activeSlot !== null) saveToSlot(activeSlot);
+    addLog((item?item.icon:'') + ' ' + (item?item.name:itemId) + ' équipé.');
+}
+
+function unequipSlot(slot, silent) {
+    const itemId = equippedItems[slot];
+    if (!itemId) return;
+    const item = EQUIPMENT_CATALOG.find(function(i){ return i.id === itemId; });
+    if (item && item.remove) item.remove();
+    equippedItems[slot] = null;
+    updateStats();
+    if (!silent) {
+        renderEquipWindow();
+        if (activeSlot !== null) saveToSlot(activeSlot);
+        addLog((item?item.icon:'') + ' ' + (item?item.name:itemId) + ' retiré.');
+    }
+}
+
 // ===== FIN FONCTIONS MANQUANTES =====
 
 // ═══════════════════════════════════════════════
@@ -5589,6 +5853,7 @@ function getGameState() {
         avatarRanged, avatarPiercing, protection,
         glyphFireball, glyphHeal, glyphRage, glyphBless,
         ownedEquipment: cleanForSave(ownedEquipment||{}),
+        equippedItems: cleanForSave(equippedItems||{}),
         runDeaths, runDustSpent,
         cityArmy: cleanForSave(cityArmy||[]),
         hordeArmy: cleanForSave(hordeArmy||[]),
@@ -5612,17 +5877,25 @@ function restoreGameState(s) {
     runDeaths = s.runDeaths||0; runDustSpent = s.runDustSpent||0;
     // Reset équipements et réappliquer
     ownedEquipment = {};
-    avatarRanged = false; avatarPiercing = false;
+    equippedItems = { weapon1:null, weapon2h:null, shield:null, armor:null, necklace:null, belt:null, glyph:null };
+    avatarRanged = false; avatarPiercing = false; avatarScythe = false;
+    avatarMagicWeapon = false; avatarAntiRange = false;
+    avatarBlessedNecklace = false; avatarImmunePoison = false; avatarImmuneStun = false;
     if (s.ownedEquipment) {
         // Trouver tous les items et réappliquer ceux possédés
         const allItems = (typeof EQUIPMENT_CATALOG !== 'undefined') ? EQUIPMENT_CATALOG : [];
         Object.keys(s.ownedEquipment).forEach(function(id) {
-            const item = allItems.find(function(i){ return i.id === id; });
-            if (item && item.apply) {
-                ownedEquipment[id] = true;
-                try { item.apply(); } catch(e) {}
-            }
+            ownedEquipment[id] = true;
         });
+        // Réappliquer seulement les items équipés
+        if (s.equippedItems) {
+            Object.assign(equippedItems, s.equippedItems);
+            Object.values(s.equippedItems).forEach(function(id) {
+                if (!id) return;
+                const item = allItems.find(function(i){ return i.id === id; });
+                if (item && item.apply) try { item.apply(); } catch(e) {}
+            });
+        }
     }
     if (s.cityArmy) cityArmy.splice(0, cityArmy.length, ...s.cityArmy);
     if (s.hordeArmy) hordeArmy.splice(0, hordeArmy.length, ...s.hordeArmy);
