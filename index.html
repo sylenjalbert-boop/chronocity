@@ -5061,11 +5061,15 @@ function renderActionEquipTab() {
     const el = document.getElementById('equip-tab-equip');
     if (!el) return;
     const categories = [
-        { label:'⚔ Arme 1 main', ids:['Epee','Dague','EpeeRunique'] },
-        { label:'🪓 Arme 2 mains', ids:['Hache'] },
-        { label:'🏹 Distance', ids:['Arc','Arbalete'] },
-        { label:'🛡 Armure', ids:['Bouclier','Cuir','Mailles','BouclierR'] },
-        { label:'🧪 Objet', ids:['Fireball','Benediction','Rage','Soin'] },
+        { label:'⚔ Armes 1 main',    ids:['Epee','Dague','EpeeRunique'] },
+        { label:'⚔ Armes 2 mains',   ids:['Hache','Faux'] },
+        { label:'🏹 Distance',        ids:['Arc','Arbalete'] },
+        { label:'🛡 Boucliers',       ids:['Bouclier','Pavois','BouclierR'] },
+        { label:'🥋 Armures',         ids:['Cuir','Mailles'] },
+        { label:'📿 Colliers',        ids:['CollierDef','CollierAtk','CollierProt','CollierBeni'] },
+        { label:'🪢 Ceintures',       ids:['CeintureHP','CeinturePoison','CeintureStun'] },
+        { label:'🔮 Glyphes',         ids:['Fireball','Rage','Bless'] },
+        { label:'🧪 Potions',         ids:['PotionSoin','PotionPoison'] },
     ];
     const ICONS = '⚔🪓🗡✨🏹🛡🥋⛓🔮🔥🌟💢💊'.split('');
     el.innerHTML = '';
@@ -5803,10 +5807,17 @@ function openSlotPicker(slot) {
         return i.slot === slot;
     });
     const glyphs = slot === 'glyph' ? EQUIPMENT_CATALOG.filter(function(i) {
-        return i.isGlyph && (glyphFireball>0||glyphRage>0||glyphBless>0);
+        if (!i.isGlyph) return false;
+        if (i.id === 'Fireball') return glyphFireball > 0;
+        if (i.id === 'Rage') return glyphRage > 0;
+        if (i.id === 'Bless') return glyphBless > 0;
+        return false;
     }) : [];
     const potions = slot === 'potion' ? EQUIPMENT_CATALOG.filter(function(i) {
-        return i.isPotion && (potionHeal>0||potionAntiPoison>0);
+        if (!i.isPotion) return false;
+        if (i.id === 'PotionSoin') return potionHeal > 0;
+        if (i.id === 'PotionPoison') return potionAntiPoison > 0;
+        return false;
     }) : [];
     const all = [...available, ...glyphs, ...potions];
 
