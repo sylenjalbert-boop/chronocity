@@ -745,7 +745,7 @@
                 <button class="dng-btn" id="dng-glyph-fireball" onclick="dungeonUseGlyph('fireball')" style="background:#1a0a04;color:#ff9060;border:1px solid #602010;min-width:90px">🔥 BdF <span id="gc-fireball"></span></button>
                 <button class="dng-btn" id="dng-glyph-bless"    onclick="dungeonUseGlyph('bless')"    style="background:#0e0a02;color:#ffd060;border:1px solid #604000;min-width:90px">🌟 Béné <span id="gc-bless"></span></button>
                 <button class="dng-btn" id="dng-glyph-rage"     onclick="dungeonUseGlyph('rage')"     style="background:#120400;color:#ffb080;border:1px solid #601800;min-width:90px">💢 Rage <span id="gc-rage"></span></button>
-                <button class="dng-btn" id="dng-glyph-heal"     onclick="dungeonUseGlyph('heal')"     style="background:#02100a;color:#80ffb0;border:1px solid #103020;min-width:90px">💊 Soin <span id="gc-heal"></span></button>
+
             </div>
         </div>
 
@@ -3335,7 +3335,7 @@ function updateGlyphButtons() {
 
     // Compétences (boutons) — griser si pas de méta ou déjà utilisée ce combat
     ['fireball','bless','rage','heal'].forEach(function(k) {
-        const btn = document.getElementById('dng-btn-'+k+'-skill') || document.getElementById('dng-btn-'+k);
+        const btn = document.getElementById('dng-btn-'+k+'-skill') || document.getElementById('dng-btn-'+k+'-skill') || document.getElementById('dng-btn-'+k);
         if (!btn) return;
         const hasMeta  = hasMetaSkill(metaSkills[k]);
         const used     = skillUsed[metaSkills[k]];
@@ -3346,7 +3346,7 @@ function updateGlyphButtons() {
     });
 
     // Glyphes (compteurs + boutons)
-    ['fireball','bless','rage','heal'].forEach(function(k) {
+    ['fireball','bless','rage'].forEach(function(k) {
         const btn = document.getElementById('dng-glyph-'+k);
         const cnt = document.getElementById('gc-'+k);
         const n   = glyphs[k];
@@ -3566,14 +3566,6 @@ function dungeonUseGlyph(type) {
         glyphRage--;
         rageActive = true; rageRounds = 2;
         dngLog('💢 Glyphe Rage ! Dégâts ×2 pendant 2 rounds.', 'dlog-good');
-    } else if (type === 'heal') {
-        glyphHeal--;
-        const healed = Math.min(3, dungeonState.avatarMaxHp - dungeonState.avatarHp);
-        dungeonState.avatarHp = Math.min(dungeonState.avatarMaxHp, dungeonState.avatarHp + 3);
-        avatarHp = dungeonState.avatarHp;
-        document.getElementById('dng-avatar-hp-text').textContent = 'HP: '+dungeonState.avatarHp+'/'+dungeonState.avatarMaxHp;
-        dungeonUpdateHpBar('avatar', dungeonState.avatarHp, dungeonState.avatarMaxHp);
-        dngLog('💊 Glyphe Soin ! +'+healed+' HP.', 'dlog-good');
     }
 
     updateStats();
