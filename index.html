@@ -475,14 +475,14 @@
             <!-- Slots équipement -->
             <div style="display:flex;flex-direction:column;gap:5px">
                 <div style="font-size:9px;color:#4a3a5a;text-align:center;letter-spacing:1px;margin-bottom:2px">ÉQUIPEMENT</div>
-                <div class="ew-slot" id="slot-weapon1"    data-slot="weapon1"    onclick="openSlotPicker('weapon1')"   >🗡 Arme principale<span class="ew-slot-item"></span></div>
-                <div class="ew-slot" id="slot-weapon2h"   data-slot="weapon2h"   onclick="openSlotPicker('weapon2h')"  >⚔ Arme 2 mains<span class="ew-slot-item"></span></div>
-                <div class="ew-slot" id="slot-shield"     data-slot="shield"     onclick="openSlotPicker('shield')"    >🛡 Bouclier<span class="ew-slot-item"></span></div>
+                <div class="ew-slot" id="slot-weapon_main" data-slot="weapon_main" onclick="openSlotPicker('weapon_main')">🗡 Arme principale<span class="ew-slot-item"></span></div>
+                <div class="ew-slot" id="slot-weapon_off"  data-slot="weapon_off"  onclick="openSlotPicker('weapon_off')" >🛡 Arme / Bouclier secondaire<span class="ew-slot-item"></span></div>
                 <div class="ew-slot" id="slot-armor"      data-slot="armor"      onclick="openSlotPicker('armor')"     >🥋 Armure<span class="ew-slot-item"></span></div>
                 <div class="ew-slot" id="slot-necklace"   data-slot="necklace"   onclick="openSlotPicker('necklace')"  >📿 Collier<span class="ew-slot-item"></span></div>
                 <div class="ew-slot" id="slot-belt"       data-slot="belt"       onclick="openSlotPicker('belt')"      >🪢 Ceinture<span class="ew-slot-item"></span></div>
                 <div style="font-size:9px;color:#4a3a5a;text-align:center;letter-spacing:1px;margin:4px 0 2px">ACTIFS</div>
-                <div class="ew-slot" id="slot-glyph"      data-slot="glyph"      onclick="openSlotPicker('glyph')"     >🔮 Glyphe<span class="ew-slot-item"></span></div>
+                <div class="ew-slot" id="slot-glyph"  data-slot="glyph"  onclick="openSlotPicker('glyph')" >🔮 Glyphe<span class="ew-slot-item"></span></div>
+                <div class="ew-slot" id="slot-potion" data-slot="potion" onclick="openSlotPicker('potion')">🧪 Potion<span class="ew-slot-item"></span></div>
             </div>
         </div>
         <!-- Colonne droite : stats + picker -->
@@ -738,6 +738,9 @@
         </div>
 
         <!-- Ligne 3 : Glyphes (hors action — consomme 1 charge) -->
+        <div id="dng-potions-row" style="display:none;flex-direction:row;gap:4px;flex-wrap:wrap">
+            <div style="font-size:9px;color:#9a8a6a;width:100%">🧪 Potions (hors action)</div>
+        </div>
         <div id="dng-glyphs-row" style="display:none;flex-direction:column;gap:4px">
             <div style="font-size:9px;color:#8888ff;text-align:center;letter-spacing:1px;font-family:Cinzel,serif;padding:2px 0">✦ GLYPHES — hors action (usage unique)</div>
             <div style="display:flex;gap:6px;justify-content:center;flex-wrap:wrap">
@@ -1085,11 +1088,13 @@ let avatarHp = 0;       // initialisé après chargement
 let avatarMaxHp = 0;      // bloqué pour la saison suivante si envoyé contre la horde
 let avatarSentToHorde = false;  // a-t-il participé au combat de horde ?
 let ownedEquipment = {};        // équipements achetés {id: true}
-let equippedItems = {             // items actuellement équipés par slot
-    weapon1: null, weapon2h: null, shield: null,
+let equippedItems = {
+    weapon_main: null, weapon_off: null,
     armor: null, necklace: null, belt: null,
-    glyph: null
+    glyph: null, potion: null
 };
+let glyphSlots  = 1; // nombre de slots glyphes (extensible méta)
+let potionSlots = 1; // nombre de slots potions (extensible méta)
 let hordeAggressiveness = 0;
 let runDeaths = 0;        // morts dans ce run
 let runDustSpent = 0;     // poussière dépensée dans ce run
@@ -3280,6 +3285,7 @@ function triggerRoundEffects() {
 }
 
 function dngShowAttackBtn(show) {
+    dngUpdateCombatUI();
     const btn = document.getElementById('dng-btn-attack');
     const tw  = document.getElementById('dng-timing-wrap');
     const lbl = document.getElementById('dng-timing-label');
@@ -3758,6 +3764,8 @@ let avatarImmunePoison  = false; // Immunité poison
 let avatarImmuneStun    = false; // Immunité stun
 // Glyphes (items à usage unique achetés en boutique, rechargeable)
 let glyphFireball   = 0; // nb de charges
+let potionHeal      = 0; // nb de potions de soin
+let potionAntiPoison= 0; // nb de potions anti-poison
 // Usage compétences par combat (reset à chaque nouveau combat)
 let skillUsed = { Fireball:false, Benediction:false, Rage:false, Soin:false };
 let glyphHeal       = 0;
@@ -3766,41 +3774,41 @@ let glyphBless      = 0;
 
 const EQUIPMENT_CATALOG = [
     // ── Armes 1 main ──
-    { id:'Epee',        name:'Épée en fer',      slot:'weapon1', gold:30,  mana:0,  pop:0, req:null,
+    { id:'Epee',        name:'Épée en fer',      slot:'weapon_main', gold:30,  mana:0,  pop:0, req:null,
       icon:'⚔', desc:'ATK +1, Dmg +1',
       apply: () => { atk+=1; avatarDmg+=1; },
       remove: () => { atk-=1; avatarDmg-=1; } },
-    { id:'Dague',       name:'Dague acérée',     slot:'weapon1', gold:25,  mana:0,  pop:0, req:null,
+    { id:'Dague',       name:'Dague acérée',     slot:'weapon_main', gold:25,  mana:0,  pop:0, req:null,
       icon:'🗡', desc:'ATK +2, Dmg +1',
       apply: () => { atk+=2; avatarDmg+=1; },
       remove: () => { atk-=2; avatarDmg-=1; } },
-    { id:'EpeeRunique', name:'Épée runique',     slot:'weapon1', gold:80,  mana:20, pop:0, req:'tourmagie',
+    { id:'EpeeRunique', name:'Épée runique',     slot:'weapon_main', gold:80,  mana:20, pop:0, req:'tourmagie',
       icon:'✨', desc:'ATK +2, Dmg +2, Magique',
       apply: () => { atk+=2; avatarDmg+=2; avatarMagicWeapon=true; },
       remove: () => { atk-=2; avatarDmg-=2; avatarMagicWeapon=false; } },
     // ── Armes 2 mains ──
-    { id:'Hache',       name:'Hache de guerre',  slot:'weapon2h', gold:40,  mana:0,  pop:0, req:null,
+    { id:'Hache', is2h:true,       name:'Hache de guerre',  slot:'weapon_main', gold:40,  mana:0,  pop:0, req:null,
       icon:'🪓', desc:'Dmg +2, ATK -1',
       apply: () => { avatarDmg+=2; atk-=1; },
       remove: () => { avatarDmg-=2; atk+=1; } },
-    { id:'Arc',         name:'Arc elfique',      slot:'weapon2h', gold:50,  mana:0,  pop:0, req:'archerie',
+    { id:'Arc', is2h:true,         name:'Arc elfique',      slot:'weapon_main', gold:50,  mana:0,  pop:0, req:'archerie',
       icon:'🏹', desc:'ATK +3, Distance',
       apply: () => { atk+=3; avatarRanged=true; },
       remove: () => { atk-=3; avatarRanged=false; } },
-    { id:'Arbalete',    name:'Arbalète lourde',  slot:'weapon2h', gold:70,  mana:0,  pop:0, req:'archerie',
+    { id:'Arbalete', is2h:true,    name:'Arbalète lourde',  slot:'weapon_main', gold:70,  mana:0,  pop:0, req:'archerie',
       icon:'🏹', desc:'ATK +2, Dmg +2, Distance, Perçant',
       apply: () => { atk+=2; avatarDmg+=2; avatarRanged=true; avatarPiercing=true; },
       remove: () => { atk-=2; avatarDmg-=2; avatarRanged=false; avatarPiercing=false; } },
-    { id:'Faux',        name:'Faux de guerre',   slot:'weapon2h', gold:65,  mana:0,  pop:0, req:null,
+    { id:'Faux', is2h:true,        name:'Faux de guerre',   slot:'weapon_main', gold:65,  mana:0,  pop:0, req:null,
       icon:'⚰', desc:'ATK -1, Dmg +1, Frappe toute la colonne avant',
       apply: () => { atk-=1; avatarDmg+=1; avatarScythe=true; },
       remove: () => { atk+=1; avatarDmg-=1; avatarScythe=false; } },
     // ── Boucliers / Arme secondaire ──
-    { id:'Bouclier',    name:'Bouclier léger',   slot:'shield', gold:40,  mana:0,  pop:0, req:null,
+    { id:'Bouclier',    name:'Bouclier léger',   slot:'weapon_off', gold:40,  mana:0,  pop:0, req:null,
       icon:'🛡', desc:'Protection +1',
       apply: () => { protection+=1; },
       remove: () => { protection-=1; } },
-    { id:'Pavois',      name:'Pavois',            slot:'shield', gold:55,  mana:0,  pop:0, req:'caserne',
+    { id:'Pavois',      name:'Pavois',            slot:'weapon_off', gold:55,  mana:0,  pop:0, req:'caserne',
       icon:'🛡', desc:'Protection +1, +3 vs Distance',
       apply: () => { protection+=1; avatarAntiRange=true; },
       remove: () => { protection-=1; avatarAntiRange=false; } },
@@ -3813,7 +3821,7 @@ const EQUIPMENT_CATALOG = [
       icon:'⛓', desc:'DEF +2, Protection +1, HP max +3',
       apply: () => { def+=2; protection+=1; avatarMaxHp+=3; avatarHp=Math.min(avatarHp+3,avatarMaxHp); },
       remove: () => { def-=2; protection-=1; avatarMaxHp=Math.max(1,avatarMaxHp-3); avatarHp=Math.min(avatarHp,avatarMaxHp); } },
-    { id:'BouclierR',   name:'Bouclier runique', slot:'shield', gold:90,  mana:30, pop:0, req:'tourmagie',
+    { id:'BouclierR',   name:'Bouclier runique', slot:'weapon_off', gold:90,  mana:30, pop:0, req:'tourmagie',
       icon:'🔮', desc:'Prot +2, bonus timing ×0.5→×1',
       apply: () => { protection+=2; timingHalfBonus=true; },
       remove: () => { protection-=2; timingHalfBonus=false; } },
@@ -3848,9 +3856,12 @@ const EQUIPMENT_CATALOG = [
     { id:'Rage',        name:'Glyphe de Rage',          slot:'glyph', gold:45,  mana:0,  pop:0, req:'caserne',
       icon:'💢', desc:'Dégâts ×2 pendant 2 rounds — usage unique',
       apply: () => { glyphRage++; }, isGlyph:true },
-    { id:'Soin',        name:'Glyphe de Soin',          slot:'glyph', gold:30,  mana:10, pop:0, req:null,
-      icon:'💊', desc:'+3 HP en combat — usage unique',
-      apply: () => { glyphHeal++; }, isGlyph:true },
+    { id:'PotionSoin',  name:'Potion de Soin',     slot:'potion', gold:30, mana:0, pop:0, req:null,
+      icon:'🧪', desc:'+3 HP en combat, hors action — usage unique',
+      apply: () => { potionHeal++; }, isPotion:true },
+    { id:'PotionPoison', name:'Potion Anti-Poison',  slot:'potion', gold:40, mana:0, pop:0, req:null,
+      icon:'🟢', desc:'Annule le poison actif, hors action — usage unique',
+      apply: () => { potionAntiPoison++; }, isPotion:true },
     { id:'Bless',       name:'Glyphe de Bénédiction',   slot:'glyph', gold:60,  mana:30, pop:0, req:'eglise',
       icon:'🌟', desc:'Zone ×1→×1.5 — usage unique',
       apply: () => { glyphBless++; }, isGlyph:true },
@@ -5689,9 +5700,8 @@ function metaBuyCityLevel() {
 // FENÊTRE ÉQUIPEMENT
 // ═══════════════════════════════════════════════
 const SLOT_LABELS = {
-    weapon1:'Arme principale', weapon2h:'Arme 2 mains',
-    shield:'Bouclier', armor:'Armure',
-    necklace:'Collier', belt:'Ceinture', glyph:'Glyphe'
+    weapon_main:'Arme principale', weapon_off:'Arme secondaire / Bouclier',
+    armor:'Armure', necklace:'Collier', belt:'Ceinture', glyph:'Glyphe', potion:'Potion'
 };
 
 function openEquipWindow() {
@@ -5756,6 +5766,15 @@ function openSlotPicker(slot) {
     const items = document.getElementById('ew-picker-items');
     if (!picker || !items) return;
 
+    // Vérifier si weapon_off est bloqué par arme 2 mains
+    const mainId = equippedItems['weapon_main'];
+    const mainItem2h = mainId ? EQUIPMENT_CATALOG.find(function(i){ return i.id === mainId && i.is2h; }) : null;
+    if (slot === 'weapon_off' && mainItem2h) {
+        title.textContent = '⚠ Bloqué — ' + mainItem2h.name + ' est une arme 2 mains';
+        items.innerHTML = '<div style="color:#ff8060;font-size:11px;padding:8px">Retirez d&#39;abord l&#39;arme principale pour &#233;quiper une arme secondaire ou un bouclier.</div>';
+        picker.style.display = 'flex';
+        return;
+    }
     title.textContent = SLOT_LABELS[slot] + " — choisir un item";
     items.innerHTML = '';
 
@@ -5771,13 +5790,25 @@ function openSlotPicker(slot) {
     }
 
     // Items disponibles pour ce slot
-    const available = EQUIPMENT_CATALOG.filter(function(i) {
-        return i.slot === slot && ownedEquipment[i.id] && !i.isGlyph;
+    let available = EQUIPMENT_CATALOG.filter(function(i) {
+        if (!ownedEquipment[i.id]) return false;
+        if (i.isGlyph || i.isPotion) return false;
+        if (slot === 'weapon_main') return i.slot === 'weapon_main';
+        if (slot === 'weapon_off') {
+            // Boucliers + armes 1 main (pas 2 mains)
+            if (i.slot !== 'weapon_off' && i.slot !== 'weapon_main') return false;
+            if (i.slot === 'weapon_main' && i.is2h) return false; // pas de 2 mains en secondaire
+            return true;
+        }
+        return i.slot === slot;
     });
     const glyphs = slot === 'glyph' ? EQUIPMENT_CATALOG.filter(function(i) {
-        return i.isGlyph && (glyphFireball>0||glyphHeal>0||glyphRage>0||glyphBless>0);
+        return i.isGlyph && (glyphFireball>0||glyphRage>0||glyphBless>0);
     }) : [];
-    const all = [...available, ...glyphs];
+    const potions = slot === 'potion' ? EQUIPMENT_CATALOG.filter(function(i) {
+        return i.isPotion && (potionHeal>0||potionAntiPoison>0);
+    }) : [];
+    const all = [...available, ...glyphs, ...potions];
 
     if (all.length === 0 && !currentId) {
         const empty = document.createElement('div');
@@ -5805,14 +5836,27 @@ function openSlotPicker(slot) {
 }
 
 function equipItem(slot, itemId) {
-    // Déséquiper l'ancien
-    unequipSlot(slot, true);
-    // Équiper le nouveau
-    equippedItems[slot] = itemId;
     const item = EQUIPMENT_CATALOG.find(function(i){ return i.id === itemId; });
+    // Si arme 2 mains en principale → déséquiper l'arme secondaire
+    if (slot === 'weapon_main' && item && item.is2h) {
+        unequipSlot('weapon_off', true);
+    }
+    // Si on équipe en secondaire et qu'une arme 2 mains est en principale → bloquer
+    if (slot === 'weapon_off') {
+        const mainId = equippedItems['weapon_main'];
+        const mainItem = mainId ? EQUIPMENT_CATALOG.find(function(i){ return i.id === mainId; }) : null;
+        if (mainItem && mainItem.is2h) {
+            dngLog && dngLog('⚠ Impossible — arme 2 mains équipée en principale', 'dlog-bad');
+            addLog("⚠ Retirez d'abord l'arme 2 mains avant d'équiper un item secondaire.");
+            return;
+        }
+    }
+    unequipSlot(slot, true);
+    equippedItems[slot] = itemId;
     if (item && item.apply) item.apply();
     updateStats();
     renderEquipWindow();
+    openSlotPicker(slot); // rafraîchir le picker
     if (activeSlot !== null) saveToSlot(activeSlot);
     addLog((item?item.icon:'') + ' ' + (item?item.name:itemId) + ' équipé.');
 }
@@ -5829,6 +5873,54 @@ function unequipSlot(slot, silent) {
         if (activeSlot !== null) saveToSlot(activeSlot);
         addLog((item?item.icon:'') + ' ' + (item?item.name:itemId) + ' retiré.');
     }
+}
+
+
+function dungeonUsePotion(type) {
+    if (type === 'heal') {
+        if (potionHeal <= 0) return;
+        potionHeal--;
+        const heal = 3;
+        dungeonState.avatarHp = Math.min(dungeonState.avatarHp + heal, avatarMaxHp);
+        avatarHp = dungeonState.avatarHp;
+        dungeonUpdateHpBar('avatar', avatarHp, avatarMaxHp);
+        document.getElementById('dng-avatar-hp-text').textContent = 'HP: '+avatarHp+'/'+avatarMaxHp;
+        dngLog('🧪 Potion de Soin : +'+heal+' HP', 'dlog-good');
+        dungeonShowDmg('avatar', -heal, '#4cffaa');
+        dngUpdateCombatUI();
+    } else if (type === 'antipoison') {
+        if (potionAntiPoison <= 0) return;
+        potionAntiPoison--;
+        dungeonState.poisoned = false;
+        dungeonState.poisonStacks = 0;
+        dngLog('🟢 Potion Anti-Poison : poison annulé !', 'dlog-good');
+        dngUpdateCombatUI();
+    }
+}
+
+function dngUpdateCombatUI() {
+    // Mettre à jour les boutons potions
+    const row = document.getElementById('dng-potions-row');
+    if (!row) return;
+    // Vider les boutons potions (garder le titre)
+    while (row.children.length > 1) row.removeChild(row.lastChild);
+    if (potionHeal > 0) {
+        const btn = document.createElement('button');
+        btn.className = 'dng-btn';
+        btn.style.cssText = 'background:linear-gradient(135deg,#0a1a0a,#1a2a0a);border-color:#2a5a2a;color:#4cffaa';
+        btn.innerHTML = '🧪 Soin ×'+potionHeal;
+        btn.onclick = function(){ dungeonUsePotion("heal"); };
+        row.appendChild(btn);
+    }
+    if (potionAntiPoison > 0) {
+        const btn = document.createElement('button');
+        btn.className = 'dng-btn';
+        btn.style.cssText = 'background:linear-gradient(135deg,#001a0a,#002a1a);border-color:#0a5a2a;color:#40ffaa';
+        btn.innerHTML = '🟢 Anti-Poison ×'+potionAntiPoison;
+        btn.onclick = function(){ dungeonUsePotion("antipoison"); };
+        row.appendChild(btn);
+    }
+    row.style.display = (potionHeal > 0 || potionAntiPoison > 0) ? 'flex' : 'none';
 }
 
 // ===== FIN FONCTIONS MANQUANTES =====
@@ -5855,6 +5947,7 @@ function getGameState() {
         atk, def, avatarHp, avatarMaxHp, avatarDmg,
         avatarRanged, avatarPiercing, protection,
         glyphFireball, glyphHeal, glyphRage, glyphBless,
+        potionHeal, potionAntiPoison, glyphSlots, potionSlots,
         ownedEquipment: cleanForSave(ownedEquipment||{}),
         equippedItems: cleanForSave(equippedItems||{}),
         runDeaths, runDustSpent,
@@ -5877,6 +5970,8 @@ function restoreGameState(s) {
     avatarRanged = s.avatarRanged||false; avatarPiercing = s.avatarPiercing||false;
     glyphFireball = s.glyphFireball||0; glyphHeal = s.glyphHeal||0;
     glyphRage = s.glyphRage||0; glyphBless = s.glyphBless||0;
+    potionHeal = s.potionHeal||0; potionAntiPoison = s.potionAntiPoison||0;
+    glyphSlots = s.glyphSlots||1; potionSlots = s.potionSlots||1;
     runDeaths = s.runDeaths||0; runDustSpent = s.runDustSpent||0;
     // Reset équipements et réappliquer
     ownedEquipment = {};
