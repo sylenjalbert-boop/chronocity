@@ -6019,6 +6019,30 @@ function dngUpdateCombatUI() {
     row.style.display = (potionHeal > 0 || potionAntiPoison > 0) ? 'flex' : 'none';
 }
 
+function recalcBuildingEffects() {
+    // Remettre à zéro les compteurs liés aux bâtiments
+    Object.keys(buildingCounts).forEach(k => buildingCounts[k] = 0);
+    populationperturn = 0;
+    goldperturn = 0;
+    manaperturn = 0;
+    // Réappliquer les effets de chaque bâtiment présent dans tileState
+    tileState.forEach(function(tile) {
+        if (!tile || !tile.buildings) return;
+        tile.buildings.forEach(function(name) {
+            switch(name) {
+                case 'Ferme':              population += 10; populationperturn += 5; break;
+                case 'Mine':               gold += 20;       goldperturn += 10;      break;
+                case 'Caserne':            conscrit += 2;                            break;
+                case 'Tour de Garde':      conscrit += 1;    fortifications += 1;   break;
+                case 'Tour de Magie':      conscrit += 1;    mana += 20; manaperturn += 10; break;
+            }
+            buildingCounts[name] = (buildingCounts[name] || 0) + 1;
+            // Recalculer les bonus de tuile
+            if (tile.type) applyTileBonus(tile.type, name);
+        });
+    });
+}
+
 // ===== FIN FONCTIONS MANQUANTES =====
 
 // ═══════════════════════════════════════════════
@@ -6098,6 +6122,9 @@ function restoreGameState(s) {
     hordeCurrentSeason = s.hordeCurrentSeason||0; hordeRevealed = s.hordeRevealed||false;
     if (s.tileState) tileState.splice(0, tileState.length, ...s.tileState);
     if (s.meta) { window._meta = s.meta; saveMeta(s.meta); }
+
+    // Recalculer les effets de tous les bâtiments depuis tileState
+    recalcBuildingEffects();
 }
 
 function saveToSlot(slot) {
