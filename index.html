@@ -626,6 +626,11 @@
         </div>
         <div style="font-size:48px;color:#e05050;font-weight:bold;text-shadow:0 0 20px #e05050">⚔</div>
         <div style="text-align:center">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:3px;margin-bottom:4px" id="ci-grid-labels" style="display:none">
+                <div style="font-size:9px;color:#9a8a6a;text-align:center">⚔ Avant</div>
+                <div style="font-size:9px;color:#666;text-align:center">↓ Arrière</div>
+            </div>
+            <div id="ci-enemy-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:4px;min-width:180px"></div>
             <div id="ci-enemy-emoji" style="font-size:80px;line-height:1"></div>
             <div id="ci-enemy-name" style="color:#ff8080;font-weight:bold;margin-top:8px"></div>
             <div id="ci-enemy-stats" style="font-size:12px;color:#9a8a6a;margin-top:4px"></div>
@@ -2748,6 +2753,34 @@ function dungeonBarClick() {
     if(dmg>0){
         dungeonState.enemy.hp-=dmg;
         dungeonShowDmg('enemy',dmg,'#4cff8a');
+
+        // ── Faux : frappe toutes les unités du rang avant ──
+        if (avatarScythe) {
+            dungeonState.enemies.front.forEach(function(e) {
+                if (e === dungeonState.enemy || e.hp <= 0) return;
+                e.hp = Math.max(0, e.hp - dmg);
+                dngLog('⚰ Faux : ' + e.name + ' -' + dmg + ' HP', 'dlog-good');
+            });
+        }
+
+        // ── Arbalète perçante : 50% dégâts à l'unité directement derrière la cible ──
+        if (avatarPiercing) {
+            const fi = dungeonState.enemies.front.indexOf(dungeonState.enemy);
+            if (fi !== -1) {
+                const behind = dungeonState.enemies.back[fi] ||
+                               dungeonState.enemies.back.find(function(e){ return e && e.hp > 0; });
+                if (behind && behind.hp > 0) {
+                    const pd = Math.max(1, Math.floor(dmg * 0.5));
+                    behind.hp = Math.max(0, behind.hp - pd);
+                    dngLog('🏹 Perçant : ' + behind.name + ' -' + pd + ' HP', 'dlog-good');
+                }
+            }
+        }
+
+        // Re-render après effets de zone
+        if (avatarScythe || avatarPiercing) {
+            setTimeout(function(){ renderEnemyPanel(); }, 50);
+        }
     }
     dngFlashBar(fc);
     const rb=document.getElementById('dng-result');if(rb){rb.className=bcls;rb.textContent=badge;}
@@ -2882,24 +2915,45 @@ function showCombatIntro(enemy, onClose) {
     document.getElementById('ci-enemy-name').textContent =
         isMulti ? total + ' ennemis !' : enemy.name;
 
-    // Image ou emoji du premier ennemi
-    const _ciImg = getMonsterImg(enemy.name);
-    const _ciEl  = document.getElementById('ci-enemy-emoji');
-    if (_ciImg) {
-        // Afficher l'image du premier ennemi + emojis des autres si multi
-        const extraEmojis = isMulti && (front.length + back.length > 1)
-            ? '<div style="font-size:22px;margin-top:4px">'
-                + front.slice(1).map(function(e){return e.emoji;}).join('')
-                + back.map(function(e){return e.emoji;}).join('') + '</div>'
-            : '';
-        _ciEl.innerHTML = '<img src="'+_ciImg+'" style="width:100px;height:100px;object-fit:contain;border-radius:8px">' + extraEmojis;
-        _ciEl.style.fontSize = '';
+    // Image seule si 1 monstre, grille si plusieurs
+    const _ciEl   = document.getElementById('ci-enemy-emoji');
+    const ciGrid  = document.getElementById('ci-enemy-grid');
+    const ciLabels= document.getElementById('ci-grid-labels');
+    const totalEnemies = front.length + back.length;
+    if (totalEnemies <= 1) {
+        if (ciGrid)   ciGrid.style.display   = 'none';
+        if (ciLabels) ciLabels.style.display = 'none';
+        if (_ciEl)    _ciEl.style.display    = '';
+        const _ciImg = getMonsterImg(enemy.name);
+        if (_ciImg) {
+            _ciEl.innerHTML  = '<img src="'+_ciImg+'" style="width:110px;height:110px;object-fit:contain;border-radius:8px">';
+            _ciEl.style.fontSize = '';
+        } else {
+            _ciEl.innerHTML  = '';
+            _ciEl.textContent = enemy.emoji;
+            _ciEl.style.fontSize = '80px';
+        }
     } else {
-        _ciEl.innerHTML = '';
-        _ciEl.textContent = isMulti
-            ? front.map(function(e){return e.emoji;}).join('') + (back.length ? '  '+back.map(function(e){return e.emoji;}).join('') : '')
-            : enemy.emoji;
-        _ciEl.style.fontSize = '80px';
+        if (_ciEl)    _ciEl.style.display    = 'none';
+        if (ciLabels) ciLabels.style.display = 'grid';
+        if (ciGrid)   ciGrid.style.display   = 'grid';
+        ciGrid.innerHTML = '';
+        ciGrid.style.gridTemplateColumns = '1fr 1fr';
+        for (let row = 0; row < 3; row++) {
+            [false, true].forEach(function(isBack) {
+                const e = isBack ? back[row] : front[row];
+                const cell = document.createElement('div');
+                cell.style.cssText = 'border:1px solid '+(e?'#2a1a3a':'#0a0808')+';border-radius:5px;padding:3px;min-height:68px;background:'+(e?'#0a0808':'#050505')+';opacity:'+(e?'1':'0.15');
+                if (e) {
+                    const img = getMonsterImg(e.name);
+                    cell.innerHTML = img
+                        ? '<img src="'+img+'" style="width:100%;height:50px;object-fit:contain;border-radius:3px;display:block">'
+                        : '<div style="font-size:24px;text-align:center;line-height:50px">'+e.emoji+'</div>';
+                    cell.innerHTML += '<div style="font-size:8px;color:#aaa;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+e.name+'</div>';
+                }
+                ciGrid.appendChild(cell);
+            });
+        }
     }
 
     // Stats : résumé multi ou stats simples
@@ -4069,14 +4123,18 @@ function generateHordeForSeason(season) {
         for(let i=0;i<n3;i++) additions.push(pick(tier3));
         for(let i=0;i<n4;i++) additions.push(pick(tier4));
     } else {
-        // S5+ : 3-6 unités all tiers, majorité hauts tiers
-        const n = rand(3,6);
-        for(let i=0;i<n;i++) {
+        // S5+ : nombre = 3+S à 6+S, répartition progressive vers tiers élevés
+        const n = rand(3 + season, 6 + season);
+        const t1p = Math.max(0,    0.20 - (season - 5) * 0.02);
+        const t2p = Math.max(0.05, 0.30 - (season - 5) * 0.015);
+        const t4p = Math.min(0.70, 0.20 + (season - 5) * 0.04);
+        const t3p = Math.max(0.05, 1 - t1p - t2p - t4p);
+        for (let i = 0; i < n; i++) {
             const r2 = Math.random();
-            if (r2 < 0.2) additions.push(pick(tier1));
-            else if (r2 < 0.4) additions.push(pick(tier2));
-            else if (r2 < 0.65) additions.push(pick(tier3));
-            else additions.push(pick(tier4));
+            if      (r2 < t1p)              additions.push(pick(tier1));
+            else if (r2 < t1p + t2p)        additions.push(pick(tier2));
+            else if (r2 < t1p + t2p + t3p)  additions.push(pick(tier3));
+            else                             additions.push(pick(tier4));
         }
     }
     return additions;
