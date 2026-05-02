@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="screen-orientation" content="landscape">
     <title>Jeu de Tuiles avec Achats</title>
     <!-- CSS pour le style de la page -->
     <style>
@@ -57,6 +58,7 @@
         #turn-overlay{display:none;position:fixed;left:0;top:0;width:100%;height:100%;background:rgba(0,0,0,.82);z-index:10000;justify-content:center;align-items:center;flex-direction:column;}
         #turn-overlay.show{display:flex;}
         #turn-card{background:#12100c;border-radius:14px;padding:32px 52px;text-align:center;border:1px solid var(--border-g);animation:turnCardIn .35s cubic-bezier(.34,1.56,.64,1);box-shadow:0 0 40px rgba(196,146,32,.12),var(--shadow);}
+        @keyframes rewardPop{from{opacity:0;transform:translate(-50%,-50%) scale(0.8)}to{opacity:1;transform:translate(-50%,-50%) scale(1)}}
         @keyframes turnCardIn{from{opacity:0;transform:scale(.6)}to{opacity:1;transform:scale(1)}}
         @keyframes turnCardOut{from{opacity:1;transform:scale(1)}to{opacity:0;transform:scale(1.1)}}
         #turn-card.out{animation:turnCardOut .3s ease forwards;}
@@ -202,6 +204,7 @@
         .dng-z-miss{background:#160406;}.dng-z-half{background:#1e0e02;}.dng-z-norm{background:#0e1606;}.dng-z-perf{background:#041c0c;}
         .dng-zlbl{position:absolute;top:50%;transform:translateX(-50%) translateY(-50%);font-size:12px;font-weight:bold;pointer-events:none;text-shadow:0 1px 4px #000;z-index:2;font-family:'Cinzel',serif;}
         @keyframes flashRed{0%{opacity:.7}100%{opacity:0}}
+        @keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
         @keyframes ciPop{from{opacity:0;transform:scale(.5)}to{opacity:1;transform:scale(1)}}
         @keyframes dieSpin{0%{transform:rotate(0deg) scale(1.5);opacity:.3}60%{opacity:1}100%{transform:rotate(360deg) scale(1)}}
         .die-anim{display:inline-block;animation:dieSpin .6s ease forwards;font-size:26px;}
@@ -215,7 +218,8 @@
         .dng-hdie-lbl{font-size:7px;color:var(--text-m);text-align:center;position:absolute;bottom:-12px;width:100%;white-space:nowrap;}
         .dng-r-perf{color:var(--teal-l)}.dng-r-norm{color:#80cc40}.dng-r-half{color:var(--gold-l)}.dng-r-miss{color:var(--red-l)}
         @keyframes pulse{0%,100%{opacity:.6}50%{opacity:1}}
-        #dungeon-reward{display:none;position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);background:var(--bg-hover);border:2px solid var(--purple-l);border-radius:14px;padding:26px 38px;text-align:center;z-index:100;min-width:280px;animation:turnCardIn .3s cubic-bezier(.34,1.56,.64,1);box-shadow:0 0 30px rgba(144,80,224,.2);}
+        #dungeon-reward{visibility:hidden;opacity:0;position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);background:var(--bg-hover);border:2px solid var(--purple-l);border-radius:14px;padding:26px 38px;text-align:center;z-index:13000;min-width:280px;box-shadow:0 0 30px rgba(144,80,224,.2);transition:opacity .2s ease;}
+        #dungeon-reward.visible{visibility:visible;opacity:1;animation:rewardPop .35s cubic-bezier(.34,1.56,.64,1);}
         #dungeon-reward h3{font-family:'Cinzel',serif;color:var(--purple-l);margin:0 0 10px;font-size:17px;}
         #dungeon-reward .reward-loot{font-family:'Cinzel',serif;font-size:19px;font-weight:bold;color:var(--gold-l);margin:7px 0;}
         #dungeon-reward .reward-desc{font-size:12px;color:var(--text-m);margin-bottom:14px;}
@@ -297,7 +301,7 @@
             #dng-enemy-threshold { min-width:26px !important; }
             #dng-enemy-threshold #thr-enemy-val { font-size:15px !important; }
             #dng-enemies-zone { display:none !important; }
-            #dungeon-reward { display:none !important; }
+            #dungeon-reward { visibility:hidden !important; opacity:0 !important; }
             .dng-hdie { width:17px !important; height:17px !important; font-size:9px !important; }
             #dng-timing-wrap { flex:0 0 auto !important; padding:0 6px 2px !important; }
             #dng-bar { height:30px !important; }
@@ -431,9 +435,36 @@
         .ew-item-btn.locked { opacity:.4;cursor:default; }
         .ew-item-btn .ew-item-desc { font-size:9px;color:#6a5a7a;margin-top:1px; }
 
+        
+        /* Overlay portrait mobile */
+        #portrait-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: #06040a;
+            z-index: 99999;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            text-align: center;
+            padding: 30px;
+        }
+        @media (orientation:portrait) and (max-width:700px) {
+            #portrait-overlay { display: flex !important; }
+        }
+
         </style>
 </head>
 <body>
+
+<!-- Overlay portrait -->
+<div id="portrait-overlay">
+    <div style="font-size:60px;animation:spin 2s linear infinite">📱</div>
+    <div style="font-family:Cinzel,serif;font-size:18px;color:#c0a060;letter-spacing:1px">Tourne ton appareil</div>
+    <div style="font-size:13px;color:#7a6a50;max-width:240px">Chroniques des Tuiles se joue en mode paysage</div>
+</div>
+
 
 <!-- Popup exploration -->
 
@@ -2358,7 +2389,7 @@ function enterRoom(roomEntry) {
         document.getElementById('dng-avatar-stats').textContent   = `ATK: ${atk} | Dmg: ${avatarDmg} | DEF: ${def} | Prot: ${protection}`;
         dungeonUpdateHpBar('avatar', dungeonState.avatarHp, dungeonState.avatarMaxHp);
         updateGlyphButtons();
-        document.getElementById('dungeon-reward').style.display = 'none';
+        document.getElementById('dungeon-reward').classList.remove('visible');
         document.getElementById('dng-result').textContent = '';
         renderEnemyPanel();
         dngLog('— Combat : '+getAllEnemyNames()+' —', dungeonState.enemy.isBoss?'dlog-loot':'dlog-info');
@@ -3460,7 +3491,7 @@ function dungeonLoadRoom(roomIdx) {
     document.getElementById('dng-enemy-stats').textContent  = `ATK: ${room.atk} | Dmg: ${room.dmg} | DEF: ${room.def} | Prot: ${room.protection}`;
     dungeonUpdateHpBar('enemy', room.hp, room.maxHp);
     document.getElementById('dng-btn-skill').disabled = !hasFireball;
-    document.getElementById('dungeon-reward').style.display = 'none';
+    document.getElementById('dungeon-reward').classList.remove('visible');
     document.getElementById('dng-result').textContent='';
     dngLog(`— Salle ${roomIdx+1} : ${room.emoji} ${room.name} apparaît ! —`, 'dlog-info');
     dngSetupZones();
@@ -3534,6 +3565,7 @@ function dungeonUseSkill(type) {
     // Compétence permanente — utilise l'action (riposte ennemie suit), 1× par combat
     if (!dungeonState.active) return;
     if (dngTiming.phase === 'timing') return; // jauge en cours — bloquer
+    if (document.getElementById('dungeon-reward').classList.contains('visible')) return; // combat terminé
     const metaMap = { fireball:'Fireball', bless:'Benediction', rage:'Rage', heal:'Soin' };
     const metaId = metaMap[type];
     if (!hasMetaSkill(metaId)) return;
@@ -3606,6 +3638,7 @@ function dungeonUseSkill(type) {
 function dungeonUseGlyph(type) {
     // Glyphe — hors action (pas de riposte ennemie)
     if (!dungeonState.active) return;
+    if (document.getElementById('dungeon-reward').classList.contains('visible')) return;
     const glyphMap = { fireball:glyphFireball, bless:glyphBless, rage:glyphRage };
     if (glyphMap[type] <= 0) return;
 
@@ -3708,7 +3741,7 @@ function dungeonRoomWon() {
     const remaining = dungeonState.generatedRooms.filter((_,i) => !dungeonState.visitedRooms[i]);
     const isLast = remaining.length === 0;
 
-    document.getElementById('dr-title').textContent = `${room.emoji} ${room.name} vaincu !`;
+    document.getElementById('dr-title').textContent = `${room.name} vaincu !`;
     document.getElementById('dr-loot').textContent  = lootText;
     document.getElementById('dr-desc').textContent  = room.lootDesc || '';
 
@@ -3733,11 +3766,11 @@ function dungeonRoomWon() {
             closeDungeon();
         };
     }
-    document.getElementById('dungeon-reward').style.display = 'block';
+    document.getElementById('dungeon-reward').classList.add('visible');
 }
 
 function dungeonBackToDoors() {
-    document.getElementById('dungeon-reward').style.display = 'none';
+    document.getElementById('dungeon-reward').classList.remove('visible');
     ['dng-btn-skill','dng-btn-rage','dng-btn-heal','dng-btn-flee'].forEach(id => {
         const el = document.getElementById(id); if(el) el.disabled = false;
     });
@@ -5939,6 +5972,7 @@ function unequipSlot(slot, silent) {
 
 
 function dungeonUsePotion(type) {
+    if (document.getElementById('dungeon-reward').classList.contains('visible')) return;
     if (type === 'heal') {
         if (potionHeal <= 0) return;
         potionHeal--;
