@@ -4431,8 +4431,21 @@ function renderArmyTabHorde() {
         return;
     }
     const sNames = ['Printemps','Été','Automne','Hiver'];
+    // Compter les anti par trait pour l'affichage (même logique que le calcul réel)
+    const antiCountsDisplay = {};
+    cityArmy.forEach(function(c){ c.traits.forEach(function(t){
+        if (t.startsWith('anti')) antiCountsDisplay[t] = (antiCountsDisplay[t]||0)+1;
+    }); });
+    const traitCountersUsed = {};
     const countered_fn = function(trait) {
-        return cityArmy.some(function(c){ return c.traits.some(function(t){ return COUNTER_RULES[t]===trait; }); });
+        const counterTrait = Object.keys(COUNTER_RULES).find(function(k){ return COUNTER_RULES[k]===trait; });
+        if (!counterTrait) return false;
+        if (!traitCountersUsed[counterTrait]) traitCountersUsed[counterTrait] = 0;
+        if ((antiCountsDisplay[counterTrait]||0) > traitCountersUsed[counterTrait]) {
+            traitCountersUsed[counterTrait]++;
+            return true;
+        }
+        return false;
     };
     const hp = calcHordePower();
     let html = '<p style="font-size:12px;color:#9a8a6a;margin-bottom:8px">Puissance identifiée : <b style="color:#ff6060">'+hp+'</b>'+(hordeHiddenUnits.length>0?' <span style="color:#888">(+? cachée)</span>':'')+'</p>';
