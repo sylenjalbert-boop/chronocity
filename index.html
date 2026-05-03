@@ -4233,19 +4233,10 @@ function resolveBattle() {
 
         u.traits.forEach(trait => {
             if (HORDE_BONUS[trait] === undefined) return;
-            // Trouver le contre-trait
             const counterTrait = Object.keys(COUNTER_RULES).find(k => COUNTER_RULES[k] === trait);
             if (!counterTrait) { const b=HORDE_BONUS[trait](u); bonus+=b; return; }
-            // Compter combien de cette unité sont contrées
-            const totalOfTrait = hordeTraitCounts[trait] || 0;
-            const availableCounters = antiCounts[counterTrait] || 0;
-            // Chaque unité avec anti-X neutralise 1 unité de type X
-            // On alloue les contres proportionnellement dans la boucle en utilisant un compteur
-            if (!u._counterUsed) u._counterUsed = {};
-            if (!u._counterUsed[counterTrait]) u._counterUsed[counterTrait] = 0;
             const isCountered = (antiCounts[counterTrait]||0) > 0;
             if (isCountered) {
-                // Décrémenter le compteur de contres
                 antiCounts[counterTrait]--;
                 msg += ' ('+trait+' contré ✓)';
             } else {
@@ -4254,6 +4245,8 @@ function resolveBattle() {
                 if (b > 0) msg += ' +'+b+' ('+trait+' non contré)';
             }
         });
+        // Nettoyer les propriétés temporaires
+        delete u._counterUsed;
         hordeAtk += baseAtk + bonus;
         hordeLog.push(msg);
     });
