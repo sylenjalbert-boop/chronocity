@@ -6269,9 +6269,16 @@ function resetAllMetaFromMenu() {
         hideSaveMenu();
         runDeaths = 0;
         runDustSpent = 0;
-        localStorage.removeItem(META_KEY);
-        window._meta = null;
-        location.reload();
+        // Réinitialiser la méta à zéro
+        const emptyMeta = JSON.parse(JSON.stringify(META_DEFAULTS));
+        localStorage.setItem(META_KEY, JSON.stringify(emptyMeta));
+        window._meta = emptyMeta;
+        applyMetaBonuses();
+        // Sauvegarder dans le slot actif
+        if (activeSlot !== null) saveToSlot(activeSlot);
+        showSaveNotif('✅ Méta réinitialisée');
+        updateStats();
+        renderMetaSummary && renderMetaSummary();
     }
 }
 
