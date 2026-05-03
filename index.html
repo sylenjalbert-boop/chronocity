@@ -2977,8 +2977,8 @@ function showCombatIntro(enemy, onClose) {
 
     // Stats : résumé multi ou stats simples
     if (isMulti) {
-        let desc = '⚔ Rang avant : ' + front.map(function(e){return e.emoji+e.name;}).join(', ');
-        if (back.length) desc += ' | 🎯 Arrière : ' + back.map(function(e){return e.emoji+e.name;}).join(', ');
+        let desc = '⚔ Rang avant : ' + front.map(function(e){return e.name;}).join(', ');
+        if (back.length) desc += ' | 🎯 Arrière : ' + back.map(function(e){return e.name;}).join(', ');
         document.getElementById('ci-enemy-stats').textContent = desc;
     } else {
         document.getElementById('ci-enemy-stats').textContent =
