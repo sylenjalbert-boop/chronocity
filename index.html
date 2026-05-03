@@ -2867,16 +2867,35 @@ function dungeonBarClick() {
                         dungeonState.licheAtkReduction++;
                         dngLog('💀 Malédiction Liche ! ATK -'+dungeonState.licheAtkReduction, 'dlog-bad');
                     }
-                    if (room.special === 'stun' && er === 6) {
-                        dngLog('👹 STUN ! '+room.name+' attaque à nouveau !', 'dlog-bad');
+                    if (room.special === 'stun' && er === 6 && !avatarImmuneStun) {
+                        dngLog('💫 STUN ! '+room.name+' immobilise l\'avatar — tous les ennemis attaquent !', 'dlog-bad');
                         dungeonShowStatus('💫 Stun !');
-                        const er2 = rollDie(6);
-                        if (er2 >= et) {
-                            const ed2 = calcDamage(room.dmg, protection);
-                            dungeonState.avatarHp -= ed2;
-                            dungeonShowDmg('avatar', ed2, '#ff4040');
-                            dngLog('👹 Double frappe : -'+ed2+' HP', 'dlog-bad');
-                        }
+                        // Tous les autres monstres vivants attaquent immédiatement
+                        const stunLiving = getAllLivingEnemies().filter(function(e){ return e !== room; });
+                        stunLiving.forEach(function(e2) {
+                            const et2 = hitThresholdForEnemy(e2, def);
+                            const er2 = rollDie(6);
+                            if (er2 >= et2) {
+                                const ed2 = calcDamage(e2.dmg, protection);
+                                dungeonState.avatarHp -= ed2;
+                                dungeonShowDmg('avatar', ed2, '#ff4040');
+                                dngLog(e2.emoji+' '+e2.name+' profite du stun : -'+ed2+' HP', 'dlog-bad');
+                                // Effets spéciaux des autres monstres pendant le stun
+                                if (e2.special === 'lifesteal') {
+                                    e2.hp = Math.min(e2.maxHp, e2.hp + ed2);
+                                    dngLog('🧛 '+e2.name+' se régénère pendant le stun : +'+ed2+' HP', 'dlog-bad');
+                                }
+                                if (e2.special === 'poison' && !dungeonState.poisonActive) {
+                                    dungeonState.poisonActive = true;
+                                    dngLog('🕷 Venin pendant le stun !', 'dlog-bad');
+                                }
+                            } else {
+                                dngLog(e2.emoji+' '+e2.name+' rate pendant le stun', 'dlog-info');
+                            }
+                        });
+                        applyHpUpdate();
+                    } else if (room.special === 'stun' && er === 6 && avatarImmuneStun) {
+                        dngLog('💫 Stun résisté ! (Ceinture anti-stun)', 'dlog-good');
                     }
                 } else {
                     dngLog(room.emoji+' '+room.name+' : dé '+er+' ('+et+'+) ✗ raté', 'dlog-info');
@@ -6078,25 +6097,31 @@ function dngUpdateCombatUI() {
 }
 
 function recalcBuildingEffects() {
-    // Remettre à zéro les compteurs liés aux bâtiments
+    // ── Réinitialiser toutes les valeurs dérivées des bâtiments ──
     Object.keys(buildingCounts).forEach(k => buildingCounts[k] = 0);
     populationperturn = 0;
     goldperturn = 0;
     manaperturn = 0;
-    // Réappliquer les effets de chaque bâtiment présent dans tileState
+    // Remettre conscrit et fortifications à leurs valeurs de base
+    // (1 fortification de base, conscrit = base méta)
+    const m = getMeta();
+    conscrit     = 3 + (m.city ? m.city.conscrit || 0 : 0);
+    fortifications = 1;
+    space        = m.city ? m.city.space || 0 : 0;
+
+    // ── Réappliquer les effets de chaque bâtiment présent dans tileState ──
     tileState.forEach(function(tile) {
         if (!tile || !tile.buildings) return;
         tile.buildings.forEach(function(name) {
             switch(name) {
-                case 'Ferme':              population += 10; populationperturn += 5; break;
-                case 'Mine':               gold += 20;       goldperturn += 10;      break;
-                case 'Caserne':            conscrit += 2;                            break;
-                case 'Tour de Garde':      conscrit += 1;    fortifications += 1;   break;
-                case 'Tour de Magie':      conscrit += 1;    mana += 20; manaperturn += 10; break;
+                case 'Ferme':              populationperturn += 5;  break;
+                case 'Mine':               goldperturn += 10;       break;
+                case 'Caserne':            conscrit += 2;           break;
+                case 'Tour de Garde':      conscrit += 1; fortifications += 1; break;
+                case 'Tour de Magie':      conscrit += 1; manaperturn += 10;   break;
+                case 'Bibliothèque':       space += 1;              break;
             }
             buildingCounts[name] = (buildingCounts[name] || 0) + 1;
-            // Recalculer les bonus de tuile
-            if (tile.type) applyTileBonus(tile.type, name);
         });
     });
 }
