@@ -201,7 +201,7 @@
         .rs-choice:hover{background:var(--bg-card);border-color:var(--gold-l);}
         .rs-choice.bad{background:#1a0808;color:#ff8080;border-color:var(--red);}
         .dng-zone{position:absolute;top:0;height:100%;}
-        .dng-z-miss{background:#160406;}.dng-z-half{background:#1e0e02;}.dng-z-norm{background:#0e1606;}.dng-z-perf{background:#041c0c;}
+        .dng-z-miss{background:#4a0810;}.dng-z-half{background:#4a2800;}.dng-z-norm{background:#1a4a00;}.dng-z-perf{background:#005a20;}
         .dng-zlbl{position:absolute;top:50%;transform:translateX(-50%) translateY(-50%);font-size:12px;font-weight:bold;pointer-events:none;text-shadow:0 1px 4px #000;z-index:2;font-family:'Cinzel',serif;}
         @keyframes flashRed{0%{opacity:.7}100%{opacity:0}}
         @keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
@@ -1351,7 +1351,10 @@ function showCityPanel() {
     const m = getMeta();
     const cityLvl = m.cityLevel || 0;
     const metaFortBonus = m.city.fortif || 0;
-    const maxFort = 1 + cityLvl + maxFortReached + metaFortBonus; // formule dynamique
+    // Max fortifications = 1 base + Tours de Garde + bonus Forêt/Caserne + méta
+    const toursDeGarde = buildingCounts['Tour de Garde'] || 0;
+    const caseForet = tileState.filter(t => t.type === 'Forêt' && t.buildings.includes('Caserne')).length;
+    const maxFort = 1 + toursDeGarde + caseForet + cityLvl + metaFortBonus;
     const modal = document.getElementById('army-modal') || null;
 
     // Créer un mini-overlay dédié
@@ -1541,6 +1544,10 @@ function showTurnAnimation(turnNum, season, callback) {
 }
 
 	function nextTurn() {
+    // Récolte en fin de tour de récolte (avant d'incrémenter)
+    const harvestTurns = [2, 4, 6, 8];
+    if (harvestTurns.includes(currentTurn)) { collect(); }
+
     // On incrémente d'abord pour annoncer le BON tour à venir
     currentTurn++;
     // Cas fin de saison : reset du compteur seulement
@@ -1594,10 +1601,6 @@ function showTurnAnimation(turnNum, season, callback) {
             addLog(msg);
             updateArmyPanels();
         }
-        if (currentTurn === 2) { collect(); }
-        if (currentTurn === 4) { collect(); }
-        if (currentTurn === 6) { collect(); }
-        if (currentTurn === 8) { collect(); }
         if (currentTurn === 10) {
             // Le combat est déclenché manuellement via la frise (launchHordeBattle)
             addLog('⚔ La horde approche ! Préparez vos défenses et cliquez ⚔ dans la frise quand vous êtes prêt.');
@@ -6132,8 +6135,7 @@ function equipItem(slot, itemId) {
     if (item && item.apply) item.apply();
     updateStats();
     renderEquipWindow();
-    openSlotPicker(slot); // rafraîchir le picker
-    if (activeSlot !== null) saveToSlot(activeSlot);
+    openSlotPicker(slot);
     addLog((item?item.icon:'') + ' ' + (item?item.name:itemId) + ' équipé.');
 }
 
@@ -6146,7 +6148,6 @@ function unequipSlot(slot, silent) {
     updateStats();
     if (!silent) {
         renderEquipWindow();
-        if (activeSlot !== null) saveToSlot(activeSlot);
         addLog((item?item.icon:'') + ' ' + (item?item.name:itemId) + ' retiré.');
     }
 }
@@ -6206,26 +6207,33 @@ function recalcBuildingEffects() {
     populationperturn = 0;
     goldperturn = 0;
     manaperturn = 0;
-    // Remettre conscrit et fortifications à leurs valeurs de base
-    // (1 fortification de base, conscrit = base méta)
+    // Remettre conscrit, fortifications et space à leurs valeurs de base (méta)
     const m = getMeta();
-    conscrit     = 3 + (m.city ? m.city.conscrit || 0 : 0);
-    fortifications = 1;
-    space        = m.city ? m.city.space || 0 : 0;
+    conscrit       = 3 + (m.city ? m.city.conscrit || 0 : 0);
+    fortifications = 1 + (m.city ? m.city.fortif   || 0 : 0);
+    space          = m.city ? m.city.space || 0 : 0;
 
-    // ── Réappliquer les effets de chaque bâtiment présent dans tileState ──
+    // ── Réappliquer les effets de chaque bâtiment + bonus de tuile ──
     tileState.forEach(function(tile) {
         if (!tile || !tile.buildings) return;
         tile.buildings.forEach(function(name) {
+            // Effets de base du bâtiment
             switch(name) {
-                case 'Ferme':              populationperturn += 5;  break;
-                case 'Mine':               goldperturn += 10;       break;
-                case 'Caserne':            conscrit += 2;           break;
-                case 'Tour de Garde':      conscrit += 1; fortifications += 1; break;
-                case 'Tour de Magie':      conscrit += 1; manaperturn += 10;   break;
-                case 'Bibliothèque':       space += 1;              break;
+                case 'Ferme':          populationperturn += 5;  break;
+                case 'Mine':           goldperturn += 10;       break;
+                case 'Caserne':        conscrit += 2;           break;
+                case 'Tour de Garde':  conscrit += 1; fortifications += 1; break;
+                case 'Tour de Magie':  conscrit += 1; manaperturn += 10;   break;
             }
             buildingCounts[name] = (buildingCounts[name] || 0) + 1;
+            // Bonus de tuile (sans appeler applyTileBonus qui modifie les variables globales)
+            const bonus = tile.type ? getTileBonus(tile.type, name) : null;
+            if (bonus) {
+                if (bonus.includes('Pop/tour'))    { const n = parseInt(bonus); if(!isNaN(n)) populationperturn += n; }
+                if (bonus.includes('Or/tour'))     { const n = parseInt(bonus); if(!isNaN(n)) goldperturn += n; }
+                if (bonus.includes('Mana/tour'))   { const n = parseInt(bonus); if(!isNaN(n)) manaperturn += n; }
+                if (bonus.includes('Fortification')) fortifications += 1;
+            }
         });
     });
 }
@@ -6573,45 +6581,55 @@ function restoreGameState(s) {
     currentTurn = s.currentTurn||1; currentSeason = s.currentSeason||1;
     gold = s.gold||0; mana = s.mana||0; population = s.population||0; dust = s.dust||0;
     fortifications = s.fortifications||1; conscrit = s.conscrit||0;
-    atk = s.atk||1; def = s.def||1; avatarHp = s.avatarHp||10; avatarMaxHp = s.avatarMaxHp||10;
-    avatarDmg = s.avatarDmg||1; protection = s.protection||0;
-    avatarRanged = s.avatarRanged||false; avatarPiercing = s.avatarPiercing||false;
+    avatarHp = s.avatarHp||10; avatarMaxHp = s.avatarMaxHp||10;
     glyphFireball = s.glyphFireball||0; glyphHeal = s.glyphHeal||0;
     glyphRage = s.glyphRage||0; glyphBless = s.glyphBless||0;
     potionHeal = s.potionHeal||0; potionAntiPoison = s.potionAntiPoison||0;
     glyphSlots = s.glyphSlots||1; potionSlots = s.potionSlots||1;
     runDeaths = s.runDeaths||0; runDustSpent = s.runDustSpent||0;
-    // Reset équipements et réappliquer
-    ownedEquipment = {};
-    equippedItems = { weapon1:null, weapon2h:null, shield:null, armor:null, necklace:null, belt:null, glyph:null };
+
+    // ── Restaurer la méta d'abord ──
+    if (s.meta) { window._meta = s.meta; saveMeta(s.meta); }
+
+    // ── Repartir des stats de base puis réappliquer méta ──
+    atk = 1; def = 1; avatarDmg = 1; protection = 0;
     avatarRanged = false; avatarPiercing = false; avatarScythe = false;
     avatarMagicWeapon = false; avatarAntiRange = false;
     avatarBlessedNecklace = false; avatarImmunePoison = false; avatarImmuneStun = false;
+
+    // Appliquer la méta (atk, def, dmg, prot bonus)
+    const m = getMeta();
+    atk += (m.hero.atk || 0);
+    avatarDmg += (m.hero.dmg || 0);
+    protection += (m.hero.prot || 0);
+    def += (m.hero.def || 0);
+    avatarMaxHp = s.avatarMaxHp || (10 + (m.hero.hpMax||0)*3);
+    avatarHp = Math.min(s.avatarHp || avatarMaxHp, avatarMaxHp);
+
+    // ── Réappliquer les équipements équipés ──
+    ownedEquipment = {};
+    equippedItems = { weapon_main:null, weapon_off:null, armor:null, necklace:null, belt:null, glyph:null, potion:null };
     if (s.ownedEquipment) {
-        // Trouver tous les items et réappliquer ceux possédés
-        const allItems = (typeof EQUIPMENT_CATALOG !== 'undefined') ? EQUIPMENT_CATALOG : [];
-        Object.keys(s.ownedEquipment).forEach(function(id) {
-            ownedEquipment[id] = true;
-        });
-        // Réappliquer seulement les items équipés
-        if (s.equippedItems) {
-            Object.assign(equippedItems, s.equippedItems);
-            Object.values(s.equippedItems).forEach(function(id) {
-                if (!id) return;
-                const item = allItems.find(function(i){ return i.id === id; });
-                if (item && item.apply) try { item.apply(); } catch(e) {}
-            });
-        }
+        Object.keys(s.ownedEquipment).forEach(function(id) { ownedEquipment[id] = true; });
     }
+    if (s.equippedItems) {
+        const allItems = (typeof EQUIPMENT_CATALOG !== 'undefined') ? EQUIPMENT_CATALOG : [];
+        Object.assign(equippedItems, s.equippedItems);
+        Object.values(s.equippedItems).forEach(function(id) {
+            if (!id) return;
+            const item = allItems.find(function(i){ return i.id === id; });
+            if (item && item.apply) try { item.apply(); } catch(e) {}
+        });
+    }
+
     if (s.cityArmy) cityArmy.splice(0, cityArmy.length, ...s.cityArmy);
     if (s.hordeArmy) hordeArmy.splice(0, hordeArmy.length, ...s.hordeArmy);
     if (s.hordePrevSeason) hordePrevSeason.splice(0, hordePrevSeason.length, ...s.hordePrevSeason);
     if (s.hordeCurrentAdditions) hordeCurrentAdditions.splice(0, hordeCurrentAdditions.length, ...s.hordeCurrentAdditions);
     hordeCurrentSeason = s.hordeCurrentSeason||0; hordeRevealed = s.hordeRevealed||false;
     if (s.tileState) tileState.splice(0, tileState.length, ...s.tileState);
-    if (s.meta) { window._meta = s.meta; saveMeta(s.meta); }
 
-    // Recalculer les effets de tous les bâtiments depuis tileState
+    // Recalculer les effets des bâtiments
     recalcBuildingEffects();
 }
 
