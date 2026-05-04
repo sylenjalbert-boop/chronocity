@@ -454,6 +454,58 @@
             #portrait-overlay { display: flex !important; }
         }
 
+        
+        /* ── Écran d'accueil ── */
+        #home-screen {
+            position:fixed;top:0;left:0;width:100%;height:100%;
+            background:#06040a;z-index:20000;
+            display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;
+        }
+        .home-btn {
+            width:min(340px,90vw);padding:16px 0;
+            font-family:Cinzel,serif;font-size:15px;letter-spacing:1px;cursor:pointer;
+            border-radius:8px;text-align:center;transition:all .2s;
+        }
+        .home-btn:hover { filter:brightness(1.2); transform:translateY(-1px); }
+
+        /* ── Glossaire ── */
+        #glossary-screen {
+            position:fixed;top:0;left:0;width:100%;height:100%;
+            background:#06040a;z-index:20001;
+            display:none;flex-direction:column;
+        }
+        #glossary-tabs {
+            display:flex;gap:4px;padding:10px 12px 0;flex-wrap:wrap;flex-shrink:0;
+            border-bottom:1px solid #1a1228;background:#0a0812;
+        }
+        .glo-tab {
+            padding:6px 14px;border-radius:6px 6px 0 0;cursor:pointer;
+            font-family:Cinzel,serif;font-size:11px;color:#7a6a8a;
+            border:1px solid #2a1a3a;border-bottom:none;background:#0a0812;
+        }
+        .glo-tab.active { background:#1a1228;color:#c0a060;border-color:#4a3060; }
+        #glossary-content {
+            flex:1;overflow-y:auto;padding:16px 20px;
+        }
+        .glo-section { margin-bottom:20px; }
+        .glo-title { font-family:Cinzel,serif;font-size:13px;color:#c0a060;letter-spacing:1px;margin-bottom:8px;border-bottom:1px solid #2a1228;padding-bottom:4px; }
+        .glo-entry { margin-bottom:8px;padding:8px 10px;background:#0e0c18;border-radius:6px;border-left:3px solid #3a2a5a; }
+        .glo-entry-name { font-size:12px;font-weight:bold;color:#d4c49a;margin-bottom:3px; }
+        .glo-entry-desc { font-size:11px;color:#7a6a8a;line-height:1.5; }
+        .glo-entry-trait { display:inline-block;font-size:10px;padding:1px 6px;border-radius:10px;margin-right:4px;margin-top:2px; }
+
+        /* ── Slots charger ── */
+        #home-slots { display:none;flex-direction:column;gap:8px;width:min(360px,92vw); }
+        .home-slot {
+            display:flex;align-items:center;gap:10px;padding:10px 14px;
+            background:#0e0c18;border:1px solid #2a1a3a;border-radius:8px;cursor:pointer;
+            transition:border-color .15s;
+        }
+        .home-slot:hover { border-color:#6040a0; }
+        .home-slot-info { flex:1;font-size:11px;color:#9a8a6a; }
+        .home-slot-name { font-family:Cinzel,serif;font-size:13px;color:#c0a060;font-weight:bold; }
+        .home-slot-empty { color:#3a2a4a;font-style:italic; }
+
         </style>
 </head>
 <body>
@@ -484,6 +536,7 @@
         <button onclick="hideSaveMenu()" style="background:none;border:none;color:#6a5a80;font-size:18px;cursor:pointer;line-height:1">✕</button>
     </div>
     <div id="save-slots"></div>
+    <button onclick="openGlossary(true)" style="width:100%;background:#0a0818;border:1px solid #2a1a3a;color:#9a8a6a;border-radius:6px;padding:6px 0;font-family:Cinzel,serif;font-size:11px;cursor:pointer;margin-top:4px">📖 Glossaire</button>
     <div style="border-top:1px solid #2a2040;margin-top:4px;padding-top:10px;display:flex;gap:8px">
         <button onclick="newGameFromSaveMenu()" style="flex:1;background:linear-gradient(135deg,#0a1a0a,#1a2a0a);color:#4cffaa;border:1px solid #2a5a2a;border-radius:6px;padding:7px 0;font-family:Cinzel,serif;font-size:11px;cursor:pointer">✦ Nouvelle Partie</button>
         <button onclick="resetAllMetaFromMenu()" style="flex:1;background:linear-gradient(135deg,#1a0a0a,#2a0a0a);color:#ff6060;border:1px solid #5a2a2a;border-radius:6px;padding:7px 0;font-family:Cinzel,serif;font-size:11px;cursor:pointer">⚠ Reset run</button>
@@ -530,6 +583,51 @@
             </div>
         </div>
     </div>
+</div>
+
+
+<!-- ════ ÉCRAN D'ACCUEIL ════ -->
+<div id="home-screen">
+    <div style="text-align:center;margin-bottom:10px">
+        <div style="font-family:Cinzel,serif;font-size:32px;color:#c0a060;letter-spacing:3px;text-shadow:0 0 20px rgba(180,140,60,0.4)">⚔ Chroniques des Tuiles</div>
+        <div style="font-size:11px;color:#4a3a5a;margin-top:6px;letter-spacing:2px">VERSION 0.9</div>
+    </div>
+
+    <!-- Menu principal -->
+    <div id="home-menu" style="display:flex;flex-direction:column;gap:10px;width:min(340px,90vw)">
+        <button class="home-btn" onclick="homeLoad()"
+            style="background:linear-gradient(135deg,#1a1030,#2a1a40);color:#c080ff;border:1px solid #5040a0">
+            📂 Charger une partie
+        </button>
+        <button class="home-btn" onclick="homeNew()"
+            style="background:linear-gradient(135deg,#0a1a0a,#1a2a0a);color:#4cffaa;border:1px solid #2a5a2a">
+            ✦ Commencer une partie
+        </button>
+        <button class="home-btn" onclick="openGlossary()"
+            style="background:linear-gradient(135deg,#0a0818,#1a1028);color:#9a8a6a;border:1px solid #2a1a3a">
+            📖 Glossaire
+        </button>
+    </div>
+
+    <!-- Slots charger / nouveau -->
+    <div id="home-slots"></div>
+    <button id="home-back-btn" onclick="homeBack()" style="display:none;background:none;border:none;color:#4a3a5a;cursor:pointer;font-size:12px;margin-top:4px">← Retour</button>
+</div>
+
+<!-- ════ GLOSSAIRE ════ -->
+<div id="glossary-screen">
+    <div style="display:flex;align-items:center;padding:10px 14px;border-bottom:1px solid #1a1228;background:#0a0812;flex-shrink:0">
+        <button onclick="closeGlossary()" style="background:none;border:none;color:#6a5a80;font-size:18px;cursor:pointer;margin-right:10px">←</button>
+        <div style="font-family:Cinzel,serif;font-size:15px;color:#c0a060">📖 Glossaire</div>
+    </div>
+    <div id="glossary-tabs">
+        <div class="glo-tab active" onclick="gloTab('terrains')">🗺 Terrains</div>
+        <div class="glo-tab" onclick="gloTab('batiments')">🏗 Bâtiments</div>
+        <div class="glo-tab" onclick="gloTab('traits')">⚔ Traits Horde</div>
+        <div class="glo-tab" onclick="gloTab('monstres')">👹 Monstres</div>
+        <div class="glo-tab" onclick="gloTab('combat')">🎯 Combat</div>
+    </div>
+    <div id="glossary-content"></div>
 </div>
 
 <div id="explore-popup">
@@ -6131,6 +6229,175 @@ function recalcBuildingEffects() {
         });
     });
 }
+
+
+// ═══════════════════════════════════════════════
+// ÉCRAN D'ACCUEIL
+// ═══════════════════════════════════════════════
+
+function showHomeScreen() {
+    const el = document.getElementById('home-screen');
+    if (el) el.style.display = 'flex';
+}
+
+function hideHomeScreen() {
+    const el = document.getElementById('home-screen');
+    if (el) el.style.display = 'none';
+}
+
+function homeBack() {
+    document.getElementById('home-slots').style.display = 'none';
+    document.getElementById('home-slots').innerHTML = '';
+    document.getElementById('home-menu').style.display = 'flex';
+    document.getElementById('home-back-btn').style.display = 'none';
+}
+
+function homeLoad() {
+    document.getElementById('home-menu').style.display = 'none';
+    document.getElementById('home-back-btn').style.display = 'block';
+    const slotsEl = document.getElementById('home-slots');
+    slotsEl.innerHTML = '<div style="font-family:Cinzel,serif;font-size:11px;color:#6a5a80;text-align:center;margin-bottom:8px">Choisir une sauvegarde</div>';
+    slotsEl.style.display = 'flex';
+    for (let i = 0; i < NUM_SLOTS; i++) {
+        const info = getSaveInfo(i);
+        const div = document.createElement('div');
+        div.className = 'home-slot';
+        if (info) {
+            div.innerHTML = '<div style="font-size:24px">💾</div><div class="home-slot-info"><div class="home-slot-name">Slot '+(i+1)+'</div><div>Saison '+info.season+' · Tour '+info.turn+'</div><div style="font-size:10px;color:#4a3a5a">'+info.date+'</div></div>';
+            div.onclick = (function(slot){ return function() {
+                loadFromSlot(slot);
+                hideHomeScreen();
+            }; })(i);
+        } else {
+            div.innerHTML = '<div style="font-size:24px;opacity:.3">💾</div><div class="home-slot-info"><div class="home-slot-name" style="color:#3a2a4a">Slot '+(i+1)+'</div><div class="home-slot-empty">Vide</div></div>';
+            div.style.cursor = 'default';
+            div.style.opacity = '0.5';
+        }
+        slotsEl.appendChild(div);
+    }
+}
+
+function homeNew() {
+    document.getElementById('home-menu').style.display = 'none';
+    document.getElementById('home-back-btn').style.display = 'block';
+    const slotsEl = document.getElementById('home-slots');
+    slotsEl.innerHTML = '<div style="font-family:Cinzel,serif;font-size:11px;color:#6a5a80;text-align:center;margin-bottom:8px">Choisir un slot pour cette partie</div>';
+    slotsEl.style.display = 'flex';
+    for (let i = 0; i < NUM_SLOTS; i++) {
+        const info = getSaveInfo(i);
+        const div = document.createElement('div');
+        div.className = 'home-slot';
+        if (info) {
+            div.innerHTML = '<div style="font-size:24px">⚠</div><div class="home-slot-info"><div class="home-slot-name">Slot '+(i+1)+' — Écraser</div><div style="color:#ff8060">Saison '+info.season+' · Tour '+info.turn+'</div><div style="font-size:10px;color:#4a3a5a">'+info.date+'</div></div>';
+        } else {
+            div.innerHTML = '<div style="font-size:24px">✦</div><div class="home-slot-info"><div class="home-slot-name">Slot '+(i+1)+'</div><div style="color:#4cffaa">Vide — Nouveau run</div></div>';
+        }
+        div.onclick = (function(slot, hasData){ return function() {
+            if (hasData && !confirm('Écraser le slot '+(slot+1)+' ?')) return;
+            // Réinitialiser la méta pour ce nouveau run
+            const emptyMeta = JSON.parse(JSON.stringify(META_DEFAULTS));
+            localStorage.setItem(META_KEY, JSON.stringify(emptyMeta));
+            window._meta = emptyMeta;
+            activeSlot = slot;
+            // Supprimer l'ancienne sauvegarde
+            localStorage.removeItem(SAVE_PREFIX + slot);
+            hideHomeScreen();
+            // Démarrer un nouveau run
+            startNewRun();
+        }; })(i, !!info);
+        slotsEl.appendChild(div);
+    }
+}
+
+// ═══════════════════════════════════════════════
+// GLOSSAIRE
+// ═══════════════════════════════════════════════
+let currentGloTab = 'terrains';
+
+function openGlossary(fromGame) {
+    const el = document.getElementById('glossary-screen');
+    if (el) el.style.display = 'flex';
+    gloTab(currentGloTab);
+}
+
+function closeGlossary() {
+    const el = document.getElementById('glossary-screen');
+    if (el) el.style.display = 'none';
+}
+
+function gloTab(tab) {
+    currentGloTab = tab;
+    document.querySelectorAll('.glo-tab').forEach(function(t) {
+        t.classList.toggle('active', t.getAttribute('onclick').includes("'"+tab+"'"));
+    });
+    const content = document.getElementById('glossary-content');
+    if (!content) return;
+    content.innerHTML = GLO_DATA[tab] || '<p style="color:#6a5a8a">Contenu à venir.</p>';
+}
+
+const GLO_DATA = {
+    terrains: `
+<div class="glo-section">
+<div class="glo-title">🗺 Terrains</div>
+<div class="glo-entry"><div class="glo-entry-name">🌿 Prairie</div><div class="glo-entry-desc">+15 Or par récolte. Bonus avec Ferme : +5 Or/tour supplémentaire.</div></div>
+<div class="glo-entry"><div class="glo-entry-name">⛰ Collines</div><div class="glo-entry-desc">+15 Or par récolte. Bonus avec Mine : +10 Or/tour.</div></div>
+<div class="glo-entry"><div class="glo-entry-name">🌊 Côte</div><div class="glo-entry-desc">+20 Or par récolte. Accès aux ressources maritimes.</div></div>
+<div class="glo-entry"><div class="glo-entry-name">🏔 Montagne</div><div class="glo-entry-desc">Ressources rares. Bonus avec Tour de Garde.</div></div>
+<div class="glo-entry"><div class="glo-entry-name">🏞 Lac</div><div class="glo-entry-desc">+10 Mana par récolte.</div></div>
+<div class="glo-entry"><div class="glo-entry-name">🌲 Forêt</div><div class="glo-entry-desc">Ressources en bois. Bonus avec Archerie.</div></div>
+<div class="glo-entry"><div class="glo-entry-name">🏙 Ville</div><div class="glo-entry-desc">Centre de la cité. Emplacements de construction via la méta-progression.</div></div>
+</div>`,
+
+    batiments: `
+<div class="glo-section">
+<div class="glo-title">🏗 Bâtiments</div>
+<div class="glo-entry"><div class="glo-entry-name">🌾 Ferme</div><div class="glo-entry-desc">+5 Population/tour. Coût : 30 Or.</div></div>
+<div class="glo-entry"><div class="glo-entry-name">⛏ Mine</div><div class="glo-entry-desc">+10 Or/tour, +20 Or immédiat. Coût : 20 Pop.</div></div>
+<div class="glo-entry"><div class="glo-entry-name">⚔ Caserne</div><div class="glo-entry-desc">+2 Conscriptions. Débloque recrutement de soldats. Coût : 110 Or, 10 Pop.</div></div>
+<div class="glo-entry"><div class="glo-entry-name">🗼 Tour de Garde</div><div class="glo-entry-desc">+1 Conscription, +1 Fortification. Coût : 90 Or, 10 Pop.</div></div>
+<div class="glo-entry"><div class="glo-entry-name">🔮 Tour de Magie</div><div class="glo-entry-desc">+1 Conscription, +10 Mana/tour. Coût : 40 Or, 5 Pop, 20 Mana.</div></div>
+<div class="glo-entry"><div class="glo-entry-name">🎓 Académie militaire</div><div class="glo-entry-desc">Débloque unités avancées. Prérequis : 2 Casernes + 1 Tour de Magie. Coût : 160 Or, 30 Pop, 40 Mana.</div></div>
+<div class="glo-entry"><div class="glo-entry-name">🏹 Archerie</div><div class="glo-entry-desc">Débloque archers. Prérequis : 1 Caserne. Coût : 80 Or, 20 Pop.</div></div>
+<div class="glo-entry"><div class="glo-entry-name">⛪ Église</div><div class="glo-entry-desc">Débloque Prêtre (anti-démon). Coût : 60 Or, 10 Pop, 20 Mana.</div></div>
+<div class="glo-entry"><div class="glo-entry-name">🛕 Temple</div><div class="glo-entry-desc">Unités sacrées avancées. Prérequis : 1 Église. Coût : 120 Or, 20 Pop, 40 Mana.</div></div>
+</div>`,
+
+    traits: `
+<div class="glo-section">
+<div class="glo-title">⚔ Traits de la Horde</div>
+<p style="font-size:11px;color:#7a6a8a;margin-bottom:12px">Chaque anti-trait contrecarre 1 unité portant le trait adverse. Si non contrée, l'unité applique son effet.</p>
+<div class="glo-entry"><div class="glo-entry-name">🐴 Cavalerie <span class="glo-entry-trait" style="background:#2a1a0a;color:#ffb040">contré par : anti-cavalerie</span></div><div class="glo-entry-desc">Si non contrée : ATK ×2.</div></div>
+<div class="glo-entry"><div class="glo-entry-name">🏹 Distance <span class="glo-entry-trait" style="background:#0a1a2a;color:#4080ff">contré par : anti-distance</span></div><div class="glo-entry-desc">Si non contrée : ATK ×2.</div></div>
+<div class="glo-entry"><div class="glo-entry-name">🐲 Vol <span class="glo-entry-trait" style="background:#0a1a1a;color:#40ffcc">contré par : anti-vol</span></div><div class="glo-entry-desc">Si non contré : détruit l'unité de ville avec la plus haute ATK, avant le combat.</div></div>
+<div class="glo-entry"><div class="glo-entry-name">🔥 Pillard <span class="glo-entry-trait" style="background:#2a1000;color:#ff6020">contré par : anti-pillard</span></div><div class="glo-entry-desc">Si non contré : détruit 1 bâtiment même si la horde est repoussée.</div></div>
+<div class="glo-entry"><div class="glo-entry-name">⛏ Sapeur <span class="glo-entry-trait" style="background:#1a1000;color:#c08020">contré par : anti-sapeur</span></div><div class="glo-entry-desc">Si non contré : détruit 1 fortification même si la horde est repoussée. Minimum 1 fortification.</div></div>
+<div class="glo-entry"><div class="glo-entry-name">💀 Mort-Vivant <span class="glo-entry-trait" style="background:#1a1a0a;color:#80ff80">contré par : anti-mort-vivant</span></div><div class="glo-entry-desc">Si non contré : résistance et effets spéciaux.</div></div>
+<div class="glo-entry"><div class="glo-entry-name">😈 Démon <span class="glo-entry-trait" style="background:#1a0020;color:#cc40ff">contré par : anti-démon</span></div><div class="glo-entry-desc">Si au moins 1 démon passe : toutes les unités infanterie de la ville ne comptent pas au combat.</div></div>
+</div>`,
+
+    monstres: `
+<div class="glo-section">
+<div class="glo-title">👹 Monstres — Effets Spéciaux</div>
+<div class="glo-entry"><div class="glo-entry-name">🧛 Vampire</div><div class="glo-entry-desc">Se régénère des dégâts qu'il inflige à l'avatar.</div></div>
+<div class="glo-entry"><div class="glo-entry-name">🧌 Troll</div><div class="glo-entry-desc">Sur un 6 : STUN — tous les monstres gagnent une attaque supplémentaire. Contré par Ceinture anti-stun.</div></div>
+<div class="glo-entry"><div class="glo-entry-name">☠ Nécromancien</div><div class="glo-entry-desc">Invoque 2 Squelettes au round 1, puis +1 tous les 3 rounds.</div></div>
+<div class="glo-entry"><div class="glo-entry-name">💀 Liche</div><div class="glo-entry-desc">Réduit l'ATK de l'avatar. Contré par Collier béni.</div></div>
+<div class="glo-entry"><div class="glo-entry-name">🕷 Araignée</div><div class="glo-entry-desc">Empoisonne l'avatar : dégâts par round. Contré par Ceinture anti-poison ou Potion anti-poison.</div></div>
+<div class="glo-entry"><div class="glo-entry-name">👺 Goblins</div><div class="glo-entry-desc">Appellent des renforts au round 5 si non éliminés.</div></div>
+</div>`,
+
+    combat: `
+<div class="glo-section">
+<div class="glo-title">🎯 Mécanique de Combat</div>
+<div class="glo-entry"><div class="glo-entry-name">Jauge d'attaque</div><div class="glo-entry-desc">Le curseur se déplace automatiquement. Cliquez pour attaquer :<br>• ×0 = Raté<br>• ×0.5 = Faible<br>• ×1 = Touché<br>• ×1.2 = Parfait<br>La taille des zones dépend de votre seuil de toucher (ATK vs DEF ennemi).</div></div>
+<div class="glo-entry"><div class="glo-entry-name">Rang avant / arrière</div><div class="glo-entry-desc">Les ennemis au rang arrière ne peuvent être ciblés qu'avec une arme à distance. Le rang avant doit être éliminé avant que le rang arrière avance.</div></div>
+<div class="glo-entry"><div class="glo-entry-name">Seuil de toucher</div><div class="glo-entry-desc">Calculé depuis ATK avatar et DEF ennemi. Affiché sur la jauge (Vous touchez N+) et dans le panneau ennemi.</div></div>
+<div class="glo-entry"><div class="glo-entry-name">Compétences (actives)</div><div class="glo-entry-desc">Utilisent votre action — la riposte ennemie suit. 1 utilisation par combat.</div></div>
+<div class="glo-entry"><div class="glo-entry-name">Glyphes & Potions (hors action)</div><div class="glo-entry-desc">N'utilisent pas votre action — pas de riposte. Utilisables à tout moment sauf après la victoire.</div></div>
+<div class="glo-entry"><div class="glo-entry-name">⚰ Faux</div><div class="glo-entry-desc">Frappe toutes les unités du rang avant.</div></div>
+<div class="glo-entry"><div class="glo-entry-name">🏹 Arbalète perçante</div><div class="glo-entry-desc">Inflige 50% des dégâts à l'unité directement derrière la cible.</div></div>
+</div>`
+};
 
 // ===== FIN FONCTIONS MANQUANTES =====
 
