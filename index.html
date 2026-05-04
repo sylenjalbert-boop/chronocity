@@ -1969,16 +1969,9 @@ function applyMetaBonuses() {
     avatarDmg+= m.hero.dmg;
     protection += m.hero.prot;
     def      += m.hero.def;
-    // HP max : on appliquera au init avatar
-    window._metaHpBonus = m.hero.hpMax * 3; // +3HP par achat
-    // Skills méta : juste noter qu'ils sont actifs (pas d'apply, pas de glyphe)
-    // hasMetaSkill() lit directement skillLevels — rien d'autre à faire ici
-    // Ville
-    fortifications += m.city.fortif;
-    conscrit       += m.city.conscrit;
-    space          += m.city.space;
-    window._metaCityPower = m.city.power || 0; // bonus puissance directe
-    // Garnison : sera ajoutée après init
+    window._metaHpBonus = m.hero.hpMax * 3;
+    // Ville — fortifications/conscrit/space gérés par recalcBuildingEffects
+    window._metaCityPower = m.city.power || 0;
     window._metaGarrison = [...(m.city.garrison||[])];
 }
 
