@@ -6368,6 +6368,10 @@ function initNewRun() {
         t.buildings = [];
         t.revealed = i === 12;
     });
+    // Réinitialiser les ressources par tour et bâtiments
+    goldperturn = 0; manaperturn = 0; populationperturn = 0;
+    Object.keys(buildingCounts).forEach(k => buildingCounts[k] = 0);
+    recalcBuildingEffects();
     // Appliquer la méta
     applyMetaBonuses();
     // Sauvegarder l'état initial
