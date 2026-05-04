@@ -6299,19 +6299,63 @@ function homeNew() {
             localStorage.setItem(META_KEY, JSON.stringify(emptyMeta));
             window._meta = emptyMeta;
             activeSlot = slot;
-            // Supprimer l'ancienne sauvegarde
             localStorage.removeItem(SAVE_PREFIX + slot);
             hideHomeScreen();
-            // Démarrer un nouveau run
-            startNewRun();
+            // Initialiser le jeu sans recharger la page
+            initNewRun();
         }; })(i, !!info);
         slotsEl.appendChild(div);
     }
 }
 
-// ═══════════════════════════════════════════════
-// GLOSSAIRE
-// ═══════════════════════════════════════════════
+function initNewRun() {
+    // Réinitialiser toutes les variables de jeu
+    currentTurn = 1; currentSeason = 1;
+    gold = 100 + (getMeta().city.gold || 0);
+    mana = 0 + (getMeta().city.mana || 0);
+    population = 50 + (getMeta().city.pop || 0);
+    dust = 0;
+    fortifications = 1;
+    conscrit = 3;
+    atk = 1; def = 1;
+    avatarHp = 10 + (getMeta().hero.hpMax || 0) * 3;
+    avatarMaxHp = avatarHp;
+    avatarDmg = 1;
+    protection = 0;
+    avatarRanged = false; avatarPiercing = false; avatarScythe = false;
+    avatarMagicWeapon = false; avatarAntiRange = false;
+    avatarBlessedNecklace = false; avatarImmunePoison = false; avatarImmuneStun = false;
+    glyphFireball = 0; glyphRage = 0; glyphBless = 0;
+    potionHeal = 0; potionAntiPoison = 0;
+    ownedEquipment = {};
+    equippedItems = { weapon_main:null, weapon_off:null, armor:null, necklace:null, belt:null, glyph:null, potion:null };
+    cityArmy.splice(0, cityArmy.length);
+    hordeArmy.splice(0, hordeArmy.length);
+    hordePrevSeason.splice(0, hordePrevSeason.length);
+    hordeCurrentAdditions.splice(0, hordeCurrentAdditions.length);
+    hordeCurrentSeason = 0; hordeRevealed = false;
+    runDeaths = 0; runDustSpent = 0;
+    // Réinitialiser la carte
+    tileState.forEach(function(t, i) {
+        t.type = i === 12 ? 'Ville' : null;
+        t.buildings = [];
+        t.revealed = i === 12;
+    });
+    // Appliquer la méta
+    applyMetaBonuses();
+    // Sauvegarder l'état initial
+    setTimeout(function(){ saveToSlot(activeSlot); }, 200);
+    // Rafraîchir l'interface
+    updateStats();
+    renderTileGrid();
+    updateArmyPanels();
+    renderBuildPanelList();
+    renderActionEquipTab();
+    updateTimeline();
+    addLog('✦ Nouvelle partie — Bonne chance !');
+}
+
+
 let currentGloTab = 'terrains';
 
 function openGlossary(fromGame) {
