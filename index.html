@@ -6335,6 +6335,8 @@ function resetRunFromMenu(keepMeta) {
 
 function initNewRun() {
     // Réinitialiser toutes les variables de jeu
+    setTurnProcessing(false);
+    setWaitingDungeon(false);
     currentTurn = 1; currentSeason = 1;
     gold = 100 + (getMeta().city.gold || 0);
     mana = 0 + (getMeta().city.mana || 0);
