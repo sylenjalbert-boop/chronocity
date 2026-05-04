@@ -6319,7 +6319,11 @@ function homeNew() {
 function restartRunAfterDefeat() {
     const s = document.getElementById('endScreen');
     if (s) s.style.display = 'none';
+    // Conserver le compteur de morts accumulé
+    const totalDeaths = runDeaths;
     initNewRun();
+    runDeaths = totalDeaths; // remettre après le reset
+    if (activeSlot !== null) saveToSlot(activeSlot);
 }
 
 function resetRunFromMenu(keepMeta) {
