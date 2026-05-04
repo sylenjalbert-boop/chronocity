@@ -1352,9 +1352,7 @@ function showCityPanel() {
     const cityLvl = m.cityLevel || 0;
     const metaFortBonus = m.city.fortif || 0;
     // Max fortifications = 1 base + Tours de Garde + bonus Forêt/Caserne + méta
-    const toursDeGarde = buildingCounts['Tour de Garde'] || 0;
-    const caseForet = tileState.filter(t => t.type === 'Forêt' && t.buildings.includes('Caserne')).length;
-    const maxFort = 1 + toursDeGarde + caseForet + cityLvl + metaFortBonus;
+    const maxFort = getMaxFort();
     const modal = document.getElementById('army-modal') || null;
 
     // Créer un mini-overlay dédié
@@ -4868,7 +4866,18 @@ function showErrorPopup(name, costGold, costPopulation, costMana) {
 }
 
 // Fonction pour mettre à jour l'affichage des ressources et des statistiques
+function getMaxFort() {
+    const m = getMeta();
+    const toursDeGarde = buildingCounts['Tour de Garde'] || 0;
+    const caseForet = tileState.filter(function(t){ return t.type === 'Forêt' && t.buildings.includes('Caserne'); }).length;
+    const foretReveal = tileState.filter(function(t){ return t.revealed && t.type === 'Forêt'; }).length;
+    return 1 + toursDeGarde + caseForet + foretReveal + (m.city.fortif||0) + (m.cityLevel||0);
+}
+
 function updateStats() {
+    // Plafonner les fortifications
+    const mf = getMaxFort();
+    if (fortifications > mf) fortifications = mf;
     // Tracker le max de fortifications atteint ce run
     if (fortifications > maxFortReached) maxFortReached = fortifications;
     document.getElementById('gold').textContent = gold;
@@ -6205,6 +6214,11 @@ function recalcBuildingEffects() {
     conscrit       = 3 + (m.city ? m.city.conscrit || 0 : 0);
     fortifications = 1 + (m.city ? m.city.fortif   || 0 : 0);
     space          = m.city ? m.city.space || 0 : 0;
+
+    // Bonus de révélation de tuile Forêt (permanent)
+    tileState.forEach(function(tile) {
+        if (tile.revealed && tile.type === 'Forêt') fortifications += 1;
+    });
 
     // ── Réappliquer les effets de chaque bâtiment + bonus de tuile ──
     tileState.forEach(function(tile) {
