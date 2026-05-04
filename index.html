@@ -538,8 +538,8 @@
     <div id="save-slots"></div>
     <button onclick="openGlossary(true)" style="width:100%;background:#0a0818;border:1px solid #2a1a3a;color:#9a8a6a;border-radius:6px;padding:6px 0;font-family:Cinzel,serif;font-size:11px;cursor:pointer;margin-top:4px">📖 Glossaire</button>
     <div style="border-top:1px solid #2a2040;margin-top:4px;padding-top:10px;display:flex;gap:8px">
-        <button onclick="newGameFromSaveMenu()" style="flex:1;background:linear-gradient(135deg,#0a1a0a,#1a2a0a);color:#4cffaa;border:1px solid #2a5a2a;border-radius:6px;padding:7px 0;font-family:Cinzel,serif;font-size:11px;cursor:pointer">✦ Nouvelle Partie</button>
-        <button onclick="resetAllMetaFromMenu()" style="flex:1;background:linear-gradient(135deg,#1a0a0a,#2a0a0a);color:#ff6060;border:1px solid #5a2a2a;border-radius:6px;padding:7px 0;font-family:Cinzel,serif;font-size:11px;cursor:pointer">⚠ Reset run</button>
+        <button onclick="resetRunFromMenu(true)" style="flex:1;background:linear-gradient(135deg,#1a0a0a,#2a0a0a);color:#ff8060;border:1px solid #5a2a2a;border-radius:6px;padding:7px 0;font-family:Cinzel,serif;font-size:11px;cursor:pointer">↺ Reset run</button>
+        <button onclick="resetRunFromMenu(false)" style="flex:1;background:linear-gradient(135deg,#2a0808,#3a0808);color:#ff4040;border:1px solid #7a2a2a;border-radius:6px;padding:7px 0;font-family:Cinzel,serif;font-size:11px;cursor:pointer">⚠ Reset run+méta</button>
     </div>
 </div>
 
@@ -1033,7 +1033,7 @@
 
         <!-- Bouton Jouer -->
         <div style="padding:12px 20px;border-top:1px solid #1a1a2e;text-align:center">
-            <button onclick="startNewRun()" style="padding:12px 40px;border:none;border-radius:12px;
+            <button onclick="restartRunAfterDefeat()" style="padding:12px 40px;border:none;border-radius:12px;
                 background:linear-gradient(135deg,#1a2a5a,#2a4a9a);color:var(--gold-l, #e8b840);font-size:15px;
                 font-weight:bold;cursor:pointer;letter-spacing:1px">
                 ▶ Nouveau Run
@@ -6314,6 +6314,23 @@ function homeNew() {
         }; })(i, !!info);
         slotsEl.appendChild(div);
     }
+}
+
+function restartRunAfterDefeat() {
+    const s = document.getElementById('endScreen');
+    if (s) s.style.display = 'none';
+    initNewRun();
+}
+
+function resetRunFromMenu(keepMeta) {
+    hideSaveMenu();
+    if (!keepMeta) {
+        const emptyMeta = JSON.parse(JSON.stringify(META_DEFAULTS));
+        localStorage.setItem(META_KEY, JSON.stringify(emptyMeta));
+        window._meta = emptyMeta;
+        runDeaths = 0; runDustSpent = 0;
+    }
+    initNewRun();
 }
 
 function initNewRun() {
