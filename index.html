@@ -6338,28 +6338,116 @@ function gloTab(tab) {
 const GLO_DATA = {
     terrains: `
 <div class="glo-section">
-<div class="glo-title">🗺 Terrains</div>
-<div class="glo-entry"><div class="glo-entry-name">🌿 Prairie</div><div class="glo-entry-desc">+15 Or par récolte. Bonus avec Ferme : +5 Or/tour supplémentaire.</div></div>
-<div class="glo-entry"><div class="glo-entry-name">⛰ Collines</div><div class="glo-entry-desc">+15 Or par récolte. Bonus avec Mine : +10 Or/tour.</div></div>
-<div class="glo-entry"><div class="glo-entry-name">🌊 Côte</div><div class="glo-entry-desc">+20 Or par récolte. Accès aux ressources maritimes.</div></div>
-<div class="glo-entry"><div class="glo-entry-name">🏔 Montagne</div><div class="glo-entry-desc">Ressources rares. Bonus avec Tour de Garde.</div></div>
-<div class="glo-entry"><div class="glo-entry-name">🏞 Lac</div><div class="glo-entry-desc">+10 Mana par récolte.</div></div>
-<div class="glo-entry"><div class="glo-entry-name">🌲 Forêt</div><div class="glo-entry-desc">Ressources en bois. Bonus avec Archerie.</div></div>
-<div class="glo-entry"><div class="glo-entry-name">🏙 Ville</div><div class="glo-entry-desc">Centre de la cité. Emplacements de construction via la méta-progression.</div></div>
+<div class="glo-title">🗺 Terrains — Révélation et bonus</div>
+<p style="font-size:11px;color:#7a6a8a;margin-bottom:10px">Révéler une tuile donne des ressources immédiates. Construire un bâtiment dessus peut activer un bonus supplémentaire.</p>
+
+<div class="glo-entry">
+  <div class="glo-entry-name">🌾 Prairie — 2 emplacements</div>
+  <div class="glo-entry-desc">Révélation : +20 Or, +20 Or/tour<br>Bonus bâtiment : Ferme → +5 Pop/tour</div>
+</div>
+<div class="glo-entry">
+  <div class="glo-entry-name">⛰ Collines — 1 emplacement</div>
+  <div class="glo-entry-desc">Révélation : +20 Or, +20 Or/tour<br>Bonus bâtiment : Mine → +10 Or/tour</div>
+</div>
+<div class="glo-entry">
+  <div class="glo-entry-name">🌊 Côte — 1 emplacement</div>
+  <div class="glo-entry-desc">Révélation : +10 Pop, +10 Pop/tour<br>Pas de bonus bâtiment</div>
+</div>
+<div class="glo-entry">
+  <div class="glo-entry-name">🏔 Montagne — 1 emplacement</div>
+  <div class="glo-entry-desc">Révélation : +30 Mana, +5 Mana/tour<br>Bonus bâtiments : Mine → +20 Or/tour | Tour de Magie → +10 Mana/tour</div>
+</div>
+<div class="glo-entry">
+  <div class="glo-entry-name">💧 Lac — 1 emplacement</div>
+  <div class="glo-entry-desc">Révélation : +10 Pop, +5 Pop/tour<br>Bonus bâtiment : Ferme → +5 Pop/tour</div>
+</div>
+<div class="glo-entry">
+  <div class="glo-entry-name">🌲 Forêt — 1 emplacement</div>
+  <div class="glo-entry-desc">Révélation : +1 Fortification<br>Bonus bâtiment : Caserne → +1 Fortification</div>
+</div>
+<div class="glo-entry">
+  <div class="glo-entry-name">🏙 Ville — emplacements variables</div>
+  <div class="glo-entry-desc">Centre de la cité. Nombre d'emplacements déterminé par la méta-progression (achat "Espace +1").</div>
+</div>
 </div>`,
 
     batiments: `
 <div class="glo-section">
 <div class="glo-title">🏗 Bâtiments</div>
-<div class="glo-entry"><div class="glo-entry-name">🌾 Ferme</div><div class="glo-entry-desc">+5 Population/tour. Coût : 30 Or.</div></div>
-<div class="glo-entry"><div class="glo-entry-name">⛏ Mine</div><div class="glo-entry-desc">+10 Or/tour, +20 Or immédiat. Coût : 20 Pop.</div></div>
-<div class="glo-entry"><div class="glo-entry-name">⚔ Caserne</div><div class="glo-entry-desc">+2 Conscriptions. Débloque recrutement de soldats. Coût : 110 Or, 10 Pop.</div></div>
-<div class="glo-entry"><div class="glo-entry-name">🗼 Tour de Garde</div><div class="glo-entry-desc">+1 Conscription, +1 Fortification. Coût : 90 Or, 10 Pop.</div></div>
-<div class="glo-entry"><div class="glo-entry-name">🔮 Tour de Magie</div><div class="glo-entry-desc">+1 Conscription, +10 Mana/tour. Coût : 40 Or, 5 Pop, 20 Mana.</div></div>
-<div class="glo-entry"><div class="glo-entry-name">🎓 Académie militaire</div><div class="glo-entry-desc">Débloque unités avancées. Prérequis : 2 Casernes + 1 Tour de Magie. Coût : 160 Or, 30 Pop, 40 Mana.</div></div>
-<div class="glo-entry"><div class="glo-entry-name">🏹 Archerie</div><div class="glo-entry-desc">Débloque archers. Prérequis : 1 Caserne. Coût : 80 Or, 20 Pop.</div></div>
-<div class="glo-entry"><div class="glo-entry-name">⛪ Église</div><div class="glo-entry-desc">Débloque Prêtre (anti-démon). Coût : 60 Or, 10 Pop, 20 Mana.</div></div>
-<div class="glo-entry"><div class="glo-entry-name">🛕 Temple</div><div class="glo-entry-desc">Unités sacrées avancées. Prérequis : 1 Église. Coût : 120 Or, 20 Pop, 40 Mana.</div></div>
+<p style="font-size:11px;color:#7a6a8a;margin-bottom:10px">Construire un bâtiment prend 1 tour et occupe 1 emplacement sur la tuile.</p>
+
+<div class="glo-entry">
+  <div class="glo-entry-name">🌾 Ferme — 20 Or</div>
+  <div class="glo-entry-desc">+5 Population/tour.<br>Bonus tuile : Prairie ou Lac → +5 Pop/tour supplémentaire.</div>
+</div>
+<div class="glo-entry">
+  <div class="glo-entry-name">⛏ Mine — 20 Pop</div>
+  <div class="glo-entry-desc">+10 Or/tour.<br>Bonus tuile : Collines → +10 Or/tour | Montagne → +20 Or/tour.</div>
+</div>
+<div class="glo-entry">
+  <div class="glo-entry-name">⚔ Caserne — 100 Or, 10 Pop</div>
+  <div class="glo-entry-desc">+2 Conscriptions. Débloque : Soldat, Milicien, Lancier.<br>Bonus tuile : Forêt → +1 Fortification.</div>
+</div>
+<div class="glo-entry">
+  <div class="glo-entry-name">🗼 Tour de Garde — 90 Or, 10 Pop</div>
+  <div class="glo-entry-desc">+1 Conscription, +1 Fortification.</div>
+</div>
+<div class="glo-entry">
+  <div class="glo-entry-name">🔮 Tour de Magie — 30 Or, 5 Pop, 20 Mana</div>
+  <div class="glo-entry-desc">+1 Conscription, +10 Mana/tour. Débloque : Arbalétrier, Prêtre.<br>Bonus tuile : Montagne → +10 Mana/tour.</div>
+</div>
+<div class="glo-entry">
+  <div class="glo-entry-name">🎓 Académie militaire — 150 Or, 30 Pop, 40 Mana</div>
+  <div class="glo-entry-desc">Débloque : Soldat Pavois, Paladin (avec Temple).<br>⚠ Prérequis : 2 Casernes + 1 Tour de Magie.</div>
+</div>
+<div class="glo-entry">
+  <div class="glo-entry-name">🏹 Archerie — 80 Or, 20 Pop</div>
+  <div class="glo-entry-desc">Débloque : Archer, Arbalétrier.<br>⚠ Prérequis : 1 Caserne.</div>
+</div>
+<div class="glo-entry">
+  <div class="glo-entry-name">⛪ Église — 60 Or, 10 Pop, 20 Mana</div>
+  <div class="glo-entry-desc">Débloque : Prêtre (anti-démon).</div>
+</div>
+<div class="glo-entry">
+  <div class="glo-entry-name">🛕 Temple — 120 Or, 20 Pop, 40 Mana</div>
+  <div class="glo-entry-desc">Débloque : Paladin (avec Académie).<br>⚠ Prérequis : 1 Église.</div>
+</div>
+</div>
+
+<div class="glo-section">
+<div class="glo-title">⚔ Unités défensives</div>
+<div class="glo-entry">
+  <div class="glo-entry-name">🗡 Soldat (30 Or, 5 Pop) — Caserne</div>
+  <div class="glo-entry-desc">ATK 3. Trait : Infanterie.</div>
+</div>
+<div class="glo-entry">
+  <div class="glo-entry-name">🪚 Milicien (15 Or, 3 Pop) — Caserne</div>
+  <div class="glo-entry-desc">ATK 1. Trait : Anti-pillard.</div>
+</div>
+<div class="glo-entry">
+  <div class="glo-entry-name">⚔ Lancier (30 Or, 5 Pop) — Caserne</div>
+  <div class="glo-entry-desc">ATK 2. Trait : Anti-cavalerie.</div>
+</div>
+<div class="glo-entry">
+  <div class="glo-entry-name">🏹 Archer (25 Or, 5 Pop) — Archerie</div>
+  <div class="glo-entry-desc">ATK 2. Traits : Anti-vol, Distance.</div>
+</div>
+<div class="glo-entry">
+  <div class="glo-entry-name">🏹 Arbalétrier (40 Or, 6 Pop) — Archerie</div>
+  <div class="glo-entry-desc">ATK 3. Traits : Anti-vol, Anti-distance, Distance.</div>
+</div>
+<div class="glo-entry">
+  <div class="glo-entry-name">🛡 Soldat Pavois (35 Or, 8 Pop) — Académie</div>
+  <div class="glo-entry-desc">ATK 2. Trait : Anti-distance.</div>
+</div>
+<div class="glo-entry">
+  <div class="glo-entry-name">✝ Prêtre (25 Or, 5 Pop, 15 Mana) — Église</div>
+  <div class="glo-entry-desc">ATK 1, ATKMag 3. Trait : Anti-démon.</div>
+</div>
+<div class="glo-entry">
+  <div class="glo-entry-name">⚜ Paladin (55 Or, 10 Pop, 10 Mana) — Académie + Temple</div>
+  <div class="glo-entry-desc">ATK 4, ATKMag 2. Traits : Anti-cavalerie, Anti-mort-vivant.</div>
+</div>
 </div>`,
 
     traits: `
