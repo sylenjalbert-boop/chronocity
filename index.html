@@ -1071,9 +1071,9 @@
 
             <!-- Section IMPÔTS -->
             <div class="action-section" id="sec-tax">
-                <div class="action-section-title">💰 Impôts</div>
+                <div class="action-section-title">🌾 Récolte</div>
                 <div id="tax-resources"></div>
-                <button class="action-main-btn" id="btn-tax" onclick="doTaxAndClose()">Percevoir</button>
+                <button class="action-main-btn" id="btn-tax" onclick="doTaxAndClose()">Récolter</button>
             </div>
 
         </div>
@@ -1266,18 +1266,18 @@ let actionBuildingSelected = null; // bâtiment en attente de placement sur tuil
 // ===== SYSTÈME TUILES =====
 // 25 tuiles (5x5), index 12 = ville
 const TILE_TYPES = {
-    Prairie:  { slots:2, color:'#2d5a1b', emoji:'🌾', desc:'+20 Or | +15 Or/tour | +2 emplacements',
-                perturn:{ gold:15 }, bonuses:{ Ferme:'+5 Pop/tour' } },
-    Collines: { slots:1, color:'#7a6040', emoji:'⛰', desc:'+20 Or | +15 Or/tour | +1 emplacement',
-                perturn:{ gold:15 }, bonuses:{ Mine:'+10 Or/tour' } },
+    Prairie:  { slots:2, color:'#2d5a1b', emoji:'🌾', desc:'+20 Or | +20 Or/tour | +2 emplacements',
+                bonuses:{ Ferme:'+5 Pop/tour' } },
+    Collines: { slots:1, color:'#7a6040', emoji:'⛰', desc:'+20 Or | +20 Or/tour | +1 emplacement',
+                bonuses:{ Mine:'+10 Or/tour' } },
     Côte:     { slots:1, color:'#1a5a7a', emoji:'🌊', desc:'+10 Pop | +10 Pop/tour | +1 emplacement',
-                perturn:{ pop:10 }, bonuses:{} },
+                bonuses:{} },
     Montagne: { slots:1, color:'#5a5060', emoji:'🏔', desc:'+30 Mana | +5 Mana/tour | +1 emplacement',
-                perturn:{ mana:5 }, bonuses:{ Mine:'+20 Or/tour', 'Tour de Magie':'+10 Mana/tour' } },
+                bonuses:{ Mine:'+20 Or/tour', 'Tour de Magie':'+10 Mana/tour' } },
     Lac:      { slots:1, color:'#1a4a6a', emoji:'💧', desc:'+10 Pop | +5 Pop/tour | +1 emplacement',
-                perturn:{ pop:5 }, bonuses:{ Ferme:'+5 Pop/tour' } },
+                bonuses:{ Ferme:'+5 Pop/tour' } },
     Forêt:    { slots:1, color:'#1a4a1a', emoji:'🌲', desc:'+1 Fortification | +1 emplacement',
-                perturn:{}, bonuses:{ Caserne:'+1 Fortification' } },
+                bonuses:{ Caserne:'+1 Fortification' } },
 };
 
 // State des tuiles
@@ -4163,6 +4163,11 @@ const UNIT_CATALOG = [
       gold:25, pop:5,  mana:15, req:'eglise',
       desc:'Repousse les forces démoniaques. Requiert une Église.' },
     // === Temple ===
+    { id:'Hallebardier', name:'Hallebardier', icon:'🪖', atk:4, atkMag:0, pop:8, gold:40, mana:0,
+      traits:['infanterie','anti-cavalerie','anti-cavalerie'], antiWeight:{'anti-cavalerie':2},
+      req: () => (buildingCounts['Académie militaire']||0) >= 1,
+      reqLabel:'Académie militaire',
+      desc:'ATK 4 | Anti-Cavalerie ×2 | Fantassin' },
     { id:'Paladin',       name:'Paladin',           icon:'⚜', atk:4, atkMag:2, traits:['anti-cavalerie','anti-mort-vivant'],
       gold:55, pop:10, mana:10, req:'academie_temple',
       desc:'Élite : anti-cavalerie et anti-mort-vivant. Requiert Académie + Temple.' },
@@ -4177,6 +4182,7 @@ const HORDE_UNITS = {
     vouivre:   { name:'Vouivre',        icon:'🐲', atk:4, atkMag:0, traits:['vol'],          tier:3 },
     pillard:   { name:'Pillard',        icon:'🔥', atk:2, atkMag:0, traits:['pillard'],      tier:2 },
     sapeur:    { name:'Sapeur Gobelin', icon:'⛏', atk:2, atkMag:0, traits:['sapeur'],       tier:3 },
+    loupOrc:   { name:'Chevaucheur de Loup', icon:'🐺', atk:6, atkMag:0, traits:['cavalerie'], traitWeight:{'cavalerie':2}, tier:3 },
     squelette: { name:'Squelette',      icon:'💀', atk:2, atkMag:0, traits:['mort-vivant'],  tier:4 },
     demon:     { name:'Démon',          icon:'😈', atk:3, atkMag:4, traits:['demon'],        tier:4 },
 };
@@ -4206,7 +4212,7 @@ function generateHordeForSeason(season) {
     // Pools de troupes par tier
     const tier1 = [HORDE_UNITS.gobelin, HORDE_UNITS.orc];
     const tier2 = [HORDE_UNITS.pillard, HORDE_UNITS.cavalier, HORDE_UNITS.gobelin];
-    const tier3 = [HORDE_UNITS.vouivre, HORDE_UNITS.archerGob, HORDE_UNITS.cavalier, HORDE_UNITS.sapeur];
+    const tier3 = [HORDE_UNITS.vouivre, HORDE_UNITS.archerGob, HORDE_UNITS.cavalier, HORDE_UNITS.sapeur, HORDE_UNITS.loupOrc];
     const tier4 = [HORDE_UNITS.squelette, HORDE_UNITS.demon, HORDE_UNITS.vouivre, HORDE_UNITS.cavalier];
     const allTiers = [...tier1, ...tier2, ...tier3, ...tier4];
 
@@ -4318,31 +4324,51 @@ function resolveBattle() {
         hordeTraitCounts[t] = (hordeTraitCounts[t]||0)+1;
     }));
 
-    hordeArmy.forEach(u => {
-        let baseAtk = u.atk + u.atkMag;
-        let bonus = 0;
-        let msg = u.icon + ' ' + u.name + ' : base ' + baseAtk;
-
-        u.traits.forEach(trait => {
-            if (HORDE_BONUS[trait] === undefined) return;
-            const atkBonus = HORDE_BONUS[trait](u);
-            const counterTrait = Object.keys(COUNTER_RULES).find(k => COUNTER_RULES[k] === trait);
-            if (!counterTrait) { bonus += atkBonus; return; }
-            // Traits à effet spécial (atkBonus === 0) : gérés par leurs sections dédiées, ne pas consommer antiCounts ici
-            if (atkBonus === 0) return;
-            const isCountered = (antiCounts[counterTrait]||0) > 0;
-            if (isCountered) {
-                antiCounts[counterTrait]--;
-                msg += ' ('+trait+' contré ✓)';
-            } else {
-                bonus += atkBonus;
-                msg += ' +'+atkBonus+' ('+trait+' non contré)';
-            }
+        // ── Résolution par somme pondérée ──
+    const traitNet = {};
+    hordeArmy.forEach(function(u) {
+        const seen = {};
+        u.traits.filter(function(t){ return HORDE_BONUS[t] !== undefined; }).forEach(function(trait) {
+            if (seen[trait]) return; seen[trait] = true;
+            const w = (u.traitWeight && u.traitWeight[trait]) ? u.traitWeight[trait]
+                    : u.traits.filter(function(t2){ return t2===trait; }).length;
+            traitNet[trait] = (traitNet[trait]||0) + w;
         });
-        // Nettoyer les propriétés temporaires
-        delete u._counterUsed;
+    });
+    cityArmy.forEach(function(u) {
+        u.traits.forEach(function(antiTrait) {
+            const trait = COUNTER_RULES[antiTrait];
+            if (!trait) return;
+            const w = (u.antiWeight && u.antiWeight[antiTrait]) ? u.antiWeight[antiTrait] : 1;
+            traitNet[trait] = (traitNet[trait]||0) - w;
+        });
+    });
+    // Allouer les bonus aux unités les plus fortes pour le budget restant
+    const unitBonuses = {};
+    Object.entries(traitNet).forEach(function(entry) {
+        const trait = entry[0], net = entry[1];
+        if (!HORDE_BONUS[trait]) return;
+        if (net <= 0) { hordeLog.push('✓ '+trait+' contré (net='+net+')'); return; }
+        const units = hordeArmy.filter(function(u){ return u.traits.includes(trait); })
+                               .sort(function(a,b){ return (b.atk+b.atkMag)-(a.atk+a.atkMag); });
+        let budget = net;
+        units.forEach(function(u) {
+            if (budget <= 0) return;
+            const uid = hordeArmy.indexOf(u);
+            if (!unitBonuses[uid]) unitBonuses[uid] = {};
+            unitBonuses[uid][trait] = HORDE_BONUS[trait](u);
+            const w = (u.traitWeight && u.traitWeight[trait]) ? u.traitWeight[trait]
+                    : u.traits.filter(function(t){ return t===trait; }).length;
+            budget -= w;
+        });
+        hordeLog.push('⚠ '+trait+' non contré pour '+(Math.ceil(net))+' poids (net=+'+net+')');
+    });
+    hordeArmy.forEach(function(u, uid) {
+        const baseAtk = u.atk + u.atkMag;
+        let bonus = 0;
+        if (unitBonuses[uid]) Object.values(unitBonuses[uid]).forEach(function(b){ bonus += b; });
         hordeAtk += baseAtk + bonus;
-        hordeLog.push(msg);
+        hordeLog.push(u.icon+' '+u.name+' : base '+baseAtk+(bonus?' +'+bonus+' (trait)':''));
     });
 
     const cityLog = [];
@@ -4525,20 +4551,33 @@ function renderArmyTabHorde() {
         return;
     }
     const sNames = ['Printemps','Été','Automne','Hiver'];
-    // Compter les anti par trait pour l'affichage (même logique que le calcul réel)
-    const antiCountsDisplay = {};
-    cityArmy.forEach(function(c){ c.traits.forEach(function(t){
-        if (t.startsWith('anti')) antiCountsDisplay[t] = (antiCountsDisplay[t]||0)+1;
-    }); });
-    const traitCountersUsed = {};
+    // Calculer la somme nette par trait pour l'affichage
+    const traitNetDisplay = {};
+    hordeArmy.concat(hordePrevSeason).concat(hordeCurrentAdditions).forEach(function(u) {
+        if (!u) return;
+        const seen = {};
+        u.traits.filter(function(t){ return HORDE_BONUS[t] !== undefined; }).forEach(function(trait) {
+            if (seen[trait]) return; seen[trait] = true;
+            const w = (u.traitWeight && u.traitWeight[trait]) ? u.traitWeight[trait]
+                    : u.traits.filter(function(t2){ return t2===trait; }).length;
+            traitNetDisplay[trait] = (traitNetDisplay[trait]||0) + w;
+        });
+    });
+    cityArmy.forEach(function(u) {
+        u.traits.forEach(function(antiTrait) {
+            const trait = COUNTER_RULES[antiTrait];
+            if (!trait) return;
+            const w = (u.antiWeight && u.antiWeight[antiTrait]) ? u.antiWeight[antiTrait] : 1;
+            traitNetDisplay[trait] = (traitNetDisplay[trait]||0) - w;
+        });
+    });
+    // Budget par trait restant pour l'affichage
+    const traitBudgetDisplay = Object.assign({}, traitNetDisplay);
     const countered_fn = function(trait) {
-        const counterTrait = Object.keys(COUNTER_RULES).find(function(k){ return COUNTER_RULES[k]===trait; });
-        if (!counterTrait) return false;
-        if (!traitCountersUsed[counterTrait]) traitCountersUsed[counterTrait] = 0;
-        if ((antiCountsDisplay[counterTrait]||0) > traitCountersUsed[counterTrait]) {
-            traitCountersUsed[counterTrait]++;
-            return true;
-        }
+        if (!HORDE_BONUS[trait]) return true; // trait inconnu = contré par défaut
+        if ((traitBudgetDisplay[trait]||0) <= 0) return true; // tout contré
+        // Cette unité consomme 1 du budget
+        traitBudgetDisplay[trait] = (traitBudgetDisplay[trait]||0) - 1;
         return false;
     };
     const hp = calcHordePower();
@@ -5202,40 +5241,50 @@ function renderTaxPanel() {
     // Détail par source
     const sources = [];
 
-    // Tuiles révélées : gain de base + bonus bâtiments posés
+    // Gains de base des tuiles révélées
+    const tileBaseGains = {
+        'Prairie':   { gold:15 },
+        'Collines':  { gold:15 },
+        'Montagne':  { mana:5 },
+        'Lac':       { pop:5 },
+        'Côte':      { pop:10 },
+    };
+    tileState.forEach((t, i) => {
+        if (i === 12 || !t.revealed || !t.type) return;
+        const base = tileBaseGains[t.type];
+        if (base) {
+            sources.push({
+                label: (TILE_TYPES[t.type]?.emoji || '') + ' ' + t.type + ' (base)',
+                gold: base.gold||0, mana: base.mana||0, pop: base.pop||0
+            });
+        }
+    });
+
+    // Bonus de tuile via bâtiments
     tileState.forEach((t, i) => {
         if (i === 12 || !t.revealed) return;
         const tt = TILE_TYPES[t.type];
         if (!tt) return;
-        // Gain de base de la tuile (révélation)
-        const pt = tt.perturn || {};
-        if (pt.gold || pt.mana || pt.pop) {
-            sources.push({
-                label: tt.emoji + ' ' + t.type,
-                gold: pt.gold || 0, mana: pt.mana || 0, pop: pt.pop || 0
-            });
-        }
-        // Bonus combo tuile + bâtiment
+        let gold_s = 0, mana_s = 0, pop_s = 0;
         t.buildings.forEach(bName => {
             const bonus = getTileBonus(t.type, bName);
             if (!bonus) return;
-            let gold_s = 0, mana_s = 0, pop_s = 0;
-            if (bonus.includes('Or'))   gold_s = parseInt(bonus);
-            if (bonus.includes('Mana')) mana_s = parseInt(bonus);
-            if (bonus.includes('Pop'))  pop_s  = parseInt(bonus);
-            if (gold_s || mana_s || pop_s) {
-                sources.push({
-                    label: tt.emoji + ' ' + t.type + ' + ' + bName,
-                    gold: gold_s, mana: mana_s, pop: pop_s
-                });
-            }
+            if (bonus.includes('Or'))  gold_s += parseInt(bonus);
+            if (bonus.includes('Mana')) mana_s += parseInt(bonus);
+            if (bonus.includes('Pop'))  pop_s  += parseInt(bonus);
         });
+        if (gold_s || mana_s || pop_s) {
+            sources.push({
+                label: tt.emoji + ' ' + t.type + ' ('+t.buildings.map(b=>b.slice(0,8)).join(', ')+')',
+                gold: gold_s, mana: mana_s, pop: pop_s
+            });
+        }
     });
 
     // Bâtiments de base (gains fixes)
     const bldGains = {
-        'Ferme':       { pop:5  },
-        'Mine':        { gold:10 },
+        'Ferme':        { pop:5  },
+        'Mine':         { gold:10 },
         'Tour de Magie':{ mana:10 },
     };
     Object.entries(buildingCounts).forEach(([bName, n]) => {
@@ -6224,14 +6273,9 @@ function recalcBuildingEffects() {
     fortifications = 1 + (m.city ? m.city.fortif   || 0 : 0) + (m.cityLevel || 0);
     space          = m.city ? m.city.space || 0 : 0;
 
-    // Gains par tour des tuiles révélées (base + fortification Forêt)
+    // Bonus de révélation de tuile Forêt (permanent)
     tileState.forEach(function(tile) {
-        if (!tile.revealed || !tile.type) return;
-        if (tile.type === 'Forêt') fortifications += 1;
-        const pt = (TILE_TYPES[tile.type] || {}).perturn || {};
-        if (pt.gold) goldperturn += pt.gold;
-        if (pt.mana) manaperturn += pt.mana;
-        if (pt.pop)  populationperturn += pt.pop;
+        if (tile.revealed && tile.type === 'Forêt') fortifications += 1;
     });
 
     // ── Réappliquer les effets de chaque bâtiment + bonus de tuile ──
