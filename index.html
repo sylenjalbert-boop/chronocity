@@ -544,90 +544,60 @@
 </div>
 
 
-<!-- ═══ FENÊTRE ÉQUIPEMENT AVATAR ═══ -->
-<div id="equip-window" style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#080810;border:1px solid #3a2a5a;border-radius:14px;padding:0;z-index:10000;width:min(96vw,560px);max-height:90vh;overflow-y:auto;box-shadow:0 0 40px rgba(60,30,100,0.5);flex-direction:column">
+<!-- ═══ FENÊTRE PRÉ-DONJON ═══ -->
+<div id="pre-dungeon-window" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);z-index:10001;align-items:center;justify-content:center">
+<div style="background:#080810;border:1px solid #3a2a3a;border-radius:14px;width:min(96vw,480px);padding:20px;box-shadow:0 0 40px rgba(100,30,60,0.4);display:flex;flex-direction:column;gap:12px">
+    <div style="font-family:Cinzel,serif;font-size:17px;color:#c0a060;text-align:center;letter-spacing:2px">⚔ Partir en Donjon</div>
+    <div style="font-size:12px;color:#7a6a8a;text-align:center">Préparez votre avatar avant d'entrer.</div>
+    <!-- Stats rapides -->
+    <div id="predng-stats" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;background:#0a0812;border-radius:8px;padding:8px"></div>
+    <!-- Équipement actuel -->
+    <div id="predng-equip" style="font-size:11px;color:#9a8a6a;line-height:1.8;background:#0a0812;border-radius:8px;padding:8px"></div>
+    <!-- Boutons -->
+    <div style="display:flex;gap:8px">
+        <button onclick="closePredngWindow();openEquipWindow(true);" style="flex:1;background:linear-gradient(135deg,#1a1030,#2a1a40);border:1px solid #5040a0;color:#c080ff;border-radius:8px;padding:10px 0;font-family:Cinzel,serif;font-size:12px;cursor:pointer">⚔ S'équiper</button>
+        <button onclick="confirmEnterDungeon()" style="flex:2;background:linear-gradient(135deg,#1a0a0a,#3a1010);border:1px solid #8a3030;color:#ffb0b0;border-radius:8px;padding:10px 0;font-family:Cinzel,serif;font-size:13px;cursor:pointer;letter-spacing:1px">▶ Entrer dans le Donjon</button>
+    </div>
+    <button onclick="closePredngWindow()" style="background:none;border:none;color:#4a3a5a;cursor:pointer;font-size:11px">← Annuler</button>
+</div>
+</div>
+
+<!-- ═══ FENÊTRE ÉQUIPEMENT ═══ -->
+<div id="equip-window" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);z-index:10000;align-items:center;justify-content:center">
+<div style="background:#080810;border:1px solid #3a2a5a;border-radius:14px;width:min(98vw,800px);max-height:92vh;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 0 40px rgba(60,30,100,0.5)">
     <!-- Header -->
-    <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 16px;border-bottom:1px solid #1a1228;background:#0c0818;border-radius:14px 14px 0 0">
-        <div style="font-family:Cinzel,serif;font-size:15px;color:#c0a060;letter-spacing:1px">⚔ Équipement de l'Avatar</div>
-        <button onclick="closeEquipWindow()" style="background:none;border:none;color:#6a5a80;font-size:20px;cursor:pointer;line-height:1">✕</button>
-    </div>
-    <div style="display:flex;gap:0;flex-wrap:wrap">
-        <!-- Colonne gauche : avatar + slots -->
-        <div style="flex:0 0 200px;padding:12px;border-right:1px solid #1a1228">
-            <!-- Avatar image -->
-            <div style="width:120px;height:120px;margin:0 auto 12px;background:#0a0818;border:2px solid #2a1a3a;border-radius:10px;overflow:hidden;display:flex;align-items:center;justify-content:center">
-                <img id="ew-avatar-img" src="" style="width:100%;height:100%;object-fit:cover" onerror="this.style.display='none'">
-                <div id="ew-avatar-emoji" style="font-size:50px;display:none">🧙</div>
-            </div>
-            <!-- Slots équipement -->
-            <div style="display:flex;flex-direction:column;gap:5px">
-                <div style="font-size:9px;color:#4a3a5a;text-align:center;letter-spacing:1px;margin-bottom:2px">ÉQUIPEMENT</div>
-                <div class="ew-slot" id="slot-weapon_main" data-slot="weapon_main" onclick="openSlotPicker('weapon_main')">🗡 Arme principale<span class="ew-slot-item"></span></div>
-                <div class="ew-slot" id="slot-weapon_off"  data-slot="weapon_off"  onclick="openSlotPicker('weapon_off')" >🛡 Arme / Bouclier secondaire<span class="ew-slot-item"></span></div>
-                <div class="ew-slot" id="slot-armor"      data-slot="armor"      onclick="openSlotPicker('armor')"     >🥋 Armure<span class="ew-slot-item"></span></div>
-                <div class="ew-slot" id="slot-necklace"   data-slot="necklace"   onclick="openSlotPicker('necklace')"  >📿 Collier<span class="ew-slot-item"></span></div>
-                <div class="ew-slot" id="slot-belt"       data-slot="belt"       onclick="openSlotPicker('belt')"      >🪢 Ceinture<span class="ew-slot-item"></span></div>
-                <div style="font-size:9px;color:#4a3a5a;text-align:center;letter-spacing:1px;margin:4px 0 2px">ACTIFS</div>
-                <div class="ew-slot" id="slot-glyph"  data-slot="glyph"  onclick="openSlotPicker('glyph')" >🔮 Glyphe<span class="ew-slot-item"></span></div>
-                <div class="ew-slot" id="slot-potion" data-slot="potion" onclick="openSlotPicker('potion')">🧪 Potion<span class="ew-slot-item"></span></div>
-            </div>
-        </div>
-        <!-- Colonne droite : stats + picker -->
-        <div style="flex:1;min-width:200px;padding:12px;display:flex;flex-direction:column;gap:8px">
-            <!-- Stats avatar -->
-            <div id="ew-stats" style="background:#0a0812;border:1px solid #1a1228;border-radius:8px;padding:8px 10px;font-size:11px;line-height:2"></div>
-            <!-- Picker items -->
-            <div id="ew-picker" style="display:none;flex-direction:column;gap:4px">
-                <div id="ew-picker-title" style="font-size:10px;color:#9a8a6a;font-family:Cinzel,serif;margin-bottom:4px"></div>
-                <div id="ew-picker-items" style="display:flex;flex-direction:column;gap:4px;max-height:200px;overflow-y:auto"></div>
-            </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 16px;border-bottom:1px solid #1a1228;background:#0c0818;flex-shrink:0">
+        <div style="font-family:Cinzel,serif;font-size:15px;color:#c0a060;letter-spacing:1px">⚔ Équipement</div>
+        <div style="display:flex;gap:8px;align-items:center">
+            <span id="ew-resources" style="font-size:11px;color:#9a8a6a"></span>
+            <button onclick="closeEquipWindow()" style="background:none;border:none;color:#6a5a80;font-size:20px;cursor:pointer;line-height:1">✕</button>
         </div>
     </div>
+    <!-- Body -->
+    <div style="display:flex;flex:1;overflow:hidden;min-height:0">
+        <!-- Colonne gauche : slots équipés -->
+        <div style="width:220px;flex-shrink:0;padding:10px;border-right:1px solid #1a1228;overflow-y:auto;display:flex;flex-direction:column;gap:4px">
+            <img id="ew-avatar-img" src="" style="width:80px;height:80px;object-fit:cover;border-radius:8px;border:2px solid #2a1a3a;display:block;margin:0 auto 8px">
+            <div id="ew-stats" style="background:#0a0812;border:1px solid #1a1228;border-radius:6px;padding:6px 8px;font-size:10px;line-height:1.8;margin-bottom:6px"></div>
+            <div style="font-size:9px;color:#4a3a5a;letter-spacing:1px;margin:2px 0">ÉQUIPEMENT</div>
+            <div class="ew-slot" id="slot-weapon_main" onclick="ewSelectSlot('weapon_main')">🗡 Arme princ.<span class="ew-slot-item"></span></div>
+            <div class="ew-slot" id="slot-weapon_off"  onclick="ewSelectSlot('weapon_off')">🛡 Arme/Bouclier<span class="ew-slot-item"></span></div>
+            <div class="ew-slot" id="slot-armor"       onclick="ewSelectSlot('armor')">🥋 Armure<span class="ew-slot-item"></span></div>
+            <div class="ew-slot" id="slot-necklace"    onclick="ewSelectSlot('necklace')">📿 Collier<span class="ew-slot-item"></span></div>
+            <div class="ew-slot" id="slot-belt"        onclick="ewSelectSlot('belt')">🪢 Ceinture<span class="ew-slot-item"></span></div>
+            <div style="font-size:9px;color:#4a3a5a;letter-spacing:1px;margin:4px 0 2px">ACTIFS</div>
+            <div id="ew-glyph-slots"></div>
+            <div id="ew-potion-slots"></div>
+        </div>
+        <!-- Colonne droite : catalogue -->
+        <div style="flex:1;overflow-y:auto;padding:10px;display:flex;flex-direction:column;gap:6px">
+            <div id="ew-filter-bar" style="display:none"></div>
+            <div id="ew-catalog-items" style="display:flex;flex-direction:column;gap:4px"></div>
+        </div>
+    </div>
+    <!-- Footer optionnel -->
+    <div id="ew-footer" style="display:none;padding:8px 16px;border-top:1px solid #1a1228;background:#0c0818;flex-shrink:0"></div>
 </div>
-
-
-<!-- ════ ÉCRAN D'ACCUEIL ════ -->
-<div id="home-screen">
-    <div style="text-align:center;margin-bottom:10px">
-        <div style="font-family:Cinzel,serif;font-size:32px;color:#c0a060;letter-spacing:3px;text-shadow:0 0 20px rgba(180,140,60,0.4)">⚔ Chroniques des Tuiles</div>
-        <div style="font-size:11px;color:#4a3a5a;margin-top:6px;letter-spacing:2px">VERSION 0.9</div>
-    </div>
-
-    <!-- Menu principal -->
-    <div id="home-menu" style="display:flex;flex-direction:column;gap:10px;width:min(340px,90vw)">
-        <button class="home-btn" onclick="homeLoad()"
-            style="background:linear-gradient(135deg,#1a1030,#2a1a40);color:#c080ff;border:1px solid #5040a0">
-            📂 Charger une partie
-        </button>
-        <button class="home-btn" onclick="homeNew()"
-            style="background:linear-gradient(135deg,#0a1a0a,#1a2a0a);color:#4cffaa;border:1px solid #2a5a2a">
-            ✦ Commencer une partie
-        </button>
-        <button class="home-btn" onclick="openGlossary()"
-            style="background:linear-gradient(135deg,#0a0818,#1a1028);color:#9a8a6a;border:1px solid #2a1a3a">
-            📖 Glossaire
-        </button>
-    </div>
-
-    <!-- Slots charger / nouveau -->
-    <div id="home-slots"></div>
-    <button id="home-back-btn" onclick="homeBack()" style="display:none;background:none;border:none;color:#4a3a5a;cursor:pointer;font-size:12px;margin-top:4px">← Retour</button>
-</div>
-
-<!-- ════ GLOSSAIRE ════ -->
-<div id="glossary-screen">
-    <div style="display:flex;align-items:center;padding:10px 14px;border-bottom:1px solid #1a1228;background:#0a0812;flex-shrink:0">
-        <button onclick="closeGlossary()" style="background:none;border:none;color:#6a5a80;font-size:18px;cursor:pointer;margin-right:10px">←</button>
-        <div style="font-family:Cinzel,serif;font-size:15px;color:#c0a060">📖 Glossaire</div>
-    </div>
-    <div id="glossary-tabs">
-        <div class="glo-tab active" onclick="gloTab('terrains')">🗺 Terrains</div>
-        <div class="glo-tab" onclick="gloTab('batiments')">🏗 Bâtiments</div>
-        <div class="glo-tab" onclick="gloTab('traits')">⚔ Traits Horde</div>
-        <div class="glo-tab" onclick="gloTab('monstres')">👹 Monstres</div>
-        <div class="glo-tab" onclick="gloTab('combat')">🎯 Combat</div>
-    </div>
-    <div id="glossary-content"></div>
 </div>
 
 <div id="explore-popup">
@@ -1094,11 +1064,10 @@
         <!-- Panneau équipement/armée -->
         <div id="equip-panel">
             <div id="equip-tabs">
-                <button class="eq-tab active" id="etab-equip" onclick="equipTab('equip')">⚔ Équipement</button>
-                <button class="eq-tab"        id="etab-army"  onclick="equipTab('army')">🛡 Armée</button>
+                <button class="eq-tab active" id="etab-army" onclick="equipTab('army')">🛡 Armée</button>
             </div>
-            <div id="equip-tab-equip" class="eq-panel"></div>
-            <div id="equip-tab-army"  class="eq-panel" style="display:none"></div>
+            <div id="equip-tab-equip" class="eq-panel" style="display:none"></div>
+            <div id="equip-tab-army"  class="eq-panel"></div>
         </div>
 
         <!-- Panneau ressources -->
@@ -1231,10 +1200,11 @@ let ownedEquipment = {};        // équipements achetés {id: true}
 let equippedItems = {
     weapon_main: null, weapon_off: null,
     armor: null, necklace: null, belt: null,
-    glyph: null, potion: null
+    glyphs: [], // tableau de slots glyphes
+    potions: [] // tableau de slots potions
 };
-let glyphSlots  = 1; // nombre de slots glyphes (extensible méta)
-let potionSlots = 1; // nombre de slots potions (extensible méta)
+function getGlyphSlots() { return 1 + (getMeta().heroLevel || 0); }
+function getPotionSlots() { return 1 + (getMeta().heroLevel || 0); }
 let hordeAggressiveness = 0;
 let runDeaths = 0;        // morts dans ce run
 let runDustSpent = 0;     // poussière dépensée dans ce run
@@ -1660,7 +1630,7 @@ function openGoblinFight() {
     dungeonState.noFleeNext = false;
     dungeonState.collectedLoot = [];
     document.getElementById('dungeon-log').innerHTML = '';
-    document.getElementById('dungeon-screen').classList.add('show');
+    document.getElementById('dungeon-screen')?.classList.add('show');
     document.getElementById('dungeon-title').textContent = '👺 Combat';
     // Entrer directement dans la salle gobelin
     enterRoom({ r: dungeonState.generatedRooms[0], i: 0 });
@@ -1744,9 +1714,8 @@ function offerDungeon() {
     if (hint) hint.innerHTML = '';
     const skip = document.getElementById('tile-skip-btn');
     if (skip) skip.innerHTML = '';
-    hideExplorePopup(); // retire le flou // s'assurer que le flou est retiré
-    addLog("L'avatar entre dans le donjon !");
-    openDungeon(() => { nextTurn(); });
+    hideExplorePopup();
+    showPreDungeonWindow(() => { openDungeon(() => { nextTurn(); }); });
 }
 
 function avatarExplore(yes) {
@@ -1755,7 +1724,7 @@ function avatarExplore(yes) {
         addLog("L'avatar découvre l'entrée d'un donjon !");
         showExplorePopup('Donjon', `${3 + currentTurn - 1}+ salles | Butin rare`, "Des flambeaux illuminent un couloir sombre...");
         setTimeout(() => {
-            openDungeon(() => { nextTurn(); });
+            showPreDungeonWindow(() => { openDungeon(() => { nextTurn(); }); });
         }, 2400);
     } else {
         nextTurn();
@@ -2359,7 +2328,7 @@ function openDungeon(afterCallback) {
     dungeonState.avatarHp    = avatarHp;
     dungeonState.avatarMaxHp = avatarMaxHp;
     document.getElementById('dungeon-log').innerHTML = '';
-    document.getElementById('dungeon-screen').classList.add('show');
+    document.getElementById('dungeon-screen')?.classList.add('show');
     document.getElementById('dungeon-title').textContent = '🏰 Donjon';
     showDoorChoice();
 }
@@ -2828,7 +2797,7 @@ function dngRenderHist() {
 }
 
 function dungeonBarClick() {
-    document.getElementById('dungeon-screen').classList.remove('attack-active');
+    document.getElementById('dungeon-screen')?.classList.remove('attack-active');
     if(dngTiming.phase!=='timing') return;
     dngStopAnim();
     dngShowAttackBtn(false); // garder jauge visible pendant résolution
@@ -3559,6 +3528,30 @@ function triggerRoundEffects() {
     });
 }
 
+function dngUpdateCombatUI() {
+    // Mettre à jour les boutons potions en combat
+    const row = document.getElementById('dng-potions-row');
+    if (!row) return;
+    while (row.children.length > 0) row.removeChild(row.lastChild);
+    if (potionHeal > 0) {
+        const btn = document.createElement('button');
+        btn.className = 'dng-btn';
+        btn.style.cssText = 'background:linear-gradient(135deg,#0a1a0a,#1a2a0a);border-color:#2a5a2a;color:#4cffaa';
+        btn.innerHTML = '🧪 Soin ×'+potionHeal;
+        btn.onclick = function(){ dungeonUsePotion('heal'); };
+        row.appendChild(btn);
+    }
+    if (potionAntiPoison > 0) {
+        const btn = document.createElement('button');
+        btn.className = 'dng-btn';
+        btn.style.cssText = 'background:linear-gradient(135deg,#001a0a,#002a1a);border-color:#0a5a2a;color:#40ffaa';
+        btn.innerHTML = '🟢 Anti-Poison ×'+potionAntiPoison;
+        btn.onclick = function(){ dungeonUsePotion('antipoison'); };
+        row.appendChild(btn);
+    }
+    row.style.display = (potionHeal > 0 || potionAntiPoison > 0) ? 'flex' : 'none';
+}
+
 function dngShowAttackBtn(show) {
     dngUpdateCombatUI();
     const btn = document.getElementById('dng-btn-attack');
@@ -3567,7 +3560,8 @@ function dngShowAttackBtn(show) {
     if (show) {
         if (btn) { btn.disabled = false; btn.style.display = ''; btn.style.opacity = '1'; }
         if (tw)  tw.style.display = 'none';
-        document.getElementById('dungeon-screen').classList.remove('attack-active');
+        const ds = document.getElementById('dungeon-screen');
+        if (ds) ds.classList.remove('attack-active');
     } else {
         if (btn) { btn.disabled = true; btn.style.display = 'none'; }
         if (tw)  tw.style.display = '';
@@ -3583,7 +3577,7 @@ function dungeonStartAttack(e) {
     const tw = document.getElementById('dng-timing-wrap');
     if (tw) tw.style.display = '';
     moveMobileEnemies();
-    document.getElementById('dungeon-screen').classList.add('attack-active');
+    document.getElementById('dungeon-screen')?.classList.add('attack-active');
     dngSetupZones();
     dngStartAnim();
 }
@@ -3987,13 +3981,13 @@ function dungeonAvatarDied() {
     const ov = document.getElementById('dng-die-overlay');
     if (ov) ov.style.display = 'none';
     setTimeout(() => {
-        document.getElementById('dungeon-screen').classList.remove('show');
+        document.getElementById('dungeon-screen')?.classList.remove('show');
         showDefeatScreen();
     }, 1200);
 }
 
 function closeDungeon() {
-    document.getElementById('dungeon-screen').classList.remove('show');
+    document.getElementById('dungeon-screen')?.classList.remove('show');
     setWaitingDungeon(false);
     setTurnProcessing(false);
     document.body.classList.remove('processing', 'waiting-dungeon');
@@ -4762,12 +4756,8 @@ function renderRecruitList() {
     conscrHeader.style.cssText='font-size:12px;color:#ffb040;margin-bottom:6px;padding:4px 8px;background:#2a1a00;border-radius:6px';
     conscrHeader.textContent = '⚔ Conscription disponible : '+conscrit;
     el.appendChild(conscrHeader);
-    if (!hasCaserne) {
-        const p = document.createElement('p'); p.style.cssText='color:#9a8a6a;font-size:12px;font-style:italic';
-        p.textContent='Construisez une Caserne pour recruter.'; el.appendChild(p);
-        return;
-    }
     el.innerHTML = '';
+    el.appendChild(conscrHeader);
     UNIT_CATALOG.forEach(u => {
             const available = checkEqReq(u.req);
         const canAfford = gold >= u.gold && population >= u.pop && mana >= u.mana;
@@ -5388,12 +5378,14 @@ function renderTaxPanel() {
 
 // ---- Panneau équipement/armée ----
 function equipTab(tab) {
-    ['equip','army'].forEach(t => {
-        document.getElementById('equip-tab-'+t).style.display = t===tab?'':'none';
-        document.getElementById('etab-'+t).classList.toggle('active', t===tab);
-    });
-    if (tab==='equip') renderActionEquipTab();
-    if (tab==='army') { const el=document.getElementById('equip-tab-army'); el.innerHTML=''; renderRecruitListIn(el); }
+    const armyEl = document.getElementById('equip-tab-army');
+    if (armyEl) armyEl.style.display = '';
+    const armyBtn = document.getElementById('etab-army');
+    if (armyBtn) armyBtn.classList.add('active');
+    if (tab==='army') {
+        const el = document.getElementById('equip-tab-army');
+        if (el) { el.innerHTML=''; renderRecruitListIn(el); }
+    }
 }
 
 // ---- Ressources ----
@@ -5625,12 +5617,11 @@ function renderRecruitListIn(el) {
     conscrHeader.style.cssText='font-size:12px;color:#ffb040;margin-bottom:6px;padding:4px 8px;background:#2a1a00;border-radius:6px';
     conscrHeader.textContent = '⚔ Conscription disponible : '+conscrit;
     el.appendChild(conscrHeader);
-    if (!hasCaserne) {
-        const p=document.createElement('p');p.style.cssText='color:#9a8a6a;font-size:12px;font-style:italic';
-        p.textContent='Construisez une Caserne pour recruter.';el.appendChild(p);return;
-    }
     UNIT_CATALOG.forEach(u => {
-        const available = u.req==='caserne'?hasCaserne:hasAcademie;
+        const available = u.req === null || u.req === undefined ? true
+                        : typeof u.req === 'function' ? u.req()
+                        : u.req === 'caserne' ? hasCaserne
+                        : hasAcademie;
         const canAfford = gold>=u.gold && population>=u.pop && mana>=u.mana && conscrit>0;
         const card=document.createElement('div');
         card.className='unit-card'+((!available||!canAfford)?' unit-disabled':'');
@@ -6125,686 +6116,328 @@ function metaBuyCityLevel() {
 }
 
 
-// ═══════════════════════════════════════════════
-// FENÊTRE ÉQUIPEMENT
-// ═══════════════════════════════════════════════
-const SLOT_LABELS = {
-    weapon_main:'Arme principale', weapon_off:'Arme secondaire / Bouclier',
-    armor:'Armure', necklace:'Collier', belt:'Ceinture', glyph:'Glyphe', potion:'Potion'
-};
 
-function openEquipWindow() {
+// ═══════════════════════════════════════════════
+// FENÊTRE ÉQUIPEMENT FUSIONNÉE
+// ═══════════════════════════════════════════════
+
+let ewCurrentSlot = null;
+let ewPredungeonCallback = null;
+let ewFromPreDungeon = false;
+
+function showPreDungeonWindow(callback) {
+    ewPredungeonCallback = callback;
+    const w = document.getElementById('pre-dungeon-window');
+    if (!w) { callback(); return; }
+
+    // Stats rapides
+    const stats = document.getElementById('predng-stats');
+    if (stats) stats.innerHTML = [
+        ['❤ HP', avatarHp+'/'+avatarMaxHp],
+        ['⚔ ATK', atk],
+        ['🗡 Dmg', avatarDmg],
+        ['🛡 DEF', def],
+        ['💫 Prot', protection],
+        ['🏹 Dist', avatarRanged?'Oui':'Non']
+    ].map(function(e){ return '<div style="text-align:center;background:#0c0818;border-radius:5px;padding:4px"><div style="font-size:9px;color:#6a5a7a">'+e[0]+'</div><div style="font-size:13px;font-weight:bold;color:#c0a060">'+e[1]+'</div></div>'; }).join('');
+
+    // Équipement actuel
+    const eq = document.getElementById('predng-equip');
+    if (eq) {
+        const slots = [
+            ['weapon_main','🗡'], ['weapon_off','🛡'], ['armor','🥋'],
+            ['necklace','📿'], ['belt','🪢']
+        ];
+        const gSlots = getGlyphSlots(), pSlots = getPotionSlots();
+        let html = '';
+        slots.forEach(function(s) {
+            const id = equippedItems[s[0]];
+            const item = id ? EQUIPMENT_CATALOG.find(function(i){ return i.id===id; }) : null;
+            html += '<span style="color:'+(item?'#c0a060':'#3a2a4a')+'">' + s[1] + ' ' + (item?item.name:'—') + '</span><br>';
+        });
+        for (let i=0; i<gSlots; i++) {
+            const id = equippedItems.glyphs[i];
+            const item = id ? EQUIPMENT_CATALOG.find(function(x){ return x.id===id; }) : null;
+            html += '<span style="color:'+(item?'#c080ff':'#3a2a4a')+'">🔮 ' + (item?item.name:'—') + '</span><br>';
+        }
+        for (let i=0; i<pSlots; i++) {
+            const id = equippedItems.potions[i];
+            const item = id ? EQUIPMENT_CATALOG.find(function(x){ return x.id===id; }) : null;
+            html += '<span style="color:'+(item?'#4cffaa':'#3a2a4a')+'">🧪 ' + (item?item.name:'—') + '</span><br>';
+        }
+        eq.innerHTML = html;
+    }
+
+    w.style.display = 'flex';
+}
+
+function closePredngWindow() {
+    const w = document.getElementById('pre-dungeon-window');
+    if (w) w.style.display = 'none';
+}
+
+function confirmEnterDungeon() {
+    closePredngWindow();
+    closeEquipWindow();
+    if (ewPredungeonCallback) ewPredungeonCallback();
+}
+
+function openEquipWindow(fromPredng) {
     const w = document.getElementById('equip-window');
     if (!w) return;
     w.style.display = 'flex';
+    ewCurrentSlot = null;
+    ewFromPreDungeon = !!fromPredng;
     renderEquipWindow();
 }
 
 function closeEquipWindow() {
     const w = document.getElementById('equip-window');
     if (w) w.style.display = 'none';
-    document.getElementById('ew-picker').style.display = 'none';
+    // Rouvrir le pré-donjon SEULEMENT si on y était (fenêtre pré-donjon était visible)
+    if (ewPredungeonCallback && ewFromPreDungeon) {
+        ewFromPreDungeon = false;
+        showPreDungeonWindow(ewPredungeonCallback);
+    }
 }
 
 function renderEquipWindow() {
-    // Stats
+    // Ressources
+    const resEl = document.getElementById('ew-resources');
+    if (resEl) resEl.innerHTML = '🪙'+gold+' ✨'+mana+' 👥'+population;
+
+    // Stats avatar
     const statsEl = document.getElementById('ew-stats');
-    if (statsEl) {
-        statsEl.innerHTML =
-            '<div style="display:grid;grid-template-columns:1fr 1fr;gap:2px">' +
-            statRow('⚔ ATK', atk) + statRow('🗡 Dégâts', avatarDmg) +
-            statRow('🛡 DEF', def) + statRow('💫 Prot', protection) +
-            statRow('❤ HP', avatarHp+'/'+avatarMaxHp) +
-            statRow('🏹 Distance', avatarRanged?'Oui':'Non') +
-            (avatarScythe ? statRow('⚰ Faux','Oui') : '') +
-            (avatarMagicWeapon ? statRow('✨ Mag','Oui') : '') +
-            (avatarBlessedNecklace ? statRow('✝ Béni','Oui') : '') +
-            (avatarImmunePoison ? statRow('🟢 Poison','Immu') : '') +
-            (avatarImmuneStun ? statRow('💨 Stun','Immu') : '') +
-            '</div>';
-    }
-    // Slots
-    Object.keys(SLOT_LABELS).forEach(function(slot) {
-        const el = document.getElementById('slot-' + slot);
-        if (!el) return;
-        const itemId = equippedItems[slot];
-        const span = el.querySelector('.ew-slot-item');
-        if (itemId) {
-            const item = EQUIPMENT_CATALOG.find(function(i){ return i.id === itemId; });
-            el.classList.add('equipped');
-            if (span) span.textContent = (item ? item.icon+' '+item.name : itemId);
-        } else {
-            el.classList.remove('equipped');
-            if (span) span.textContent = '';
-        }
-    });
-    // Avatar img
+    if (statsEl) statsEl.innerHTML = [
+        ['⚔','ATK',atk], ['🗡','Dmg',avatarDmg], ['🛡','DEF',def],
+        ['💫','Prot',protection], ['❤','HP',avatarHp+'/'+avatarMaxHp],
+        avatarRanged?['🏹','Dist','Oui']:null,
+        avatarScythe?['⚰','Faux','Oui']:null,
+    ].filter(Boolean).map(function(e){
+        return '<div style="display:flex;justify-content:space-between"><span style="color:#6a5a7a">'+e[0]+' '+e[1]+'</span><span style="color:#c0a060;font-weight:bold">'+e[2]+'</span></div>';
+    }).join('');
+
+    // Image avatar
     const imgEl = document.getElementById('ew-avatar-img');
-    const avatarImg = document.getElementById('dng-avatar-img') || document.querySelector('#dng-avatar-side img');
-    if (imgEl && avatarImg) { imgEl.src = avatarImg.src; imgEl.style.display='block'; }
-}
+    const avatarSrc = document.querySelector('#dng-avatar-side img');
+    if (imgEl && avatarSrc) imgEl.src = avatarSrc.src;
 
-function statRow(label, val) {
-    return '<div style="padding:2px 4px;color:#9a8a6a;font-size:10px">'+label+'</div>' +
-           '<div style="padding:2px 4px;color:#d4c49a;font-weight:bold;font-size:10px">'+val+'</div>';
-}
-
-function openSlotPicker(slot) {
-    const picker = document.getElementById('ew-picker');
-    const title = document.getElementById('ew-picker-title');
-    const items = document.getElementById('ew-picker-items');
-    if (!picker || !items) return;
-
-    // Vérifier si weapon_off est bloqué par arme 2 mains
-    const mainId = equippedItems['weapon_main'];
-    const mainItem2h = mainId ? EQUIPMENT_CATALOG.find(function(i){ return i.id === mainId && i.is2h; }) : null;
-    if (slot === 'weapon_off' && mainItem2h) {
-        title.textContent = '⚠ Bloqué — ' + mainItem2h.name + ' est une arme 2 mains';
-        items.innerHTML = '<div style="color:#ff8060;font-size:11px;padding:8px">Retirez d&#39;abord l&#39;arme principale pour &#233;quiper une arme secondaire ou un bouclier.</div>';
-        picker.style.display = 'flex';
-        return;
-    }
-    title.textContent = SLOT_LABELS[slot] + " — choisir un item";
-    items.innerHTML = '';
-
-    // Option : retirer l'item équipé
-    const currentId = equippedItems[slot];
-    if (currentId) {
-        const unequipBtn = document.createElement('div');
-        unequipBtn.className = 'ew-item-btn';
-        unequipBtn.style.cssText += ';border-color:#5a2a2a;color:#ff8080';
-        unequipBtn.innerHTML = "❌ Retirer l'équipement actuel";
-        unequipBtn.onclick = function() { unequipSlot(slot); };
-        items.appendChild(unequipBtn);
-    }
-
-    // Items disponibles pour ce slot
-    let available = EQUIPMENT_CATALOG.filter(function(i) {
-        if (!ownedEquipment[i.id]) return false;
-        if (i.isGlyph || i.isPotion) return false;
-        if (slot === 'weapon_main') return i.slot === 'weapon_main';
-        if (slot === 'weapon_off') {
-            // Boucliers + armes 1 main (pas 2 mains)
-            if (i.slot !== 'weapon_off' && i.slot !== 'weapon_main') return false;
-            if (i.slot === 'weapon_main' && i.is2h) return false; // pas de 2 mains en secondaire
-            return true;
-        }
-        return i.slot === slot;
-    });
-    const glyphs = slot === 'glyph' ? EQUIPMENT_CATALOG.filter(function(i) {
-        if (!i.isGlyph) return false;
-        if (i.id === 'Fireball') return glyphFireball > 0;
-        if (i.id === 'Rage') return glyphRage > 0;
-        if (i.id === 'Bless') return glyphBless > 0;
-        return false;
-    }) : [];
-    const potions = slot === 'potion' ? EQUIPMENT_CATALOG.filter(function(i) {
-        if (!i.isPotion) return false;
-        if (i.id === 'PotionSoin') return potionHeal > 0;
-        if (i.id === 'PotionPoison') return potionAntiPoison > 0;
-        return false;
-    }) : [];
-    const all = [...available, ...glyphs, ...potions];
-
-    if (all.length === 0 && !currentId) {
-        const empty = document.createElement('div');
-        empty.style.cssText = 'color:#4a3a5a;font-size:11px;padding:8px;text-align:center';
-        empty.textContent = 'Aucun item disponible pour ce slot';
-        items.appendChild(empty);
-    }
-
-    all.forEach(function(item) {
-        // Vérifier si déjà équipé dans un autre slot
-        const equippedElsewhere = Object.entries(equippedItems).some(function(e){ return e[0]!==slot && e[1]===item.id; });
-        const isEquipped = equippedItems[slot] === item.id;
-        const btn = document.createElement('div');
-        btn.className = 'ew-item-btn' + (isEquipped?' selected':'') + (equippedElsewhere?' locked':'');
-        btn.innerHTML = '<span style="font-size:16px">' + (item.icon||'📦') + '</span>' +
-            '<div><div>' + item.name + '</div><div class="ew-item-desc">' + item.desc + '</div></div>' +
-            (isEquipped ? '<span style="color:#4cffaa;font-size:10px">✓</span>' : '');
-        if (!equippedElsewhere) {
-            btn.onclick = function() { equipItem(slot, item.id); };
-        }
-        items.appendChild(btn);
+    // Slots fixes
+    ['weapon_main','weapon_off','armor','necklace','belt'].forEach(function(slot) {
+        const el = document.getElementById('slot-'+slot);
+        if (!el) return;
+        const id = equippedItems[slot];
+        const item = id ? EQUIPMENT_CATALOG.find(function(i){ return i.id===id; }) : null;
+        const span = el.querySelector('.ew-slot-item');
+        el.classList.toggle('equipped', !!item);
+        if (span) span.textContent = item ? item.icon+' '+item.name : '';
     });
 
-    picker.style.display = 'flex';
+    // Slots glyphes dynamiques
+    const gSlots = getGlyphSlots();
+    const gEl = document.getElementById('ew-glyph-slots');
+    if (gEl) {
+        gEl.innerHTML = '';
+        for (let i=0; i<gSlots; i++) {
+            const id = equippedItems.glyphs[i];
+            const item = id ? EQUIPMENT_CATALOG.find(function(x){ return x.id===id; }) : null;
+            const div = document.createElement('div');
+            div.className = 'ew-slot' + (item?' equipped':'');
+            div.innerHTML = '🔮 Glyphe '+(i+1)+'<span class="ew-slot-item">'+(item?item.icon+' '+item.name:'')+'</span>';
+            div.onclick = (function(idx){ return function(){ ewSelectSlot('glyph_'+idx); }; })(i);
+            gEl.appendChild(div);
+        }
+    }
+
+    // Slots potions dynamiques
+    const pSlots = getPotionSlots();
+    const pEl = document.getElementById('ew-potion-slots');
+    if (pEl) {
+        pEl.innerHTML = '';
+        for (let i=0; i<pSlots; i++) {
+            const id = equippedItems.potions[i];
+            const item = id ? EQUIPMENT_CATALOG.find(function(x){ return x.id===id; }) : null;
+            const div = document.createElement('div');
+            div.className = 'ew-slot' + (item?' equipped':'');
+            div.innerHTML = '🧪 Potion '+(i+1)+'<span class="ew-slot-item">'+(item?item.icon+' '+item.name:'')+'</span>';
+            div.onclick = (function(idx){ return function(){ ewSelectSlot('potion_'+idx); }; })(i);
+            pEl.appendChild(div);
+        }
+    }
+
+    // Catalogue
+    renderEwCatalog();
 }
 
-function equipItem(slot, itemId) {
-    const item = EQUIPMENT_CATALOG.find(function(i){ return i.id === itemId; });
-    // Si arme 2 mains en principale → déséquiper l'arme secondaire
-    if (slot === 'weapon_main' && item && item.is2h) {
-        unequipSlot('weapon_off', true);
+function ewSelectSlot(slot) {
+    ewCurrentSlot = slot;
+    // Surbrillance
+    document.querySelectorAll('.ew-slot').forEach(function(el){ el.style.borderColor=''; });
+    // Slot correspondant
+    const slotId = slot.startsWith('glyph_') ? null :
+                   slot.startsWith('potion_') ? null :
+                   'slot-'+slot;
+    if (slotId) {
+        const el = document.getElementById(slotId);
+        if (el) el.style.borderColor = '#c080ff';
     }
-    // Si on équipe en secondaire et qu'une arme 2 mains est en principale → bloquer
-    if (slot === 'weapon_off') {
-        const mainId = equippedItems['weapon_main'];
-        const mainItem = mainId ? EQUIPMENT_CATALOG.find(function(i){ return i.id === mainId; }) : null;
-        if (mainItem && mainItem.is2h) {
-            dngLog && dngLog('⚠ Impossible — arme 2 mains équipée en principale', 'dlog-bad');
-            addLog("⚠ Retirez d'abord l'arme 2 mains avant d'équiper un item secondaire.");
+    renderEwCatalog();
+}
+
+function renderEwCatalog() {
+    const el = document.getElementById('ew-catalog-items');
+    const filterBar = document.getElementById('ew-filter-bar');
+    if (!el) return;
+
+    // Déterminer le filtre selon le slot sélectionné
+    let filter = ewCurrentSlot;
+
+    // Boutons filtre
+    const filters = [
+        { key:null, label:'Tout' },
+        { key:'weapon_main', label:'⚔ Armes' },
+        { key:'weapon_off', label:'🛡 Bouclier' },
+        { key:'armor', label:'🥋 Armure' },
+        { key:'necklace', label:'📿 Collier' },
+        { key:'belt', label:'🪢 Ceinture' },
+        { key:'glyph_0', label:'🔮 Glyphe' },
+        { key:'potion_0', label:'🧪 Potion' },
+    ];
+    if (filterBar) {
+        filterBar.innerHTML = filters.map(function(f) {
+            const active = (filter === f.key) || (filter === null && f.key === null);
+            const keyStr = f.key === null ? 'null' : ('\'' + f.key + '\'');
+            return '<button onclick="ewSelectSlot('+keyStr+')" style="padding:3px 8px;border-radius:4px;border:1px solid '+(active?'#c0a060':'#2a1a3a')+';background:'+(active?'#1a1228':'#0a0812')+';color:'+(active?'#c0a060':'#6a5a7a')+';font-size:10px;cursor:pointer">'+f.label+'</button>';
+        }).join('');
+    }
+
+    // Filtrer les items
+    el.innerHTML = '';
+    const isGlyphSlot   = filter && filter.startsWith('glyph_');
+    const isPotionSlot  = filter && filter.startsWith('potion_');
+
+    const items = EQUIPMENT_CATALOG.filter(function(item) {
+        if (filter === null) return true;
+        if (isGlyphSlot)  return item.isGlyph;
+        if (isPotionSlot) return item.isPotion;
+        if (filter === 'weapon_main') return item.slot === 'weapon_main' && !item.isGlyph && !item.isPotion;
+        if (filter === 'weapon_off')  {
+            const mainId = equippedItems['weapon_main'];
+            const mainItem = mainId ? EQUIPMENT_CATALOG.find(function(i){ return i.id===mainId; }) : null;
+            if (mainItem && mainItem.is2h) return false;
+            return (item.slot === 'weapon_off' || (item.slot === 'weapon_main' && !item.is2h)) && !item.isGlyph && !item.isPotion;
+        }
+        return item.slot === filter && !item.isGlyph && !item.isPotion;
+    });
+
+    items.forEach(function(item) {
+        const owned     = ownedEquipment[item.id];
+        const canAfford = gold >= item.gold && mana >= (item.mana||0) && population >= (item.pop||0);
+        const equipped  = isItemEquipped(item.id);
+
+        // Charges pour glyphes/potions
+        let chargeHtml = '';
+        if (item.isGlyph) {
+            const n = {Fireball:glyphFireball,Rage:glyphRage,Bless:glyphBless}[item.id]||0;
+            chargeHtml = ' <span style="color:#c080ff">×'+n+'</span>';
+        } else if (item.isPotion) {
+            const n = {PotionSoin:potionHeal,PotionPoison:potionAntiPoison}[item.id]||0;
+            chargeHtml = ' <span style="color:#4cffaa">×'+n+'</span>';
+        }
+
+        const div = document.createElement('div');
+        div.style.cssText = 'display:flex;align-items:center;gap:8px;padding:7px 8px;border:1px solid '+(equipped?'#4cffaa':owned?'#2a3a2a':'#2a1a3a')+';border-radius:7px;background:'+(equipped?'#081808':owned?'#0a1208':'#0c0818')+';cursor:pointer';
+
+        div.innerHTML =
+            '<span style="font-size:18px">'+(item.icon||'📦')+'</span>'+
+            '<div style="flex:1">'+
+                '<div style="font-size:11px;color:'+(owned?'#c0a060':'#d4c49a')+'">'+item.name+chargeHtml+(equipped?' <span style="color:#4cffaa;font-size:9px">équipé</span>':'')+'</div>'+
+                '<div style="font-size:9px;color:#6a5a7a">'+item.desc+'</div>'+
+            '</div>'+
+            '<div style="text-align:right;flex-shrink:0">'+
+                (item.gold>0?'<div style="font-size:10px;color:'+(canAfford?'#ffd060':'#6a5a4a')+'">🪙'+item.gold+'</div>':'')+
+                (item.mana>0?'<div style="font-size:10px;color:'+(mana>=item.mana?'#c080ff':'#5a4a6a')+'">✨'+item.mana+'</div>':'')+
+                (item.pop>0?'<div style="font-size:10px;color:'+(population>=item.pop?'#80c0ff':'#4a5a6a')+'">👥'+item.pop+'</div>':'')+
+            '</div>';
+
+        div.onclick = function() { ewHandleItemClick(item); };
+        el.appendChild(div);
+    });
+
+    if (items.length === 0) {
+        el.innerHTML = '<div style="color:#3a2a4a;font-size:11px;text-align:center;padding:20px">Aucun item pour ce filtre</div>';
+    }
+}
+
+function isItemEquipped(id) {
+    if (!id) return false;
+    const item = EQUIPMENT_CATALOG.find(function(i){ return i.id===id; });
+    if (!item) return false;
+    if (item.isGlyph)  return equippedItems.glyphs.includes(id);
+    if (item.isPotion) return equippedItems.potions.includes(id);
+    return Object.values(equippedItems).includes(id);
+}
+
+function ewHandleItemClick(item) {
+    const slot = ewCurrentSlot;
+
+    // Acheter si pas possédé (ou glyphe/potion)
+    if (!ownedEquipment[item.id] || item.isGlyph || item.isPotion) {
+        if (gold < item.gold || mana < (item.mana||0) || population < (item.pop||0)) {
+            addLog('❌ Ressources insuffisantes pour ' + item.name);
+            renderEwCatalog();
             return;
         }
+        gold -= item.gold; mana -= (item.mana||0); population -= (item.pop||0);
+        ownedEquipment[item.id] = true;
+        if (item.isGlyph || item.isPotion) item.apply();
+        addLog('✅ ' + item.name + ' acheté !');
+        updateStats();
     }
-    unequipSlot(slot, true);
-    equippedItems[slot] = itemId;
-    if (item && item.apply) item.apply();
-    updateStats();
+
+    // Équiper dans le slot sélectionné
+    if (slot) {
+        if (slot.startsWith('glyph_')) {
+            const idx = parseInt(slot.split('_')[1]);
+            // Déséquiper l'ancien glyphe de ce slot
+            const oldId = equippedItems.glyphs[idx];
+            if (oldId) { /* glyphes pas de remove() */ }
+            if (item.isGlyph) equippedItems.glyphs[idx] = item.id;
+        } else if (slot.startsWith('potion_')) {
+            const idx = parseInt(slot.split('_')[1]);
+            if (item.isPotion) equippedItems.potions[idx] = item.id;
+        } else if (!item.isGlyph && !item.isPotion) {
+            ewEquipInSlot(slot, item);
+        }
+    } else if (!item.isGlyph && !item.isPotion) {
+        // Auto-équiper dans le bon slot
+        ewEquipInSlot(item.slot, item);
+    }
+
     renderEquipWindow();
-    openSlotPicker(slot);
-    addLog((item?item.icon:'') + ' ' + (item?item.name:itemId) + ' équipé.');
 }
 
-function unequipSlot(slot, silent) {
-    const itemId = equippedItems[slot];
-    if (!itemId) return;
-    const item = EQUIPMENT_CATALOG.find(function(i){ return i.id === itemId; });
-    if (item && item.remove) item.remove();
-    equippedItems[slot] = null;
-    updateStats();
-    if (!silent) {
-        renderEquipWindow();
-        addLog((item?item.icon:'') + ' ' + (item?item.name:itemId) + ' retiré.');
+function ewEquipInSlot(slot, item) {
+    // Déséquiper l'ancien
+    const oldId = equippedItems[slot];
+    if (oldId) {
+        const oldItem = EQUIPMENT_CATALOG.find(function(i){ return i.id===oldId; });
+        if (oldItem && oldItem.remove) oldItem.remove();
     }
-}
-
-
-function dungeonUsePotion(type) {
-    if (document.getElementById('dungeon-reward').classList.contains('visible')) return;
-    if (type === 'heal') {
-        if (potionHeal <= 0) return;
-        potionHeal--;
-        const heal = 3;
-        dungeonState.avatarHp = Math.min(dungeonState.avatarHp + heal, avatarMaxHp);
-        avatarHp = dungeonState.avatarHp;
-        dungeonUpdateHpBar('avatar', avatarHp, avatarMaxHp);
-        document.getElementById('dng-avatar-hp-text').textContent = 'HP: '+avatarHp+'/'+avatarMaxHp;
-        dngLog('🧪 Potion de Soin : +'+heal+' HP', 'dlog-good');
-        dungeonShowDmg('avatar', -heal, '#4cffaa');
-        dngUpdateCombatUI();
-    } else if (type === 'antipoison') {
-        if (potionAntiPoison <= 0) return;
-        potionAntiPoison--;
-        dungeonState.poisoned = false;
-        dungeonState.poisonStacks = 0;
-        dngLog('🟢 Potion Anti-Poison : poison annulé !', 'dlog-good');
-        dngUpdateCombatUI();
-    }
-}
-
-function dngUpdateCombatUI() {
-    // Mettre à jour les boutons potions
-    const row = document.getElementById('dng-potions-row');
-    if (!row) return;
-    // Vider les boutons potions (garder le titre)
-    while (row.children.length > 1) row.removeChild(row.lastChild);
-    if (potionHeal > 0) {
-        const btn = document.createElement('button');
-        btn.className = 'dng-btn';
-        btn.style.cssText = 'background:linear-gradient(135deg,#0a1a0a,#1a2a0a);border-color:#2a5a2a;color:#4cffaa';
-        btn.innerHTML = '🧪 Soin ×'+potionHeal;
-        btn.onclick = function(){ dungeonUsePotion("heal"); };
-        row.appendChild(btn);
-    }
-    if (potionAntiPoison > 0) {
-        const btn = document.createElement('button');
-        btn.className = 'dng-btn';
-        btn.style.cssText = 'background:linear-gradient(135deg,#001a0a,#002a1a);border-color:#0a5a2a;color:#40ffaa';
-        btn.innerHTML = '🟢 Anti-Poison ×'+potionAntiPoison;
-        btn.onclick = function(){ dungeonUsePotion("antipoison"); };
-        row.appendChild(btn);
-    }
-    row.style.display = (potionHeal > 0 || potionAntiPoison > 0) ? 'flex' : 'none';
-}
-
-function recalcBuildingEffects() {
-    // ── Réinitialiser toutes les valeurs dérivées des bâtiments ──
-    Object.keys(buildingCounts).forEach(k => buildingCounts[k] = 0);
-    populationperturn = 0;
-    goldperturn = 0;
-    manaperturn = 0;
-    // Remettre conscrit, fortifications et space à leurs valeurs de base (méta)
-    const m = getMeta();
-    conscrit       = 3 + (m.city ? m.city.conscrit || 0 : 0);
-    fortifications = 1 + (m.city ? m.city.fortif   || 0 : 0) + (m.cityLevel || 0);
-    space          = m.city ? m.city.space || 0 : 0;
-
-    // Bonus de révélation de tuile Forêt (permanent)
-    tileState.forEach(function(tile) {
-        if (tile.revealed && tile.type === 'Forêt') fortifications += 1;
-    });
-
-    // ── Réappliquer les effets de chaque bâtiment + bonus de tuile ──
-    tileState.forEach(function(tile) {
-        if (!tile || !tile.buildings) return;
-        tile.buildings.forEach(function(name) {
-            // Effets de base du bâtiment
-            switch(name) {
-                case 'Ferme':          populationperturn += 5;  break;
-                case 'Mine':           goldperturn += 10;       break;
-                case 'Caserne':        conscrit += 2;           break;
-                case 'Tour de Garde':  conscrit += 1; fortifications += 1; break;
-                case 'Tour de Magie':  conscrit += 1; manaperturn += 10;   break;
-            }
-            buildingCounts[name] = (buildingCounts[name] || 0) + 1;
-            // Bonus de tuile (sans appeler applyTileBonus qui modifie les variables globales)
-            const bonus = tile.type ? getTileBonus(tile.type, name) : null;
-            if (bonus) {
-                if (bonus.includes('Pop/tour'))    { const n = parseInt(bonus); if(!isNaN(n)) populationperturn += n; }
-                if (bonus.includes('Or/tour'))     { const n = parseInt(bonus); if(!isNaN(n)) goldperturn += n; }
-                if (bonus.includes('Mana/tour'))   { const n = parseInt(bonus); if(!isNaN(n)) manaperturn += n; }
-                if (bonus.includes('Fortification')) fortifications += 1;
-            }
-        });
-    });
-}
-
-
-// ═══════════════════════════════════════════════
-// ÉCRAN D'ACCUEIL
-// ═══════════════════════════════════════════════
-
-function showHomeScreen() {
-    const el = document.getElementById('home-screen');
-    if (el) el.style.display = 'flex';
-}
-
-function hideHomeScreen() {
-    const el = document.getElementById('home-screen');
-    if (el) el.style.display = 'none';
-}
-
-function homeBack() {
-    document.getElementById('home-slots').style.display = 'none';
-    document.getElementById('home-slots').innerHTML = '';
-    document.getElementById('home-menu').style.display = 'flex';
-    document.getElementById('home-back-btn').style.display = 'none';
-}
-
-function homeLoad() {
-    document.getElementById('home-menu').style.display = 'none';
-    document.getElementById('home-back-btn').style.display = 'block';
-    const slotsEl = document.getElementById('home-slots');
-    slotsEl.innerHTML = '<div style="font-family:Cinzel,serif;font-size:11px;color:#6a5a80;text-align:center;margin-bottom:8px">Choisir une sauvegarde</div>';
-    slotsEl.style.display = 'flex';
-    for (let i = 0; i < NUM_SLOTS; i++) {
-        const info = getSaveInfo(i);
-        const div = document.createElement('div');
-        div.className = 'home-slot';
-        if (info) {
-            div.innerHTML = '<div style="font-size:24px">💾</div><div class="home-slot-info"><div class="home-slot-name">Slot '+(i+1)+'</div><div>Saison '+info.season+' · Tour '+info.turn+'</div><div style="font-size:10px;color:#4a3a5a">'+info.date+'</div></div>';
-            div.onclick = (function(slot){ return function() {
-                loadFromSlot(slot);
-                hideHomeScreen();
-            }; })(i);
-        } else {
-            div.innerHTML = '<div style="font-size:24px;opacity:.3">💾</div><div class="home-slot-info"><div class="home-slot-name" style="color:#3a2a4a">Slot '+(i+1)+'</div><div class="home-slot-empty">Vide</div></div>';
-            div.style.cursor = 'default';
-            div.style.opacity = '0.5';
+    // Gestion arme 2 mains
+    if (slot === 'weapon_main' && item.is2h) {
+        const offId = equippedItems['weapon_off'];
+        if (offId) {
+            const offItem = EQUIPMENT_CATALOG.find(function(i){ return i.id===offId; });
+            if (offItem && offItem.remove) offItem.remove();
+            equippedItems['weapon_off'] = null;
         }
-        slotsEl.appendChild(div);
     }
-}
-
-function homeNew() {
-    document.getElementById('home-menu').style.display = 'none';
-    document.getElementById('home-back-btn').style.display = 'block';
-    const slotsEl = document.getElementById('home-slots');
-    slotsEl.innerHTML = '<div style="font-family:Cinzel,serif;font-size:11px;color:#6a5a80;text-align:center;margin-bottom:8px">Choisir un slot pour cette partie</div>';
-    slotsEl.style.display = 'flex';
-    for (let i = 0; i < NUM_SLOTS; i++) {
-        const info = getSaveInfo(i);
-        const div = document.createElement('div');
-        div.className = 'home-slot';
-        if (info) {
-            div.innerHTML = '<div style="font-size:24px">⚠</div><div class="home-slot-info"><div class="home-slot-name">Slot '+(i+1)+' — Écraser</div><div style="color:#ff8060">Saison '+info.season+' · Tour '+info.turn+'</div><div style="font-size:10px;color:#4a3a5a">'+info.date+'</div></div>';
-        } else {
-            div.innerHTML = '<div style="font-size:24px">✦</div><div class="home-slot-info"><div class="home-slot-name">Slot '+(i+1)+'</div><div style="color:#4cffaa">Vide — Nouveau run</div></div>';
-        }
-        div.onclick = (function(slot, hasData){ return function() {
-            if (hasData && !confirm('Écraser le slot '+(slot+1)+' ?')) return;
-            // Réinitialiser la méta pour ce nouveau run
-            const emptyMeta = JSON.parse(JSON.stringify(META_DEFAULTS));
-            localStorage.setItem(META_KEY, JSON.stringify(emptyMeta));
-            window._meta = emptyMeta;
-            activeSlot = slot;
-            localStorage.removeItem(SAVE_PREFIX + slot);
-            hideHomeScreen();
-            // Initialiser le jeu sans recharger la page
-            initNewRun();
-        }; })(i, !!info);
-        slotsEl.appendChild(div);
-    }
-}
-
-function restartRunAfterDefeat() {
-    const s = document.getElementById('endScreen');
-    if (s) s.style.display = 'none';
-    // Conserver le compteur de morts accumulé
-    const totalDeaths = runDeaths;
-    initNewRun();
-    runDeaths = totalDeaths; // remettre après le reset
-    if (activeSlot !== null) saveToSlot(activeSlot);
-}
-
-function resetRunFromMenu(keepMeta) {
-    hideSaveMenu();
-    if (!keepMeta) {
-        const emptyMeta = JSON.parse(JSON.stringify(META_DEFAULTS));
-        localStorage.setItem(META_KEY, JSON.stringify(emptyMeta));
-        window._meta = emptyMeta;
-        runDeaths = 0; runDustSpent = 0;
-    }
-    initNewRun();
-}
-
-function initNewRun() {
-    // Réinitialiser toutes les variables de jeu
-    setTurnProcessing(false);
-    setWaitingDungeon(false);
-    currentTurn = 1; currentSeason = 1;
-    gold = 100 + (getMeta().city.gold || 0);
-    mana = 0 + (getMeta().city.mana || 0);
-    population = 50 + (getMeta().city.pop || 0);
-    dust = 0;
-    fortifications = 1;
-    conscrit = 3;
-    atk = 1; def = 1;
-    avatarHp = 10 + (getMeta().hero.hpMax || 0) * 3;
-    avatarMaxHp = avatarHp;
-    avatarDmg = 1;
-    protection = 0;
-    avatarRanged = false; avatarPiercing = false; avatarScythe = false;
-    avatarMagicWeapon = false; avatarAntiRange = false;
-    avatarBlessedNecklace = false; avatarImmunePoison = false; avatarImmuneStun = false;
-    glyphFireball = 0; glyphRage = 0; glyphBless = 0;
-    potionHeal = 0; potionAntiPoison = 0;
-    ownedEquipment = {};
-    equippedItems = { weapon_main:null, weapon_off:null, armor:null, necklace:null, belt:null, glyph:null, potion:null };
-    cityArmy.splice(0, cityArmy.length);
-    hordeArmy.splice(0, hordeArmy.length);
-    hordePrevSeason.splice(0, hordePrevSeason.length);
-    hordeCurrentAdditions.splice(0, hordeCurrentAdditions.length);
-    hordeCurrentSeason = 0; hordeRevealed = false;
-    runDeaths = 0; runDustSpent = 0;
-    // Réinitialiser la carte
-    tileState.forEach(function(t, i) {
-        t.type = i === 12 ? 'Ville' : null;
-        t.buildings = [];
-        t.revealed = i === 12;
-    });
-    // Réinitialiser les ressources par tour et bâtiments
-    goldperturn = 0; manaperturn = 0; populationperturn = 0;
-    Object.keys(buildingCounts).forEach(k => buildingCounts[k] = 0);
-    recalcBuildingEffects();
-    // Appliquer la méta
-    applyMetaBonuses();
-    // Sauvegarder l'état initial
-    setTimeout(function(){ saveToSlot(activeSlot); }, 200);
-    // Rafraîchir l'interface
+    equippedItems[slot] = item.id;
+    if (item.apply) item.apply();
     updateStats();
-    renderTileGrid();
-    updateArmyPanels();
-    renderBuildPanelList();
-    renderActionEquipTab();
-    updateTimeline();
-    addLog('✦ Nouvelle partie — Bonne chance !');
 }
 
-
-let currentGloTab = 'terrains';
-
-function openGlossary(fromGame) {
-    const el = document.getElementById('glossary-screen');
-    if (el) el.style.display = 'flex';
-    gloTab(currentGloTab);
-}
-
-function closeGlossary() {
-    const el = document.getElementById('glossary-screen');
-    if (el) el.style.display = 'none';
-}
-
-function gloTab(tab) {
-    currentGloTab = tab;
-    document.querySelectorAll('.glo-tab').forEach(function(t) {
-        t.classList.toggle('active', t.getAttribute('onclick').includes("'"+tab+"'"));
-    });
-    const content = document.getElementById('glossary-content');
-    if (!content) return;
-    content.innerHTML = GLO_DATA[tab] || '<p style="color:#6a5a8a">Contenu à venir.</p>';
-}
-
-const GLO_DATA = {
-    terrains: `
-<div class="glo-section">
-<div class="glo-title">🗺 Terrains — Révélation et bonus</div>
-<p style="font-size:11px;color:#7a6a8a;margin-bottom:10px">Révéler une tuile donne des ressources immédiates. Construire un bâtiment dessus peut activer un bonus supplémentaire.</p>
-
-<div class="glo-entry">
-  <div class="glo-entry-name">🌾 Prairie — 2 emplacements</div>
-  <div class="glo-entry-desc">Révélation : +20 Or, +20 Or/tour<br>Bonus bâtiment : Ferme → +5 Pop/tour</div>
-</div>
-<div class="glo-entry">
-  <div class="glo-entry-name">⛰ Collines — 1 emplacement</div>
-  <div class="glo-entry-desc">Révélation : +20 Or, +20 Or/tour<br>Bonus bâtiment : Mine → +10 Or/tour</div>
-</div>
-<div class="glo-entry">
-  <div class="glo-entry-name">🌊 Côte — 1 emplacement</div>
-  <div class="glo-entry-desc">Révélation : +10 Pop, +10 Pop/tour<br>Pas de bonus bâtiment</div>
-</div>
-<div class="glo-entry">
-  <div class="glo-entry-name">🏔 Montagne — 1 emplacement</div>
-  <div class="glo-entry-desc">Révélation : +30 Mana, +5 Mana/tour<br>Bonus bâtiments : Mine → +20 Or/tour | Tour de Magie → +10 Mana/tour</div>
-</div>
-<div class="glo-entry">
-  <div class="glo-entry-name">💧 Lac — 1 emplacement</div>
-  <div class="glo-entry-desc">Révélation : +10 Pop, +5 Pop/tour<br>Bonus bâtiment : Ferme → +5 Pop/tour</div>
-</div>
-<div class="glo-entry">
-  <div class="glo-entry-name">🌲 Forêt — 1 emplacement</div>
-  <div class="glo-entry-desc">Révélation : +1 Fortification<br>Bonus bâtiment : Caserne → +1 Fortification</div>
-</div>
-<div class="glo-entry">
-  <div class="glo-entry-name">🏙 Ville — emplacements variables</div>
-  <div class="glo-entry-desc">Centre de la cité. Nombre d'emplacements déterminé par la méta-progression (achat "Espace +1").</div>
-</div>
-</div>`,
-
-    batiments: `
-<div class="glo-section">
-<div class="glo-title">🏗 Bâtiments</div>
-<p style="font-size:11px;color:#7a6a8a;margin-bottom:10px">Construire un bâtiment prend 1 tour et occupe 1 emplacement sur la tuile.</p>
-
-<div class="glo-entry">
-  <div class="glo-entry-name">🌾 Ferme — 20 Or</div>
-  <div class="glo-entry-desc">+5 Population/tour.<br>Bonus tuile : Prairie ou Lac → +5 Pop/tour supplémentaire.</div>
-</div>
-<div class="glo-entry">
-  <div class="glo-entry-name">⛏ Mine — 20 Pop</div>
-  <div class="glo-entry-desc">+10 Or/tour.<br>Bonus tuile : Collines → +10 Or/tour | Montagne → +20 Or/tour.</div>
-</div>
-<div class="glo-entry">
-  <div class="glo-entry-name">⚔ Caserne — 100 Or, 10 Pop</div>
-  <div class="glo-entry-desc">+2 Conscriptions. Débloque : Soldat, Milicien, Lancier.<br>Bonus tuile : Forêt → +1 Fortification.</div>
-</div>
-<div class="glo-entry">
-  <div class="glo-entry-name">🗼 Tour de Garde — 90 Or, 10 Pop</div>
-  <div class="glo-entry-desc">+1 Conscription, +1 Fortification.</div>
-</div>
-<div class="glo-entry">
-  <div class="glo-entry-name">🔮 Tour de Magie — 30 Or, 5 Pop, 20 Mana</div>
-  <div class="glo-entry-desc">+1 Conscription, +10 Mana/tour.<br>Bonus tuile : Montagne → +10 Mana/tour.</div>
-</div>
-<div class="glo-entry">
-  <div class="glo-entry-name">🎓 Académie militaire — 150 Or, 30 Pop, 40 Mana</div>
-  <div class="glo-entry-desc">Débloque : Hallebardier, Soldat Pavois, Paladin (avec Temple).<br>⚠ Prérequis : 2 Casernes + 1 Tour de Magie.</div>
-</div>
-<div class="glo-entry">
-  <div class="glo-entry-name">🏹 Archerie — 80 Or, 20 Pop</div>
-  <div class="glo-entry-desc">Débloque : Archer, Arbalétrier.<br>⚠ Prérequis : 1 Caserne.</div>
-</div>
-<div class="glo-entry">
-  <div class="glo-entry-name">⛪ Église — 60 Or, 10 Pop, 20 Mana</div>
-  <div class="glo-entry-desc">Débloque : Prêtre (anti-démon).</div>
-</div>
-<div class="glo-entry">
-  <div class="glo-entry-name">🛕 Temple — 120 Or, 20 Pop, 40 Mana</div>
-  <div class="glo-entry-desc">Débloque : Paladin (avec Académie).<br>⚠ Prérequis : 1 Église.</div>
-</div>
-</div>
-
-<div class="glo-section">
-<div class="glo-title">⚔ Unités défensives</div>
-<div class="glo-entry">
-  <div class="glo-entry-name">🗡 Soldat (30 Or, 5 Pop) — Caserne</div>
-  <div class="glo-entry-desc">ATK 3 | Infanterie</div>
-</div>
-<div class="glo-entry">
-  <div class="glo-entry-name">🪚 Milicien (15 Or, 3 Pop) — Caserne</div>
-  <div class="glo-entry-desc">ATK 1 | Anti-Pillard</div>
-</div>
-<div class="glo-entry">
-  <div class="glo-entry-name">⚔ Lancier (30 Or, 5 Pop) — Caserne</div>
-  <div class="glo-entry-desc">ATK 2 | Anti-Cavalerie</div>
-</div>
-<div class="glo-entry">
-  <div class="glo-entry-name">🪖 Hallebardier (40 Or, 8 Pop) — Académie</div>
-  <div class="glo-entry-desc">ATK 4 | Infanterie | Anti-Cavalerie II (neutralise 2 unités cavalerie)</div>
-</div>
-<div class="glo-entry">
-  <div class="glo-entry-name">🏹 Archer (25 Or, 5 Pop) — Archerie</div>
-  <div class="glo-entry-desc">ATK 2 | Anti-Vol | Distance</div>
-</div>
-<div class="glo-entry">
-  <div class="glo-entry-name">🏹 Arbalétrier (40 Or, 6 Pop) — Archerie</div>
-  <div class="glo-entry-desc">ATK 3 | Anti-Vol | Anti-Distance | Distance</div>
-</div>
-<div class="glo-entry">
-  <div class="glo-entry-name">🛡 Soldat Pavois (35 Or, 8 Pop) — Académie</div>
-  <div class="glo-entry-desc">ATK 2 | Anti-Distance</div>
-</div>
-<div class="glo-entry">
-  <div class="glo-entry-name">✝ Prêtre (25 Or, 5 Pop, 15 Mana) — Église</div>
-  <div class="glo-entry-desc">ATK 1, ATKMag 3 | Anti-Démon</div>
-</div>
-<div class="glo-entry">
-  <div class="glo-entry-name">⚜ Paladin (55 Or, 10 Pop, 10 Mana) — Académie + Temple</div>
-  <div class="glo-entry-desc">ATK 4, ATKMag 2 | Anti-Cavalerie | Anti-Mort-Vivant</div>
-</div>
-</div>`,
-
-
-
-    traits: `
-<div class="glo-section">
-<div class="glo-title">⚔ Traits de la Horde</div>
-<p style="font-size:11px;color:#7a6a8a;margin-bottom:10px">
-Chaque trait a une <b style="color:#c0a060">valeur</b> (défaut 1, indiqué en chiffres romains si > 1).<br>
-Résolution : somme des valeurs de la horde − valeurs des anti-traits de ta ville.<br>
-Si net ≤ 0 → tout contré. Si net > 0 → les unités avec la plus haute ATK passent en priorité.
-</p>
-
-<div class="glo-entry">
-  <div class="glo-entry-name">🐴 Cavalerie <span class="glo-entry-trait" style="background:#2a1a0a;color:#ffb040">contré : anti-cavalerie</span></div>
-  <div class="glo-entry-desc">Si non contré : ATK ×2 (bonus = +ATK).<br>Chevaucheur de Loup : Cavalerie II → nécessite 2 anti-cavalerie.</div>
-</div>
-<div class="glo-entry">
-  <div class="glo-entry-name">🏹 Distance <span class="glo-entry-trait" style="background:#0a1a2a;color:#4080ff">contré : anti-distance</span></div>
-  <div class="glo-entry-desc">Si non contré : ATK ×2 (bonus = +ATK).</div>
-</div>
-<div class="glo-entry">
-  <div class="glo-entry-name">🐲 Vol <span class="glo-entry-trait" style="background:#0a1a1a;color:#40ffcc">contré : anti-vol</span></div>
-  <div class="glo-entry-desc">Si non contré : pour chaque unité volante passant, détruit l'unité de ville avec la plus haute ATK, avant le combat.</div>
-</div>
-<div class="glo-entry">
-  <div class="glo-entry-name">🔥 Pillard <span class="glo-entry-trait" style="background:#2a1000;color:#ff6020">contré : anti-pillard</span></div>
-  <div class="glo-entry-desc">Si non contré : détruit 1 bâtiment même si la horde est repoussée.</div>
-</div>
-<div class="glo-entry">
-  <div class="glo-entry-name">⛏ Sapeur <span class="glo-entry-trait" style="background:#1a1000;color:#c08020">contré : anti-sapeur</span></div>
-  <div class="glo-entry-desc">Si non contré : détruit 1 fortification même si la horde est repoussée. Minimum 1 fortification conservée.</div>
-</div>
-<div class="glo-entry">
-  <div class="glo-entry-name">💀 Mort-Vivant <span class="glo-entry-trait" style="background:#1a1a0a;color:#80ff80">contré : anti-mort-vivant</span></div>
-  <div class="glo-entry-desc">Si au moins 1 mort-vivant non contré : détruit une unité <b>aléatoire</b> de ton armée avant le combat.</div>
-</div>
-<div class="glo-entry">
-  <div class="glo-entry-name">😈 Démon <span class="glo-entry-trait" style="background:#1a0020;color:#cc40ff">contré : anti-démon</span></div>
-  <div class="glo-entry-desc">Si au moins 1 démon non contré : toutes les unités infanterie de ta ville ne comptent pas au combat ce tour.</div>
-</div>
-</div>`,
-
-
-
-    monstres: `
-<div class="glo-section">
-<div class="glo-title">⚔ Unités de la Horde</div>
-<p style="font-size:11px;color:#7a6a8a;margin-bottom:10px">Les unités s&#39;accumulent de saison en saison.</p>
-
-<div style="font-size:10px;color:#4a3a5a;letter-spacing:1px;margin:6px 0 4px">— TIER 1 — (S1+)</div>
-<div class="glo-entry"><div class="glo-entry-name">👺 Gobelin — ATK 2</div><div class="glo-entry-desc">Trait : Infanterie.</div></div>
-<div class="glo-entry"><div class="glo-entry-name">👊 Orc — ATK 3</div><div class="glo-entry-desc">Trait : Infanterie.</div></div>
-<div class="glo-entry"><div class="glo-entry-name">🔥 Pillards — ATK 2</div><div class="glo-entry-desc">Trait : Pillard. Si non contré : détruit 1 bâtiment même si la horde est repoussée. Contré par Milicien.</div></div>
-
-<div style="font-size:10px;color:#4a3a5a;letter-spacing:1px;margin:6px 0 4px">— TIER 2 — (S3+)</div>
-<div class="glo-entry"><div class="glo-entry-name">🐴 Cavalier Orc — ATK 4</div><div class="glo-entry-desc">Trait : Cavalerie. Si non contré : ATK ×2. Contré par Lancier, Hallebardier, Paladin.</div></div>
-<div class="glo-entry"><div class="glo-entry-name">🦅 Harpie — ATK 2</div><div class="glo-entry-desc">Trait : Vol. Si non contrée : détruit l&#39;unité de ville avec la plus haute ATK avant le combat. Contré par Archer, Arbalétrier.</div></div>
-<div class="glo-entry"><div class="glo-entry-name">🐗 Homme-bête — ATK 4</div><div class="glo-entry-desc">Trait : Infanterie.</div></div>
-
-<div style="font-size:10px;color:#4a3a5a;letter-spacing:1px;margin:6px 0 4px">— TIER 3 — (S4+)</div>
-<div class="glo-entry"><div class="glo-entry-name">🏹 Archer Gobelin — ATK 3</div><div class="glo-entry-desc">Trait : Distance. Si non contré : ATK ×2. Contré par Arbalétrier, Soldat Pavois.</div></div>
-<div class="glo-entry"><div class="glo-entry-name">🐲 Vouivre — ATK 6</div><div class="glo-entry-desc">Trait : Vol. Si non contrée : détruit l&#39;unité ville la plus forte avant combat. Contré par Archer, Arbalétrier.</div></div>
-<div class="glo-entry"><div class="glo-entry-name">⛏ Sapeur Gobelin — ATK 2</div><div class="glo-entry-desc">Trait : Sapeur. Si non contré : détruit 1 fortification (min. 1). Contré par anti-sapeur.</div></div>
-<div class="glo-entry"><div class="glo-entry-name">🐺 Chevaucheur de Loup Orc — ATK 6</div><div class="glo-entry-desc">Trait : Cavalerie II. Nécessite 2 anti-cavalerie pour neutraliser. Contré par Lancier, Hallebardier, Paladin.</div></div>
-
-<div style="font-size:10px;color:#4a3a5a;letter-spacing:1px;margin:6px 0 4px">— TIER 4 — (S5+)</div>
-<div class="glo-entry"><div class="glo-entry-name">💀 Squelette — ATK 2</div><div class="glo-entry-desc">Trait : Mort-Vivant. Si non contré : détruit une unité aléatoire de ton armée avant combat. Contré par Paladin.</div></div>
-<div class="glo-entry"><div class="glo-entry-name">😈 Démon — ATK 3, ATKMag 4</div><div class="glo-entry-desc">Trait : Démon. Si au moins 1 passe : toute ton infanterie ne compte pas au combat. Contré par Prêtre.</div></div>
-</div>
-
-<div class="glo-section">
-<div class="glo-title">👹 Monstres Donjon — Effets Spéciaux</div>
-
-<div style="font-size:10px;color:#4a3a5a;letter-spacing:1px;margin:6px 0 4px">— SALLES NORMALES —</div>
-<div class="glo-entry"><div class="glo-entry-name">👺 Gobelin</div><div class="glo-entry-desc">Appelle des renforts au round 5 si non éliminé. Invoque 2 gobelins supplémentaires.</div></div>
-<div class="glo-entry"><div class="glo-entry-name">👊 Orc / Orc Élite</div><div class="glo-entry-desc">Pas d&#39;effet spécial. Ennemi de base.</div></div>
-<div class="glo-entry"><div class="glo-entry-name">💀 Squelette / Squelette Armé</div><div class="glo-entry-desc">Pas d&#39;effet spécial en donjon.</div></div>
-<div class="glo-entry"><div class="glo-entry-name">🕷 Araignée</div><div class="glo-entry-desc">Empoisonne l&#39;avatar : inflige des dégâts à chaque round. Contré par Ceinture anti-poison ou Potion anti-poison.</div></div>
-<div class="glo-entry"><div class="glo-entry-name">🧛 Vampire</div><div class="glo-entry-desc">Se régénère des dégâts infligés à l&#39;avatar (lifesteal).</div></div>
-<div class="glo-entry"><div class="glo-entry-name">🧌 Troll</div><div class="glo-entry-desc">Sur un 6 en attaque : STUN — tous les monstres gagnent une attaque supplémentaire. Contré par Ceinture anti-stun.</div></div>
-<div class="glo-entry"><div class="glo-entry-name">☠ Nécromancien</div><div class="glo-entry-desc">Invoque 2 Squelettes au round 1, puis +1 tous les 3 rounds. Éliminer les squelettes avant le nécromancien.</div></div>
-
-<div style="font-size:10px;color:#4a3a5a;letter-spacing:1px;margin:6px 0 4px">— BOSS —</div>
-<div class="glo-entry"><div class="glo-entry-name">💀 Liche</div><div class="glo-entry-desc">Réduit l&#39;ATK de l&#39;avatar à chaque round. Contré par Collier béni (immunité).</div></div>
-<div class="glo-entry"><div class="glo-entry-name">💀 Liche Ancienne</div><div class="glo-entry-desc">Version renforcée de la Liche. Même effet, ATK et HP plus élevés.</div></div>
-<div class="glo-entry"><div class="glo-entry-name">🐲 Dragon Noir</div><div class="glo-entry-desc">Boss puissant. Pas d&#39;effet spécial mais ATK et HP très élevés.</div></div>
-<div class="glo-entry"><div class="glo-entry-name">😈 Démon Majeur</div><div class="glo-entry-desc">Boss démoniaque. Version renforcée du Démon. ATK et HP élevés.</div></div>
-<div class="glo-entry"><div class="glo-entry-name">👊 Orc Capitaine / Orc Boss</div><div class="glo-entry-desc">Chefs de guerre orcs. Combat difficile, pas d&#39;effet spécial.</div></div>
-<div class="glo-entry"><div class="glo-entry-name">💀 Squelette Royal</div><div class="glo-entry-desc">Squelette d&#39;élite. Armure renforcée (DEF élevée).</div></div>
-</div>`,
-
-
-
-
-
-
-
-    combat: `
-<div class="glo-section">
-<div class="glo-title">🎯 Mécanique de Combat</div>
-<div class="glo-entry"><div class="glo-entry-name">Jauge d'attaque</div><div class="glo-entry-desc">Le curseur se déplace automatiquement. Cliquez pour attaquer :<br>• ×0 = Raté<br>• ×0.5 = Faible<br>• ×1 = Touché<br>• ×1.2 = Parfait<br>La taille des zones dépend de votre seuil de toucher (ATK vs DEF ennemi).</div></div>
-<div class="glo-entry"><div class="glo-entry-name">Rang avant / arrière</div><div class="glo-entry-desc">Les ennemis au rang arrière ne peuvent être ciblés qu'avec une arme à distance. Le rang avant doit être éliminé avant que le rang arrière avance.</div></div>
-<div class="glo-entry"><div class="glo-entry-name">Seuil de toucher</div><div class="glo-entry-desc">Calculé depuis ATK avatar et DEF ennemi. Affiché sur la jauge (Vous touchez N+) et dans le panneau ennemi.</div></div>
-<div class="glo-entry"><div class="glo-entry-name">Compétences (actives)</div><div class="glo-entry-desc">Utilisent votre action — la riposte ennemie suit. 1 utilisation par combat.</div></div>
-<div class="glo-entry"><div class="glo-entry-name">Glyphes & Potions (hors action)</div><div class="glo-entry-desc">N'utilisent pas votre action — pas de riposte. Utilisables à tout moment sauf après la victoire.</div></div>
-<div class="glo-entry"><div class="glo-entry-name">⚰ Faux</div><div class="glo-entry-desc">Frappe toutes les unités du rang avant.</div></div>
-<div class="glo-entry"><div class="glo-entry-name">🏹 Arbalète perçante</div><div class="glo-entry-desc">Inflige 50% des dégâts à l'unité directement derrière la cible.</div></div>
-</div>`
-};
-
-// ===== FIN FONCTIONS MANQUANTES =====
 
 // ═══════════════════════════════════════════════
 // SYSTÈME DE SAUVEGARDE — 3 SLOTS localStorage
@@ -6873,7 +6506,7 @@ function restoreGameState(s) {
 
     // ── Réappliquer les équipements équipés ──
     ownedEquipment = {};
-    equippedItems = { weapon_main:null, weapon_off:null, armor:null, necklace:null, belt:null, glyph:null, potion:null };
+    equippedItems = { weapon_main:null, weapon_off:null, armor:null, necklace:null, belt:null, glyphs:[], potions:[] };
     if (s.ownedEquipment) {
         Object.keys(s.ownedEquipment).forEach(function(id) { ownedEquipment[id] = true; });
     }
