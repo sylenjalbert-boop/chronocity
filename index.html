@@ -4200,9 +4200,11 @@ const HORDE_UNITS = {
     orc:       { name:'Orc',            icon:'👊', atk:3, atkMag:0, traits:['infanterie'],  tier:1 },
     archerGob: { name:'Archer Gobelin', icon:'🏹', atk:3, atkMag:0, traits:['distance'],    tier:3 },
     cavalier:  { name:'Cavalier Orc',   icon:'🐴', atk:4, atkMag:0, traits:['cavalerie'],   tier:2 },
-    vouivre:   { name:'Vouivre',        icon:'🐲', atk:4, atkMag:0, traits:['vol'],          tier:3 },
-    pillard:   { name:'Pillard',        icon:'🔥', atk:2, atkMag:0, traits:['pillard'],      tier:2 },
+    vouivre:   { name:'Vouivre',        icon:'🐲', atk:6, atkMag:0, traits:['vol'],          tier:3 },
+    pillard:   { name:'Pillards',       icon:'🔥', atk:2, atkMag:0, traits:['pillard'],      tier:1 },
     sapeur:    { name:'Sapeur Gobelin', icon:'⛏', atk:2, atkMag:0, traits:['sapeur'],       tier:3 },
+    harpie:    { name:'Harpie',            icon:'🦅', atk:2, atkMag:0, traits:['vol'],        tier:2 },
+    hommeBete: { name:'Homme-bête',         icon:'🐗', atk:4, atkMag:0, traits:['infanterie'], tier:2 },
     loupOrc:   { name:'Chevaucheur de Loup', icon:'🐺', atk:6, atkMag:0, traits:['cavalerie'], traitWeight:{'cavalerie':2}, tier:3 },
     squelette: { name:'Squelette',      icon:'💀', atk:2, atkMag:0, traits:['mort-vivant'],  tier:4 },
     demon:     { name:'Démon',          icon:'😈', atk:3, atkMag:4, traits:['demon'],        tier:4 },
@@ -4230,51 +4232,54 @@ const HORDE_BONUS = {
 };
 
 function generateHordeForSeason(season) {
-    // Pools de troupes par tier
-    const tier1 = [HORDE_UNITS.gobelin, HORDE_UNITS.orc];
-    const tier2 = [HORDE_UNITS.pillard, HORDE_UNITS.cavalier, HORDE_UNITS.gobelin];
-    const tier3 = [HORDE_UNITS.vouivre, HORDE_UNITS.archerGob, HORDE_UNITS.cavalier, HORDE_UNITS.sapeur, HORDE_UNITS.loupOrc];
-    const tier4 = [HORDE_UNITS.squelette, HORDE_UNITS.demon, HORDE_UNITS.vouivre, HORDE_UNITS.cavalier];
-    const allTiers = [...tier1, ...tier2, ...tier3, ...tier4];
-
-    const rand = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
-    const pick = (pool) => ({...pool[Math.floor(Math.random() * pool.length)]});
-
+    const tier1 = [HORDE_UNITS.gobelin, HORDE_UNITS.orc, HORDE_UNITS.pillard];
+    const tier2 = [HORDE_UNITS.cavalier, HORDE_UNITS.harpie, HORDE_UNITS.hommeBete];
+    const tier3 = [HORDE_UNITS.archerGob, HORDE_UNITS.vouivre, HORDE_UNITS.sapeur, HORDE_UNITS.loupOrc];
+    const tier4 = [HORDE_UNITS.squelette, HORDE_UNITS.demon];
+    const pick = function(a){ return a[Math.floor(Math.random()*a.length)]; };
+    const rand = function(a,b){ return a + Math.floor(Math.random()*(b-a+1)); };
     const additions = [];
-    if (season === 1) {
-        // 3-5 unités tier1
-        const n = rand(3, 5);
-        for(let i=0;i<n;i++) additions.push(pick(tier1));
-    } else if (season === 2) {
-        // 2-4 tier1 + 2-3 tier2
-        const n1 = rand(2,4), n2 = rand(2,3);
-        for(let i=0;i<n1;i++) additions.push(pick(tier1));
-        for(let i=0;i<n2;i++) additions.push(pick(tier2));
+
+    if (season <= 2) {
+        // S1-S2 : Tier 1 uniquement
+        const n = rand(3, 4 + season);
+        for (let i=0; i<n; i++) additions.push(pick(tier1));
+
     } else if (season === 3) {
-        // 1-3 tier2 + 2-4 tier3
-        const n2 = rand(1,3), n3 = rand(2,4);
-        for(let i=0;i<n2;i++) additions.push(pick(tier2));
-        for(let i=0;i<n3;i++) additions.push(pick(tier3));
+        // S3 : Tier 1 + introduction Tier 2
+        const n = rand(4, 7);
+        for (let i=0; i<n; i++) {
+            additions.push(Math.random() < 0.5 ? pick(tier1) : pick(tier2));
+        }
+
     } else if (season === 4) {
-        // 2-3 tier3 + 2-4 tier4
-        const n3 = rand(2,3), n4 = rand(2,4);
-        for(let i=0;i<n3;i++) additions.push(pick(tier3));
-        for(let i=0;i<n4;i++) additions.push(pick(tier4));
+        // S4 : Tier 2 + introduction Tier 3
+        const n = rand(5, 8);
+        for (let i=0; i<n; i++) {
+            const r = Math.random();
+            if (r < 0.3)      additions.push(pick(tier1));
+            else if (r < 0.7) additions.push(pick(tier2));
+            else               additions.push(pick(tier3));
+        }
+
     } else {
-        // S5+ : nombre = 3+S à 6+S, répartition progressive vers tiers élevés
+        // S5+ : tous tiers, progression vers T4
         const n = rand(3 + season, 6 + season);
-        const t1p = Math.max(0,    0.20 - (season - 5) * 0.02);
-        const t2p = Math.max(0.05, 0.30 - (season - 5) * 0.015);
+        const t1p = Math.max(0,    0.10 - (season - 5) * 0.01);
+        const t2p = Math.max(0.05, 0.25 - (season - 5) * 0.015);
         const t4p = Math.min(0.70, 0.20 + (season - 5) * 0.04);
         const t3p = Math.max(0.05, 1 - t1p - t2p - t4p);
-        for (let i = 0; i < n; i++) {
-            const r2 = Math.random();
-            if      (r2 < t1p)              additions.push(pick(tier1));
-            else if (r2 < t1p + t2p)        additions.push(pick(tier2));
-            else if (r2 < t1p + t2p + t3p)  additions.push(pick(tier3));
-            else                             additions.push(pick(tier4));
+        for (let i=0; i<n; i++) {
+            const r = Math.random();
+            if      (r < t1p)             additions.push(pick(tier1));
+            else if (r < t1p + t2p)       additions.push(pick(tier2));
+            else if (r < t1p+t2p+t3p)     additions.push(pick(tier3));
+            else                           additions.push(pick(tier4));
         }
     }
+
+    hordeCurrentSeason = season;
+    hordeCurrentAdditions = additions;
     return additions;
 }
 
@@ -5681,33 +5686,65 @@ function revealProtectedTile() {
 }
 
 function runCombatHorde() {
-    // Calcul du combat de horde
     const cityLog = [], hordeLog = [];
     let cityAtk = 0, hordeAtk = 0;
 
-    // Puissance ville
-    // Fortifications exclues de la puissance d'armée
-    // cityAtk += fortifications;
+    // ── Puissance ville ──
     cityArmy.forEach(u => {
         const contrib = u.atk + u.atkMag;
         cityAtk += contrib;
         cityLog.push(u.icon+' '+u.name+' : +'+contrib);
     });
-    if (avatarSentToHorde) {
-        cityAtk += atk;
-        cityLog.push('🧙 Avatar : +'+atk);
-    }
+    if (avatarSentToHorde) { cityAtk += atk; cityLog.push('🧙 Avatar : +'+atk); }
     const metaPow = window._metaCityPower || 0;
     if (metaPow > 0) { cityAtk += metaPow; cityLog.push('✨ Bonus méta : +'+metaPow); }
-    // Puissance horde
+
+    // ── Résolution par somme pondérée ──
     const allHorde = [...hordeArmy, ...hordeHiddenUnits];
-    allHorde.forEach(u => {
-        const mainTrait = u.traits[0] || '';
-        const countered = cityArmy.some(c => c.traits.some(t => COUNTER_RULES[t] === mainTrait));
-        let uAtk = u.atk + (u.atkMag||0);
-        if (!countered && HORDE_BONUS[mainTrait]) uAtk += HORDE_BONUS[mainTrait](u);
-        hordeAtk += uAtk;
-        hordeLog.push(u.icon+' '+u.name+(countered?' (contré)':'')+' : +'+uAtk);
+    const traitNet = {};
+    allHorde.forEach(function(u) {
+        const seen = {};
+        u.traits.filter(function(t){ return HORDE_BONUS[t] !== undefined; }).forEach(function(trait) {
+            if (seen[trait]) return; seen[trait] = true;
+            const w = (u.traitWeight && u.traitWeight[trait]) ? u.traitWeight[trait]
+                    : u.traits.filter(function(t2){ return t2===trait; }).length;
+            traitNet[trait] = (traitNet[trait]||0) + w;
+        });
+    });
+    cityArmy.forEach(function(u) {
+        u.traits.forEach(function(antiTrait) {
+            const trait = COUNTER_RULES[antiTrait];
+            if (!trait) return;
+            const w = (u.antiWeight && u.antiWeight[antiTrait]) ? u.antiWeight[antiTrait] : 1;
+            traitNet[trait] = (traitNet[trait]||0) - w;
+        });
+    });
+    // Allouer bonus aux unités les plus fortes
+    const unitBonuses = {};
+    Object.entries(traitNet).forEach(function(e) {
+        const trait = e[0], net = e[1];
+        if (!HORDE_BONUS[trait]) return;
+        if (net <= 0) { hordeLog.push('✓ '+trait+' contré (net='+net+')'); return; }
+        const units = allHorde.filter(function(u){ return u.traits.includes(trait); })
+                              .sort(function(a,b){ return (b.atk+b.atkMag)-(a.atk+a.atkMag); });
+        let budget = net;
+        units.forEach(function(u) {
+            if (budget <= 0) return;
+            const uid = allHorde.indexOf(u);
+            if (!unitBonuses[uid]) unitBonuses[uid] = {};
+            unitBonuses[uid][trait] = HORDE_BONUS[trait](u);
+            const w = (u.traitWeight && u.traitWeight[trait]) ? u.traitWeight[trait]
+                    : u.traits.filter(function(t){ return t===trait; }).length;
+            budget -= w;
+        });
+        hordeLog.push('⚠ '+trait+' non contré : '+Math.ceil(net)+' unité(s) avec bonus');
+    });
+    allHorde.forEach(function(u, uid) {
+        const base = u.atk + (u.atkMag||0);
+        let bonus = 0;
+        if (unitBonuses[uid]) Object.values(unitBonuses[uid]).forEach(function(b){ bonus += b; });
+        hordeAtk += base + bonus;
+        hordeLog.push(u.icon+' '+u.name+(bonus?' +'+bonus+' (trait)':'')+' : +'+(base+bonus));
     });
     if (allHorde.length === 0) { hordeAtk = (1 + currentSeason) * (rollDie(4) + 1); hordeLog.push('Horde inconnue : '+hordeAtk); }
 
@@ -6702,84 +6739,51 @@ Si net ≤ 0 → tout contré. Si net > 0 → les unités avec la plus haute ATK
     monstres: `
 <div class="glo-section">
 <div class="glo-title">⚔ Unités de la Horde</div>
-<p style="font-size:11px;color:#7a6a8a;margin-bottom:10px">Les unités s'accumulent de saison en saison. Les tiers plus élevés apparaissent à partir de S2-S4.</p>
+<p style="font-size:11px;color:#7a6a8a;margin-bottom:10px">Les unités s&#39;accumulent de saison en saison.</p>
 
-<div style="font-size:10px;color:#4a3a5a;letter-spacing:1px;margin:6px 0 4px">— TIER 1 —</div>
-<div class="glo-entry">
-  <div class="glo-entry-name">👺 Gobelin — ATK 2</div>
-  <div class="glo-entry-desc">Trait : Infanterie. Aucun effet spécial.</div>
-</div>
-<div class="glo-entry">
-  <div class="glo-entry-name">👊 Orc — ATK 3</div>
-  <div class="glo-entry-desc">Trait : Infanterie. Aucun effet spécial.</div>
-</div>
+<div style="font-size:10px;color:#4a3a5a;letter-spacing:1px;margin:6px 0 4px">— TIER 1 — (S1+)</div>
+<div class="glo-entry"><div class="glo-entry-name">👺 Gobelin — ATK 2</div><div class="glo-entry-desc">Trait : Infanterie.</div></div>
+<div class="glo-entry"><div class="glo-entry-name">👊 Orc — ATK 3</div><div class="glo-entry-desc">Trait : Infanterie.</div></div>
+<div class="glo-entry"><div class="glo-entry-name">🔥 Pillards — ATK 2</div><div class="glo-entry-desc">Trait : Pillard. Si non contré : détruit 1 bâtiment même si la horde est repoussée. Contré par Milicien.</div></div>
 
-<div style="font-size:10px;color:#4a3a5a;letter-spacing:1px;margin:6px 0 4px">— TIER 2 — (S2+)</div>
-<div class="glo-entry">
-  <div class="glo-entry-name">🐴 Cavalier Orc — ATK 4</div>
-  <div class="glo-entry-desc">Trait : Cavalerie. Si non contré : ATK ×2. Contré par Lancier, Hallebardier, Paladin.</div>
-</div>
-<div class="glo-entry">
-  <div class="glo-entry-name">🔥 Pillard — ATK 2</div>
-  <div class="glo-entry-desc">Trait : Pillard. Si non contré : détruit 1 bâtiment même si la horde est repoussée. Contré par Milicien.</div>
-</div>
+<div style="font-size:10px;color:#4a3a5a;letter-spacing:1px;margin:6px 0 4px">— TIER 2 — (S3+)</div>
+<div class="glo-entry"><div class="glo-entry-name">🐴 Cavalier Orc — ATK 4</div><div class="glo-entry-desc">Trait : Cavalerie. Si non contré : ATK ×2. Contré par Lancier, Hallebardier, Paladin.</div></div>
+<div class="glo-entry"><div class="glo-entry-name">🦅 Harpie — ATK 2</div><div class="glo-entry-desc">Trait : Vol. Si non contrée : détruit l&#39;unité de ville avec la plus haute ATK avant le combat. Contré par Archer, Arbalétrier.</div></div>
+<div class="glo-entry"><div class="glo-entry-name">🐗 Homme-bête — ATK 4</div><div class="glo-entry-desc">Trait : Infanterie.</div></div>
 
-<div style="font-size:10px;color:#4a3a5a;letter-spacing:1px;margin:6px 0 4px">— TIER 3 — (S3+)</div>
-<div class="glo-entry">
-  <div class="glo-entry-name">🏹 Archer Gobelin — ATK 3</div>
-  <div class="glo-entry-desc">Trait : Distance. Si non contré : ATK ×2. Contré par Arbalétrier, Soldat Pavois.</div>
-</div>
-<div class="glo-entry">
-  <div class="glo-entry-name">🐲 Vouivre — ATK 4</div>
-  <div class="glo-entry-desc">Trait : Vol. Si non contrée : détruit l'unité de ville avec la plus haute ATK avant le combat. Contré par Archer, Arbalétrier.</div>
-</div>
-<div class="glo-entry">
-  <div class="glo-entry-name">⛏ Sapeur Gobelin — ATK 2</div>
-  <div class="glo-entry-desc">Trait : Sapeur. Si non contré : détruit 1 fortification même si la horde est repoussée (min. 1). Contré par : unité avec anti-sapeur.</div>
-</div>
-<div class="glo-entry">
-  <div class="glo-entry-name">🐺 Chevaucheur de Loup Orc — ATK 6</div>
-  <div class="glo-entry-desc">Trait : Cavalerie II (valeur 2). Nécessite 2 anti-cavalerie pour être neutralisé. Si non contré : ATK ×2.</div>
-</div>
+<div style="font-size:10px;color:#4a3a5a;letter-spacing:1px;margin:6px 0 4px">— TIER 3 — (S4+)</div>
+<div class="glo-entry"><div class="glo-entry-name">🏹 Archer Gobelin — ATK 3</div><div class="glo-entry-desc">Trait : Distance. Si non contré : ATK ×2. Contré par Arbalétrier, Soldat Pavois.</div></div>
+<div class="glo-entry"><div class="glo-entry-name">🐲 Vouivre — ATK 6</div><div class="glo-entry-desc">Trait : Vol. Si non contrée : détruit l&#39;unité ville la plus forte avant combat. Contré par Archer, Arbalétrier.</div></div>
+<div class="glo-entry"><div class="glo-entry-name">⛏ Sapeur Gobelin — ATK 2</div><div class="glo-entry-desc">Trait : Sapeur. Si non contré : détruit 1 fortification (min. 1). Contré par anti-sapeur.</div></div>
+<div class="glo-entry"><div class="glo-entry-name">🐺 Chevaucheur de Loup Orc — ATK 6</div><div class="glo-entry-desc">Trait : Cavalerie II. Nécessite 2 anti-cavalerie pour neutraliser. Contré par Lancier, Hallebardier, Paladin.</div></div>
 
-<div style="font-size:10px;color:#4a3a5a;letter-spacing:1px;margin:6px 0 4px">— TIER 4 — (S4+)</div>
-<div class="glo-entry">
-  <div class="glo-entry-name">💀 Squelette — ATK 2</div>
-  <div class="glo-entry-desc">Trait : Mort-Vivant. Si non contré : détruit une unité aléatoire de ton armée avant le combat. Contré par Paladin.</div>
-</div>
-<div class="glo-entry">
-  <div class="glo-entry-name">😈 Démon — ATK 3, ATKMag 4</div>
-  <div class="glo-entry-desc">Trait : Démon. Si au moins 1 passe : toutes les unités Infanterie de ta ville ne comptent pas au combat. Contré par Prêtre.</div>
-</div>
+<div style="font-size:10px;color:#4a3a5a;letter-spacing:1px;margin:6px 0 4px">— TIER 4 — (S5+)</div>
+<div class="glo-entry"><div class="glo-entry-name">💀 Squelette — ATK 2</div><div class="glo-entry-desc">Trait : Mort-Vivant. Si non contré : détruit une unité aléatoire de ton armée avant combat. Contré par Paladin.</div></div>
+<div class="glo-entry"><div class="glo-entry-name">😈 Démon — ATK 3, ATKMag 4</div><div class="glo-entry-desc">Trait : Démon. Si au moins 1 passe : toute ton infanterie ne compte pas au combat. Contré par Prêtre.</div></div>
 </div>
 
 <div class="glo-section">
 <div class="glo-title">👹 Monstres Donjon — Effets Spéciaux</div>
-<div class="glo-entry">
-  <div class="glo-entry-name">🧛 Vampire</div>
-  <div class="glo-entry-desc">Se régénère des dégâts qu'il inflige à l'avatar.</div>
-</div>
-<div class="glo-entry">
-  <div class="glo-entry-name">🧌 Troll</div>
-  <div class="glo-entry-desc">Sur un 6 : STUN — tous les monstres gagnent une attaque supplémentaire. Contré par Ceinture anti-stun.</div>
-</div>
-<div class="glo-entry">
-  <div class="glo-entry-name">☠ Nécromancien</div>
-  <div class="glo-entry-desc">Invoque 2 Squelettes au round 1, puis +1 tous les 3 rounds.</div>
-</div>
-<div class="glo-entry">
-  <div class="glo-entry-name">💀 Liche</div>
-  <div class="glo-entry-desc">Réduit l'ATK de l'avatar. Contré par Collier béni.</div>
-</div>
-<div class="glo-entry">
-  <div class="glo-entry-name">🕷 Araignée</div>
-  <div class="glo-entry-desc">Empoisonne l'avatar : dégâts par round. Contré par Ceinture anti-poison ou Potion anti-poison.</div>
-</div>
-<div class="glo-entry">
-  <div class="glo-entry-name">👺 Goblins</div>
-  <div class="glo-entry-desc">Appellent des renforts au round 5 si non éliminés.</div>
-</div>
+
+<div style="font-size:10px;color:#4a3a5a;letter-spacing:1px;margin:6px 0 4px">— SALLES NORMALES —</div>
+<div class="glo-entry"><div class="glo-entry-name">👺 Gobelin</div><div class="glo-entry-desc">Appelle des renforts au round 5 si non éliminé. Invoque 2 gobelins supplémentaires.</div></div>
+<div class="glo-entry"><div class="glo-entry-name">👊 Orc / Orc Élite</div><div class="glo-entry-desc">Pas d&#39;effet spécial. Ennemi de base.</div></div>
+<div class="glo-entry"><div class="glo-entry-name">💀 Squelette / Squelette Armé</div><div class="glo-entry-desc">Pas d&#39;effet spécial en donjon.</div></div>
+<div class="glo-entry"><div class="glo-entry-name">🕷 Araignée</div><div class="glo-entry-desc">Empoisonne l&#39;avatar : inflige des dégâts à chaque round. Contré par Ceinture anti-poison ou Potion anti-poison.</div></div>
+<div class="glo-entry"><div class="glo-entry-name">🧛 Vampire</div><div class="glo-entry-desc">Se régénère des dégâts infligés à l&#39;avatar (lifesteal).</div></div>
+<div class="glo-entry"><div class="glo-entry-name">🧌 Troll</div><div class="glo-entry-desc">Sur un 6 en attaque : STUN — tous les monstres gagnent une attaque supplémentaire. Contré par Ceinture anti-stun.</div></div>
+<div class="glo-entry"><div class="glo-entry-name">☠ Nécromancien</div><div class="glo-entry-desc">Invoque 2 Squelettes au round 1, puis +1 tous les 3 rounds. Éliminer les squelettes avant le nécromancien.</div></div>
+
+<div style="font-size:10px;color:#4a3a5a;letter-spacing:1px;margin:6px 0 4px">— BOSS —</div>
+<div class="glo-entry"><div class="glo-entry-name">💀 Liche</div><div class="glo-entry-desc">Réduit l&#39;ATK de l&#39;avatar à chaque round. Contré par Collier béni (immunité).</div></div>
+<div class="glo-entry"><div class="glo-entry-name">💀 Liche Ancienne</div><div class="glo-entry-desc">Version renforcée de la Liche. Même effet, ATK et HP plus élevés.</div></div>
+<div class="glo-entry"><div class="glo-entry-name">🐲 Dragon Noir</div><div class="glo-entry-desc">Boss puissant. Pas d&#39;effet spécial mais ATK et HP très élevés.</div></div>
+<div class="glo-entry"><div class="glo-entry-name">😈 Démon Majeur</div><div class="glo-entry-desc">Boss démoniaque. Version renforcée du Démon. ATK et HP élevés.</div></div>
+<div class="glo-entry"><div class="glo-entry-name">👊 Orc Capitaine / Orc Boss</div><div class="glo-entry-desc">Chefs de guerre orcs. Combat difficile, pas d&#39;effet spécial.</div></div>
+<div class="glo-entry"><div class="glo-entry-name">💀 Squelette Royal</div><div class="glo-entry-desc">Squelette d&#39;élite. Armure renforcée (DEF élevée).</div></div>
 </div>`,
+
+
 
 
 
