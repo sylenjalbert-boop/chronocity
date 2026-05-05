@@ -916,7 +916,7 @@
 <!-- Frise de progression -->
 <div id="timeline">
     <div id="timeline-season">Saison 1</div>
-    <div style="font-family:Cinzel,serif;font-size:9px;color:#3a3050;margin-left:auto;padding-left:8px;white-space:nowrap">v0.9</div>
+    <div style="font-family:Cinzel,serif;font-size:9px;color:#3a3050;margin-left:auto;padding-left:8px;white-space:nowrap">v0.10</div>
     <div id="timeline-steps"></div>
     <button onclick="toggleSaveMenu()" style="background:linear-gradient(135deg,#1a1030,#2a1a40);border:1px solid #4a3060;color:#c0a060;font-size:14px;cursor:pointer;padding:2px 8px;border-radius:5px;white-space:nowrap;flex-shrink:0" title="Sauvegardes">💾 Save</button>
     <button onclick="toggleMetaSummary()" style="background:linear-gradient(135deg,#101a10,#1a2a1a);border:1px solid #2a5a2a;color:#4cffaa;font-size:14px;cursor:pointer;padding:2px 8px;border-radius:5px;white-space:nowrap;flex-shrink:0" title="Résumé méta">✦ Méta</button>
@@ -4325,16 +4325,18 @@ function resolveBattle() {
 
         u.traits.forEach(trait => {
             if (HORDE_BONUS[trait] === undefined) return;
+            const atkBonus = HORDE_BONUS[trait](u);
             const counterTrait = Object.keys(COUNTER_RULES).find(k => COUNTER_RULES[k] === trait);
-            if (!counterTrait) { const b=HORDE_BONUS[trait](u); bonus+=b; return; }
+            if (!counterTrait) { bonus += atkBonus; return; }
+            // Traits à effet spécial (atkBonus === 0) : gérés par leurs sections dédiées, ne pas consommer antiCounts ici
+            if (atkBonus === 0) return;
             const isCountered = (antiCounts[counterTrait]||0) > 0;
             if (isCountered) {
                 antiCounts[counterTrait]--;
                 msg += ' ('+trait+' contré ✓)';
             } else {
-                const b = HORDE_BONUS[trait](u);
-                bonus += b;
-                if (b > 0) msg += ' +'+b+' ('+trait+' non contré)';
+                bonus += atkBonus;
+                msg += ' +'+atkBonus+' ('+trait+' non contré)';
             }
         });
         // Nettoyer les propriétés temporaires
@@ -4406,8 +4408,8 @@ function resolveBattle() {
     const diff = cityAtk - hordeAtk;
     avatarSentToHorde = false;
 
-    // Effets spéciaux pillard / mort-vivant si non contrés
-    if (pillardCount > 0 && !cityTraits.has('anti-pillard')) {
+    // Effets spéciaux pillard / mort-vivant si non contrés (comparaison de comptage, pas binaire)
+    if (pillardCount > (antiCounts['anti-pillard'] || 0)) {
         const buildings = tiles[12].buildings;
         if (buildings.length > 0) {
             const destroyed = buildings.splice(Math.floor(Math.random()*buildings.length),1)[0];
@@ -4418,7 +4420,7 @@ function resolveBattle() {
             updateBuildingDisplay();
         }
     }
-    if (mortVivantCount > 0 && !cityTraits.has('anti-mort-vivant')) {
+    if (mortVivantCount > (antiCounts['anti-mort-vivant'] || 0)) {
         if (cityArmy.length > 0) {
             const idx = Math.floor(Math.random()*cityArmy.length);
             const lost = cityArmy.splice(idx,1)[0];
@@ -6212,7 +6214,7 @@ function recalcBuildingEffects() {
     // Remettre conscrit, fortifications et space à leurs valeurs de base (méta)
     const m = getMeta();
     conscrit       = 3 + (m.city ? m.city.conscrit || 0 : 0);
-    fortifications = 1 + (m.city ? m.city.fortif   || 0 : 0);
+    fortifications = 1 + (m.city ? m.city.fortif   || 0 : 0) + (m.cityLevel || 0);
     space          = m.city ? m.city.space || 0 : 0;
 
     // Bonus de révélation de tuile Forêt (permanent)
@@ -6589,7 +6591,7 @@ function cleanForSave(obj) {
 
 function getGameState() {
     return {
-        version: '0.9',
+        version: '0.10',
         date: new Date().toISOString(),
         currentTurn, currentSeason,
         gold, mana, population, dust,
@@ -6663,8 +6665,12 @@ function restoreGameState(s) {
     hordeCurrentSeason = s.hordeCurrentSeason||0; hordeRevealed = s.hordeRevealed||false;
     if (s.tileState) tileState.splice(0, tileState.length, ...s.tileState);
 
-    // Recalculer les effets des bâtiments
+    // Recalculer les effets des bâtiments (remet fortifications au max)
     recalcBuildingEffects();
+    // Restaurer les fortifications actuelles depuis la sauvegarde (peuvent être inférieures au max après combat)
+    if (s.fortifications !== undefined) {
+        fortifications = Math.min(s.fortifications, getMaxFort());
+    }
 }
 
 function saveToSlot(slot) {
