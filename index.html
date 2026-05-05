@@ -4149,7 +4149,9 @@ function buyEquipment(name, costGold, costMana=0, costPop=0) {
     }
     gold -= costGold; mana -= costMana; population -= costPop;
     ownedEquipment[item.id] = true;
-    item.apply();
+    // Glyphes et potions : appliquer immédiatement (incrémente les charges)
+    // Équipements (armes, armures, etc.) : ne pas appliquer, le bonus vient de l'équipement
+    if (item.isGlyph || item.isPotion) item.apply();
     updateStats();
     addLog('✅ ' + name + ' acheté !');
 }
