@@ -992,6 +992,7 @@
                 <div id="hbs-horde-total" style="font-size:15px;font-weight:bold;color:#ff6060;margin-top:6px"></div>
             </div>
         </div>
+        <div id="hbs-traits-log" style="display:none;padding:8px 12px;background:#0a0812;border:1px solid #2a1a3a;border-radius:8px;margin-bottom:8px"></div>
         <div id="hbs-result" style="text-align:center;font-size:18px;font-weight:bold;padding:12px;border-radius:8px;margin-bottom:12px"></div>
         <div id="hbs-effects" style="font-size:12px;color:#ffb040;text-align:center;margin-bottom:12px"></div>
         <div style="text-align:center">
@@ -1773,8 +1774,28 @@ function showHordeBattleScreen(hordeAtk, cityAtk, diff, hordeLog, cityLog) {
         won ? '⚔ Assaut repoussé !' : '💀 La horde perce vos défenses !';
     document.getElementById('hbs-city-log').innerHTML = cityLog.map(l=>'<div>'+l+'</div>').join('');
     document.getElementById('hbs-city-total').textContent = 'Total : '+cityAtk;
-    document.getElementById('hbs-horde-log').innerHTML = hordeLog.map(l=>'<div>'+l+'</div>').join('');
+
+    // Séparer les logs unités et les logs traits/effets
+    const unitLog = hordeLog.filter(function(l){ return !l.startsWith('✓') && !l.startsWith('⚠') && !l.startsWith('🔥') && !l.startsWith('☠') && !l.startsWith('😈') && !l.startsWith('💀') && !l.startsWith('🐲') && !l.startsWith('🏹'); });
+    const traitLog = hordeLog.filter(function(l){ return l.startsWith('✓') || l.startsWith('⚠') || l.startsWith('🔥') || l.startsWith('☠') || l.startsWith('😈') || l.startsWith('💀') || l.startsWith('🐲') || l.startsWith('🏹'); });
+
+    document.getElementById('hbs-horde-log').innerHTML = unitLog.map(l=>'<div>'+l+'</div>').join('');
     document.getElementById('hbs-horde-total').textContent = 'Total : '+hordeAtk;
+
+    // Afficher la section traits/effets
+    const traitsEl = document.getElementById('hbs-traits-log');
+    if (traitsEl) {
+        if (traitLog.length > 0) {
+            traitsEl.style.display = 'block';
+            traitsEl.innerHTML = '<div style="font-size:10px;color:#6a5a7a;font-family:Cinzel,serif;letter-spacing:1px;margin-bottom:4px">TRAITS & EFFETS</div>' +
+                traitLog.map(function(l){
+                    const color = l.startsWith('✓') ? '#4cffaa' : l.startsWith('⚠') ? '#ffb040' : '#ff6060';
+                    return '<div style="color:'+color+';font-size:11px">'+l+'</div>';
+                }).join('');
+        } else {
+            traitsEl.style.display = 'none';
+        }
+    }
 
     const res = document.getElementById('hbs-result');
     const btn = document.getElementById('hbs-btn');
@@ -4435,22 +4456,46 @@ function resolveBattle() {
     avatarSentToHorde = false;
 
     // Effets spéciaux pillard / mort-vivant si non contrés (comparaison de comptage, pas binaire)
-    if (pillardCount > (antiCounts['anti-pillard'] || 0)) {
-        const buildings = tiles[12].buildings;
-        if (buildings.length > 0) {
-            const destroyed = buildings.splice(Math.floor(Math.random()*buildings.length),1)[0];
-            space += 1;
-            addLog('⚠ Pillards détruisent : '+destroyed+' ! (+1 espace récupéré)');
-            const key = Object.keys(buildingCounts).find(k=>k===destroyed);
-            if (key && buildingCounts[key]>0) buildingCounts[key]--;
-            updateBuildingDisplay();
+    // ── Pillard : détruit un bâtiment même si horde repoussée ──
+    const pillardNet = traitNet['pillard'] || 0;
+    if (pillardNet > 0) {
+        // Trouver tous les bâtiments sur toutes les tuiles
+        const allBuildings = [];
+        tileState.forEach(function(tile, idx) {
+            if (tile.buildings && tile.buildings.length > 0) {
+                tile.buildings.forEach(function(b) {
+                    allBuildings.push({ tile: idx, name: b });
+                });
+            }
+        });
+        const nbDestroy = Math.min(pillardNet, allBuildings.length);
+        for (let i = 0; i < nbDestroy; i++) {
+            const pick = allBuildings.splice(Math.floor(Math.random()*allBuildings.length),1)[0];
+            const tile = tileState[pick.tile];
+            const bIdx = tile.buildings.indexOf(pick.name);
+            if (bIdx !== -1) {
+                tile.buildings.splice(bIdx, 1);
+                space += 1;
+                if (buildingCounts[pick.name] > 0) buildingCounts[pick.name]--;
+                const tileName = TILE_TYPES[tile.type] ? TILE_TYPES[tile.type].emoji + ' ' + tile.type : 'Ville';
+                const msg = '🔥 Pillard détruit : ' + pick.name + ' (' + tileName + ')';
+                hordeLog.push(msg);
+                addLog('⚠ ' + msg);
+            }
         }
+        updateBuildingDisplay();
+    } else if (hordeArmy.some(function(u){ return u.traits.includes('pillard'); })) {
+        hordeLog.push('✓ Pillards neutralisés par anti-pillard');
     }
+
+    // ── Mort-vivant : détruit une unité aléatoire ──
     if (mortVivantCount > (antiCounts['anti-mort-vivant'] || 0)) {
         if (cityArmy.length > 0) {
             const idx = Math.floor(Math.random()*cityArmy.length);
             const lost = cityArmy.splice(idx,1)[0];
-            addLog('☠ Mort-vivants détruisent : '+lost.icon+' '+lost.name+' !');
+            const msg = '☠ Mort-vivants détruisent : '+lost.icon+' '+lost.name+' !';
+            hordeLog.push(msg);
+            addLog(msg);
         }
     }
 
@@ -6587,7 +6632,7 @@ const GLO_DATA = {
 </div>
 <div class="glo-entry">
   <div class="glo-entry-name">🪖 Hallebardier (40 Or, 8 Pop) — Académie</div>
-  <div class="glo-entry-desc">ATK 4 | Infanterie | Anti-Cavalerie II (poids 2 — neutralise 2 unités cavalerie)</div>
+  <div class="glo-entry-desc">ATK 4 | Infanterie | Anti-Cavalerie II (neutralise 2 unités cavalerie)</div>
 </div>
 <div class="glo-entry">
   <div class="glo-entry-name">🏹 Archer (25 Or, 5 Pop) — Archerie</div>
@@ -6617,14 +6662,14 @@ const GLO_DATA = {
 <div class="glo-section">
 <div class="glo-title">⚔ Traits de la Horde</div>
 <p style="font-size:11px;color:#7a6a8a;margin-bottom:10px">
-Chaque trait a un <b style="color:#c0a060">poids</b> (défaut 1, indiqué en chiffres romains si > 1).<br>
-Résolution : somme des poids de la horde − poids des anti-traits de ta ville.<br>
+Chaque trait a une <b style="color:#c0a060">valeur</b> (défaut 1, indiqué en chiffres romains si > 1).<br>
+Résolution : somme des valeurs de la horde − valeurs des anti-traits de ta ville.<br>
 Si net ≤ 0 → tout contré. Si net > 0 → les unités avec la plus haute ATK passent en priorité.
 </p>
 
 <div class="glo-entry">
   <div class="glo-entry-name">🐴 Cavalerie <span class="glo-entry-trait" style="background:#2a1a0a;color:#ffb040">contré : anti-cavalerie</span></div>
-  <div class="glo-entry-desc">Si non contré : ATK ×2 (bonus = +ATK).<br>Chevaucheur de Loup : poids II → nécessite 2 anti-cavalerie.</div>
+  <div class="glo-entry-desc">Si non contré : ATK ×2 (bonus = +ATK).<br>Chevaucheur de Loup : Cavalerie II → nécessite 2 anti-cavalerie.</div>
 </div>
 <div class="glo-entry">
   <div class="glo-entry-name">🏹 Distance <span class="glo-entry-trait" style="background:#0a1a2a;color:#4080ff">contré : anti-distance</span></div>
@@ -6659,7 +6704,7 @@ Si net ≤ 0 → tout contré. Si net > 0 → les unités avec la plus haute ATK
 <div class="glo-title">👹 Monstres Horde — Unités spéciales</div>
 <div class="glo-entry">
   <div class="glo-entry-name">🐺 Chevaucheur de Loup Orc — Tier 3</div>
-  <div class="glo-entry-desc">ATK 6 | Cavalerie II (poids 2 — nécessite 2 anti-cavalerie pour neutraliser)</div>
+  <div class="glo-entry-desc">ATK 6 | Cavalerie II (nécessite 2 anti-cavalerie pour neutraliser)</div>
 </div>
 </div>
 <div class="glo-section">
