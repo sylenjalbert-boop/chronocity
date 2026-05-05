@@ -1266,18 +1266,18 @@ let actionBuildingSelected = null; // bâtiment en attente de placement sur tuil
 // ===== SYSTÈME TUILES =====
 // 25 tuiles (5x5), index 12 = ville
 const TILE_TYPES = {
-    Prairie:  { slots:2, color:'#2d5a1b', emoji:'🌾', desc:'+20 Or | +20 Or/tour | +2 emplacements',
-                bonuses:{ Ferme:'+5 Pop/tour' } },
-    Collines: { slots:1, color:'#7a6040', emoji:'⛰', desc:'+20 Or | +20 Or/tour | +1 emplacement',
-                bonuses:{ Mine:'+10 Or/tour' } },
+    Prairie:  { slots:2, color:'#2d5a1b', emoji:'🌾', desc:'+20 Or | +15 Or/tour | +2 emplacements',
+                perturn:{ gold:15 }, bonuses:{ Ferme:'+5 Pop/tour' } },
+    Collines: { slots:1, color:'#7a6040', emoji:'⛰', desc:'+20 Or | +15 Or/tour | +1 emplacement',
+                perturn:{ gold:15 }, bonuses:{ Mine:'+10 Or/tour' } },
     Côte:     { slots:1, color:'#1a5a7a', emoji:'🌊', desc:'+10 Pop | +10 Pop/tour | +1 emplacement',
-                bonuses:{} },
+                perturn:{ pop:10 }, bonuses:{} },
     Montagne: { slots:1, color:'#5a5060', emoji:'🏔', desc:'+30 Mana | +5 Mana/tour | +1 emplacement',
-                bonuses:{ Mine:'+20 Or/tour', 'Tour de Magie':'+10 Mana/tour' } },
+                perturn:{ mana:5 }, bonuses:{ Mine:'+20 Or/tour', 'Tour de Magie':'+10 Mana/tour' } },
     Lac:      { slots:1, color:'#1a4a6a', emoji:'💧', desc:'+10 Pop | +5 Pop/tour | +1 emplacement',
-                bonuses:{ Ferme:'+5 Pop/tour' } },
+                perturn:{ pop:5 }, bonuses:{ Ferme:'+5 Pop/tour' } },
     Forêt:    { slots:1, color:'#1a4a1a', emoji:'🌲', desc:'+1 Fortification | +1 emplacement',
-                bonuses:{ Caserne:'+1 Fortification' } },
+                perturn:{}, bonuses:{ Caserne:'+1 Fortification' } },
 };
 
 // State des tuiles
@@ -5202,27 +5202,34 @@ function renderTaxPanel() {
     // Détail par source
     const sources = [];
 
-    // Tuiles révélées
+    // Tuiles révélées : gain de base + bonus bâtiments posés
     tileState.forEach((t, i) => {
         if (i === 12 || !t.revealed) return;
         const tt = TILE_TYPES[t.type];
         if (!tt) return;
-        let gold_s = 0, mana_s = 0, pop_s = 0;
-        // Gain de base de la tuile (goldperturn/populationperturn/manaperturn de découverte)
-        // On reconstitue les bonus tuile depuis les bâtiments posés
+        // Gain de base de la tuile (révélation)
+        const pt = tt.perturn || {};
+        if (pt.gold || pt.mana || pt.pop) {
+            sources.push({
+                label: tt.emoji + ' ' + t.type,
+                gold: pt.gold || 0, mana: pt.mana || 0, pop: pt.pop || 0
+            });
+        }
+        // Bonus combo tuile + bâtiment
         t.buildings.forEach(bName => {
             const bonus = getTileBonus(t.type, bName);
             if (!bonus) return;
-            if (bonus.includes('Or'))  gold_s += parseInt(bonus);
-            if (bonus.includes('Mana')) mana_s += parseInt(bonus);
-            if (bonus.includes('Pop'))  pop_s  += parseInt(bonus);
+            let gold_s = 0, mana_s = 0, pop_s = 0;
+            if (bonus.includes('Or'))   gold_s = parseInt(bonus);
+            if (bonus.includes('Mana')) mana_s = parseInt(bonus);
+            if (bonus.includes('Pop'))  pop_s  = parseInt(bonus);
+            if (gold_s || mana_s || pop_s) {
+                sources.push({
+                    label: tt.emoji + ' ' + t.type + ' + ' + bName,
+                    gold: gold_s, mana: mana_s, pop: pop_s
+                });
+            }
         });
-        if (gold_s || mana_s || pop_s) {
-            sources.push({
-                label: tt.emoji + ' ' + t.type + (t.buildings.length ? ' ('+t.buildings.map(b=>b.slice(0,6)).join(', ')+')' : ''),
-                gold: gold_s, mana: mana_s, pop: pop_s
-            });
-        }
     });
 
     // Bâtiments de base (gains fixes)
@@ -6217,9 +6224,14 @@ function recalcBuildingEffects() {
     fortifications = 1 + (m.city ? m.city.fortif   || 0 : 0) + (m.cityLevel || 0);
     space          = m.city ? m.city.space || 0 : 0;
 
-    // Bonus de révélation de tuile Forêt (permanent)
+    // Gains par tour des tuiles révélées (base + fortification Forêt)
     tileState.forEach(function(tile) {
-        if (tile.revealed && tile.type === 'Forêt') fortifications += 1;
+        if (!tile.revealed || !tile.type) return;
+        if (tile.type === 'Forêt') fortifications += 1;
+        const pt = (TILE_TYPES[tile.type] || {}).perturn || {};
+        if (pt.gold) goldperturn += pt.gold;
+        if (pt.mana) manaperturn += pt.mana;
+        if (pt.pop)  populationperturn += pt.pop;
     });
 
     // ── Réappliquer les effets de chaque bâtiment + bonus de tuile ──
