@@ -4200,12 +4200,12 @@ const COUNTER_RULES = {
 
 // Bonus offensifs si non contré
 const HORDE_BONUS = {
-    'cavalerie':   (u) => u.atk * 2,   // ATK ×2
-    'vol':         (u) => 0,            // effet spécial : détruit unité ennemie la plus forte
-    'distance':    (u) => u.atk * 2,    // ATK ×2
-    'pillard':     (u) => 0,            // effet spécial (pas de bonus ATK)
+    'cavalerie':   (u) => u.atk,       // ATK ×2 (bonus = +1× ATK en plus de la base)
+    'vol':         (u) => 0,            // effet spécial
+    'distance':    (u) => u.atk,       // ATK ×2
+    'pillard':     (u) => 0,            // effet spécial
     'mort-vivant': (u) => 0,            // effet spécial
-    'demon':       (u) => 0,            // effet spécial : annule les unités infanterie
+    'demon':       (u) => 0,            // effet spécial
 };
 
 function generateHordeForSeason(season) {
@@ -4509,7 +4509,7 @@ function renderArmyTabCity() {
         const counts = {};
         cityArmy.forEach(u => { counts[u.id] = (counts[u.id]||{u,n:0}); counts[u.id].n++; });
         Object.values(counts).forEach(({u,n}) => {
-            const traits = u.traits.map(t=>'<span style="font-size:10px;padding:1px 4px;border-radius:3px;background:'+(t.startsWith('anti')?'#0a2a1a':'#1a1a2e')+';color:'+(t.startsWith('anti')?'#4cffaa':'#8888ff')+'">'+t+'</span>').join(' ');
+            const traits = formatTraits(u.traits);
             html += '<tr style="border-bottom:1px solid #1a1a2a;padding:4px 0">'+
                 '<td style="padding:4px 0">'+u.icon+' '+u.name+'</td>'+
                 '<td style="text-align:center;color:#ff8080">'+u.atk+'</td>'+
@@ -4686,6 +4686,19 @@ function updateArmyPanels() {
         ha.innerHTML = html;
     }
     if (ht) ht.textContent = calcHordePower() + (hordeHiddenUnits.length > 0 ? ' (+???)' : '');
+}
+
+
+function formatTraits(traits) {
+    const roman = ['','I','II','III','IV','V','VI','VII','VIII','IX','X'];
+    const counts = {};
+    traits.forEach(function(t) { counts[t] = (counts[t]||0) + 1; });
+    return Object.entries(counts).map(function(e) {
+        const t = e[0], n = e[1];
+        const label = n > 1 ? t + ' ' + (roman[n]||n) : t;
+        const isAnti = t.startsWith('anti');
+        return '<span style="font-size:10px;padding:1px 5px;border-radius:3px;background:'+(isAnti?'#0a2a1a':'#1a1a2e')+';color:'+(isAnti?'#4cffaa':'#8888ff')+'">'+label+'</span>';
+    }).join(' ');
 }
 
 function renderRecruitList() {
@@ -5569,7 +5582,7 @@ function renderRecruitListIn(el) {
         const canAfford = gold>=u.gold && population>=u.pop && mana>=u.mana && conscrit>0;
         const card=document.createElement('div');
         card.className='unit-card'+((!available||!canAfford)?' unit-disabled':'');
-        const traitHtml=u.traits.map(t=>'<span class="unit-trait '+(t.startsWith('anti')?'trait-anti':'trait-normal')+'">'+t+'</span>').join('');
+        const traitHtml=formatTraits(u.traits);
         const count=cityArmy.filter(a=>a.id===u.id).length;
         card.innerHTML='<span class="unit-icon">'+u.icon+'</span>'+
             '<div class="unit-info">'+
@@ -6538,11 +6551,11 @@ const GLO_DATA = {
 </div>
 <div class="glo-entry">
   <div class="glo-entry-name">🔮 Tour de Magie — 30 Or, 5 Pop, 20 Mana</div>
-  <div class="glo-entry-desc">+1 Conscription, +10 Mana/tour. Débloque : Arbalétrier, Prêtre.<br>Bonus tuile : Montagne → +10 Mana/tour.</div>
+  <div class="glo-entry-desc">+1 Conscription, +10 Mana/tour.<br>Bonus tuile : Montagne → +10 Mana/tour.</div>
 </div>
 <div class="glo-entry">
   <div class="glo-entry-name">🎓 Académie militaire — 150 Or, 30 Pop, 40 Mana</div>
-  <div class="glo-entry-desc">Débloque : Soldat Pavois, Paladin (avec Temple).<br>⚠ Prérequis : 2 Casernes + 1 Tour de Magie.</div>
+  <div class="glo-entry-desc">Débloque : Hallebardier, Soldat Pavois, Paladin (avec Temple).<br>⚠ Prérequis : 2 Casernes + 1 Tour de Magie.</div>
 </div>
 <div class="glo-entry">
   <div class="glo-entry-name">🏹 Archerie — 80 Or, 20 Pop</div>
@@ -6562,61 +6575,122 @@ const GLO_DATA = {
 <div class="glo-title">⚔ Unités défensives</div>
 <div class="glo-entry">
   <div class="glo-entry-name">🗡 Soldat (30 Or, 5 Pop) — Caserne</div>
-  <div class="glo-entry-desc">ATK 3. Trait : Infanterie.</div>
+  <div class="glo-entry-desc">ATK 3 | Infanterie</div>
 </div>
 <div class="glo-entry">
   <div class="glo-entry-name">🪚 Milicien (15 Or, 3 Pop) — Caserne</div>
-  <div class="glo-entry-desc">ATK 1. Trait : Anti-pillard.</div>
+  <div class="glo-entry-desc">ATK 1 | Anti-Pillard</div>
 </div>
 <div class="glo-entry">
   <div class="glo-entry-name">⚔ Lancier (30 Or, 5 Pop) — Caserne</div>
-  <div class="glo-entry-desc">ATK 2. Trait : Anti-cavalerie.</div>
+  <div class="glo-entry-desc">ATK 2 | Anti-Cavalerie</div>
+</div>
+<div class="glo-entry">
+  <div class="glo-entry-name">🪖 Hallebardier (40 Or, 8 Pop) — Académie</div>
+  <div class="glo-entry-desc">ATK 4 | Infanterie | Anti-Cavalerie II (poids 2 — neutralise 2 unités cavalerie)</div>
 </div>
 <div class="glo-entry">
   <div class="glo-entry-name">🏹 Archer (25 Or, 5 Pop) — Archerie</div>
-  <div class="glo-entry-desc">ATK 2. Traits : Anti-vol, Distance.</div>
+  <div class="glo-entry-desc">ATK 2 | Anti-Vol | Distance</div>
 </div>
 <div class="glo-entry">
   <div class="glo-entry-name">🏹 Arbalétrier (40 Or, 6 Pop) — Archerie</div>
-  <div class="glo-entry-desc">ATK 3. Traits : Anti-vol, Anti-distance, Distance.</div>
+  <div class="glo-entry-desc">ATK 3 | Anti-Vol | Anti-Distance | Distance</div>
 </div>
 <div class="glo-entry">
   <div class="glo-entry-name">🛡 Soldat Pavois (35 Or, 8 Pop) — Académie</div>
-  <div class="glo-entry-desc">ATK 2. Trait : Anti-distance.</div>
+  <div class="glo-entry-desc">ATK 2 | Anti-Distance</div>
 </div>
 <div class="glo-entry">
   <div class="glo-entry-name">✝ Prêtre (25 Or, 5 Pop, 15 Mana) — Église</div>
-  <div class="glo-entry-desc">ATK 1, ATKMag 3. Trait : Anti-démon.</div>
+  <div class="glo-entry-desc">ATK 1, ATKMag 3 | Anti-Démon</div>
 </div>
 <div class="glo-entry">
   <div class="glo-entry-name">⚜ Paladin (55 Or, 10 Pop, 10 Mana) — Académie + Temple</div>
-  <div class="glo-entry-desc">ATK 4, ATKMag 2. Traits : Anti-cavalerie, Anti-mort-vivant.</div>
+  <div class="glo-entry-desc">ATK 4, ATKMag 2 | Anti-Cavalerie | Anti-Mort-Vivant</div>
 </div>
 </div>`,
+
+
 
     traits: `
 <div class="glo-section">
 <div class="glo-title">⚔ Traits de la Horde</div>
-<p style="font-size:11px;color:#7a6a8a;margin-bottom:12px">Chaque anti-trait contrecarre 1 unité portant le trait adverse. Si non contrée, l'unité applique son effet.</p>
-<div class="glo-entry"><div class="glo-entry-name">🐴 Cavalerie <span class="glo-entry-trait" style="background:#2a1a0a;color:#ffb040">contré par : anti-cavalerie</span></div><div class="glo-entry-desc">Si non contrée : ATK ×2.</div></div>
-<div class="glo-entry"><div class="glo-entry-name">🏹 Distance <span class="glo-entry-trait" style="background:#0a1a2a;color:#4080ff">contré par : anti-distance</span></div><div class="glo-entry-desc">Si non contrée : ATK ×2.</div></div>
-<div class="glo-entry"><div class="glo-entry-name">🐲 Vol <span class="glo-entry-trait" style="background:#0a1a1a;color:#40ffcc">contré par : anti-vol</span></div><div class="glo-entry-desc">Si non contré : détruit l'unité de ville avec la plus haute ATK, avant le combat.</div></div>
-<div class="glo-entry"><div class="glo-entry-name">🔥 Pillard <span class="glo-entry-trait" style="background:#2a1000;color:#ff6020">contré par : anti-pillard</span></div><div class="glo-entry-desc">Si non contré : détruit 1 bâtiment même si la horde est repoussée.</div></div>
-<div class="glo-entry"><div class="glo-entry-name">⛏ Sapeur <span class="glo-entry-trait" style="background:#1a1000;color:#c08020">contré par : anti-sapeur</span></div><div class="glo-entry-desc">Si non contré : détruit 1 fortification même si la horde est repoussée. Minimum 1 fortification.</div></div>
-<div class="glo-entry"><div class="glo-entry-name">💀 Mort-Vivant <span class="glo-entry-trait" style="background:#1a1a0a;color:#80ff80">contré par : anti-mort-vivant</span></div><div class="glo-entry-desc">Si non contré : résistance et effets spéciaux.</div></div>
-<div class="glo-entry"><div class="glo-entry-name">😈 Démon <span class="glo-entry-trait" style="background:#1a0020;color:#cc40ff">contré par : anti-démon</span></div><div class="glo-entry-desc">Si au moins 1 démon passe : toutes les unités infanterie de la ville ne comptent pas au combat.</div></div>
+<p style="font-size:11px;color:#7a6a8a;margin-bottom:10px">
+Chaque trait a un <b style="color:#c0a060">poids</b> (défaut 1, indiqué en chiffres romains si > 1).<br>
+Résolution : somme des poids de la horde − poids des anti-traits de ta ville.<br>
+Si net ≤ 0 → tout contré. Si net > 0 → les unités avec la plus haute ATK passent en priorité.
+</p>
+
+<div class="glo-entry">
+  <div class="glo-entry-name">🐴 Cavalerie <span class="glo-entry-trait" style="background:#2a1a0a;color:#ffb040">contré : anti-cavalerie</span></div>
+  <div class="glo-entry-desc">Si non contré : ATK ×2 (bonus = +ATK).<br>Chevaucheur de Loup : poids II → nécessite 2 anti-cavalerie.</div>
+</div>
+<div class="glo-entry">
+  <div class="glo-entry-name">🏹 Distance <span class="glo-entry-trait" style="background:#0a1a2a;color:#4080ff">contré : anti-distance</span></div>
+  <div class="glo-entry-desc">Si non contré : ATK ×2 (bonus = +ATK).</div>
+</div>
+<div class="glo-entry">
+  <div class="glo-entry-name">🐲 Vol <span class="glo-entry-trait" style="background:#0a1a1a;color:#40ffcc">contré : anti-vol</span></div>
+  <div class="glo-entry-desc">Si non contré : pour chaque unité volante passant, détruit l'unité de ville avec la plus haute ATK, avant le combat.</div>
+</div>
+<div class="glo-entry">
+  <div class="glo-entry-name">🔥 Pillard <span class="glo-entry-trait" style="background:#2a1000;color:#ff6020">contré : anti-pillard</span></div>
+  <div class="glo-entry-desc">Si non contré : détruit 1 bâtiment même si la horde est repoussée.</div>
+</div>
+<div class="glo-entry">
+  <div class="glo-entry-name">⛏ Sapeur <span class="glo-entry-trait" style="background:#1a1000;color:#c08020">contré : anti-sapeur</span></div>
+  <div class="glo-entry-desc">Si non contré : détruit 1 fortification même si la horde est repoussée. Minimum 1 fortification conservée.</div>
+</div>
+<div class="glo-entry">
+  <div class="glo-entry-name">💀 Mort-Vivant <span class="glo-entry-trait" style="background:#1a1a0a;color:#80ff80">contré : anti-mort-vivant</span></div>
+  <div class="glo-entry-desc">Si au moins 1 mort-vivant non contré : détruit une unité <b>aléatoire</b> de ton armée avant le combat.</div>
+</div>
+<div class="glo-entry">
+  <div class="glo-entry-name">😈 Démon <span class="glo-entry-trait" style="background:#1a0020;color:#cc40ff">contré : anti-démon</span></div>
+  <div class="glo-entry-desc">Si au moins 1 démon non contré : toutes les unités infanterie de ta ville ne comptent pas au combat ce tour.</div>
+</div>
 </div>`,
+
+
 
     monstres: `
 <div class="glo-section">
-<div class="glo-title">👹 Monstres — Effets Spéciaux</div>
-<div class="glo-entry"><div class="glo-entry-name">🧛 Vampire</div><div class="glo-entry-desc">Se régénère des dégâts qu'il inflige à l'avatar.</div></div>
-<div class="glo-entry"><div class="glo-entry-name">🧌 Troll</div><div class="glo-entry-desc">Sur un 6 : STUN — tous les monstres gagnent une attaque supplémentaire. Contré par Ceinture anti-stun.</div></div>
-<div class="glo-entry"><div class="glo-entry-name">☠ Nécromancien</div><div class="glo-entry-desc">Invoque 2 Squelettes au round 1, puis +1 tous les 3 rounds.</div></div>
-<div class="glo-entry"><div class="glo-entry-name">💀 Liche</div><div class="glo-entry-desc">Réduit l'ATK de l'avatar. Contré par Collier béni.</div></div>
-<div class="glo-entry"><div class="glo-entry-name">🕷 Araignée</div><div class="glo-entry-desc">Empoisonne l'avatar : dégâts par round. Contré par Ceinture anti-poison ou Potion anti-poison.</div></div>
-<div class="glo-entry"><div class="glo-entry-name">👺 Goblins</div><div class="glo-entry-desc">Appellent des renforts au round 5 si non éliminés.</div></div>
+<div class="glo-title">👹 Monstres Horde — Unités spéciales</div>
+<div class="glo-entry">
+  <div class="glo-entry-name">🐺 Chevaucheur de Loup Orc — Tier 3</div>
+  <div class="glo-entry-desc">ATK 6 | Cavalerie II (poids 2 — nécessite 2 anti-cavalerie pour neutraliser)</div>
+</div>
+</div>
+<div class="glo-section">
+<div class="glo-title">👹 Monstres Donjon — Effets Spéciaux</div>
+<div class="glo-entry">
+  <div class="glo-entry-name">🧛 Vampire</div>
+  <div class="glo-entry-desc">Se régénère des dégâts qu'il inflige à l'avatar.</div>
+</div>
+<div class="glo-entry">
+  <div class="glo-entry-name">🧌 Troll</div>
+  <div class="glo-entry-desc">Sur un 6 : STUN — tous les monstres gagnent une attaque supplémentaire. Contré par Ceinture anti-stun.</div>
+</div>
+<div class="glo-entry">
+  <div class="glo-entry-name">☠ Nécromancien</div>
+  <div class="glo-entry-desc">Invoque 2 Squelettes au round 1, puis +1 tous les 3 rounds.</div>
+</div>
+<div class="glo-entry">
+  <div class="glo-entry-name">💀 Liche</div>
+  <div class="glo-entry-desc">Réduit l'ATK de l'avatar. Contré par Collier béni.</div>
+</div>
+<div class="glo-entry">
+  <div class="glo-entry-name">🕷 Araignée</div>
+  <div class="glo-entry-desc">Empoisonne l'avatar : dégâts par round. Contré par Ceinture anti-poison ou Potion anti-poison.</div>
+</div>
+<div class="glo-entry">
+  <div class="glo-entry-name">👺 Goblins</div>
+  <div class="glo-entry-desc">Appellent des renforts au round 5 si non éliminés.</div>
+</div>
 </div>`,
+
+
 
     combat: `
 <div class="glo-section">
