@@ -525,7 +525,7 @@
 <!-- ════ ÉCRAN D'ACCUEIL ════ -->
 <div id="home-screen" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:#06040a;z-index:20000;flex-direction:column;align-items:center;justify-content:center;gap:20px">
     <div style="text-align:center;margin-bottom:10px">
-        <div style="font-family:Cinzel,serif;font-size:28px;color:#c0a060;letter-spacing:3px;text-shadow:0 0 20px rgba(180,140,60,0.4)">⚔ Chroniques des Tuiles</div>
+        <div style="font-family:Cinzel,serif;font-size:28px;color:#c0a060;letter-spacing:3px;text-shadow:0 0 20px rgba(180,140,60,0.4)">⚔ Chronocity — A Rogue City Builder</div>
         <div style="font-size:11px;color:#4a3a5a;margin-top:6px;letter-spacing:2px">VERSION 0.9.3</div>
     </div>
     <div id="home-menu" style="display:flex;flex-direction:column;gap:10px;width:min(340px,90vw)">
@@ -575,7 +575,7 @@
 <div id="portrait-overlay">
     <div style="font-size:60px;animation:spin 2s linear infinite">📱</div>
     <div style="font-family:Cinzel,serif;font-size:18px;color:#c0a060;letter-spacing:1px">Tourne ton appareil</div>
-    <div style="font-size:13px;color:#7a6a50;max-width:240px">Chroniques des Tuiles se joue en mode paysage</div>
+    <div style="font-size:13px;color:#7a6a50;max-width:240px">Chronocity — A Rogue City Builder se joue en mode paysage</div>
 </div>
 
 
@@ -6978,22 +6978,39 @@ const GLO_DATA = {
 <div class="glo-entry"><div class="glo-entry-name">💀 Mort-Vivant — contré : anti-mort-vivant</div><div class="glo-entry-desc">Si au moins 1 passe : détruit une unité aléatoire de ton armée.</div></div>
 <div class="glo-entry"><div class="glo-entry-name">😈 Démon — contré : anti-démon</div><div class="glo-entry-desc">Si au moins 1 passe : toute ton infanterie ne compte pas.</div></div>
 </div>`,
-    monstres:`<div class="glo-section"><div class="glo-title">⚔ Horde par Tier</div>
+    monstres:`<div class="glo-section"><div class="glo-title">⚔ Unités de la Horde</div>
 <div style="font-size:10px;color:#4a3a5a;margin:4px 0">— T1 (S1+) —</div>
 <div class="glo-entry"><div class="glo-entry-name">👺 Gobelin ATK 2 | 👊 Orc ATK 3 | 🔥 Pillards ATK 2</div></div>
 <div style="font-size:10px;color:#4a3a5a;margin:4px 0">— T2 (S3+) —</div>
-<div class="glo-entry"><div class="glo-entry-name">🐴 Cavalier Orc ATK 4 | 🦅 Harpie ATK 2 | 🐗 Homme-bête ATK 4</div></div>
+<div class="glo-entry"><div class="glo-entry-name">🐴 Cavalier Orc ATK 4 (Cavalerie) | 🦅 Harpie ATK 2 (Vol) | 🐗 Homme-bête ATK 4</div></div>
 <div style="font-size:10px;color:#4a3a5a;margin:4px 0">— T3 (S4+) —</div>
-<div class="glo-entry"><div class="glo-entry-name">🏹 Archer Gobelin ATK 3 | 🐲 Vouivre ATK 6 | ⛏ Sapeur ATK 2 | 🐺 Chevaucheur ATK 6</div></div>
+<div class="glo-entry"><div class="glo-entry-name">🏹 Archer Gobelin ATK 3 (Distance) | 🐲 Vouivre ATK 6 (Vol) | ⛏ Sapeur ATK 2 | 🐺 Chevaucheur ATK 6 (Cavalerie II)</div></div>
 <div style="font-size:10px;color:#4a3a5a;margin:4px 0">— T4 (S5+) —</div>
-<div class="glo-entry"><div class="glo-entry-name">💀 Squelette ATK 2 | 😈 Démon ATK 3+4Mag</div></div>
+<div class="glo-entry"><div class="glo-entry-name">💀 Squelette ATK 2 (Mort-Vivant) | 😈 Démon ATK 3+4Mag (Démon)</div></div>
 </div>
-<div class="glo-section"><div class="glo-title">👹 Donjon</div>
-<div class="glo-entry"><div class="glo-entry-name">🧛 Vampire</div><div class="glo-entry-desc">Lifesteal — se régénère des dégâts infligés.</div></div>
-<div class="glo-entry"><div class="glo-entry-name">🧌 Troll</div><div class="glo-entry-desc">Sur 6 : STUN — tous les monstres attaquent à nouveau.</div></div>
-<div class="glo-entry"><div class="glo-entry-name">☠ Nécromancien</div><div class="glo-entry-desc">Invoque 2 squelettes R1, +1 tous les 3 rounds.</div></div>
-<div class="glo-entry"><div class="glo-entry-name">💀 Liche</div><div class="glo-entry-desc">Réduit ATK avatar. Contré par Collier béni.</div></div>
-<div class="glo-entry"><div class="glo-entry-name">🕷 Araignée</div><div class="glo-entry-desc">Poison par round. Contré par Ceinture anti-poison.</div></div>
+<div class="glo-section"><div class="glo-title">👹 Donjon — Monstres normaux</div>
+<div class="glo-entry"><div class="glo-entry-name">👺 Gobelin — ATK 2, Dmg 1, DEF 2, HP 6</div><div class="glo-entry-desc">Loot : +5 Or, +1 Poussière.</div></div>
+<div class="glo-entry"><div class="glo-entry-name">👊 Orc — ATK 3, Dmg 2, DEF 2, HP 8</div><div class="glo-entry-desc">Loot : +8 Or, +1 Poussière.</div></div>
+<div class="glo-entry"><div class="glo-entry-name">💀 Squelette — ATK 2, Dmg 1, DEF 2, HP 6</div><div class="glo-entry-desc">Loot : +6 Or, +1 Poussière.</div></div>
+<div class="glo-entry"><div class="glo-entry-name">👺 Gobelin Soldat — ATK 3, Dmg 2, DEF 3, Prot 1, HP 9</div><div class="glo-entry-desc">Loot : +12 Or, +1 Poussière.</div></div>
+<div class="glo-entry"><div class="glo-entry-name">👊 Orc Élite — ATK 4, Dmg 3, DEF 3, Prot 1, HP 12</div><div class="glo-entry-desc">Loot : +15 Or, +1 Poussière.</div></div>
+<div class="glo-entry"><div class="glo-entry-name">💀 Squelette Armé — ATK 3, Dmg 2, DEF 3, Prot 1, HP 9</div><div class="glo-entry-desc">Loot : +10 Or, +5 Mana, +1 Poussière.</div></div>
+<div class="glo-entry"><div class="glo-entry-name">🕷 Araignée — ATK 3, Dmg 1, DEF 1, HP 8</div><div class="glo-entry-desc">Poison par round. Loot : +15 Mana, +1 Poussière.</div></div>
+<div class="glo-entry"><div class="glo-entry-name">👹 Troll — ATK 3, Dmg 2, DEF 3, Prot 1, HP 12</div><div class="glo-entry-desc">Stun sur 6. Loot : +15 Or, +15 Mana, +1 Poussière.</div></div>
+<div class="glo-entry"><div class="glo-entry-name">🏹 Archer Gobelin — ATK 4, Dmg 2, DEF 1, HP 7 (rang arrière)</div><div class="glo-entry-desc">Loot : +12 Or, +1 Poussière.</div></div>
+<div class="glo-entry"><div class="glo-entry-name">🧛 Vampire — ATK 4, Dmg 2, DEF 3, Prot 1, HP 10</div><div class="glo-entry-desc">Lifesteal. Loot : +3 HP, +1 Poussière.</div></div>
+<div class="glo-entry"><div class="glo-entry-name">😈 Démon — ATK 4, Dmg 3, DEF 3, Prot 2, HP 14</div><div class="glo-entry-desc">Loot : +20 Or, +1 Poussière.</div></div>
+<div class="glo-entry"><div class="glo-entry-name">👺 Seigneur Gobelin — ATK 4, Dmg 3, DEF 3, Prot 2, HP 14</div><div class="glo-entry-desc">Loot : +18 Or, +1 Poussière.</div></div>
+<div class="glo-entry"><div class="glo-entry-name">🧙 Nécromancien — ATK 3, Dmg 2, DEF 4, Prot 1, HP 12 (rang arrière)</div><div class="glo-entry-desc">Invoque squelettes. Loot : +30 Mana, +1 Poussière.</div></div>
+</div>
+<div class="glo-section"><div class="glo-title">💀 Boss de Donjon</div>
+<div class="glo-entry"><div class="glo-entry-name">👊 Orc Capitaine (S1) — ATK 3, HP 14</div><div class="glo-entry-desc">Loot : +20 Or, +4+S Poussières.</div></div>
+<div class="glo-entry"><div class="glo-entry-name">💀 Squelette Royal (S1) — ATK 3, HP 12</div><div class="glo-entry-desc">Loot : +20 Mana, +4+S Poussières.</div></div>
+<div class="glo-entry"><div class="glo-entry-name">👾 Orc Boss (S2-3) — ATK 4, HP 18</div><div class="glo-entry-desc">Loot : +25 Or, +4+S Poussières.</div></div>
+<div class="glo-entry"><div class="glo-entry-name">💀 Liche (S2-3) — ATK 4, HP 16</div><div class="glo-entry-desc">Réduit ATK avatar. Contré par Collier béni. Loot : +50 Mana, +4+S Poussières.</div></div>
+<div class="glo-entry"><div class="glo-entry-name">🐉 Dragon Noir (S4+) — ATK 5, HP 22</div><div class="glo-entry-desc">Loot : +35 Or, +4+S Poussières.</div></div>
+<div class="glo-entry"><div class="glo-entry-name">💀 Liche Ancienne (S4+) — ATK 5, HP 20</div><div class="glo-entry-desc">Réduction ATK amplifiée. Loot : +60 Mana, +4+S Poussières.</div></div>
+<div class="glo-entry"><div class="glo-entry-name">😈 Démon Majeur (S4+) — ATK 5, HP 24</div><div class="glo-entry-desc">Loot : +40 Or, +4+S Poussières.</div></div>
 </div>`,
     combat:`<div class="glo-section"><div class="glo-title">🎯 Combat</div>
 <div class="glo-entry"><div class="glo-entry-name">Jauge d&#39;attaque</div><div class="glo-entry-desc">×0 Raté | ×0.5 Faible | ×1 Touché | ×1.2 Parfait</div></div>
