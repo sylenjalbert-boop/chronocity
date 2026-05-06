@@ -4572,7 +4572,7 @@ function renderArmyTabCity() {
         const counts = {};
         cityArmy.forEach(u => { counts[u.id] = (counts[u.id]||{u,n:0}); counts[u.id].n++; });
         Object.values(counts).forEach(({u,n}) => {
-            const traits = u.traits.map(t=>'<span style="font-size:10px;padding:1px 4px;border-radius:3px;background:'+(t.startsWith('anti')?'#0a2a1a':'#1a1a2e')+';color:'+(t.startsWith('anti')?'#4cffaa':'#8888ff')+'">'+t+'</span>').join(' ');
+            const traits = formatTraits(u.traits, false);
             html += '<tr style="border-bottom:1px solid #1a1a2a;padding:4px 0">'+
                 '<td style="padding:4px 0">'+u.icon+' '+u.name+'</td>'+
                 '<td style="text-align:center;color:#ff8080">'+u.atk+'</td>'+
@@ -4757,9 +4757,7 @@ function renderRecruitList() {
         const canAfford = gold >= u.gold && population >= u.pop && mana >= u.mana;
         const card = document.createElement('div');
         card.className = 'unit-card' + ((!available||!canAfford) ? ' unit-disabled' : '');
-        const traitHtml = u.traits.map(t =>
-            '<span class="unit-trait '+(t.startsWith('anti')?'trait-anti':'trait-normal')+'">'+t+'</span>'
-        ).join('');
+        const traitHtml = formatTraits(u.traits, true);
         const count = cityArmy.filter(a=>a.id===u.id).length;
         card.innerHTML =
             '<span class="unit-icon">'+u.icon+'</span>'+
@@ -5599,7 +5597,7 @@ function renderRecruitListIn(el) {
         const canAfford = gold>=u.gold && population>=u.pop && mana>=u.mana && conscrit>0;
         const card=document.createElement('div');
         card.className='unit-card'+((!available||!canAfford)?' unit-disabled':'');
-        const traitHtml=u.traits.map(t=>'<span class="unit-trait '+(t.startsWith('anti')?'trait-anti':'trait-normal')+'">'+t+'</span>').join('');
+        const traitHtml=formatTraits(u.traits, true);
         const count=cityArmy.filter(a=>a.id===u.id).length;
         card.innerHTML='<span class="unit-icon">'+u.icon+'</span>'+
             '<div class="unit-info">'+
@@ -7224,6 +7222,22 @@ function tryAddPotion(itemId) {
         }
     }
     return false; // Plus de slot libre
+}
+
+
+function formatTraits(traits, useClass) {
+    const roman = ['','I','II','III','IV','V'];
+    const counts = {};
+    traits.forEach(function(t){ counts[t] = (counts[t]||0) + 1; });
+    return Object.entries(counts).map(function(e) {
+        const t = e[0], n = e[1];
+        const label = n > 1 ? t + ' ' + (roman[n]||n) : t;
+        const isAnti = t.startsWith('anti');
+        if (useClass) {
+            return '<span class="unit-trait '+(isAnti?'trait-anti':'trait-normal')+'">'+label+'</span>';
+        }
+        return '<span style="font-size:10px;padding:1px 4px;border-radius:3px;background:'+(isAnti?'#0a2a1a':'#1a1a2e')+';color:'+(isAnti?'#4cffaa':'#8888ff')+'">'+label+'</span>';
+    }).join(' ');
 }
 
 </script>
