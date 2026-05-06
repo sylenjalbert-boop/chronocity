@@ -2235,11 +2235,11 @@ const BONUS_ROOMS = [
       choices: (function() {
           const tier = currentSeason <= 1 ? 1 : currentSeason <= 2 ? 2 : 3;
           const opts = [
-              { label:'🔥 Glyphe Boule de Feu', apply:()=>{ glyphFireball=Math.min(1,glyphFireball+1); return 'Glyphe Boule de Feu obtenu !'; } },
-              { label:'🧪 Potion de Soin',       apply:()=>{ potionHeal++; return 'Potion de Soin obtenue !'; } },
+              { label:'🔥 Glyphe Boule de Feu', apply:()=>{ if(tryAddGlyph('Fireball')) return 'Glyphe Boule de Feu équipé !'; return 'Inventaire plein — Glyphe non obtenu.'; } },
+              { label:'🧪 Potion de Soin', apply:()=>{ if(tryAddPotion('PotionSoin')) return 'Potion de Soin équipée !'; return 'Inventaire plein — Potion non obtenue.'; } },
           ];
-          if (tier >= 2) opts.push({ label:'🌟 Glyphe Bénédiction', apply:()=>{ glyphBless=Math.min(1,glyphBless+1); return 'Glyphe Bénédiction obtenu !'; } });
-          if (tier >= 3) opts.push({ label:'💢 Glyphe Rage',        apply:()=>{ glyphRage=Math.min(1,glyphRage+1); return 'Glyphe Rage obtenu !'; } });
+          if (tier >= 2) opts.push({ label:'🌟 Glyphe Bénédiction', apply:()=>{ if(tryAddGlyph('Bless')) return 'Glyphe Bénédiction équipé !'; return 'Inventaire plein — Glyphe non obtenu.'; } });
+          if (tier >= 3) opts.push({ label:'💢 Glyphe Rage', apply:()=>{ if(tryAddGlyph('Rage')) return 'Glyphe Rage équipé !'; return 'Inventaire plein — Glyphe non obtenu.'; } });
           return opts;
       })() },
     { type:'armurerie', emoji:'🛡', name:'Armurerie secrète',
@@ -5636,7 +5636,7 @@ function revealProtectedTile() {
         case 'Trésor':           gold += 50;        addLog('💰 Trésor ! +50 Or.'); break;
         case 'Fontaine de Mana': mana += 30;         addLog('🔮 Fontaine de Mana ! +30 Mana.'); break;
         case 'Fontaine de soin': dungeonState.avatarHp = Math.min(dungeonState.avatarMaxHp, dungeonState.avatarHp + 2); avatarHp = dungeonState.avatarHp; addLog('💧 Fontaine de soin ! +2 HP.'); break;
-        case 'Parchemin':        glyphFireball = Math.min(1, glyphFireball+1); addLog('📜 Parchemin ! Glyphe Boule de Feu obtenu.'); break;
+        case 'Parchemin': if(tryAddGlyph('Fireball')) addLog('📜 Parchemin ! Glyphe Boule de Feu équipé.'); else addLog('📜 Parchemin trouvé — mais inventaire plein !'); break;
     }
     updateStats();
 }
@@ -6985,6 +6985,39 @@ function dungeonUseGlyph(type) {
     }
     updateStats();
     dngUpdateCombatUI();
+}
+
+
+// Tente d'ajouter un glyphe ou une potion dans un slot libre
+// Retourne true si ajouté, false si plus de place
+function tryAddGlyph(itemId) {
+    const n = getGlyphSlots();
+    for (let i = 0; i < n; i++) {
+        if (!equippedItems.glyphs[i]) {
+            equippedItems.glyphs[i] = itemId;
+            // Incrémenter les charges
+            if (itemId === 'Fireball') glyphFireball++;
+            else if (itemId === 'Bless') glyphBless++;
+            else if (itemId === 'Rage')  glyphRage++;
+            ownedEquipment[itemId] = true;
+            return true;
+        }
+    }
+    return false; // Plus de slot libre
+}
+
+function tryAddPotion(itemId) {
+    const n = getPotionSlots();
+    for (let i = 0; i < n; i++) {
+        if (!equippedItems.potions[i]) {
+            equippedItems.potions[i] = itemId;
+            if (itemId === 'PotionSoin')   potionHeal++;
+            else if (itemId === 'PotionPoison') potionAntiPoison++;
+            ownedEquipment[itemId] = true;
+            return true;
+        }
+    }
+    return false; // Plus de slot libre
 }
 
 </script>
