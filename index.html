@@ -899,17 +899,12 @@
             </div>
         </div>
 
-        <!-- Ligne 3 : Glyphes (hors action — consomme 1 charge) -->
-        <div id="dng-potions-row" style="display:none;flex-direction:row;gap:4px;flex-wrap:wrap"></div>
+        <!-- Ligne 3 : Glyphes + Potions (hors action — dynamique) -->
         <div id="dng-glyphs-row" style="display:none;flex-direction:column;gap:4px">
             <div style="font-size:9px;color:#8888ff;text-align:center;letter-spacing:1px;font-family:Cinzel,serif;padding:2px 0">✦ GLYPHES &amp; POTIONS — hors action</div>
-            <div style="display:flex;gap:6px;justify-content:center;flex-wrap:wrap">
-                <button class="dng-btn" id="dng-glyph-fireball" onclick="dungeonUseGlyph('fireball')" style="background:#1a0a04;color:#ff9060;border:1px solid #602010;min-width:90px">🔥 BdF <span id="gc-fireball"></span></button>
-                <button class="dng-btn" id="dng-glyph-bless"    onclick="dungeonUseGlyph('bless')"    style="background:#0e0a02;color:#ffd060;border:1px solid #604000;min-width:90px">🌟 Béné <span id="gc-bless"></span></button>
-                <button class="dng-btn" id="dng-glyph-rage"     onclick="dungeonUseGlyph('rage')"     style="background:#120400;color:#ffb080;border:1px solid #601800;min-width:90px">💢 Rage <span id="gc-rage"></span></button>
-
-            </div>
+            <div id="dng-actifs-row" style="display:flex;gap:6px;justify-content:center;flex-wrap:wrap"></div>
         </div>
+        <div id="dng-potions-row" style="display:none"></div>
 
     </div>
     <!-- Overlay clic timing — couvre tout le dungeon pendant la jauge -->
@@ -2857,9 +2852,11 @@ function dungeonBarClick() {
     dngPushHist(dngTiming.histPlayer,zlabel,null);
     dngRenderHist();
     // Vérifier si on peut frapper la cible (rang arrière nécessite arme distance)
+    const _front = dungeonState.enemies ? dungeonState.enemies.front.filter(function(e){return e.hp>0;}) : [];
     const _targetIsBack = dungeonState.enemies && dungeonState.enemies.back &&
                           dungeonState.enemies.back.indexOf(dungeonState.enemy) !== -1;
-    if (_targetIsBack && !avatarRanged) {
+    // Bloquer rang arrière seulement si le rang avant n'est pas vide ET pas de distance
+    if (_targetIsBack && _front.length > 0 && !avatarRanged) {
         dngLog('⚠ Cible au rang arrière — arme à distance requise !', 'dlog-bad');
         finishRound(); return;
     }
@@ -3560,25 +3557,64 @@ function triggerRoundEffects() {
 }
 
 function dngUpdateCombatUI() {
-    // Mettre à jour les boutons potions/glyphes en combat
-    const row = document.getElementById('dng-potions-row');
-    if (!row) return;
-    // Vider et reconstruire
-    while (row.firstChild) row.removeChild(row.firstChild);
-    const pN = typeof getPotionSlots === 'function' ? getPotionSlots() : 1;
-    for (let i = 0; i < pN; i++) {
-        const id = equippedItems.potions && equippedItems.potions[i];
-        if (!id) continue;
-        const item = (typeof EQUIPMENT_CATALOG !== 'undefined') ? EQUIPMENT_CATALOG.find(function(x){return x.id===id;}) : null;
-        if (!item) continue;
+    const actifs = document.getElementById('dng-actifs-row');
+    const glyphsRow = document.getElementById('dng-glyphs-row');
+    if (!actifs) return;
+
+    actifs.innerHTML = '';
+    let count = 0;
+
+    // ── Glyphes équipés avec charges > 0 ──
+    const glyphMap = {
+        'Fireball':    { icon:'🔥', label:'BdF',    charges:function(){return glyphFireball;}, fn:"dungeonUseGlyph('fireball')", style:'background:#1a0a04;color:#ff9060;border-color:#602010' },
+        'Rage':        { icon:'💢', label:'Rage',   charges:function(){return glyphRage;},    fn:"dungeonUseGlyph('rage')",     style:'background:#120400;color:#ffb080;border-color:#601800' },
+        'Bless':       { icon:'🌟', label:'Béné',   charges:function(){return glyphBless;},   fn:"dungeonUseGlyph('bless')",    style:'background:#0e0a02;color:#ffd060;border-color:#604000' },
+    };
+    const gN = typeof getGlyphSlots === 'function' ? getGlyphSlots() : 1;
+    const seenGlyphs = {};
+    for (let i = 0; i < gN; i++) {
+        const id = equippedItems.glyphs && equippedItems.glyphs[i];
+        if (!id || seenGlyphs[id]) continue;
+        const g = glyphMap[id];
+        if (!g) continue;
+        const charges = g.charges();
+        if (charges <= 0) continue;
+        seenGlyphs[id] = true;
         const btn = document.createElement('button');
         btn.className = 'dng-btn';
-        btn.style.cssText = 'background:linear-gradient(135deg,#0a1a0a,#1a2a0a);border-color:#2a5a2a;color:#4cffaa';
-        btn.innerHTML = (item.icon||'🧪') + ' ' + item.name;
-        btn.onclick = (function(itemId){ return function(){ dungeonUsePotion(itemId); }; })(id);
-        row.appendChild(btn);
+        btn.style.cssText = g.style + ';min-width:80px';
+        btn.innerHTML = g.icon + ' ' + g.label + ' <span style="color:#fff;font-weight:bold">×' + charges + '</span>';
+        btn.setAttribute('onclick', g.fn);
+        actifs.appendChild(btn);
+        count++;
     }
-    row.style.display = row.children.length > 0 ? 'flex' : 'none';
+
+    // ── Potions équipées ──
+    const potionDefs = {
+        'PotionSoin':    { icon:'🧪', label:'Soin',       charges:function(){return potionHeal;},      fn:"dungeonUsePotion('heal')",      style:'background:linear-gradient(135deg,#0a1a0a,#1a2a0a);color:#4cffaa;border-color:#2a5a2a' },
+        'PotionPoison':  { icon:'🟢', label:'Anti-Poison', charges:function(){return potionAntiPoison;}, fn:"dungeonUsePotion('antipoison')", style:'background:linear-gradient(135deg,#001a0a,#002a1a);color:#40ffaa;border-color:#0a5a2a' },
+    };
+    const pN = typeof getPotionSlots === 'function' ? getPotionSlots() : 1;
+    const seenPotions = {};
+    for (let i = 0; i < pN; i++) {
+        const id = equippedItems.potions && equippedItems.potions[i];
+        if (!id || seenPotions[id]) continue;
+        const p = potionDefs[id];
+        if (!p) continue;
+        const charges = p.charges();
+        if (charges <= 0) continue;
+        seenPotions[id] = true;
+        const btn = document.createElement('button');
+        btn.className = 'dng-btn';
+        btn.style.cssText = p.style + ';min-width:80px';
+        btn.innerHTML = p.icon + ' ' + p.label + ' <span style="color:#fff;font-weight:bold">×' + charges + '</span>';
+        btn.setAttribute('onclick', p.fn);
+        actifs.appendChild(btn);
+        count++;
+    }
+
+    // Afficher/masquer la section
+    if (glyphsRow) glyphsRow.style.display = count > 0 ? 'flex' : 'none';
 }
 
 function dngShowAttackBtn(show) {
@@ -3998,7 +4034,6 @@ function dungeonNextRoom() {
 
 function dungeonAvatarDied() {
     runDeaths++;
-    if (activeSlot !== null) saveToSlot(activeSlot); // autosave
     // Stopper immédiatement l'animation et déverrouiller
     dngStopAnim();
     dngTiming.phase = 'idle';
@@ -6396,11 +6431,18 @@ function restoreGameState(s) {
     if (s.equippedItems) {
         const allItems = (typeof EQUIPMENT_CATALOG !== 'undefined') ? EQUIPMENT_CATALOG : [];
         Object.assign(equippedItems, s.equippedItems);
-        Object.values(s.equippedItems).forEach(function(id) {
+        // S'assurer que glyphs et potions sont des tableaux
+        if (!Array.isArray(equippedItems.glyphs))  equippedItems.glyphs  = [];
+        if (!Array.isArray(equippedItems.potions)) equippedItems.potions = [];
+        // Appliquer les équipements des slots fixes
+        ['weapon_main','weapon_off','armor','necklace','belt'].forEach(function(slot) {
+            const id = equippedItems[slot];
             if (!id) return;
             const item = allItems.find(function(i){ return i.id === id; });
             if (item && item.apply) try { item.apply(); } catch(e) {}
         });
+        // Appliquer les glyphes équipés (charges déjà dans glyphFireball etc.)
+        // Pas d'apply pour glyphes/potions au chargement (charges gérées séparément)
     }
 
     if (s.cityArmy) cityArmy.splice(0, cityArmy.length, ...s.cityArmy);
@@ -6828,7 +6870,7 @@ function restartRunAfterDefeat() {
     const totalDeaths = runDeaths;
     initNewRun();
     runDeaths = totalDeaths;
-    if (activeSlot !== null) saveToSlot(activeSlot);
+    // Ne pas sauvegarder automatiquement — le joueur choisit quand sauvegarder
 }
 
 function resetRunFromMenu(keepMeta) {
@@ -6879,7 +6921,7 @@ function initNewRun() {
     Object.keys(buildingCounts).forEach(function(k){ buildingCounts[k] = 0; });
     recalcBuildingEffects();
     applyMetaBonuses();
-    if (activeSlot !== null) setTimeout(function(){ saveToSlot(activeSlot); }, 200);
+    if (activeSlot !== null) setTimeout(function(){ /* pas d'autosave au démarrage d'un run */ }, 200);
     updateStats();
     if (typeof renderTileGrid === 'function') renderTileGrid();
     if (typeof renderActionArmyTab === 'function') renderActionArmyTab();
@@ -6892,6 +6934,58 @@ function initNewRun() {
     addLog('✦ Nouvelle partie — Bonne chance !');
 }
 
+
+
+function dungeonUsePotion(type) {
+    if (document.getElementById('dungeon-reward')?.classList.contains('visible')) return;
+    if (!dungeonState.active) return;
+    if (type === 'heal') {
+        if (potionHeal <= 0) return;
+        potionHeal--;
+        const heal = Math.floor(avatarMaxHp * 0.4);
+        dungeonState.avatarHp = Math.min(avatarMaxHp, dungeonState.avatarHp + heal);
+        avatarHp = dungeonState.avatarHp;
+        applyHpUpdate();
+        dngLog('🧪 Potion de soin : +' + heal + ' HP', 'dlog-good');
+    } else if (type === 'antipoison') {
+        if (potionAntiPoison <= 0) return;
+        potionAntiPoison--;
+        dungeonState.poisonActive = false;
+        dngLog('🟢 Antidote : poison neutralisé !', 'dlog-good');
+    }
+    updateStats();
+    dngUpdateCombatUI();
+}
+
+function dungeonUseGlyph(type) {
+    if (document.getElementById('dungeon-reward')?.classList.contains('visible')) return;
+    if (!dungeonState.active) return;
+    if (dngTiming.phase === 'timing') return;
+    if (type === 'fireball') {
+        if (glyphFireball <= 0) return;
+        glyphFireball--;
+        const allE = getAllLivingEnemies();
+        const dmg = Math.max(3, Math.floor(atk * 1.5));
+        allE.forEach(function(e){ e.hp = Math.max(0, e.hp - dmg); });
+        dngLog('🔥 Boule de Feu ! -'+dmg+' HP à tous les ennemis', 'dlog-good');
+        setTimeout(function(){ renderEnemyPanel(); checkAllEnemiesDead(); }, 100);
+    } else if (type === 'rage') {
+        if (glyphRage <= 0) return;
+        glyphRage--;
+        dungeonState.rageTurns = (dungeonState.rageTurns||0) + 3;
+        dngLog('💢 Glyphe de Rage : +ATK pendant 3 rounds', 'dlog-good');
+    } else if (type === 'bless') {
+        if (glyphBless <= 0) return;
+        glyphBless--;
+        const healAmt = Math.floor(avatarMaxHp * 0.25);
+        dungeonState.avatarHp = Math.min(avatarMaxHp, dungeonState.avatarHp + healAmt);
+        avatarHp = dungeonState.avatarHp;
+        applyHpUpdate();
+        dngLog('🌟 Bénédiction : +'+healAmt+' HP', 'dlog-good');
+    }
+    updateStats();
+    dngUpdateCombatUI();
+}
 
 </script>
 
