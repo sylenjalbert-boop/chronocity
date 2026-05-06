@@ -1287,8 +1287,8 @@ const TILE_TYPES = {
                 bonuses:{} },
     Collines: { slots:1, color:'#7a6040', emoji:'⛰', desc:'+10 Or/tour | +1 emplacement',
                 bonuses:{ Mine:'+10 Or/tour' } },
-    Montagne: { slots:0, color:'#5a5060', emoji:'🏔', desc:'+30 Mana | +5 Mana/tour',
-                bonuses:{ Mine:'+20 Or/tour', 'Tour de Magie':'+10 Mana/tour' } },
+    Montagne: { slots:0, color:'#5a5060', emoji:'🏔', desc:'+30 Mana | +5 Mana/tour | +5 Or/tour',
+                bonuses:{} },
     Lac:      { slots:1, color:'#1a4a6a', emoji:'💧', desc:'+10 Pop | +5 Pop/tour | +1 emplacement',
                 bonuses:{ Ferme:'+5 Pop/tour' } },
     Forêt:    { slots:1, color:'#1a4a1a', emoji:'🌲', desc:'+1 Fortification | +1 emplacement',
@@ -4283,12 +4283,12 @@ const COUNTER_RULES = {
 
 // Bonus offensifs si non contré
 const HORDE_BONUS = {
-    'cavalerie':   (u) => u.atk * 2,   // ATK ×2
-    'vol':         (u) => 0,            // effet spécial : détruit unité ennemie la plus forte
-    'distance':    (u) => u.atk * 2,    // ATK ×2
-    'pillard':     (u) => 0,            // effet spécial (pas de bonus ATK)
-    'mort-vivant': (u) => 0,            // effet spécial
-    'demon':       (u) => 0,            // effet spécial : annule les unités infanterie
+    'cavalerie':   (u) => u.atk,       // ATK ×2 (bonus = +1× ATK en plus de la base)
+    'vol':         (u) => 0,            // effet spécial
+    'distance':    (u) => u.atk,       // ATK ×2
+    'pillard':     (u) => 0,
+    'mort-vivant': (u) => 0,
+    'demon':       (u) => 0,
 };
 
 function generateHordeForSeason(season) {
@@ -5090,9 +5090,9 @@ function applyTileReveal(idx, forceType) {
             showExplorePopup('Collines ⛰', '+10 Or/tour | +1 Emplacement', 'Des collines riches en ressources.');
             break;
         case 'Montagne':
-            mana += 30; manaperturn += 5;
-            logMessage = 'Montagne révélée ! +30 Mana (+5 en récolte).';
-            showExplorePopup('Montagne 🏔', '+30 Mana | +5/récolte', "Les cristaux irradient d'énergie.");
+            mana += 30; manaperturn += 5; goldperturn += 5;
+            logMessage = 'Montagne révélée ! +30 Mana, +5 Mana/tour, +5 Or/tour.';
+            showExplorePopup('Montagne 🏔', '+30 Mana | +5 Mana/tour | +5 Or/tour', "Les cristaux irradient d'énergie.");
             break;
         case 'Lac':
             population += 10; populationperturn += 5; space += 1;
@@ -6932,14 +6932,16 @@ function gloTab(tab) {
 
 
 const GLO_DATA = {
-            terrains:`<div class="glo-section"><div class="glo-title">🗺 Terrains — Révélation et bonus</div>
+                terrains:`<div class="glo-section"><div class="glo-title">🗺 Terrains — Révélation et bonus</div>
 <div class="glo-entry"><div class="glo-entry-name">🌾 Prairie — 2 emplacements</div><div class="glo-entry-desc">Révélation : +2 emplacements uniquement.</div></div>
 <div class="glo-entry"><div class="glo-entry-name">⛰ Collines — 1 emplacement</div><div class="glo-entry-desc">Révélation : +10 Or/tour. Bonus Mine : +10 Or/tour supplémentaire.</div></div>
-<div class="glo-entry"><div class="glo-entry-name">🏔 Montagne — 0 emplacement</div><div class="glo-entry-desc">Révélation : +30 Mana, +5 Mana/tour. Bonus : Mine → +20 Or/tour | Tour de Magie → +10 Mana/tour.</div></div>
+<div class="glo-entry"><div class="glo-entry-name">🏔 Montagne — 0 emplacement</div><div class="glo-entry-desc">Révélation : +30 Mana, +5 Mana/tour, +5 Or/tour. Pas de construction possible.</div></div>
 <div class="glo-entry"><div class="glo-entry-name">💧 Lac — 1 emplacement</div><div class="glo-entry-desc">Révélation : +10 Pop, +5 Pop/tour. Bonus Ferme : +5 Pop/tour.</div></div>
 <div class="glo-entry"><div class="glo-entry-name">🌲 Forêt — 1 emplacement</div><div class="glo-entry-desc">Révélation : +1 Fortification. Bonus Caserne : +1 Fortification.</div></div>
 <div class="glo-entry"><div class="glo-entry-name">🏙 Ville</div><div class="glo-entry-desc">Emplacements via méta-progression.</div></div>
 </div>`,
+
+
 
 
 
