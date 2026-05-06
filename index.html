@@ -6886,6 +6886,15 @@ function resetRunFromMenu(keepMeta) {
 
 function initNewRun() {
     if (typeof setTurnProcessing === 'function') setTurnProcessing(false);
+    if (typeof setWaitingDungeon === 'function') setWaitingDungeon(false);
+    dungeonState.active = false;
+    // Fermer tous les écrans potentiellement ouverts
+    ['endScreen','pre-dungeon-window','equip-window','combat-intro'].forEach(function(id){
+        const el = document.getElementById(id);
+        if (el) el.style.display = 'none';
+    });
+    document.getElementById('dungeon-screen')?.classList.remove('show');
+    document.body.classList.remove('processing');
     currentTurn = 1; currentSeason = 1;
     const m = getMeta();
     gold = 100 + (m.city.gold || 0);
