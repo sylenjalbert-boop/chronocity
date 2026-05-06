@@ -526,7 +526,7 @@
 <div id="home-screen" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:#06040a;z-index:20000;flex-direction:column;align-items:center;justify-content:center;gap:20px">
     <div style="text-align:center;margin-bottom:10px">
         <div style="font-family:Cinzel,serif;font-size:28px;color:#c0a060;letter-spacing:3px;text-shadow:0 0 20px rgba(180,140,60,0.4)">⚔ Chroniques des Tuiles</div>
-        <div style="font-size:11px;color:#4a3a5a;margin-top:6px;letter-spacing:2px">VERSION 0.9.2</div>
+        <div style="font-size:11px;color:#4a3a5a;margin-top:6px;letter-spacing:2px">VERSION 0.9.3</div>
     </div>
     <div id="home-menu" style="display:flex;flex-direction:column;gap:10px;width:min(340px,90vw)">
         <button onclick="homeLoad()" style="width:100%;padding:16px 0;font-family:Cinzel,serif;font-size:14px;cursor:pointer;border-radius:8px;background:linear-gradient(135deg,#1a1030,#2a1a40);color:#c080ff;border:1px solid #5040a0">📂 Charger une partie</button>
@@ -1787,9 +1787,17 @@ function showHordeBattleScreen(hordeAtk, cityAtk, diff, hordeLog, cityLog) {
 
     document.getElementById('hbs-title').textContent =
         won ? '⚔ Assaut repoussé !' : '💀 La horde perce vos défenses !';
-    document.getElementById('hbs-city-log').innerHTML = cityLog.map(l=>'<div>'+l+'</div>').join('');
+    document.getElementById('hbs-city-log').innerHTML = cityLog.map(function(l){
+        const color = l.startsWith('✓') ? '#4cffaa' : l.startsWith('⚠') ? '#ffb040' : '#aaa';
+        return '<div style="color:'+color+'">'+l+'</div>';
+    }).join('');
     document.getElementById('hbs-city-total').textContent = 'Total : '+cityAtk;
-    document.getElementById('hbs-horde-log').innerHTML = hordeLog.map(l=>'<div>'+l+'</div>').join('');
+
+    document.getElementById('hbs-horde-log').innerHTML = hordeLog.map(function(l){
+        const color = l.startsWith('✓') ? '#4cffaa' : l.startsWith('⚠') ? '#ffb040' :
+                      l.startsWith('🔥')||l.startsWith('☠')||l.startsWith('😈')||l.startsWith('🐲') ? '#ff6060' : '#e08080';
+        return '<div style="color:'+color+'">'+l+'</div>';
+    }).join('');
     document.getElementById('hbs-horde-total').textContent = 'Total : '+hordeAtk;
 
     const res = document.getElementById('hbs-result');
@@ -5642,35 +5650,204 @@ function revealProtectedTile() {
 }
 
 function runCombatHorde() {
-    // Calcul du combat de horde
     const cityLog = [], hordeLog = [];
     let cityAtk = 0, hordeAtk = 0;
 
-    // Puissance ville
-    // Fortifications exclues de la puissance d'armée
-    // cityAtk += fortifications;
-    cityArmy.forEach(u => {
-        const contrib = u.atk + u.atkMag;
-        cityAtk += contrib;
-        cityLog.push(u.icon+' '+u.name+' : +'+contrib);
+    // ══════════════════════════════════════════
+    // VILLE — agrégation par type d'unité
+    // ══════════════════════════════════════════
+
+    // Compter les anti-traits de la ville (avec poids)
+    const antiCounts = {};
+    cityArmy.forEach(function(u) {
+        u.traits.forEach(function(t) {
+            if (!t.startsWith('anti')) return;
+            const w = (u.antiWeight && u.antiWeight[t]) ? u.antiWeight[t] : 1;
+            antiCounts[t] = (antiCounts[t] || 0) + w;
+        });
     });
-    if (avatarSentToHorde) {
+
+    // Calculer la somme nette par trait horde
+    const allHorde = [...hordeArmy, ...(hordeHiddenUnits||[])];
+    const traitNet = {};
+    allHorde.forEach(function(u) {
+        const seen = {};
+        u.traits.filter(function(t){ return HORDE_BONUS[t] !== undefined; }).forEach(function(trait) {
+            if (seen[trait]) return; seen[trait] = true;
+            const w = (u.traitWeight && u.traitWeight[trait]) ? u.traitWeight[trait]
+                    : u.traits.filter(function(t2){ return t2===trait; }).length;
+            traitNet[trait] = (traitNet[trait] || 0) + w;
+        });
+    });
+    Object.entries(antiCounts).forEach(function(e) {
+        const trait = COUNTER_RULES[e[0]];
+        if (trait) traitNet[trait] = (traitNet[trait] || 0) - e[1];
+    });
+
+    // Allouer bonus aux unités horde les plus fortes
+    const unitBonuses = {};
+    Object.entries(traitNet).forEach(function(e) {
+        const trait = e[0], net = e[1];
+        if (!HORDE_BONUS[trait] || net <= 0) return;
+        const units = allHorde.filter(function(u){ return u.traits.includes(trait); })
+                              .sort(function(a,b){ return (b.atk+b.atkMag)-(a.atk+a.atkMag); });
+        let budget = net;
+        units.forEach(function(u) {
+            if (budget <= 0) return;
+            const uid = allHorde.indexOf(u);
+            if (!unitBonuses[uid]) unitBonuses[uid] = {};
+            unitBonuses[uid][trait] = HORDE_BONUS[trait](u);
+            const w = (u.traitWeight && u.traitWeight[trait]) ? u.traitWeight[trait]
+                    : u.traits.filter(function(t){ return t===trait; }).length;
+            budget -= w;
+        });
+    });
+
+    // ══════════════════════════════════════════
+    // LOG VILLE — agrégé + effets spéciaux
+    // ══════════════════════════════════════════
+
+    // Grouper les unités ville par type
+    const cityGroups = {};
+    cityArmy.forEach(function(u) {
+        const key = u.name;
+        if (!cityGroups[key]) cityGroups[key] = { icon:u.icon, name:u.name, atk:0, count:0, traits:u.traits, antiWeight:u.antiWeight };
+        cityGroups[key].atk += u.atk + u.atkMag;
+        cityGroups[key].count++;
+    });
+
+    // Traits horde vs anti-traits ville — log résumé
+    const cityTraitLog = [];
+    const traitsBudget = Object.assign({}, traitNet); // pour affichage
+    Object.entries(COUNTER_RULES).forEach(function(e) {
+        const antiTrait = e[0], trait = e[1];
+        const antiW = antiCounts[antiTrait] || 0;
+        const hordeW = (traitNet[trait] + antiW) || 0; // avant soustraction
+        if (antiW > 0 && hordeW > 0) {
+            const net = traitNet[trait] || 0;
+            if (net <= 0) {
+                cityTraitLog.push('✓ ' + trait + ' contré (' + antiW + ' anti vs ' + hordeW + ' horde)');
+            } else {
+                cityTraitLog.push('⚠ ' + trait + ' partiellement contré : ' + antiW + '/' + hordeW + ' — ' + Math.ceil(net) + ' unité(s) passent');
+            }
+        }
+    });
+
+    Object.values(cityGroups).forEach(function(g) {
+        const atk = g.atk;
         cityAtk += atk;
-        cityLog.push('🧙 Avatar : +'+atk);
-    }
+        cityLog.push(g.icon + ' ' + g.name + ' ×' + g.count + ' : +' + atk);
+    });
+    if (avatarSentToHorde) { cityAtk += atk; cityLog.push('🧙 Avatar : +'+atk); }
     const metaPow = window._metaCityPower || 0;
     if (metaPow > 0) { cityAtk += metaPow; cityLog.push('✨ Bonus méta : +'+metaPow); }
-    // Puissance horde
-    const allHorde = [...hordeArmy, ...hordeHiddenUnits];
-    allHorde.forEach(u => {
-        const mainTrait = u.traits[0] || '';
-        const countered = cityArmy.some(c => c.traits.some(t => COUNTER_RULES[t] === mainTrait));
-        let uAtk = u.atk + (u.atkMag||0);
-        if (!countered && HORDE_BONUS[mainTrait]) uAtk += HORDE_BONUS[mainTrait](u);
-        hordeAtk += uAtk;
-        hordeLog.push(u.icon+' '+u.name+(countered?' (contré)':'')+' : +'+uAtk);
+    cityTraitLog.forEach(function(l){ cityLog.push(l); });
+
+    // ══════════════════════════════════════════
+    // LOG HORDE — agrégé + traits
+    // ══════════════════════════════════════════
+
+    // Grouper par type
+    const hordeGroups = {};
+    allHorde.forEach(function(u, uid) {
+        const bonus = unitBonuses[uid] ? Object.values(unitBonuses[uid]).reduce(function(a,b){return a+b;},0) : 0;
+        const base = u.atk + (u.atkMag||0);
+        const total = base + bonus;
+        hordeAtk += total;
+        const key = u.name + (bonus > 0 ? '_bonus' : '_normal');
+        if (!hordeGroups[key]) hordeGroups[key] = { icon:u.icon, name:u.name, atk:0, count:0, bonus:bonus > 0, bonusPerUnit:bonus };
+        hordeGroups[key].atk += total;
+        hordeGroups[key].count++;
     });
+
+    Object.values(hordeGroups).forEach(function(g) {
+        let line = g.icon + ' ' + g.name + ' ×' + g.count + ' : +' + g.atk;
+        if (g.bonus) line += ' <span style="color:#ffb040">(dont bonus trait)</span>';
+        hordeLog.push(line);
+    });
+
+    // Traits — messages spécifiques par trait
+    const traitEffects = {
+        'cavalerie':    function(n){ return '⚠ Cavalerie non contrée — '+Math.ceil(n)+' unité(s) avec ATK ×2'; },
+        'distance':     function(n){ return '⚠ Distance non contrée — '+Math.ceil(n)+' unité(s) avec ATK ×2'; },
+        'vol':          function(n){ return '⚠ Vol non contré — '+Math.ceil(n)+' unité(s) : détruisent l\'unité ville la plus forte'; },
+        'pillard':      function(n){ return '⚠ Pillard non contré — '+Math.ceil(n)+' unité(s) : détruisent 1 bâtiment'; },
+        'sapeur':       function(n){ return '⚠ Sapeur non contré — '+Math.ceil(n)+' unité(s) : détruisent 1 fortification'; },
+        'mort-vivant':  function(n){ return '⚠ Mort-Vivant non contré — '+Math.ceil(n)+' unité(s) : éliminent 1 unité aléatoire'; },
+        'demon':        function(n){ return '⚠ Démon non contré — '+Math.ceil(n)+' unité(s) : annulent toute l\'infanterie ville'; },
+    };
+    Object.entries(traitNet).forEach(function(e) {
+        const trait = e[0], net = e[1];
+        if (!HORDE_BONUS[trait] && !traitEffects[trait]) return;
+        if (net <= 0) {
+            hordeLog.push('✓ ' + trait + ' — entièrement contré');
+        } else {
+            const msg = traitEffects[trait] ? traitEffects[trait](net) : '⚠ '+trait+' non contré — '+Math.ceil(net)+' unité(s) passent';
+            hordeLog.push(msg);
+        }
+    });
+
     if (allHorde.length === 0) { hordeAtk = (1 + currentSeason) * (rollDie(4) + 1); hordeLog.push('Horde inconnue : '+hordeAtk); }
+
+    // ══════════════════════════════════════════
+    // Effets spéciaux (vol, pillard, mort-vivant)
+    // ══════════════════════════════════════════
+
+    // Vol
+    const volNet = traitNet['vol'] || 0;
+    if (volNet > 0) {
+        let strongest = null, strongestAtk = -1;
+        cityArmy.forEach(function(u){ const a=u.atk+u.atkMag; if(a>strongestAtk){strongestAtk=a;strongest=u;} });
+        if (strongest) {
+            const idx2 = cityArmy.indexOf(strongest);
+            cityArmy.splice(idx2, 1);
+            cityAtk -= strongestAtk;
+            hordeLog.push('🐲 Vol : ' + strongest.icon + ' ' + strongest.name + ' éliminé avant combat !');
+        }
+    }
+
+    // Pillard
+    const pillardNet = traitNet['pillard'] || 0;
+    if (pillardNet > 0) {
+        const allBld = [];
+        tileState.forEach(function(tile, ti) {
+            if (tile.buildings) tile.buildings.forEach(function(b){ allBld.push({tile:ti,name:b}); });
+        });
+        const nb = Math.min(Math.ceil(pillardNet), allBld.length);
+        for (let i=0; i<nb; i++) {
+            const pick = allBld.splice(Math.floor(Math.random()*allBld.length),1)[0];
+            const tile = tileState[pick.tile];
+            const bi = tile.buildings.indexOf(pick.name);
+            if (bi !== -1) {
+                tile.buildings.splice(bi, 1);
+                space++;
+                if (buildingCounts[pick.name] > 0) buildingCounts[pick.name]--;
+                hordeLog.push('🔥 Pillard détruit : ' + pick.name);
+            }
+        }
+    }
+
+    // Mort-vivant
+    const mvNet = traitNet['mort-vivant'] || 0;
+    const antiMv = antiCounts['anti-mort-vivant'] || 0;
+    const mvPass = allHorde.filter(function(u){ return u.traits.includes('mort-vivant'); }).length - antiMv;
+    if (mvPass > 0 && cityArmy.length > 0) {
+        const idx2 = Math.floor(Math.random() * cityArmy.length);
+        const lost = cityArmy.splice(idx2, 1)[0];
+        cityAtk -= lost.atk + lost.atkMag;
+        hordeLog.push('☠ Mort-Vivant détruit : ' + lost.icon + ' ' + lost.name);
+    }
+
+    // Démon
+    const demonPass = allHorde.filter(function(u){ return u.traits.includes('demon'); }).length - (antiCounts['anti-demon'] || 0);
+    if (demonPass > 0) {
+        let demonCancel = 0;
+        cityArmy.forEach(function(u){ if(u.traits.includes('infanterie')){ demonCancel += u.atk+u.atkMag; } });
+        if (demonCancel > 0) {
+            cityAtk -= demonCancel;
+            hordeLog.push('😈 Démon : infanterie ville annulée (-' + demonCancel + ' ATK)');
+        }
+    }
 
     const diff = cityAtk - hordeAtk;
     showHordeBattleScreen(hordeAtk, cityAtk, diff, hordeLog, cityLog);
