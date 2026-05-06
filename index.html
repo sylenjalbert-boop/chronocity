@@ -506,9 +506,70 @@
         .home-slot-name { font-family:Cinzel,serif;font-size:13px;color:#c0a060;font-weight:bold; }
         .home-slot-empty { color:#3a2a4a;font-style:italic; }
 
+        
+        .ew-slot {
+            display:flex;justify-content:space-between;align-items:center;
+            padding:5px 8px;border:1px solid #2a1a3a;border-radius:6px;
+            font-size:10px;color:#7a6a8a;cursor:pointer;
+            background:#0c0818;transition:border-color .15s;min-height:28px;
+        }
+        .ew-slot:hover { border-color:#6040a0; }
+        .ew-slot.active { border-color:#c080ff;background:#130e1e; }
+        .ew-slot.equipped { border-color:#4cffaa;background:#081808;color:#d4c49a; }
+        .ew-slot-item { font-size:9px;color:#4cffaa;font-weight:bold;text-align:right;max-width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
+
         </style>
 </head>
 <body>
+
+<!-- ════ ÉCRAN D'ACCUEIL ════ -->
+<div id="home-screen" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:#06040a;z-index:20000;flex-direction:column;align-items:center;justify-content:center;gap:20px">
+    <div style="text-align:center;margin-bottom:10px">
+        <div style="font-family:Cinzel,serif;font-size:28px;color:#c0a060;letter-spacing:3px;text-shadow:0 0 20px rgba(180,140,60,0.4)">⚔ Chroniques des Tuiles</div>
+        <div style="font-size:11px;color:#4a3a5a;margin-top:6px;letter-spacing:2px">VERSION 0.9</div>
+    </div>
+    <div id="home-menu" style="display:flex;flex-direction:column;gap:10px;width:min(340px,90vw)">
+        <button onclick="homeLoad()" style="width:100%;padding:16px 0;font-family:Cinzel,serif;font-size:14px;cursor:pointer;border-radius:8px;background:linear-gradient(135deg,#1a1030,#2a1a40);color:#c080ff;border:1px solid #5040a0">📂 Charger une partie</button>
+        <button onclick="homeNew()"  style="width:100%;padding:16px 0;font-family:Cinzel,serif;font-size:14px;cursor:pointer;border-radius:8px;background:linear-gradient(135deg,#0a1a0a,#1a2a0a);color:#4cffaa;border:1px solid #2a5a2a">✦ Commencer une partie</button>
+        <button onclick="openGlossary()" style="width:100%;padding:16px 0;font-family:Cinzel,serif;font-size:14px;cursor:pointer;border-radius:8px;background:linear-gradient(135deg,#0a0818,#1a1028);color:#9a8a6a;border:1px solid #2a1a3a">📖 Glossaire</button>
+    </div>
+    <div id="home-slots" style="display:none;flex-direction:column;gap:8px;width:min(360px,92vw)"></div>
+    <button id="home-back-btn" onclick="homeBack()" style="display:none;background:none;border:none;color:#4a3a5a;cursor:pointer;font-size:12px">← Retour</button>
+</div>
+
+<!-- ════ GLOSSAIRE ════ -->
+<div id="glossary-screen" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:#06040a;z-index:20001;flex-direction:column">
+    <div style="display:flex;align-items:center;padding:10px 14px;border-bottom:1px solid #1a1228;background:#0a0812;flex-shrink:0">
+        <button onclick="closeGlossary()" style="background:none;border:none;color:#6a5a80;font-size:18px;cursor:pointer;margin-right:10px">←</button>
+        <div style="font-family:Cinzel,serif;font-size:15px;color:#c0a060">📖 Glossaire</div>
+    </div>
+    <div style="display:flex;gap:4px;padding:8px 12px 0;flex-wrap:wrap;border-bottom:1px solid #1a1228;background:#0a0812;flex-shrink:0">
+        <div class="glo-tab active" onclick="gloTab('terrains')">🗺 Terrains</div>
+        <div class="glo-tab" onclick="gloTab('batiments')">🏗 Bâtiments</div>
+        <div class="glo-tab" onclick="gloTab('traits')">⚔ Traits</div>
+        <div class="glo-tab" onclick="gloTab('monstres')">👹 Monstres</div>
+        <div class="glo-tab" onclick="gloTab('combat')">🎯 Combat</div>
+    </div>
+    <div id="glossary-content" style="flex:1;overflow-y:auto;padding:16px 20px"></div>
+</div>
+
+<!-- CSS home + glossaire -->
+<style>
+.glo-tab { padding:6px 14px;border-radius:6px 6px 0 0;cursor:pointer;font-family:Cinzel,serif;font-size:11px;color:#7a6a8a;border:1px solid #2a1a3a;border-bottom:none;background:#0a0812; }
+.glo-tab.active { background:#1a1228;color:#c0a060;border-color:#4a3060; }
+.glo-section { margin-bottom:20px; }
+.glo-title { font-family:Cinzel,serif;font-size:13px;color:#c0a060;letter-spacing:1px;margin-bottom:8px;border-bottom:1px solid #2a1228;padding-bottom:4px; }
+.glo-entry { margin-bottom:6px;padding:7px 10px;background:#0e0c18;border-radius:6px;border-left:3px solid #3a2a5a; }
+.glo-entry-name { font-size:12px;font-weight:bold;color:#d4c49a;margin-bottom:2px; }
+.glo-entry-desc { font-size:11px;color:#7a6a8a;line-height:1.5; }
+.home-slot { display:flex;align-items:center;gap:10px;padding:10px 14px;background:#0e0c18;border:1px solid #2a1a3a;border-radius:8px;cursor:pointer;transition:border-color .15s; }
+.home-slot:hover { border-color:#6040a0; }
+.home-slot-info { flex:1;font-size:11px;color:#9a8a6a; }
+.home-slot-name { font-family:Cinzel,serif;font-size:13px;color:#c0a060;font-weight:bold; }
+.home-slot-empty { color:#3a2a4a;font-style:italic; }
+</style>
+
+
 
 <!-- Overlay portrait -->
 <div id="portrait-overlay">
@@ -545,17 +606,14 @@
 
 
 <!-- ═══ FENÊTRE PRÉ-DONJON ═══ -->
-<div id="pre-dungeon-window" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);z-index:10001;align-items:center;justify-content:center">
-<div style="background:#080810;border:1px solid #3a2a3a;border-radius:14px;width:min(96vw,480px);padding:20px;box-shadow:0 0 40px rgba(100,30,60,0.4);display:flex;flex-direction:column;gap:12px">
+<div id="pre-dungeon-window" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.82);z-index:10001;align-items:center;justify-content:center">
+<div style="background:#080810;border:1px solid #3a2a3a;border-radius:14px;width:min(96vw,460px);padding:20px;display:flex;flex-direction:column;gap:12px;box-shadow:0 0 40px rgba(100,30,60,0.4)">
     <div style="font-family:Cinzel,serif;font-size:17px;color:#c0a060;text-align:center;letter-spacing:2px">⚔ Partir en Donjon</div>
-    <div style="font-size:12px;color:#7a6a8a;text-align:center">Préparez votre avatar avant d'entrer.</div>
-    <!-- Stats rapides -->
-    <div id="predng-stats" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;background:#0a0812;border-radius:8px;padding:8px"></div>
-    <!-- Équipement actuel -->
-    <div id="predng-equip" style="font-size:11px;color:#9a8a6a;line-height:1.8;background:#0a0812;border-radius:8px;padding:8px"></div>
-    <!-- Boutons -->
+    <div style="font-size:12px;color:#7a6a8a;text-align:center">Préparez votre avatar avant d&#39;entrer.</div>
+    <div id="predng-stats" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px"></div>
+    <div id="predng-equip" style="font-size:11px;color:#9a8a6a;background:#0a0812;border-radius:8px;padding:8px;line-height:1.9"></div>
     <div style="display:flex;gap:8px">
-        <button onclick="closePredngWindow();openEquipWindow(true);" style="flex:1;background:linear-gradient(135deg,#1a1030,#2a1a40);border:1px solid #5040a0;color:#c080ff;border-radius:8px;padding:10px 0;font-family:Cinzel,serif;font-size:12px;cursor:pointer">⚔ S'équiper</button>
+        <button onclick="closePredngWindow();openEquipWindow(true);" style="flex:1;background:linear-gradient(135deg,#1a1030,#2a1a40);border:1px solid #5040a0;color:#c080ff;border-radius:8px;padding:10px 0;font-family:Cinzel,serif;font-size:12px;cursor:pointer">⚔ S&#39;équiper</button>
         <button onclick="confirmEnterDungeon()" style="flex:2;background:linear-gradient(135deg,#1a0a0a,#3a1010);border:1px solid #8a3030;color:#ffb0b0;border-radius:8px;padding:10px 0;font-family:Cinzel,serif;font-size:13px;cursor:pointer;letter-spacing:1px">▶ Entrer dans le Donjon</button>
     </div>
     <button onclick="closePredngWindow()" style="background:none;border:none;color:#4a3a5a;cursor:pointer;font-size:11px">← Annuler</button>
@@ -563,22 +621,19 @@
 </div>
 
 <!-- ═══ FENÊTRE ÉQUIPEMENT ═══ -->
-<div id="equip-window" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);z-index:10000;align-items:center;justify-content:center">
-<div style="background:#080810;border:1px solid #3a2a5a;border-radius:14px;width:min(98vw,800px);max-height:92vh;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 0 40px rgba(60,30,100,0.5)">
-    <!-- Header -->
+<div id="equip-window" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.75);z-index:10000;align-items:center;justify-content:center">
+<div style="background:#080810;border:1px solid #3a2a5a;border-radius:14px;width:min(98vw,820px);max-height:92vh;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 0 40px rgba(60,30,100,0.5)">
     <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 16px;border-bottom:1px solid #1a1228;background:#0c0818;flex-shrink:0">
         <div style="font-family:Cinzel,serif;font-size:15px;color:#c0a060;letter-spacing:1px">⚔ Équipement</div>
-        <div style="display:flex;gap:8px;align-items:center">
+        <div style="display:flex;align-items:center;gap:10px">
             <span id="ew-resources" style="font-size:11px;color:#9a8a6a"></span>
             <button onclick="closeEquipWindow()" style="background:none;border:none;color:#6a5a80;font-size:20px;cursor:pointer;line-height:1">✕</button>
         </div>
     </div>
-    <!-- Body -->
     <div style="display:flex;flex:1;overflow:hidden;min-height:0">
-        <!-- Colonne gauche : slots équipés -->
-        <div style="width:220px;flex-shrink:0;padding:10px;border-right:1px solid #1a1228;overflow-y:auto;display:flex;flex-direction:column;gap:4px">
-            <img id="ew-avatar-img" src="" style="width:80px;height:80px;object-fit:cover;border-radius:8px;border:2px solid #2a1a3a;display:block;margin:0 auto 8px">
-            <div id="ew-stats" style="background:#0a0812;border:1px solid #1a1228;border-radius:6px;padding:6px 8px;font-size:10px;line-height:1.8;margin-bottom:6px"></div>
+        <div style="width:200px;flex-shrink:0;padding:10px;border-right:1px solid #1a1228;overflow-y:auto;display:flex;flex-direction:column;gap:4px">
+            <img id="ew-avatar-img" src="" style="width:76px;height:76px;object-fit:cover;border-radius:8px;border:2px solid #2a1a3a;display:block;margin:0 auto 6px">
+            <div id="ew-stats" style="background:#0a0812;border:1px solid #1a1228;border-radius:6px;padding:5px 7px;font-size:10px;line-height:1.8;margin-bottom:4px"></div>
             <div style="font-size:9px;color:#4a3a5a;letter-spacing:1px;margin:2px 0">ÉQUIPEMENT</div>
             <div class="ew-slot" id="slot-weapon_main" onclick="ewSelectSlot('weapon_main')">🗡 Arme princ.<span class="ew-slot-item"></span></div>
             <div class="ew-slot" id="slot-weapon_off"  onclick="ewSelectSlot('weapon_off')">🛡 Arme/Bouclier<span class="ew-slot-item"></span></div>
@@ -587,16 +642,12 @@
             <div class="ew-slot" id="slot-belt"        onclick="ewSelectSlot('belt')">🪢 Ceinture<span class="ew-slot-item"></span></div>
             <div style="font-size:9px;color:#4a3a5a;letter-spacing:1px;margin:4px 0 2px">ACTIFS</div>
             <div id="ew-glyph-slots"></div>
-            <div id="ew-potion-slots"></div>
+            <div id="ew-potion-slots" style="margin-top:2px"></div>
         </div>
-        <!-- Colonne droite : catalogue -->
-        <div style="flex:1;overflow-y:auto;padding:10px;display:flex;flex-direction:column;gap:6px">
-            <div id="ew-filter-bar" style="display:none"></div>
-            <div id="ew-catalog-items" style="display:flex;flex-direction:column;gap:4px"></div>
+        <div style="flex:1;overflow-y:auto;padding:10px;display:flex;flex-direction:column;gap:4px">
+            <div id="ew-catalog-items"></div>
         </div>
     </div>
-    <!-- Footer optionnel -->
-    <div id="ew-footer" style="display:none;padding:8px 16px;border-top:1px solid #1a1228;background:#0c0818;flex-shrink:0"></div>
 </div>
 </div>
 
@@ -962,7 +1013,6 @@
                 <div id="hbs-horde-total" style="font-size:15px;font-weight:bold;color:#ff6060;margin-top:6px"></div>
             </div>
         </div>
-        <div id="hbs-traits-log" style="display:none;padding:8px 12px;background:#0a0812;border:1px solid #2a1a3a;border-radius:8px;margin-bottom:8px"></div>
         <div id="hbs-result" style="text-align:center;font-size:18px;font-weight:bold;padding:12px;border-radius:8px;margin-bottom:12px"></div>
         <div id="hbs-effects" style="font-size:12px;color:#ffb040;text-align:center;margin-bottom:12px"></div>
         <div style="text-align:center">
@@ -1042,9 +1092,9 @@
 
             <!-- Section IMPÔTS -->
             <div class="action-section" id="sec-tax">
-                <div class="action-section-title">🌾 Récolte</div>
+                <div class="action-section-title">💰 Impôts</div>
                 <div id="tax-resources"></div>
-                <button class="action-main-btn" id="btn-tax" onclick="doTaxAndClose()">Récolter</button>
+                <button class="action-main-btn" id="btn-tax" onclick="doTaxAndClose()">Percevoir</button>
             </div>
 
         </div>
@@ -1067,7 +1117,7 @@
                 <button class="eq-tab active" id="etab-army" onclick="equipTab('army')">🛡 Armée</button>
             </div>
             <div id="equip-tab-equip" class="eq-panel" style="display:none"></div>
-            <div id="equip-tab-army"  class="eq-panel"></div>
+            <div id="equip-tab-army"  class="eq-panel" style="display:none"></div>
         </div>
 
         <!-- Panneau ressources -->
@@ -1157,6 +1207,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const metaSpace = getMeta().city.space || 0;
     space += metaSpace;
     updateStats();
+    setTimeout(showHomeScreen, 50);
     updateTimeline();
     renderTileGrid();
     generateNextTile();
@@ -1200,10 +1251,10 @@ let ownedEquipment = {};        // équipements achetés {id: true}
 let equippedItems = {
     weapon_main: null, weapon_off: null,
     armor: null, necklace: null, belt: null,
-    glyphs: [], // tableau de slots glyphes
-    potions: [] // tableau de slots potions
+    glyphs: [],
+    potions: []
 };
-function getGlyphSlots() { return 1 + (getMeta().heroLevel || 0); }
+function getGlyphSlots()  { return 1 + (getMeta().heroLevel || 0); }
 function getPotionSlots() { return 1 + (getMeta().heroLevel || 0); }
 let hordeAggressiveness = 0;
 let runDeaths = 0;        // morts dans ce run
@@ -1724,7 +1775,7 @@ function avatarExplore(yes) {
         addLog("L'avatar découvre l'entrée d'un donjon !");
         showExplorePopup('Donjon', `${3 + currentTurn - 1}+ salles | Butin rare`, "Des flambeaux illuminent un couloir sombre...");
         setTimeout(() => {
-            showPreDungeonWindow(() => { openDungeon(() => { nextTurn(); }); });
+            openDungeon(() => { nextTurn(); });
         }, 2400);
     } else {
         nextTurn();
@@ -1743,28 +1794,8 @@ function showHordeBattleScreen(hordeAtk, cityAtk, diff, hordeLog, cityLog) {
         won ? '⚔ Assaut repoussé !' : '💀 La horde perce vos défenses !';
     document.getElementById('hbs-city-log').innerHTML = cityLog.map(l=>'<div>'+l+'</div>').join('');
     document.getElementById('hbs-city-total').textContent = 'Total : '+cityAtk;
-
-    // Séparer les logs unités et les logs traits/effets
-    const unitLog = hordeLog.filter(function(l){ return !l.startsWith('✓') && !l.startsWith('⚠') && !l.startsWith('🔥') && !l.startsWith('☠') && !l.startsWith('😈') && !l.startsWith('💀') && !l.startsWith('🐲') && !l.startsWith('🏹'); });
-    const traitLog = hordeLog.filter(function(l){ return l.startsWith('✓') || l.startsWith('⚠') || l.startsWith('🔥') || l.startsWith('☠') || l.startsWith('😈') || l.startsWith('💀') || l.startsWith('🐲') || l.startsWith('🏹'); });
-
-    document.getElementById('hbs-horde-log').innerHTML = unitLog.map(l=>'<div>'+l+'</div>').join('');
+    document.getElementById('hbs-horde-log').innerHTML = hordeLog.map(l=>'<div>'+l+'</div>').join('');
     document.getElementById('hbs-horde-total').textContent = 'Total : '+hordeAtk;
-
-    // Afficher la section traits/effets
-    const traitsEl = document.getElementById('hbs-traits-log');
-    if (traitsEl) {
-        if (traitLog.length > 0) {
-            traitsEl.style.display = 'block';
-            traitsEl.innerHTML = '<div style="font-size:10px;color:#6a5a7a;font-family:Cinzel,serif;letter-spacing:1px;margin-bottom:4px">TRAITS & EFFETS</div>' +
-                traitLog.map(function(l){
-                    const color = l.startsWith('✓') ? '#4cffaa' : l.startsWith('⚠') ? '#ffb040' : '#ff6060';
-                    return '<div style="color:'+color+';font-size:11px">'+l+'</div>';
-                }).join('');
-        } else {
-            traitsEl.style.display = 'none';
-        }
-    }
 
     const res = document.getElementById('hbs-result');
     const btn = document.getElementById('hbs-btn');
@@ -3529,27 +3560,25 @@ function triggerRoundEffects() {
 }
 
 function dngUpdateCombatUI() {
-    // Mettre à jour les boutons potions en combat
+    // Mettre à jour les boutons potions/glyphes en combat
     const row = document.getElementById('dng-potions-row');
     if (!row) return;
-    while (row.children.length > 0) row.removeChild(row.lastChild);
-    if (potionHeal > 0) {
+    // Vider et reconstruire
+    while (row.firstChild) row.removeChild(row.firstChild);
+    const pN = typeof getPotionSlots === 'function' ? getPotionSlots() : 1;
+    for (let i = 0; i < pN; i++) {
+        const id = equippedItems.potions && equippedItems.potions[i];
+        if (!id) continue;
+        const item = (typeof EQUIPMENT_CATALOG !== 'undefined') ? EQUIPMENT_CATALOG.find(function(x){return x.id===id;}) : null;
+        if (!item) continue;
         const btn = document.createElement('button');
         btn.className = 'dng-btn';
         btn.style.cssText = 'background:linear-gradient(135deg,#0a1a0a,#1a2a0a);border-color:#2a5a2a;color:#4cffaa';
-        btn.innerHTML = '🧪 Soin ×'+potionHeal;
-        btn.onclick = function(){ dungeonUsePotion('heal'); };
+        btn.innerHTML = (item.icon||'🧪') + ' ' + item.name;
+        btn.onclick = (function(itemId){ return function(){ dungeonUsePotion(itemId); }; })(id);
         row.appendChild(btn);
     }
-    if (potionAntiPoison > 0) {
-        const btn = document.createElement('button');
-        btn.className = 'dng-btn';
-        btn.style.cssText = 'background:linear-gradient(135deg,#001a0a,#002a1a);border-color:#0a5a2a;color:#40ffaa';
-        btn.innerHTML = '🟢 Anti-Poison ×'+potionAntiPoison;
-        btn.onclick = function(){ dungeonUsePotion('antipoison'); };
-        row.appendChild(btn);
-    }
-    row.style.display = (potionHeal > 0 || potionAntiPoison > 0) ? 'flex' : 'none';
+    row.style.display = row.children.length > 0 ? 'flex' : 'none';
 }
 
 function dngShowAttackBtn(show) {
@@ -3560,8 +3589,7 @@ function dngShowAttackBtn(show) {
     if (show) {
         if (btn) { btn.disabled = false; btn.style.display = ''; btn.style.opacity = '1'; }
         if (tw)  tw.style.display = 'none';
-        const ds = document.getElementById('dungeon-screen');
-        if (ds) ds.classList.remove('attack-active');
+        document.getElementById('dungeon-screen')?.classList.remove('attack-active');
     } else {
         if (btn) { btn.disabled = true; btn.style.display = 'none'; }
         if (tw)  tw.style.display = '';
@@ -3670,7 +3698,7 @@ function dungeonLoadRoom(roomIdx) {
     document.getElementById('dng-enemy-hp-text').textContent = `HP: ${room.hp}/${room.maxHp}`;
     document.getElementById('dng-enemy-stats').textContent  = `ATK: ${room.atk} | Dmg: ${room.dmg} | DEF: ${room.def} | Prot: ${room.protection}`;
     dungeonUpdateHpBar('enemy', room.hp, room.maxHp);
-    document.getElementById('dng-btn-skill').disabled = !hasFireball;
+    const _btnSkill = document.getElementById('dng-btn-skill'); if(_btnSkill) _btnSkill.disabled = !hasFireball;
     document.getElementById('dungeon-reward').classList.remove('visible');
     document.getElementById('dng-result').textContent='';
     dngLog(`— Salle ${roomIdx+1} : ${room.emoji} ${room.name} apparaît ! —`, 'dlog-info');
@@ -4051,19 +4079,19 @@ const EQUIPMENT_CATALOG = [
       apply: () => { atk+=2; avatarDmg+=2; avatarMagicWeapon=true; },
       remove: () => { atk-=2; avatarDmg-=2; avatarMagicWeapon=false; } },
     // ── Armes 2 mains ──
-    { id:'Hache', is2h:true,       name:'Hache de guerre',  slot:'weapon_main', gold:120,  mana:0,  pop:0, req:null,
+    { id:'Hache', is2h:true, is2h:true,       name:'Hache de guerre',  slot:'weapon_main', gold:120,  mana:0,  pop:0, req:null,
       icon:'🪓', desc:'Dmg +2, ATK -1',
       apply: () => { avatarDmg+=2; atk-=1; },
       remove: () => { avatarDmg-=2; atk+=1; } },
-    { id:'Arc', is2h:true,         name:'Arc elfique',      slot:'weapon_main', gold:150,  mana:0,  pop:0, req:'archerie',
+    { id:'Arc', is2h:true, is2h:true,         name:'Arc elfique',      slot:'weapon_main', gold:150,  mana:0,  pop:0, req:'archerie',
       icon:'🏹', desc:'ATK +3, Distance',
       apply: () => { atk+=3; avatarRanged=true; },
       remove: () => { atk-=3; avatarRanged=false; } },
-    { id:'Arbalete', is2h:true,    name:'Arbalète lourde',  slot:'weapon_main', gold:210,  mana:0,  pop:0, req:'archerie',
+    { id:'Arbalete', is2h:true, is2h:true,    name:'Arbalète lourde',  slot:'weapon_main', gold:210,  mana:0,  pop:0, req:'archerie',
       icon:'🏹', desc:'ATK +2, Dmg +2, Distance, Perçant',
       apply: () => { atk+=2; avatarDmg+=2; avatarRanged=true; avatarPiercing=true; },
       remove: () => { atk-=2; avatarDmg-=2; avatarRanged=false; avatarPiercing=false; } },
-    { id:'Faux', is2h:true,        name:'Faux de guerre',   slot:'weapon_main', gold:195,  mana:0,  pop:0, req:null,
+    { id:'Faux', is2h:true, is2h:true,        name:'Faux de guerre',   slot:'weapon_main', gold:195,  mana:0,  pop:0, req:null,
       icon:'⚰', desc:'ATK -1, Dmg +1, Frappe toute la colonne avant',
       apply: () => { atk-=1; avatarDmg+=1; avatarScythe=true; },
       remove: () => { atk+=1; avatarDmg-=1; avatarScythe=false; } },
@@ -4143,9 +4171,7 @@ function buyEquipment(name, costGold, costMana=0, costPop=0) {
     }
     gold -= costGold; mana -= costMana; population -= costPop;
     ownedEquipment[item.id] = true;
-    // Glyphes et potions : appliquer immédiatement (incrémente les charges)
-    // Équipements (armes, armures, etc.) : ne pas appliquer, le bonus vient de l'équipement
-    if (item.isGlyph || item.isPotion) item.apply();
+    item.apply();
     updateStats();
     addLog('✅ ' + name + ' acheté !');
 }
@@ -4180,11 +4206,6 @@ const UNIT_CATALOG = [
       gold:25, pop:5,  mana:15, req:'eglise',
       desc:'Repousse les forces démoniaques. Requiert une Église.' },
     // === Temple ===
-    { id:'Hallebardier', name:'Hallebardier', icon:'🪖', atk:4, atkMag:0, pop:8, gold:40, mana:0,
-      traits:['infanterie','anti-cavalerie','anti-cavalerie'], antiWeight:{'anti-cavalerie':2},
-      req: () => (buildingCounts['Académie militaire']||0) >= 1,
-      reqLabel:'Académie militaire',
-      desc:'ATK 4 | Anti-Cavalerie ×2 | Fantassin' },
     { id:'Paladin',       name:'Paladin',           icon:'⚜', atk:4, atkMag:2, traits:['anti-cavalerie','anti-mort-vivant'],
       gold:55, pop:10, mana:10, req:'academie_temple',
       desc:'Élite : anti-cavalerie et anti-mort-vivant. Requiert Académie + Temple.' },
@@ -4196,12 +4217,9 @@ const HORDE_UNITS = {
     orc:       { name:'Orc',            icon:'👊', atk:3, atkMag:0, traits:['infanterie'],  tier:1 },
     archerGob: { name:'Archer Gobelin', icon:'🏹', atk:3, atkMag:0, traits:['distance'],    tier:3 },
     cavalier:  { name:'Cavalier Orc',   icon:'🐴', atk:4, atkMag:0, traits:['cavalerie'],   tier:2 },
-    vouivre:   { name:'Vouivre',        icon:'🐲', atk:6, atkMag:0, traits:['vol'],          tier:3 },
-    pillard:   { name:'Pillards',       icon:'🔥', atk:2, atkMag:0, traits:['pillard'],      tier:1 },
+    vouivre:   { name:'Vouivre',        icon:'🐲', atk:4, atkMag:0, traits:['vol'],          tier:3 },
+    pillard:   { name:'Pillard',        icon:'🔥', atk:2, atkMag:0, traits:['pillard'],      tier:2 },
     sapeur:    { name:'Sapeur Gobelin', icon:'⛏', atk:2, atkMag:0, traits:['sapeur'],       tier:3 },
-    harpie:    { name:'Harpie',            icon:'🦅', atk:2, atkMag:0, traits:['vol'],        tier:2 },
-    hommeBete: { name:'Homme-bête',         icon:'🐗', atk:4, atkMag:0, traits:['infanterie'], tier:2 },
-    loupOrc:   { name:'Chevaucheur de Loup', icon:'🐺', atk:6, atkMag:0, traits:['cavalerie'], traitWeight:{'cavalerie':2}, tier:3 },
     squelette: { name:'Squelette',      icon:'💀', atk:2, atkMag:0, traits:['mort-vivant'],  tier:4 },
     demon:     { name:'Démon',          icon:'😈', atk:3, atkMag:4, traits:['demon'],        tier:4 },
 };
@@ -4219,63 +4237,60 @@ const COUNTER_RULES = {
 
 // Bonus offensifs si non contré
 const HORDE_BONUS = {
-    'cavalerie':   (u) => u.atk,       // ATK ×2 (bonus = +1× ATK en plus de la base)
-    'vol':         (u) => 0,            // effet spécial
-    'distance':    (u) => u.atk,       // ATK ×2
-    'pillard':     (u) => 0,            // effet spécial
+    'cavalerie':   (u) => u.atk * 2,   // ATK ×2
+    'vol':         (u) => 0,            // effet spécial : détruit unité ennemie la plus forte
+    'distance':    (u) => u.atk * 2,    // ATK ×2
+    'pillard':     (u) => 0,            // effet spécial (pas de bonus ATK)
     'mort-vivant': (u) => 0,            // effet spécial
-    'demon':       (u) => 0,            // effet spécial
+    'demon':       (u) => 0,            // effet spécial : annule les unités infanterie
 };
 
 function generateHordeForSeason(season) {
-    const tier1 = [HORDE_UNITS.gobelin, HORDE_UNITS.orc, HORDE_UNITS.pillard];
-    const tier2 = [HORDE_UNITS.cavalier, HORDE_UNITS.harpie, HORDE_UNITS.hommeBete];
-    const tier3 = [HORDE_UNITS.archerGob, HORDE_UNITS.vouivre, HORDE_UNITS.sapeur, HORDE_UNITS.loupOrc];
-    const tier4 = [HORDE_UNITS.squelette, HORDE_UNITS.demon];
-    const pick = function(a){ return a[Math.floor(Math.random()*a.length)]; };
-    const rand = function(a,b){ return a + Math.floor(Math.random()*(b-a+1)); };
+    // Pools de troupes par tier
+    const tier1 = [HORDE_UNITS.gobelin, HORDE_UNITS.orc];
+    const tier2 = [HORDE_UNITS.pillard, HORDE_UNITS.cavalier, HORDE_UNITS.gobelin];
+    const tier3 = [HORDE_UNITS.vouivre, HORDE_UNITS.archerGob, HORDE_UNITS.cavalier, HORDE_UNITS.sapeur];
+    const tier4 = [HORDE_UNITS.squelette, HORDE_UNITS.demon, HORDE_UNITS.vouivre, HORDE_UNITS.cavalier];
+    const allTiers = [...tier1, ...tier2, ...tier3, ...tier4];
+
+    const rand = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
+    const pick = (pool) => ({...pool[Math.floor(Math.random() * pool.length)]});
+
     const additions = [];
-
-    if (season <= 2) {
-        // S1-S2 : Tier 1 uniquement
-        const n = rand(3, 4 + season);
-        for (let i=0; i<n; i++) additions.push(pick(tier1));
-
+    if (season === 1) {
+        // 3-5 unités tier1
+        const n = rand(3, 5);
+        for(let i=0;i<n;i++) additions.push(pick(tier1));
+    } else if (season === 2) {
+        // 2-4 tier1 + 2-3 tier2
+        const n1 = rand(2,4), n2 = rand(2,3);
+        for(let i=0;i<n1;i++) additions.push(pick(tier1));
+        for(let i=0;i<n2;i++) additions.push(pick(tier2));
     } else if (season === 3) {
-        // S3 : Tier 1 + introduction Tier 2
-        const n = rand(4, 7);
-        for (let i=0; i<n; i++) {
-            additions.push(Math.random() < 0.5 ? pick(tier1) : pick(tier2));
-        }
-
+        // 1-3 tier2 + 2-4 tier3
+        const n2 = rand(1,3), n3 = rand(2,4);
+        for(let i=0;i<n2;i++) additions.push(pick(tier2));
+        for(let i=0;i<n3;i++) additions.push(pick(tier3));
     } else if (season === 4) {
-        // S4 : Tier 2 + introduction Tier 3
-        const n = rand(5, 8);
-        for (let i=0; i<n; i++) {
-            const r = Math.random();
-            if (r < 0.3)      additions.push(pick(tier1));
-            else if (r < 0.7) additions.push(pick(tier2));
-            else               additions.push(pick(tier3));
-        }
-
+        // 2-3 tier3 + 2-4 tier4
+        const n3 = rand(2,3), n4 = rand(2,4);
+        for(let i=0;i<n3;i++) additions.push(pick(tier3));
+        for(let i=0;i<n4;i++) additions.push(pick(tier4));
     } else {
-        // S5+ : tous tiers, progression vers T4
+        // S5+ : nombre = 3+S à 6+S, répartition progressive vers tiers élevés
         const n = rand(3 + season, 6 + season);
-        const t1p = Math.max(0,    0.10 - (season - 5) * 0.01);
-        const t2p = Math.max(0.05, 0.25 - (season - 5) * 0.015);
+        const t1p = Math.max(0,    0.20 - (season - 5) * 0.02);
+        const t2p = Math.max(0.05, 0.30 - (season - 5) * 0.015);
         const t4p = Math.min(0.70, 0.20 + (season - 5) * 0.04);
         const t3p = Math.max(0.05, 1 - t1p - t2p - t4p);
-        for (let i=0; i<n; i++) {
-            const r = Math.random();
-            if      (r < t1p)             additions.push(pick(tier1));
-            else if (r < t1p + t2p)       additions.push(pick(tier2));
-            else if (r < t1p+t2p+t3p)     additions.push(pick(tier3));
-            else                           additions.push(pick(tier4));
+        for (let i = 0; i < n; i++) {
+            const r2 = Math.random();
+            if      (r2 < t1p)              additions.push(pick(tier1));
+            else if (r2 < t1p + t2p)        additions.push(pick(tier2));
+            else if (r2 < t1p + t2p + t3p)  additions.push(pick(tier3));
+            else                             additions.push(pick(tier4));
         }
     }
-
-    hordeCurrentSeason = season;
-    hordeCurrentAdditions = additions;
     return additions;
 }
 
@@ -4346,51 +4361,31 @@ function resolveBattle() {
         hordeTraitCounts[t] = (hordeTraitCounts[t]||0)+1;
     }));
 
-        // ── Résolution par somme pondérée ──
-    const traitNet = {};
-    hordeArmy.forEach(function(u) {
-        const seen = {};
-        u.traits.filter(function(t){ return HORDE_BONUS[t] !== undefined; }).forEach(function(trait) {
-            if (seen[trait]) return; seen[trait] = true;
-            const w = (u.traitWeight && u.traitWeight[trait]) ? u.traitWeight[trait]
-                    : u.traits.filter(function(t2){ return t2===trait; }).length;
-            traitNet[trait] = (traitNet[trait]||0) + w;
-        });
-    });
-    cityArmy.forEach(function(u) {
-        u.traits.forEach(function(antiTrait) {
-            const trait = COUNTER_RULES[antiTrait];
-            if (!trait) return;
-            const w = (u.antiWeight && u.antiWeight[antiTrait]) ? u.antiWeight[antiTrait] : 1;
-            traitNet[trait] = (traitNet[trait]||0) - w;
-        });
-    });
-    // Allouer les bonus aux unités les plus fortes pour le budget restant
-    const unitBonuses = {};
-    Object.entries(traitNet).forEach(function(entry) {
-        const trait = entry[0], net = entry[1];
-        if (!HORDE_BONUS[trait]) return;
-        if (net <= 0) { hordeLog.push('✓ '+trait+' contré (net='+net+')'); return; }
-        const units = hordeArmy.filter(function(u){ return u.traits.includes(trait); })
-                               .sort(function(a,b){ return (b.atk+b.atkMag)-(a.atk+a.atkMag); });
-        let budget = net;
-        units.forEach(function(u) {
-            if (budget <= 0) return;
-            const uid = hordeArmy.indexOf(u);
-            if (!unitBonuses[uid]) unitBonuses[uid] = {};
-            unitBonuses[uid][trait] = HORDE_BONUS[trait](u);
-            const w = (u.traitWeight && u.traitWeight[trait]) ? u.traitWeight[trait]
-                    : u.traits.filter(function(t){ return t===trait; }).length;
-            budget -= w;
-        });
-        hordeLog.push('⚠ '+trait+' non contré pour '+(Math.ceil(net))+' poids (net=+'+net+')');
-    });
-    hordeArmy.forEach(function(u, uid) {
-        const baseAtk = u.atk + u.atkMag;
+    hordeArmy.forEach(u => {
+        let baseAtk = u.atk + u.atkMag;
         let bonus = 0;
-        if (unitBonuses[uid]) Object.values(unitBonuses[uid]).forEach(function(b){ bonus += b; });
+        let msg = u.icon + ' ' + u.name + ' : base ' + baseAtk;
+
+        u.traits.forEach(trait => {
+            if (HORDE_BONUS[trait] === undefined) return;
+            const atkBonus = HORDE_BONUS[trait](u);
+            const counterTrait = Object.keys(COUNTER_RULES).find(k => COUNTER_RULES[k] === trait);
+            if (!counterTrait) { bonus += atkBonus; return; }
+            // Traits à effet spécial (atkBonus === 0) : gérés par leurs sections dédiées, ne pas consommer antiCounts ici
+            if (atkBonus === 0) return;
+            const isCountered = (antiCounts[counterTrait]||0) > 0;
+            if (isCountered) {
+                antiCounts[counterTrait]--;
+                msg += ' ('+trait+' contré ✓)';
+            } else {
+                bonus += atkBonus;
+                msg += ' +'+atkBonus+' ('+trait+' non contré)';
+            }
+        });
+        // Nettoyer les propriétés temporaires
+        delete u._counterUsed;
         hordeAtk += baseAtk + bonus;
-        hordeLog.push(u.icon+' '+u.name+' : base '+baseAtk+(bonus?' +'+bonus+' (trait)':''));
+        hordeLog.push(msg);
     });
 
     const cityLog = [];
@@ -4457,46 +4452,22 @@ function resolveBattle() {
     avatarSentToHorde = false;
 
     // Effets spéciaux pillard / mort-vivant si non contrés (comparaison de comptage, pas binaire)
-    // ── Pillard : détruit un bâtiment même si horde repoussée ──
-    const pillardNet = traitNet['pillard'] || 0;
-    if (pillardNet > 0) {
-        // Trouver tous les bâtiments sur toutes les tuiles
-        const allBuildings = [];
-        tileState.forEach(function(tile, idx) {
-            if (tile.buildings && tile.buildings.length > 0) {
-                tile.buildings.forEach(function(b) {
-                    allBuildings.push({ tile: idx, name: b });
-                });
-            }
-        });
-        const nbDestroy = Math.min(pillardNet, allBuildings.length);
-        for (let i = 0; i < nbDestroy; i++) {
-            const pick = allBuildings.splice(Math.floor(Math.random()*allBuildings.length),1)[0];
-            const tile = tileState[pick.tile];
-            const bIdx = tile.buildings.indexOf(pick.name);
-            if (bIdx !== -1) {
-                tile.buildings.splice(bIdx, 1);
-                space += 1;
-                if (buildingCounts[pick.name] > 0) buildingCounts[pick.name]--;
-                const tileName = TILE_TYPES[tile.type] ? TILE_TYPES[tile.type].emoji + ' ' + tile.type : 'Ville';
-                const msg = '🔥 Pillard détruit : ' + pick.name + ' (' + tileName + ')';
-                hordeLog.push(msg);
-                addLog('⚠ ' + msg);
-            }
+    if (pillardCount > (antiCounts['anti-pillard'] || 0)) {
+        const buildings = tiles[12].buildings;
+        if (buildings.length > 0) {
+            const destroyed = buildings.splice(Math.floor(Math.random()*buildings.length),1)[0];
+            space += 1;
+            addLog('⚠ Pillards détruisent : '+destroyed+' ! (+1 espace récupéré)');
+            const key = Object.keys(buildingCounts).find(k=>k===destroyed);
+            if (key && buildingCounts[key]>0) buildingCounts[key]--;
+            updateBuildingDisplay();
         }
-        updateBuildingDisplay();
-    } else if (hordeArmy.some(function(u){ return u.traits.includes('pillard'); })) {
-        hordeLog.push('✓ Pillards neutralisés par anti-pillard');
     }
-
-    // ── Mort-vivant : détruit une unité aléatoire ──
     if (mortVivantCount > (antiCounts['anti-mort-vivant'] || 0)) {
         if (cityArmy.length > 0) {
             const idx = Math.floor(Math.random()*cityArmy.length);
             const lost = cityArmy.splice(idx,1)[0];
-            const msg = '☠ Mort-vivants détruisent : '+lost.icon+' '+lost.name+' !';
-            hordeLog.push(msg);
-            addLog(msg);
+            addLog('☠ Mort-vivants détruisent : '+lost.icon+' '+lost.name+' !');
         }
     }
 
@@ -4555,7 +4526,7 @@ function renderArmyTabCity() {
         const counts = {};
         cityArmy.forEach(u => { counts[u.id] = (counts[u.id]||{u,n:0}); counts[u.id].n++; });
         Object.values(counts).forEach(({u,n}) => {
-            const traits = formatTraits(u.traits);
+            const traits = u.traits.map(t=>'<span style="font-size:10px;padding:1px 4px;border-radius:3px;background:'+(t.startsWith('anti')?'#0a2a1a':'#1a1a2e')+';color:'+(t.startsWith('anti')?'#4cffaa':'#8888ff')+'">'+t+'</span>').join(' ');
             html += '<tr style="border-bottom:1px solid #1a1a2a;padding:4px 0">'+
                 '<td style="padding:4px 0">'+u.icon+' '+u.name+'</td>'+
                 '<td style="text-align:center;color:#ff8080">'+u.atk+'</td>'+
@@ -4597,33 +4568,20 @@ function renderArmyTabHorde() {
         return;
     }
     const sNames = ['Printemps','Été','Automne','Hiver'];
-    // Calculer la somme nette par trait pour l'affichage
-    const traitNetDisplay = {};
-    hordeArmy.concat(hordePrevSeason).concat(hordeCurrentAdditions).forEach(function(u) {
-        if (!u) return;
-        const seen = {};
-        u.traits.filter(function(t){ return HORDE_BONUS[t] !== undefined; }).forEach(function(trait) {
-            if (seen[trait]) return; seen[trait] = true;
-            const w = (u.traitWeight && u.traitWeight[trait]) ? u.traitWeight[trait]
-                    : u.traits.filter(function(t2){ return t2===trait; }).length;
-            traitNetDisplay[trait] = (traitNetDisplay[trait]||0) + w;
-        });
-    });
-    cityArmy.forEach(function(u) {
-        u.traits.forEach(function(antiTrait) {
-            const trait = COUNTER_RULES[antiTrait];
-            if (!trait) return;
-            const w = (u.antiWeight && u.antiWeight[antiTrait]) ? u.antiWeight[antiTrait] : 1;
-            traitNetDisplay[trait] = (traitNetDisplay[trait]||0) - w;
-        });
-    });
-    // Budget par trait restant pour l'affichage
-    const traitBudgetDisplay = Object.assign({}, traitNetDisplay);
+    // Compter les anti par trait pour l'affichage (même logique que le calcul réel)
+    const antiCountsDisplay = {};
+    cityArmy.forEach(function(c){ c.traits.forEach(function(t){
+        if (t.startsWith('anti')) antiCountsDisplay[t] = (antiCountsDisplay[t]||0)+1;
+    }); });
+    const traitCountersUsed = {};
     const countered_fn = function(trait) {
-        if (!HORDE_BONUS[trait]) return true; // trait inconnu = contré par défaut
-        if ((traitBudgetDisplay[trait]||0) <= 0) return true; // tout contré
-        // Cette unité consomme 1 du budget
-        traitBudgetDisplay[trait] = (traitBudgetDisplay[trait]||0) - 1;
+        const counterTrait = Object.keys(COUNTER_RULES).find(function(k){ return COUNTER_RULES[k]===trait; });
+        if (!counterTrait) return false;
+        if (!traitCountersUsed[counterTrait]) traitCountersUsed[counterTrait] = 0;
+        if ((antiCountsDisplay[counterTrait]||0) > traitCountersUsed[counterTrait]) {
+            traitCountersUsed[counterTrait]++;
+            return true;
+        }
         return false;
     };
     const hp = calcHordePower();
@@ -4734,19 +4692,6 @@ function updateArmyPanels() {
     if (ht) ht.textContent = calcHordePower() + (hordeHiddenUnits.length > 0 ? ' (+???)' : '');
 }
 
-
-function formatTraits(traits) {
-    const roman = ['','I','II','III','IV','V','VI','VII','VIII','IX','X'];
-    const counts = {};
-    traits.forEach(function(t) { counts[t] = (counts[t]||0) + 1; });
-    return Object.entries(counts).map(function(e) {
-        const t = e[0], n = e[1];
-        const label = n > 1 ? t + ' ' + (roman[n]||n) : t;
-        const isAnti = t.startsWith('anti');
-        return '<span style="font-size:10px;padding:1px 5px;border-radius:3px;background:'+(isAnti?'#0a2a1a':'#1a1a2e')+';color:'+(isAnti?'#4cffaa':'#8888ff')+'">'+label+'</span>';
-    }).join(' ');
-}
-
 function renderRecruitList() {
     const hasCaserne  = (buildingCounts['Caserne']  || 0) >= 1;
     const hasAcademie = (buildingCounts['Académie militaire'] || 0) >= 1;
@@ -4756,8 +4701,11 @@ function renderRecruitList() {
     conscrHeader.style.cssText='font-size:12px;color:#ffb040;margin-bottom:6px;padding:4px 8px;background:#2a1a00;border-radius:6px';
     conscrHeader.textContent = '⚔ Conscription disponible : '+conscrit;
     el.appendChild(conscrHeader);
+    if (!hasCaserne) {
+        const p = document.createElement('p'); p.style.cssText='color:#9a8a6a;font-size:12px;font-style:italic';
+        p.textContent='Construisez une Caserne pour recruter des soldats.'; el.appendChild(p);
+    }
     el.innerHTML = '';
-    el.appendChild(conscrHeader);
     UNIT_CATALOG.forEach(u => {
             const available = checkEqReq(u.req);
         const canAfford = gold >= u.gold && population >= u.pop && mana >= u.mana;
@@ -5296,31 +5244,14 @@ function renderTaxPanel() {
     // Détail par source
     const sources = [];
 
-    // Gains de base des tuiles révélées
-    const tileBaseGains = {
-        'Prairie':   { gold:15 },
-        'Collines':  { gold:15 },
-        'Montagne':  { mana:5 },
-        'Lac':       { pop:5 },
-        'Côte':      { pop:10 },
-    };
-    tileState.forEach((t, i) => {
-        if (i === 12 || !t.revealed || !t.type) return;
-        const base = tileBaseGains[t.type];
-        if (base) {
-            sources.push({
-                label: (TILE_TYPES[t.type]?.emoji || '') + ' ' + t.type + ' (base)',
-                gold: base.gold||0, mana: base.mana||0, pop: base.pop||0
-            });
-        }
-    });
-
-    // Bonus de tuile via bâtiments
+    // Tuiles révélées
     tileState.forEach((t, i) => {
         if (i === 12 || !t.revealed) return;
         const tt = TILE_TYPES[t.type];
         if (!tt) return;
         let gold_s = 0, mana_s = 0, pop_s = 0;
+        // Gain de base de la tuile (goldperturn/populationperturn/manaperturn de découverte)
+        // On reconstitue les bonus tuile depuis les bâtiments posés
         t.buildings.forEach(bName => {
             const bonus = getTileBonus(t.type, bName);
             if (!bonus) return;
@@ -5330,7 +5261,7 @@ function renderTaxPanel() {
         });
         if (gold_s || mana_s || pop_s) {
             sources.push({
-                label: tt.emoji + ' ' + t.type + ' ('+t.buildings.map(b=>b.slice(0,8)).join(', ')+')',
+                label: tt.emoji + ' ' + t.type + (t.buildings.length ? ' ('+t.buildings.map(b=>b.slice(0,6)).join(', ')+')' : ''),
                 gold: gold_s, mana: mana_s, pop: pop_s
             });
         }
@@ -5338,8 +5269,8 @@ function renderTaxPanel() {
 
     // Bâtiments de base (gains fixes)
     const bldGains = {
-        'Ferme':        { pop:5  },
-        'Mine':         { gold:10 },
+        'Ferme':       { pop:5  },
+        'Mine':        { gold:10 },
         'Tour de Magie':{ mana:10 },
     };
     Object.entries(buildingCounts).forEach(([bName, n]) => {
@@ -5379,13 +5310,9 @@ function renderTaxPanel() {
 // ---- Panneau équipement/armée ----
 function equipTab(tab) {
     const armyEl = document.getElementById('equip-tab-army');
-    if (armyEl) armyEl.style.display = '';
+    if (armyEl) { armyEl.style.display=''; armyEl.innerHTML=''; renderRecruitListIn(armyEl); }
     const armyBtn = document.getElementById('etab-army');
     if (armyBtn) armyBtn.classList.add('active');
-    if (tab==='army') {
-        const el = document.getElementById('equip-tab-army');
-        if (el) { el.innerHTML=''; renderRecruitListIn(el); }
-    }
 }
 
 // ---- Ressources ----
@@ -5617,15 +5544,16 @@ function renderRecruitListIn(el) {
     conscrHeader.style.cssText='font-size:12px;color:#ffb040;margin-bottom:6px;padding:4px 8px;background:#2a1a00;border-radius:6px';
     conscrHeader.textContent = '⚔ Conscription disponible : '+conscrit;
     el.appendChild(conscrHeader);
+    if (!hasCaserne) {
+        const p=document.createElement('p');p.style.cssText='color:#9a8a6a;font-size:12px;font-style:italic';
+        p.textContent='Construisez une Caserne pour recruter des soldats.';el.appendChild(p);
+    }
     UNIT_CATALOG.forEach(u => {
-        const available = u.req === null || u.req === undefined ? true
-                        : typeof u.req === 'function' ? u.req()
-                        : u.req === 'caserne' ? hasCaserne
-                        : hasAcademie;
+        const available = u.req===null||u.req===undefined ? true : typeof u.req==='function' ? u.req() : u.req==='caserne' ? hasCaserne : hasAcademie;
         const canAfford = gold>=u.gold && population>=u.pop && mana>=u.mana && conscrit>0;
         const card=document.createElement('div');
         card.className='unit-card'+((!available||!canAfford)?' unit-disabled':'');
-        const traitHtml=formatTraits(u.traits);
+        const traitHtml=u.traits.map(t=>'<span class="unit-trait '+(t.startsWith('anti')?'trait-anti':'trait-normal')+'">'+t+'</span>').join('');
         const count=cityArmy.filter(a=>a.id===u.id).length;
         card.innerHTML='<span class="unit-icon">'+u.icon+'</span>'+
             '<div class="unit-info">'+
@@ -5679,65 +5607,33 @@ function revealProtectedTile() {
 }
 
 function runCombatHorde() {
+    // Calcul du combat de horde
     const cityLog = [], hordeLog = [];
     let cityAtk = 0, hordeAtk = 0;
 
-    // ── Puissance ville ──
+    // Puissance ville
+    // Fortifications exclues de la puissance d'armée
+    // cityAtk += fortifications;
     cityArmy.forEach(u => {
         const contrib = u.atk + u.atkMag;
         cityAtk += contrib;
         cityLog.push(u.icon+' '+u.name+' : +'+contrib);
     });
-    if (avatarSentToHorde) { cityAtk += atk; cityLog.push('🧙 Avatar : +'+atk); }
+    if (avatarSentToHorde) {
+        cityAtk += atk;
+        cityLog.push('🧙 Avatar : +'+atk);
+    }
     const metaPow = window._metaCityPower || 0;
     if (metaPow > 0) { cityAtk += metaPow; cityLog.push('✨ Bonus méta : +'+metaPow); }
-
-    // ── Résolution par somme pondérée ──
+    // Puissance horde
     const allHorde = [...hordeArmy, ...hordeHiddenUnits];
-    const traitNet = {};
-    allHorde.forEach(function(u) {
-        const seen = {};
-        u.traits.filter(function(t){ return HORDE_BONUS[t] !== undefined; }).forEach(function(trait) {
-            if (seen[trait]) return; seen[trait] = true;
-            const w = (u.traitWeight && u.traitWeight[trait]) ? u.traitWeight[trait]
-                    : u.traits.filter(function(t2){ return t2===trait; }).length;
-            traitNet[trait] = (traitNet[trait]||0) + w;
-        });
-    });
-    cityArmy.forEach(function(u) {
-        u.traits.forEach(function(antiTrait) {
-            const trait = COUNTER_RULES[antiTrait];
-            if (!trait) return;
-            const w = (u.antiWeight && u.antiWeight[antiTrait]) ? u.antiWeight[antiTrait] : 1;
-            traitNet[trait] = (traitNet[trait]||0) - w;
-        });
-    });
-    // Allouer bonus aux unités les plus fortes
-    const unitBonuses = {};
-    Object.entries(traitNet).forEach(function(e) {
-        const trait = e[0], net = e[1];
-        if (!HORDE_BONUS[trait]) return;
-        if (net <= 0) { hordeLog.push('✓ '+trait+' contré (net='+net+')'); return; }
-        const units = allHorde.filter(function(u){ return u.traits.includes(trait); })
-                              .sort(function(a,b){ return (b.atk+b.atkMag)-(a.atk+a.atkMag); });
-        let budget = net;
-        units.forEach(function(u) {
-            if (budget <= 0) return;
-            const uid = allHorde.indexOf(u);
-            if (!unitBonuses[uid]) unitBonuses[uid] = {};
-            unitBonuses[uid][trait] = HORDE_BONUS[trait](u);
-            const w = (u.traitWeight && u.traitWeight[trait]) ? u.traitWeight[trait]
-                    : u.traits.filter(function(t){ return t===trait; }).length;
-            budget -= w;
-        });
-        hordeLog.push('⚠ '+trait+' non contré : '+Math.ceil(net)+' unité(s) avec bonus');
-    });
-    allHorde.forEach(function(u, uid) {
-        const base = u.atk + (u.atkMag||0);
-        let bonus = 0;
-        if (unitBonuses[uid]) Object.values(unitBonuses[uid]).forEach(function(b){ bonus += b; });
-        hordeAtk += base + bonus;
-        hordeLog.push(u.icon+' '+u.name+(bonus?' +'+bonus+' (trait)':'')+' : +'+(base+bonus));
+    allHorde.forEach(u => {
+        const mainTrait = u.traits[0] || '';
+        const countered = cityArmy.some(c => c.traits.some(t => COUNTER_RULES[t] === mainTrait));
+        let uAtk = u.atk + (u.atkMag||0);
+        if (!countered && HORDE_BONUS[mainTrait]) uAtk += HORDE_BONUS[mainTrait](u);
+        hordeAtk += uAtk;
+        hordeLog.push(u.icon+' '+u.name+(countered?' (contré)':'')+' : +'+uAtk);
     });
     if (allHorde.length === 0) { hordeAtk = (1 + currentSeason) * (rollDie(4) + 1); hordeLog.push('Horde inconnue : '+hordeAtk); }
 
@@ -6121,53 +6017,49 @@ function metaBuyCityLevel() {
 // FENÊTRE ÉQUIPEMENT FUSIONNÉE
 // ═══════════════════════════════════════════════
 
-let ewCurrentSlot = null;
+let ewCurrentSlot     = null;
 let ewPredungeonCallback = null;
-let ewFromPreDungeon = false;
+let ewFromPreDungeon  = false;
 
+// ── Pré-donjon ──
 function showPreDungeonWindow(callback) {
     ewPredungeonCallback = callback;
     const w = document.getElementById('pre-dungeon-window');
-    if (!w) { callback(); return; }
-
+    if (!w) { if(callback) callback(); return; }
     // Stats rapides
     const stats = document.getElementById('predng-stats');
     if (stats) stats.innerHTML = [
-        ['❤ HP', avatarHp+'/'+avatarMaxHp],
-        ['⚔ ATK', atk],
-        ['🗡 Dmg', avatarDmg],
-        ['🛡 DEF', def],
-        ['💫 Prot', protection],
-        ['🏹 Dist', avatarRanged?'Oui':'Non']
-    ].map(function(e){ return '<div style="text-align:center;background:#0c0818;border-radius:5px;padding:4px"><div style="font-size:9px;color:#6a5a7a">'+e[0]+'</div><div style="font-size:13px;font-weight:bold;color:#c0a060">'+e[1]+'</div></div>'; }).join('');
-
+        ['❤','HP', avatarHp+'/'+avatarMaxHp],
+        ['⚔','ATK', atk], ['🗡','Dmg', avatarDmg],
+        ['🛡','DEF', def], ['💫','Prot', protection],
+        ['🏹','Dist', avatarRanged?'Oui':'Non']
+    ].map(function(e){
+        return '<div style="text-align:center;background:#0c0818;border-radius:5px;padding:3px">'+
+               '<div style="font-size:9px;color:#6a5a7a">'+e[0]+' '+e[1]+'</div>'+
+               '<div style="font-size:13px;font-weight:bold;color:#c0a060">'+e[2]+'</div></div>';
+    }).join('');
     // Équipement actuel
     const eq = document.getElementById('predng-equip');
     if (eq) {
-        const slots = [
-            ['weapon_main','🗡'], ['weapon_off','🛡'], ['armor','🥋'],
-            ['necklace','📿'], ['belt','🪢']
-        ];
-        const gSlots = getGlyphSlots(), pSlots = getPotionSlots();
+        const gN = getGlyphSlots(), pN = getPotionSlots();
         let html = '';
-        slots.forEach(function(s) {
+        [['weapon_main','🗡'],['weapon_off','🛡'],['armor','🥋'],['necklace','📿'],['belt','🪢']].forEach(function(s){
             const id = equippedItems[s[0]];
-            const item = id ? EQUIPMENT_CATALOG.find(function(i){ return i.id===id; }) : null;
-            html += '<span style="color:'+(item?'#c0a060':'#3a2a4a')+'">' + s[1] + ' ' + (item?item.name:'—') + '</span><br>';
+            const it = id ? EQUIPMENT_CATALOG.find(function(i){return i.id===id;}) : null;
+            html += '<span style="color:'+(it?'#c0a060':'#3a2a4a')+'">'+s[1]+' '+(it?it.name:'—')+'</span><br>';
         });
-        for (let i=0; i<gSlots; i++) {
-            const id = equippedItems.glyphs[i];
-            const item = id ? EQUIPMENT_CATALOG.find(function(x){ return x.id===id; }) : null;
-            html += '<span style="color:'+(item?'#c080ff':'#3a2a4a')+'">🔮 ' + (item?item.name:'—') + '</span><br>';
+        for(let i=0;i<gN;i++){
+            const id=equippedItems.glyphs[i];
+            const it=id?EQUIPMENT_CATALOG.find(function(x){return x.id===id;}):null;
+            html+='<span style="color:'+(it?'#c080ff':'#3a2a4a')+'">🔮 '+(it?it.name:'—')+'</span><br>';
         }
-        for (let i=0; i<pSlots; i++) {
-            const id = equippedItems.potions[i];
-            const item = id ? EQUIPMENT_CATALOG.find(function(x){ return x.id===id; }) : null;
-            html += '<span style="color:'+(item?'#4cffaa':'#3a2a4a')+'">🧪 ' + (item?item.name:'—') + '</span><br>';
+        for(let i=0;i<pN;i++){
+            const id=equippedItems.potions[i];
+            const it=id?EQUIPMENT_CATALOG.find(function(x){return x.id===id;}):null;
+            html+='<span style="color:'+(it?'#4cffaa':'#3a2a4a')+'">🧪 '+(it?it.name:'—')+'</span><br>';
         }
         eq.innerHTML = html;
     }
-
     w.style.display = 'flex';
 }
 
@@ -6179,23 +6071,23 @@ function closePredngWindow() {
 function confirmEnterDungeon() {
     closePredngWindow();
     closeEquipWindow();
-    if (ewPredungeonCallback) ewPredungeonCallback();
+    if (ewPredungeonCallback) { ewPredungeonCallback(); ewPredungeonCallback = null; }
 }
 
+// ── Fenêtre équipement ──
 function openEquipWindow(fromPredng) {
     const w = document.getElementById('equip-window');
     if (!w) return;
-    w.style.display = 'flex';
     ewCurrentSlot = null;
     ewFromPreDungeon = !!fromPredng;
+    w.style.display = 'flex';
     renderEquipWindow();
 }
 
 function closeEquipWindow() {
     const w = document.getElementById('equip-window');
     if (w) w.style.display = 'none';
-    // Rouvrir le pré-donjon SEULEMENT si on y était (fenêtre pré-donjon était visible)
-    if (ewPredungeonCallback && ewFromPreDungeon) {
+    if (ewFromPreDungeon && ewPredungeonCallback) {
         ewFromPreDungeon = false;
         showPreDungeonWindow(ewPredungeonCallback);
     }
@@ -6205,187 +6097,159 @@ function renderEquipWindow() {
     // Ressources
     const resEl = document.getElementById('ew-resources');
     if (resEl) resEl.innerHTML = '🪙'+gold+' ✨'+mana+' 👥'+population;
-
-    // Stats avatar
+    // Stats
     const statsEl = document.getElementById('ew-stats');
     if (statsEl) statsEl.innerHTML = [
-        ['⚔','ATK',atk], ['🗡','Dmg',avatarDmg], ['🛡','DEF',def],
-        ['💫','Prot',protection], ['❤','HP',avatarHp+'/'+avatarMaxHp],
+        ['⚔','ATK',atk],['🗡','Dmg',avatarDmg],['🛡','DEF',def],
+        ['💫','Prot',protection],['❤','HP',avatarHp+'/'+avatarMaxHp],
         avatarRanged?['🏹','Dist','Oui']:null,
         avatarScythe?['⚰','Faux','Oui']:null,
     ].filter(Boolean).map(function(e){
-        return '<div style="display:flex;justify-content:space-between"><span style="color:#6a5a7a">'+e[0]+' '+e[1]+'</span><span style="color:#c0a060;font-weight:bold">'+e[2]+'</span></div>';
+        return '<div style="display:flex;justify-content:space-between">'+
+               '<span style="color:#6a5a7a">'+e[0]+' '+e[1]+'</span>'+
+               '<span style="color:#c0a060;font-weight:bold">'+e[2]+'</span></div>';
     }).join('');
-
-    // Image avatar
+    // Avatar img
     const imgEl = document.getElementById('ew-avatar-img');
     const avatarSrc = document.querySelector('#dng-avatar-side img');
     if (imgEl && avatarSrc) imgEl.src = avatarSrc.src;
-
     // Slots fixes
-    ['weapon_main','weapon_off','armor','necklace','belt'].forEach(function(slot) {
+    ['weapon_main','weapon_off','armor','necklace','belt'].forEach(function(slot){
         const el = document.getElementById('slot-'+slot);
         if (!el) return;
         const id = equippedItems[slot];
-        const item = id ? EQUIPMENT_CATALOG.find(function(i){ return i.id===id; }) : null;
+        const item = id ? EQUIPMENT_CATALOG.find(function(i){return i.id===id;}) : null;
         const span = el.querySelector('.ew-slot-item');
         el.classList.toggle('equipped', !!item);
+        el.classList.toggle('active', ewCurrentSlot === slot);
         if (span) span.textContent = item ? item.icon+' '+item.name : '';
     });
-
-    // Slots glyphes dynamiques
-    const gSlots = getGlyphSlots();
+    // Slots glyphes et potions dynamiques (affichés ensemble)
+    const gN = getGlyphSlots();
     const gEl = document.getElementById('ew-glyph-slots');
     if (gEl) {
         gEl.innerHTML = '';
-        for (let i=0; i<gSlots; i++) {
+        for (let i=0; i<gN; i++) {
             const id = equippedItems.glyphs[i];
-            const item = id ? EQUIPMENT_CATALOG.find(function(x){ return x.id===id; }) : null;
+            const item = id ? EQUIPMENT_CATALOG.find(function(x){return x.id===id;}) : null;
             const div = document.createElement('div');
-            div.className = 'ew-slot' + (item?' equipped':'');
-            div.innerHTML = '🔮 Glyphe '+(i+1)+'<span class="ew-slot-item">'+(item?item.icon+' '+item.name:'')+'</span>';
-            div.onclick = (function(idx){ return function(){ ewSelectSlot('glyph_'+idx); }; })(i);
+            div.className = 'ew-slot'+(item?' equipped':'')+(ewCurrentSlot==='glyph_'+i?' active':'');
+            div.innerHTML = '✨ Glyphe '+(i+1)+'<span class="ew-slot-item">'+(item?item.icon+' '+item.name:'')+'</span>';
+            div.onclick = (function(idx){return function(){ewSelectSlot('glyph_'+idx);};})(i);
             gEl.appendChild(div);
         }
     }
-
     // Slots potions dynamiques
-    const pSlots = getPotionSlots();
+    const pN = getPotionSlots();
     const pEl = document.getElementById('ew-potion-slots');
     if (pEl) {
         pEl.innerHTML = '';
-        for (let i=0; i<pSlots; i++) {
+        for (let i=0; i<pN; i++) {
             const id = equippedItems.potions[i];
-            const item = id ? EQUIPMENT_CATALOG.find(function(x){ return x.id===id; }) : null;
+            const item = id ? EQUIPMENT_CATALOG.find(function(x){return x.id===id;}) : null;
             const div = document.createElement('div');
-            div.className = 'ew-slot' + (item?' equipped':'');
+            div.className = 'ew-slot'+(item?' equipped':'')+(ewCurrentSlot==='potion_'+i?' active':'');
             div.innerHTML = '🧪 Potion '+(i+1)+'<span class="ew-slot-item">'+(item?item.icon+' '+item.name:'')+'</span>';
-            div.onclick = (function(idx){ return function(){ ewSelectSlot('potion_'+idx); }; })(i);
+            div.onclick = (function(idx){return function(){ewSelectSlot('potion_'+idx);};})(i);
             pEl.appendChild(div);
         }
     }
-
-    // Catalogue
     renderEwCatalog();
 }
 
 function ewSelectSlot(slot) {
     ewCurrentSlot = slot;
-    // Surbrillance
-    document.querySelectorAll('.ew-slot').forEach(function(el){ el.style.borderColor=''; });
-    // Slot correspondant
-    const slotId = slot.startsWith('glyph_') ? null :
-                   slot.startsWith('potion_') ? null :
-                   'slot-'+slot;
-    if (slotId) {
-        const el = document.getElementById(slotId);
-        if (el) el.style.borderColor = '#c080ff';
-    }
-    renderEwCatalog();
+    renderEquipWindow();
 }
 
 function renderEwCatalog() {
     const el = document.getElementById('ew-catalog-items');
-    const filterBar = document.getElementById('ew-filter-bar');
     if (!el) return;
+    const slot = ewCurrentSlot;
+    const isGlyphSlot  = slot && slot.startsWith('glyph_');
+    const isPotionSlot = slot && slot.startsWith('potion_');
 
-    // Déterminer le filtre selon le slot sélectionné
-    let filter = ewCurrentSlot;
-
-    // Boutons filtre
-    const filters = [
-        { key:null, label:'Tout' },
-        { key:'weapon_main', label:'⚔ Armes' },
-        { key:'weapon_off', label:'🛡 Bouclier' },
-        { key:'armor', label:'🥋 Armure' },
-        { key:'necklace', label:'📿 Collier' },
-        { key:'belt', label:'🪢 Ceinture' },
-        { key:'glyph_0', label:'🔮 Glyphe' },
-        { key:'potion_0', label:'🧪 Potion' },
-    ];
-    if (filterBar) {
-        filterBar.innerHTML = filters.map(function(f) {
-            const active = (filter === f.key) || (filter === null && f.key === null);
-            const keyStr = f.key === null ? 'null' : ('\'' + f.key + '\'');
-            return '<button onclick="ewSelectSlot('+keyStr+')" style="padding:3px 8px;border-radius:4px;border:1px solid '+(active?'#c0a060':'#2a1a3a')+';background:'+(active?'#1a1228':'#0a0812')+';color:'+(active?'#c0a060':'#6a5a7a')+';font-size:10px;cursor:pointer">'+f.label+'</button>';
-        }).join('');
-    }
-
-    // Filtrer les items
-    el.innerHTML = '';
-    const isGlyphSlot   = filter && filter.startsWith('glyph_');
-    const isPotionSlot  = filter && filter.startsWith('potion_');
-
+    // Filtrer les items selon le slot sélectionné
     const items = EQUIPMENT_CATALOG.filter(function(item) {
-        if (filter === null) return true;
+        if (!slot) return true;
         if (isGlyphSlot)  return item.isGlyph;
         if (isPotionSlot) return item.isPotion;
-        if (filter === 'weapon_main') return item.slot === 'weapon_main' && !item.isGlyph && !item.isPotion;
-        if (filter === 'weapon_off')  {
-            const mainId = equippedItems['weapon_main'];
-            const mainItem = mainId ? EQUIPMENT_CATALOG.find(function(i){ return i.id===mainId; }) : null;
-            if (mainItem && mainItem.is2h) return false;
+        if (slot === 'weapon_main') return item.slot === 'weapon_main' && !item.isGlyph && !item.isPotion;
+        if (slot === 'weapon_off') {
+            const mainId = equippedItems.weapon_main;
+            const mainIt = mainId ? EQUIPMENT_CATALOG.find(function(i){return i.id===mainId;}) : null;
+            if (mainIt && mainIt.is2h) return false;
             return (item.slot === 'weapon_off' || (item.slot === 'weapon_main' && !item.is2h)) && !item.isGlyph && !item.isPotion;
         }
-        return item.slot === filter && !item.isGlyph && !item.isPotion;
+        return item.slot === slot && !item.isGlyph && !item.isPotion;
     });
+
+    el.innerHTML = '';
+    if (!slot) {
+        el.innerHTML = '<div style="color:#4a3a5a;font-size:11px;text-align:center;padding:20px">Cliquez sur un slot pour voir les items disponibles</div>';
+        return;
+    }
 
     items.forEach(function(item) {
         const owned     = ownedEquipment[item.id];
         const canAfford = gold >= item.gold && mana >= (item.mana||0) && population >= (item.pop||0);
-        const equipped  = isItemEquipped(item.id);
-
-        // Charges pour glyphes/potions
-        let chargeHtml = '';
-        if (item.isGlyph) {
-            const n = {Fireball:glyphFireball,Rage:glyphRage,Bless:glyphBless}[item.id]||0;
-            chargeHtml = ' <span style="color:#c080ff">×'+n+'</span>';
-        } else if (item.isPotion) {
-            const n = {PotionSoin:potionHeal,PotionPoison:potionAntiPoison}[item.id]||0;
-            chargeHtml = ' <span style="color:#4cffaa">×'+n+'</span>';
+        // Vérifier si l'item est équipé dans ce slot
+        let isEquipped = false;
+        if (isGlyphSlot) {
+            const idx = parseInt(slot.split('_')[1]);
+            isEquipped = equippedItems.glyphs[idx] === item.id;
+        } else if (isPotionSlot) {
+            const idx = parseInt(slot.split('_')[1]);
+            isEquipped = equippedItems.potions[idx] === item.id;
+        } else {
+            isEquipped = equippedItems[slot] === item.id;
         }
+        // Charges pour glyphes/potions
+        const chargeMap = {Fireball:glyphFireball,Rage:glyphRage,Bless:glyphBless,PotionSoin:potionHeal,PotionPoison:potionAntiPoison};
+        const charges = (item.isGlyph||item.isPotion) ? (chargeMap[item.id]||0) : null;
 
         const div = document.createElement('div');
-        div.style.cssText = 'display:flex;align-items:center;gap:8px;padding:7px 8px;border:1px solid '+(equipped?'#4cffaa':owned?'#2a3a2a':'#2a1a3a')+';border-radius:7px;background:'+(equipped?'#081808':owned?'#0a1208':'#0c0818')+';cursor:pointer';
-
+        div.style.cssText = 'display:flex;align-items:center;gap:8px;padding:7px 8px;border:1px solid '+(isEquipped?'#4cffaa':owned?'#2a3a2a':'#2a1a3a')+';border-radius:7px;background:'+(isEquipped?'#081808':owned?'#0a1208':'#0c0818')+';cursor:pointer;margin-bottom:3px';
         div.innerHTML =
             '<span style="font-size:18px">'+(item.icon||'📦')+'</span>'+
             '<div style="flex:1">'+
-                '<div style="font-size:11px;color:'+(owned?'#c0a060':'#d4c49a')+'">'+item.name+chargeHtml+(equipped?' <span style="color:#4cffaa;font-size:9px">équipé</span>':'')+'</div>'+
+                '<div style="font-size:11px;color:'+(owned?'#c0a060':'#d4c49a')+'">'+
+                    item.name+
+                    (charges!==null?' <span style="color:#c080ff">×'+charges+'</span>':'')+
+                    (isEquipped?' <span style="color:#4cffaa;font-size:9px">équipé</span>':'')+
+                '</div>'+
                 '<div style="font-size:9px;color:#6a5a7a">'+item.desc+'</div>'+
             '</div>'+
             '<div style="text-align:right;flex-shrink:0">'+
                 (item.gold>0?'<div style="font-size:10px;color:'+(canAfford?'#ffd060':'#6a5a4a')+'">🪙'+item.gold+'</div>':'')+
-                (item.mana>0?'<div style="font-size:10px;color:'+(mana>=item.mana?'#c080ff':'#5a4a6a')+'">✨'+item.mana+'</div>':'')+
-                (item.pop>0?'<div style="font-size:10px;color:'+(population>=item.pop?'#80c0ff':'#4a5a6a')+'">👥'+item.pop+'</div>':'')+
+                (item.mana>0?'<div style="font-size:10px;color:'+(mana>=(item.mana||0)?'#c080ff':'#5a4a6a')+'">✨'+item.mana+'</div>':'')+
+                (item.pop>0?'<div style="font-size:10px;color:'+(population>=(item.pop||0)?'#80c0ff':'#4a5a6a')+'">👥'+item.pop+'</div>':'')+
             '</div>';
-
+        // Bouton retirer si équipé dans ce slot
+        if (isEquipped) {
+            const removeBtn = document.createElement('button');
+            removeBtn.textContent = '✕';
+            removeBtn.title = 'Retirer';
+            removeBtn.style.cssText = 'background:#2a0808;border:1px solid #5a2020;color:#ff6060;border-radius:4px;padding:2px 6px;cursor:pointer;font-size:12px;flex-shrink:0';
+            removeBtn.onclick = function(e) { e.stopPropagation(); ewRemoveFromSlot(slot); };
+            div.appendChild(removeBtn);
+        }
         div.onclick = function() { ewHandleItemClick(item); };
         el.appendChild(div);
     });
 
     if (items.length === 0) {
-        el.innerHTML = '<div style="color:#3a2a4a;font-size:11px;text-align:center;padding:20px">Aucun item pour ce filtre</div>';
+        el.innerHTML = '<div style="color:#3a2a4a;font-size:11px;text-align:center;padding:20px">Aucun item pour ce slot</div>';
     }
-}
-
-function isItemEquipped(id) {
-    if (!id) return false;
-    const item = EQUIPMENT_CATALOG.find(function(i){ return i.id===id; });
-    if (!item) return false;
-    if (item.isGlyph)  return equippedItems.glyphs.includes(id);
-    if (item.isPotion) return equippedItems.potions.includes(id);
-    return Object.values(equippedItems).includes(id);
 }
 
 function ewHandleItemClick(item) {
     const slot = ewCurrentSlot;
-
-    // Acheter si pas possédé (ou glyphe/potion)
+    if (!slot) return;
+    // Acheter si pas possédé (ou glyphe/potion : achat multiple)
     if (!ownedEquipment[item.id] || item.isGlyph || item.isPotion) {
         if (gold < item.gold || mana < (item.mana||0) || population < (item.pop||0)) {
             addLog('❌ Ressources insuffisantes pour ' + item.name);
-            renderEwCatalog();
             return;
         }
         gold -= item.gold; mana -= (item.mana||0); population -= (item.pop||0);
@@ -6394,48 +6258,67 @@ function ewHandleItemClick(item) {
         addLog('✅ ' + item.name + ' acheté !');
         updateStats();
     }
-
-    // Équiper dans le slot sélectionné
-    if (slot) {
-        if (slot.startsWith('glyph_')) {
-            const idx = parseInt(slot.split('_')[1]);
-            // Déséquiper l'ancien glyphe de ce slot
-            const oldId = equippedItems.glyphs[idx];
-            if (oldId) { /* glyphes pas de remove() */ }
-            if (item.isGlyph) equippedItems.glyphs[idx] = item.id;
-        } else if (slot.startsWith('potion_')) {
-            const idx = parseInt(slot.split('_')[1]);
-            if (item.isPotion) equippedItems.potions[idx] = item.id;
-        } else if (!item.isGlyph && !item.isPotion) {
-            ewEquipInSlot(slot, item);
-        }
+    // Équiper dans le slot
+    if (slot.startsWith('glyph_')) {
+        const idx = parseInt(slot.split('_')[1]);
+        if (item.isGlyph) equippedItems.glyphs[idx] = item.id;
+    } else if (slot.startsWith('potion_')) {
+        const idx = parseInt(slot.split('_')[1]);
+        if (item.isPotion) equippedItems.potions[idx] = item.id;
     } else if (!item.isGlyph && !item.isPotion) {
-        // Auto-équiper dans le bon slot
-        ewEquipInSlot(item.slot, item);
+        ewEquipInSlot(slot, item);
     }
-
     renderEquipWindow();
 }
 
 function ewEquipInSlot(slot, item) {
-    // Déséquiper l'ancien
     const oldId = equippedItems[slot];
     if (oldId) {
-        const oldItem = EQUIPMENT_CATALOG.find(function(i){ return i.id===oldId; });
+        const oldItem = EQUIPMENT_CATALOG.find(function(i){return i.id===oldId;});
         if (oldItem && oldItem.remove) oldItem.remove();
     }
-    // Gestion arme 2 mains
     if (slot === 'weapon_main' && item.is2h) {
-        const offId = equippedItems['weapon_off'];
+        const offId = equippedItems.weapon_off;
         if (offId) {
-            const offItem = EQUIPMENT_CATALOG.find(function(i){ return i.id===offId; });
+            const offItem = EQUIPMENT_CATALOG.find(function(i){return i.id===offId;});
             if (offItem && offItem.remove) offItem.remove();
-            equippedItems['weapon_off'] = null;
+            equippedItems.weapon_off = null;
         }
     }
     equippedItems[slot] = item.id;
     if (item.apply) item.apply();
     updateStats();
+}
+
+function ewRemoveFromSlot(slot) {
+    if (!slot) return;
+    if (slot.startsWith('glyph_')) {
+        const idx = parseInt(slot.split('_')[1]);
+        equippedItems.glyphs[idx] = null;
+    } else if (slot.startsWith('potion_')) {
+        const idx = parseInt(slot.split('_')[1]);
+        equippedItems.potions[idx] = null;
+    } else {
+        const oldId = equippedItems[slot];
+        if (oldId) {
+            const oldItem = EQUIPMENT_CATALOG.find(function(i){return i.id===oldId;});
+            if (oldItem && oldItem.remove) oldItem.remove();
+            equippedItems[slot] = null;
+        }
+    }
+    updateStats();
+    renderEquipWindow();
+    addLog('Item retiré du slot.');
+}
+
+function isItemEquipped(id) {
+    if (!id) return false;
+    const item = EQUIPMENT_CATALOG.find(function(i){return i.id===id;});
+    if (!item) return false;
+    if (item.isGlyph)  return equippedItems.glyphs.includes(id);
+    if (item.isPotion) return equippedItems.potions.includes(id);
+    return equippedItems.weapon_main === id || equippedItems.weapon_off === id ||
+           equippedItems.armor === id || equippedItems.necklace === id || equippedItems.belt === id;
 }
 
 
@@ -6461,7 +6344,7 @@ function getGameState() {
         atk, def, avatarHp, avatarMaxHp, avatarDmg,
         avatarRanged, avatarPiercing, protection,
         glyphFireball, glyphHeal, glyphRage, glyphBless,
-        potionHeal, potionAntiPoison, glyphSlots, potionSlots,
+        potionHeal, potionAntiPoison,
         ownedEquipment: cleanForSave(ownedEquipment||{}),
         equippedItems: cleanForSave(equippedItems||{}),
         runDeaths, runDustSpent,
@@ -6744,7 +6627,273 @@ function renderSaveMenu() {
     }
 }
 
-    </script>
+    
+// ═══════════════════════════════════════════════
+// ÉCRAN D'ACCUEIL + GLOSSAIRE
+// ═══════════════════════════════════════════════
+
+function showHomeScreen() {
+    const el = document.getElementById('home-screen');
+    if (el) el.style.display = 'flex';
+}
+function hideHomeScreen() {
+    const el = document.getElementById('home-screen');
+    if (el) el.style.display = 'none';
+}
+function homeBack() {
+    const s = document.getElementById('home-slots');
+    if (s) { s.style.display='none'; s.innerHTML=''; }
+    const m = document.getElementById('home-menu');
+    if (m) m.style.display = 'flex';
+    const b = document.getElementById('home-back-btn');
+    if (b) b.style.display = 'none';
+}
+function homeLoad() {
+    document.getElementById('home-menu').style.display = 'none';
+    document.getElementById('home-back-btn').style.display = 'block';
+    const slotsEl = document.getElementById('home-slots');
+    slotsEl.innerHTML = '<div style="font-family:Cinzel,serif;font-size:11px;color:#6a5a80;text-align:center;margin-bottom:8px">Choisir une sauvegarde</div>';
+    slotsEl.style.display = 'flex';
+    for (let i = 0; i < NUM_SLOTS; i++) {
+        const info = getSaveInfo(i);
+        const div = document.createElement('div');
+        div.className = 'home-slot';
+        if (info) {
+            div.innerHTML = '<div style="font-size:24px">💾</div><div class="home-slot-info"><div class="home-slot-name">Slot '+(i+1)+'</div><div>Saison '+info.season+' · Tour '+info.turn+'</div><div style="font-size:10px;color:#4a3a5a">'+info.date+'</div></div>';
+            div.onclick = (function(slot){ return function(){ loadFromSlot(slot); hideHomeScreen(); }; })(i);
+        } else {
+            div.innerHTML = '<div style="font-size:24px;opacity:.3">💾</div><div class="home-slot-info"><div class="home-slot-name" style="color:#3a2a4a">Slot '+(i+1)+'</div><div class="home-slot-empty">Vide</div></div>';
+            div.style.cursor='default'; div.style.opacity='0.5';
+        }
+        slotsEl.appendChild(div);
+    }
+}
+function homeNew() {
+    document.getElementById('home-menu').style.display = 'none';
+    document.getElementById('home-back-btn').style.display = 'block';
+    const slotsEl = document.getElementById('home-slots');
+    slotsEl.innerHTML = '<div style="font-family:Cinzel,serif;font-size:11px;color:#6a5a80;text-align:center;margin-bottom:8px">Choisir un slot</div>';
+    slotsEl.style.display = 'flex';
+    for (let i = 0; i < NUM_SLOTS; i++) {
+        const info = getSaveInfo(i);
+        const div = document.createElement('div');
+        div.className = 'home-slot';
+        if (info) {
+            div.innerHTML = '<div style="font-size:24px">⚠</div><div class="home-slot-info"><div class="home-slot-name">Slot '+(i+1)+' — Écraser</div><div style="color:#ff8060">Saison '+info.season+' · Tour '+info.turn+'</div></div>';
+        } else {
+            div.innerHTML = '<div style="font-size:24px">✦</div><div class="home-slot-info"><div class="home-slot-name">Slot '+(i+1)+'</div><div style="color:#4cffaa">Vide — Nouveau run</div></div>';
+        }
+        div.onclick = (function(slot, hasData){ return function(){
+            if (hasData && !confirm('Écraser le slot '+(slot+1)+' ?')) return;
+            const emptyMeta = JSON.parse(JSON.stringify(META_DEFAULTS));
+            localStorage.setItem(META_KEY, JSON.stringify(emptyMeta));
+            window._meta = emptyMeta;
+            activeSlot = slot;
+            localStorage.removeItem(SAVE_PREFIX + slot);
+            hideHomeScreen();
+            initNewRun();
+        }; })(i, !!info);
+        slotsEl.appendChild(div);
+    }
+}
+
+let currentGloTab = 'terrains';
+function openGlossary() {
+    const el = document.getElementById('glossary-screen');
+    if (el) el.style.display = 'flex';
+    gloTab(currentGloTab);
+}
+function closeGlossary() {
+    const el = document.getElementById('glossary-screen');
+    if (el) el.style.display = 'none';
+}
+function gloTab(tab) {
+    currentGloTab = tab;
+    document.querySelectorAll('.glo-tab').forEach(function(t) {
+        const fn = t.getAttribute('onclick') || '';
+        t.classList.toggle('active', fn.includes("'"+tab+"'"));
+    });
+    const el = document.getElementById('glossary-content');
+    if (!el) return;
+    el.innerHTML = (typeof GLO_DATA !== 'undefined' && GLO_DATA[tab]) ? GLO_DATA[tab] : '<p style="color:#6a5a8a">Contenu à venir.</p>';
+}
+
+
+const GLO_DATA = {
+    terrains:`<div class="glo-section"><div class="glo-title">🗺 Terrains</div>
+<div class="glo-entry"><div class="glo-entry-name">🌾 Prairie — 2 emplacements</div><div class="glo-entry-desc">+20 Or/tour. Bonus Ferme : +5 Pop/tour.</div></div>
+<div class="glo-entry"><div class="glo-entry-name">⛰ Collines — 1 emplacement</div><div class="glo-entry-desc">+20 Or/tour. Bonus Mine : +10 Or/tour.</div></div>
+<div class="glo-entry"><div class="glo-entry-name">🌊 Côte — 1 emplacement</div><div class="glo-entry-desc">+10 Pop, +10 Pop/tour.</div></div>
+<div class="glo-entry"><div class="glo-entry-name">🏔 Montagne — 1 emplacement</div><div class="glo-entry-desc">+30 Mana, +5 Mana/tour. Bonus Tour de Magie : +10 Mana/tour.</div></div>
+<div class="glo-entry"><div class="glo-entry-name">💧 Lac — 1 emplacement</div><div class="glo-entry-desc">+10 Pop, +5 Pop/tour. Bonus Ferme : +5 Pop/tour.</div></div>
+<div class="glo-entry"><div class="glo-entry-name">🌲 Forêt — 1 emplacement</div><div class="glo-entry-desc">+1 Fortification. Bonus Caserne : +1 Fortif.</div></div>
+</div>`,
+    batiments:`<div class="glo-section"><div class="glo-title">🏗 Bâtiments</div>
+<div class="glo-entry"><div class="glo-entry-name">🌾 Ferme — 20 Or</div><div class="glo-entry-desc">+5 Pop/tour.</div></div>
+<div class="glo-entry"><div class="glo-entry-name">⛏ Mine — 20 Pop</div><div class="glo-entry-desc">+10 Or/tour.</div></div>
+<div class="glo-entry"><div class="glo-entry-name">⚔ Caserne — 100 Or, 10 Pop</div><div class="glo-entry-desc">+2 Conscriptions. Débloque : Soldat, Lancier.</div></div>
+<div class="glo-entry"><div class="glo-entry-name">🗼 Tour de Garde — 90 Or, 10 Pop</div><div class="glo-entry-desc">+1 Conscription, +1 Fortification.</div></div>
+<div class="glo-entry"><div class="glo-entry-name">🔮 Tour de Magie — 30 Or, 5 Pop, 20 Mana</div><div class="glo-entry-desc">+1 Conscription, +10 Mana/tour.</div></div>
+<div class="glo-entry"><div class="glo-entry-name">🎓 Académie militaire — 150 Or, 30 Pop, 40 Mana</div><div class="glo-entry-desc">Débloque : Hallebardier, Soldat Pavois, Paladin. Prérequis : 2 Casernes + 1 Tour de Magie.</div></div>
+<div class="glo-entry"><div class="glo-entry-name">🏹 Archerie — 80 Or, 20 Pop</div><div class="glo-entry-desc">Débloque : Archer, Arbalétrier. Prérequis : 1 Caserne.</div></div>
+<div class="glo-entry"><div class="glo-entry-name">⛪ Église — 60 Or, 10 Pop, 20 Mana</div><div class="glo-entry-desc">Débloque : Prêtre.</div></div>
+<div class="glo-entry"><div class="glo-entry-name">🛕 Temple — 120 Or, 20 Pop, 40 Mana</div><div class="glo-entry-desc">Débloque : Paladin (avec Académie). Prérequis : 1 Église.</div></div>
+</div>
+<div class="glo-section"><div class="glo-title">⚔ Unités défensives</div>
+<div class="glo-entry"><div class="glo-entry-name">🪚 Milicien (15 Or, 3 Pop) — Aucun prérequis</div><div class="glo-entry-desc">ATK 1 | Anti-Pillard</div></div>
+<div class="glo-entry"><div class="glo-entry-name">🗡 Soldat (30 Or, 5 Pop) — Caserne</div><div class="glo-entry-desc">ATK 3 | Infanterie</div></div>
+<div class="glo-entry"><div class="glo-entry-name">⚔ Lancier (30 Or, 5 Pop) — Caserne</div><div class="glo-entry-desc">ATK 2 | Anti-Cavalerie</div></div>
+<div class="glo-entry"><div class="glo-entry-name">🪖 Hallebardier (40 Or, 8 Pop) — Académie</div><div class="glo-entry-desc">ATK 4 | Infanterie | Anti-Cavalerie II</div></div>
+<div class="glo-entry"><div class="glo-entry-name">🏹 Archer (25 Or, 5 Pop) — Archerie</div><div class="glo-entry-desc">ATK 2 | Anti-Vol | Distance</div></div>
+<div class="glo-entry"><div class="glo-entry-name">🏹 Arbalétrier (40 Or, 6 Pop) — Archerie</div><div class="glo-entry-desc">ATK 3 | Anti-Vol | Anti-Distance</div></div>
+<div class="glo-entry"><div class="glo-entry-name">✝ Prêtre (25 Or, 5 Pop, 15 Mana) — Église</div><div class="glo-entry-desc">ATK 1, ATKMag 3 | Anti-Démon</div></div>
+<div class="glo-entry"><div class="glo-entry-name">⚜ Paladin (55 Or, 10 Pop, 10 Mana) — Académie + Temple</div><div class="glo-entry-desc">ATK 4, ATKMag 2 | Anti-Cavalerie | Anti-Mort-Vivant</div></div>
+</div>`,
+    traits:`<div class="glo-section"><div class="glo-title">⚔ Traits de la Horde</div>
+<p style="font-size:11px;color:#7a6a8a;margin-bottom:10px">Somme poids horde − poids anti-traits ville. Net ≤ 0 = contré. Net > 0 = unités les plus fortes passent.</p>
+<div class="glo-entry"><div class="glo-entry-name">🐴 Cavalerie — contré : anti-cavalerie</div><div class="glo-entry-desc">Si non contré : ATK ×2. Chevaucheur de Loup : Cavalerie II.</div></div>
+<div class="glo-entry"><div class="glo-entry-name">🏹 Distance — contré : anti-distance</div><div class="glo-entry-desc">Si non contré : ATK ×2.</div></div>
+<div class="glo-entry"><div class="glo-entry-name">🐲 Vol — contré : anti-vol</div><div class="glo-entry-desc">Si non contré : détruit l&#39;unité ville la plus forte.</div></div>
+<div class="glo-entry"><div class="glo-entry-name">🔥 Pillard — contré : anti-pillard</div><div class="glo-entry-desc">Si non contré : détruit 1 bâtiment même si repoussé.</div></div>
+<div class="glo-entry"><div class="glo-entry-name">⛏ Sapeur — contré : anti-sapeur</div><div class="glo-entry-desc">Si non contré : détruit 1 fortification (min. 1).</div></div>
+<div class="glo-entry"><div class="glo-entry-name">💀 Mort-Vivant — contré : anti-mort-vivant</div><div class="glo-entry-desc">Si au moins 1 passe : détruit une unité aléatoire de ton armée.</div></div>
+<div class="glo-entry"><div class="glo-entry-name">😈 Démon — contré : anti-démon</div><div class="glo-entry-desc">Si au moins 1 passe : toute ton infanterie ne compte pas.</div></div>
+</div>`,
+    monstres:`<div class="glo-section"><div class="glo-title">⚔ Horde par Tier</div>
+<div style="font-size:10px;color:#4a3a5a;margin:4px 0">— T1 (S1+) —</div>
+<div class="glo-entry"><div class="glo-entry-name">👺 Gobelin ATK 2 | 👊 Orc ATK 3 | 🔥 Pillards ATK 2</div></div>
+<div style="font-size:10px;color:#4a3a5a;margin:4px 0">— T2 (S3+) —</div>
+<div class="glo-entry"><div class="glo-entry-name">🐴 Cavalier Orc ATK 4 | 🦅 Harpie ATK 2 | 🐗 Homme-bête ATK 4</div></div>
+<div style="font-size:10px;color:#4a3a5a;margin:4px 0">— T3 (S4+) —</div>
+<div class="glo-entry"><div class="glo-entry-name">🏹 Archer Gobelin ATK 3 | 🐲 Vouivre ATK 6 | ⛏ Sapeur ATK 2 | 🐺 Chevaucheur ATK 6</div></div>
+<div style="font-size:10px;color:#4a3a5a;margin:4px 0">— T4 (S5+) —</div>
+<div class="glo-entry"><div class="glo-entry-name">💀 Squelette ATK 2 | 😈 Démon ATK 3+4Mag</div></div>
+</div>
+<div class="glo-section"><div class="glo-title">👹 Donjon</div>
+<div class="glo-entry"><div class="glo-entry-name">🧛 Vampire</div><div class="glo-entry-desc">Lifesteal — se régénère des dégâts infligés.</div></div>
+<div class="glo-entry"><div class="glo-entry-name">🧌 Troll</div><div class="glo-entry-desc">Sur 6 : STUN — tous les monstres attaquent à nouveau.</div></div>
+<div class="glo-entry"><div class="glo-entry-name">☠ Nécromancien</div><div class="glo-entry-desc">Invoque 2 squelettes R1, +1 tous les 3 rounds.</div></div>
+<div class="glo-entry"><div class="glo-entry-name">💀 Liche</div><div class="glo-entry-desc">Réduit ATK avatar. Contré par Collier béni.</div></div>
+<div class="glo-entry"><div class="glo-entry-name">🕷 Araignée</div><div class="glo-entry-desc">Poison par round. Contré par Ceinture anti-poison.</div></div>
+</div>`,
+    combat:`<div class="glo-section"><div class="glo-title">🎯 Combat</div>
+<div class="glo-entry"><div class="glo-entry-name">Jauge d&#39;attaque</div><div class="glo-entry-desc">×0 Raté | ×0.5 Faible | ×1 Touché | ×1.2 Parfait</div></div>
+<div class="glo-entry"><div class="glo-entry-name">Rang avant / arrière</div><div class="glo-entry-desc">Arrière ciblable seulement avec arme à distance.</div></div>
+<div class="glo-entry"><div class="glo-entry-name">Compétences</div><div class="glo-entry-desc">Utilisent l&#39;action → riposte suit. 1× par combat.</div></div>
+<div class="glo-entry"><div class="glo-entry-name">Glyphes & Potions</div><div class="glo-entry-desc">Hors action, pas de riposte. Bloqués après victoire.</div></div>
+<div class="glo-entry"><div class="glo-entry-name">⚰ Faux</div><div class="glo-entry-desc">Frappe toutes les unités du rang avant.</div></div>
+<div class="glo-entry"><div class="glo-entry-name">🏹 Arbalète perçante</div><div class="glo-entry-desc">50% dégâts à l&#39;unité derrière la cible.</div></div>
+</div>`
+};
+
+
+function recalcBuildingEffects() {
+    Object.keys(buildingCounts).forEach(function(k){ buildingCounts[k] = 0; });
+    populationperturn = 0; goldperturn = 0; manaperturn = 0;
+    const m = getMeta();
+    conscrit       = 3 + (m.city ? m.city.conscrit || 0 : 0);
+    fortifications = 1 + (m.city ? m.city.fortif   || 0 : 0);
+    space          = m.city ? m.city.space || 0 : 0;
+    tileState.forEach(function(tile) {
+        if (tile && tile.revealed && tile.type === 'Forêt') fortifications += 1;
+    });
+    tileState.forEach(function(tile) {
+        if (!tile || !tile.buildings) return;
+        tile.buildings.forEach(function(name) {
+            switch(name) {
+                case 'Ferme':          populationperturn += 5;  break;
+                case 'Mine':           goldperturn += 10;       break;
+                case 'Caserne':        conscrit += 2;           break;
+                case 'Tour de Garde':  conscrit += 1; fortifications += 1; break;
+                case 'Tour de Magie':  conscrit += 1; manaperturn += 10; break;
+            }
+            buildingCounts[name] = (buildingCounts[name] || 0) + 1;
+            if (tile.type && typeof getTileBonus === 'function') {
+                const bonus = getTileBonus(tile.type, name);
+                if (bonus) {
+                    if (bonus.includes('Pop/tour'))  { const n=parseInt(bonus); if(!isNaN(n)) populationperturn+=n; }
+                    if (bonus.includes('Or/tour'))   { const n=parseInt(bonus); if(!isNaN(n)) goldperturn+=n; }
+                    if (bonus.includes('Mana/tour')) { const n=parseInt(bonus); if(!isNaN(n)) manaperturn+=n; }
+                    if (bonus.includes('Fortification')) fortifications += 1;
+                }
+            }
+        });
+    });
+}
+
+
+function restartRunAfterDefeat() {
+    const s = document.getElementById('endScreen');
+    if (s) s.style.display = 'none';
+    const totalDeaths = runDeaths;
+    initNewRun();
+    runDeaths = totalDeaths;
+    if (activeSlot !== null) saveToSlot(activeSlot);
+}
+
+function resetRunFromMenu(keepMeta) {
+    if (typeof hideSaveMenu === 'function') hideSaveMenu();
+    if (!keepMeta) {
+        const emptyMeta = JSON.parse(JSON.stringify(META_DEFAULTS));
+        localStorage.setItem(META_KEY, JSON.stringify(emptyMeta));
+        window._meta = emptyMeta;
+        runDeaths = 0; runDustSpent = 0;
+    }
+    initNewRun();
+}
+
+function initNewRun() {
+    if (typeof setTurnProcessing === 'function') setTurnProcessing(false);
+    currentTurn = 1; currentSeason = 1;
+    const m = getMeta();
+    gold = 100 + (m.city.gold || 0);
+    mana = 0 + (m.city.mana || 0);
+    population = 50 + (m.city.pop || 0);
+    dust = m.dust || 0;
+    fortifications = 1; conscrit = 3; space = 0;
+    atk = 1 + (m.hero.atk || 0);
+    def = 1 + (m.hero.def || 0);
+    avatarDmg = 1 + (m.hero.dmg || 0);
+    protection = 0 + (m.hero.prot || 0);
+    avatarMaxHp = 9 + (m.hero.hpMax || 0) * 3;
+    avatarHp = avatarMaxHp;
+    avatarRanged = false; avatarPiercing = false; avatarScythe = false;
+    avatarMagicWeapon = false; avatarAntiRange = false;
+    avatarBlessedNecklace = false; avatarImmunePoison = false; avatarImmuneStun = false;
+    glyphFireball = 0; glyphRage = 0; glyphBless = 0;
+    potionHeal = 0; potionAntiPoison = 0;
+    ownedEquipment = {};
+    equippedItems = { weapon_main:null, weapon_off:null, armor:null, necklace:null, belt:null, glyphs:[], potions:[] };
+    cityArmy.splice(0, cityArmy.length);
+    hordeArmy.splice(0, hordeArmy.length);
+    if (typeof hordePrevSeason !== 'undefined') hordePrevSeason.splice(0, hordePrevSeason.length);
+    if (typeof hordeCurrentAdditions !== 'undefined') hordeCurrentAdditions.splice(0, hordeCurrentAdditions.length);
+    hordeCurrentSeason = 0; hordeRevealed = false;
+    runDeaths = 0; runDustSpent = 0;
+    tileState.forEach(function(t, i) {
+        t.type = i === 12 ? 'Ville' : null;
+        t.buildings = [];
+        t.revealed = i === 12;
+    });
+    goldperturn = 0; manaperturn = 0; populationperturn = 0;
+    Object.keys(buildingCounts).forEach(function(k){ buildingCounts[k] = 0; });
+    recalcBuildingEffects();
+    applyMetaBonuses();
+    if (activeSlot !== null) setTimeout(function(){ saveToSlot(activeSlot); }, 200);
+    updateStats();
+    if (typeof renderTileGrid === 'function') renderTileGrid();
+    if (typeof renderActionArmyTab === 'function') renderActionArmyTab();
+    if (typeof updateTimeline === 'function') updateTimeline();
+    ['endScreen','pre-dungeon-window','equip-window'].forEach(function(id){
+        const el = document.getElementById(id);
+        if (el) el.style.display = 'none';
+    });
+    document.getElementById('dungeon-screen')?.classList.remove('show');
+    addLog('✦ Nouvelle partie — Bonne chance !');
+}
+
+
+</script>
 
 	
 </body>
