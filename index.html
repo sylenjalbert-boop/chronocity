@@ -7124,6 +7124,9 @@ function initNewRun() {
     hordeCurrentSeason = 0; hordeRevealed = false;
     if (typeof hordeHiddenCount !== 'undefined') hordeHiddenCount = 0;
     runDeaths = 0; runDustSpent = 0;
+    avatarBlocked = false;
+    if (typeof avatarBlockedSeason !== 'undefined') avatarBlockedSeason = -1;
+    if (typeof avatarSentToHorde !== 'undefined') avatarSentToHorde = false;
     tileState.forEach(function(t, i) {
         t.type = i === 12 ? 'Ville' : null;
         t.buildings = [];
