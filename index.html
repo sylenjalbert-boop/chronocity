@@ -526,7 +526,7 @@
 <div id="home-screen" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:#06040a;z-index:20000;flex-direction:column;align-items:center;justify-content:center;gap:20px">
     <div style="text-align:center;margin-bottom:10px">
         <div style="font-family:Cinzel,serif;font-size:28px;color:#c0a060;letter-spacing:3px;text-shadow:0 0 20px rgba(180,140,60,0.4)">⚔ Chronocity — A Rogue City Builder</div>
-        <div style="font-size:11px;color:#4a3a5a;margin-top:6px;letter-spacing:2px">VERSION 0.9.3</div>
+        <div style="font-size:11px;color:#4a3a5a;margin-top:6px;letter-spacing:2px">VERSION 0.9.4</div>
     </div>
     <div id="home-menu" style="display:flex;flex-direction:column;gap:10px;width:min(340px,90vw)">
         <button onclick="homeLoad()" style="width:100%;padding:16px 0;font-family:Cinzel,serif;font-size:14px;cursor:pointer;border-radius:8px;background:linear-gradient(135deg,#1a1030,#2a1a40);color:#c080ff;border:1px solid #5040a0">📂 Charger une partie</button>
@@ -1283,13 +1283,11 @@ let actionBuildingSelected = null; // bâtiment en attente de placement sur tuil
 // ===== SYSTÈME TUILES =====
 // 25 tuiles (5x5), index 12 = ville
 const TILE_TYPES = {
-    Prairie:  { slots:2, color:'#2d5a1b', emoji:'🌾', desc:'+20 Or | +20 Or/tour | +2 emplacements',
-                bonuses:{ Ferme:'+5 Pop/tour' } },
-    Collines: { slots:1, color:'#7a6040', emoji:'⛰', desc:'+20 Or | +20 Or/tour | +1 emplacement',
-                bonuses:{ Mine:'+10 Or/tour' } },
-    Côte:     { slots:1, color:'#1a5a7a', emoji:'🌊', desc:'+10 Pop | +10 Pop/tour | +1 emplacement',
+    Prairie:  { slots:2, color:'#2d5a1b', emoji:'🌾', desc:'+2 emplacements',
                 bonuses:{} },
-    Montagne: { slots:1, color:'#5a5060', emoji:'🏔', desc:'+30 Mana | +5 Mana/tour | +1 emplacement',
+    Collines: { slots:1, color:'#7a6040', emoji:'⛰', desc:'+10 Or/tour | +1 emplacement',
+                bonuses:{ Mine:'+10 Or/tour' } },
+    Montagne: { slots:0, color:'#5a5060', emoji:'🏔', desc:'+30 Mana | +5 Mana/tour',
                 bonuses:{ Mine:'+20 Or/tour', 'Tour de Magie':'+10 Mana/tour' } },
     Lac:      { slots:1, color:'#1a4a6a', emoji:'💧', desc:'+10 Pop | +5 Pop/tour | +1 emplacement',
                 bonuses:{ Ferme:'+5 Pop/tour' } },
@@ -4884,7 +4882,6 @@ const exploreThemes = {
     'Lac':       { icon: '🌊', bg: '#001a3a', border: '#4aa0e0', color: '#c0e0ff' },
     'Forêt':     { icon: '🌲', bg: '#0a2a0a', border: '#4caf7d', color: '#c0ffd0' },
     'Collines':  { icon: '⛰',  bg: '#2a1a00', border: '#c08020', color: '#ffe8a0' },
-    'Côte':      { icon: '🌊', bg: '#001a3a', border: '#4aa0e0', color: '#c0e8ff' },
     'Fontaine':  { icon: '💧', bg: '#001a2a', border: '#40c0ff', color: '#c0f0ff' },
     'Forge':     { icon: '⚒',  bg: '#3a1a00', border: '#e07820', color: '#ffe0a0' },
     'Gobelins':  { icon: '👺', bg: '#3a0a0a', border: '#e05050', color: '#ffd0d0' },
@@ -5017,7 +5014,6 @@ function randomWeather() {
 const TILE_GRADS = {
     Prairie:'linear-gradient(160deg,#2d6e1a,#4a8c2a)',
     Collines:'linear-gradient(160deg,#7a6040,#9a7a50)',
-    'Côte':'linear-gradient(160deg,#1a4a6a,#2a7aaa)',
     Montagne:'linear-gradient(160deg,#4a4055,#6a5a70)',
     Lac:'linear-gradient(160deg,#1a3a5a,#2a6aaa)',
     'Forêt':'linear-gradient(160deg,#1a3a1a,#2a5a2a)',
@@ -5026,7 +5022,7 @@ const TILE_GRADS = {
 // Génère la prochaine tuile à révéler (preview)
 let nextTileType = null;
 function generateNextTile() {
-    const types = ['Prairie','Collines','Côte','Montagne','Lac','Forêt'];
+    const types = ['Prairie','Collines','Montagne','Lac','Forêt'];
     nextTileType = types[Math.floor(Math.random()*types.length)];
     renderTilePreview();
 }
@@ -5075,7 +5071,7 @@ function doRevealTile() {
 
 // Surcharger applyTileReveal pour accepter un type fixe
 function applyTileReveal(idx, forceType) {
-    const effects = ['Prairie','Collines','Côte','Montagne','Lac','Forêt'];
+    const effects = ['Prairie','Collines','Montagne','Lac','Forêt'];
     const type = forceType || effects[Math.floor(Math.random()*effects.length)];
     const t = tileState[idx];
     t.type = type;
@@ -5084,24 +5080,19 @@ function applyTileReveal(idx, forceType) {
     let logMessage = '';
     switch(type) {
         case 'Prairie':
-            gold += 20; goldperturn += 15; space += tt.slots;
-            logMessage = 'Prairie révélée ! +20 Or (+15 en récolte), +'+tt.slots+' emplacements.';
-            showExplorePopup('Prairie 🌾', '+20 Or | +15/récolte | +'+tt.slots+' Emplacements', 'Des terres fertiles prêtes à être bâties.');
+            space += tt.slots;
+            logMessage = 'Prairie révélée ! +'+tt.slots+' emplacements.';
+            showExplorePopup('Prairie 🌾', '+'+tt.slots+' Emplacements', 'Des terres fertiles prêtes à être bâties.');
             break;
         case 'Collines':
-            gold += 20; goldperturn += 15; space += 1;
-            logMessage = 'Collines révélées ! +20 Or (+15 en récolte), +1 emplacement.';
-            showExplorePopup('Collines ⛰', '+20 Or | +15/récolte | +1 Emplacement', 'Des collines riches en ressources.');
-            break;
-        case 'Côte':
-            population += 10; populationperturn += 10; space += 1;
-            logMessage = 'Côte révélée ! +10 Pop (+10 en récolte), +1 emplacement.';
-            showExplorePopup('Côte 🌊', '+10 Pop | +10/récolte | +1 Emplacement', "Des pêcheurs s'installent sur le rivage.");
+            goldperturn += 10; space += 1;
+            logMessage = 'Collines révélées ! +10 Or/tour, +1 emplacement.';
+            showExplorePopup('Collines ⛰', '+10 Or/tour | +1 Emplacement', 'Des collines riches en ressources.');
             break;
         case 'Montagne':
-            mana += 30; manaperturn += 5; space += 1;
+            mana += 30; manaperturn += 5;
             logMessage = 'Montagne révélée ! +30 Mana (+5 en récolte).';
-            showExplorePopup('Montagne 🏔', '+30 Mana | +5/récolte | +1 Emplacement', "Les cristaux irradient d'énergie.");
+            showExplorePopup('Montagne 🏔', '+30 Mana | +5/récolte', "Les cristaux irradient d'énergie.");
             break;
         case 'Lac':
             population += 10; populationperturn += 5; space += 1;
@@ -5497,7 +5488,6 @@ function confirmTilePlacement(name, tileIdx) {
 const TILE_GRADS_FULL = {
     Prairie:'linear-gradient(160deg,#2d6e1a,#4a8c2a)',
     Collines:'linear-gradient(160deg,#7a6040,#9a7a50)',
-    'Côte':'linear-gradient(160deg,#1a4a6a,#2a7aaa)',
     Montagne:'linear-gradient(160deg,#4a4055,#6a5a70)',
     Lac:'linear-gradient(160deg,#1a3a5a,#2a6aaa)',
     'Forêt':'linear-gradient(160deg,#1a3a1a,#2a5a2a)',
@@ -6942,14 +6932,18 @@ function gloTab(tab) {
 
 
 const GLO_DATA = {
-    terrains:`<div class="glo-section"><div class="glo-title">🗺 Terrains</div>
-<div class="glo-entry"><div class="glo-entry-name">🌾 Prairie — 2 emplacements</div><div class="glo-entry-desc">+20 Or/tour. Bonus Ferme : +5 Pop/tour.</div></div>
-<div class="glo-entry"><div class="glo-entry-name">⛰ Collines — 1 emplacement</div><div class="glo-entry-desc">+20 Or/tour. Bonus Mine : +10 Or/tour.</div></div>
-<div class="glo-entry"><div class="glo-entry-name">🌊 Côte — 1 emplacement</div><div class="glo-entry-desc">+10 Pop, +10 Pop/tour.</div></div>
-<div class="glo-entry"><div class="glo-entry-name">🏔 Montagne — 1 emplacement</div><div class="glo-entry-desc">+30 Mana, +5 Mana/tour. Bonus Tour de Magie : +10 Mana/tour.</div></div>
-<div class="glo-entry"><div class="glo-entry-name">💧 Lac — 1 emplacement</div><div class="glo-entry-desc">+10 Pop, +5 Pop/tour. Bonus Ferme : +5 Pop/tour.</div></div>
-<div class="glo-entry"><div class="glo-entry-name">🌲 Forêt — 1 emplacement</div><div class="glo-entry-desc">+1 Fortification. Bonus Caserne : +1 Fortif.</div></div>
+            terrains:`<div class="glo-section"><div class="glo-title">🗺 Terrains — Révélation et bonus</div>
+<div class="glo-entry"><div class="glo-entry-name">🌾 Prairie — 2 emplacements</div><div class="glo-entry-desc">Révélation : +2 emplacements uniquement.</div></div>
+<div class="glo-entry"><div class="glo-entry-name">⛰ Collines — 1 emplacement</div><div class="glo-entry-desc">Révélation : +10 Or/tour. Bonus Mine : +10 Or/tour supplémentaire.</div></div>
+<div class="glo-entry"><div class="glo-entry-name">🏔 Montagne — 0 emplacement</div><div class="glo-entry-desc">Révélation : +30 Mana, +5 Mana/tour. Bonus : Mine → +20 Or/tour | Tour de Magie → +10 Mana/tour.</div></div>
+<div class="glo-entry"><div class="glo-entry-name">💧 Lac — 1 emplacement</div><div class="glo-entry-desc">Révélation : +10 Pop, +5 Pop/tour. Bonus Ferme : +5 Pop/tour.</div></div>
+<div class="glo-entry"><div class="glo-entry-name">🌲 Forêt — 1 emplacement</div><div class="glo-entry-desc">Révélation : +1 Fortification. Bonus Caserne : +1 Fortification.</div></div>
+<div class="glo-entry"><div class="glo-entry-name">🏙 Ville</div><div class="glo-entry-desc">Emplacements via méta-progression.</div></div>
 </div>`,
+
+
+
+
     batiments:`<div class="glo-section"><div class="glo-title">🏗 Bâtiments</div>
 <div class="glo-entry"><div class="glo-entry-name">🌾 Ferme — 20 Or</div><div class="glo-entry-desc">+5 Pop/tour.</div></div>
 <div class="glo-entry"><div class="glo-entry-name">⛏ Mine — 20 Pop</div><div class="glo-entry-desc">+10 Or/tour.</div></div>
