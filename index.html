@@ -1836,16 +1836,18 @@ function showHordeBattleScreen(hordeAtk, cityAtk, diff, hordeLog, cityLog) {
 
 function closeHordeBattle() {
     document.getElementById('hordeBattleScreen').style.display = 'none';
-    // Mettre à jour les panneaux armée avec la vraie horde de ce combat
     updateArmyPanels();
     updateStats();
     if (fortifications <= 0) { showDefeatScreen(); return; }
-    // Conserver hordeArmy pour la prochaine saison (accumulation inter-saisons)
-    // Juste vider les cachés et reset l'état d'affichage
+    // Les unités cachées rejoignent la horde pour la prochaine saison
+    if (hordeHiddenUnits && hordeHiddenUnits.length > 0) {
+        hordeArmy.push(...hordeHiddenUnits);
+        addLog('⚠ Les unités cachées rejoignent la horde (' + hordeHiddenUnits.length + ' unités).');
+    }
     hordeHiddenUnits = [];
     hordeHiddenCount = 0;
     hordeRevealed = false;
-    hordePrevSeason = [...hordeArmy]; // la horde actuelle devient la "précédente"
+    hordePrevSeason = [...hordeArmy];
     hordeCurrentAdditions = [];
     hordeCurrentSeason = 0;
     currentTurn = 10;
