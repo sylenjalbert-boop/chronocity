@@ -7083,13 +7083,23 @@ function initNewRun() {
     if (typeof setTurnProcessing === 'function') setTurnProcessing(false);
     if (typeof setWaitingDungeon === 'function') setWaitingDungeon(false);
     dungeonState.active = false;
-    // Fermer tous les écrans potentiellement ouverts
     ['endScreen','pre-dungeon-window','equip-window','combat-intro'].forEach(function(id){
         const el = document.getElementById(id);
         if (el) el.style.display = 'none';
     });
     document.getElementById('dungeon-screen')?.classList.remove('show');
     document.body.classList.remove('processing');
+
+    // ── Appeler remove() sur tous les équipements actuels avant reset ──
+    if (typeof EQUIPMENT_CATALOG !== 'undefined') {
+        ['weapon_main','weapon_off','armor','necklace','belt'].forEach(function(slot) {
+            const id = equippedItems[slot];
+            if (!id) return;
+            const item = EQUIPMENT_CATALOG.find(function(i){ return i.id === id; });
+            if (item && item.remove) item.remove();
+        });
+    }
+
     currentTurn = 1; currentSeason = 1;
     const m = getMeta();
     gold = 100 + (m.city.gold || 0);
@@ -7114,7 +7124,9 @@ function initNewRun() {
     hordeArmy.splice(0, hordeArmy.length);
     if (typeof hordePrevSeason !== 'undefined') hordePrevSeason.splice(0, hordePrevSeason.length);
     if (typeof hordeCurrentAdditions !== 'undefined') hordeCurrentAdditions.splice(0, hordeCurrentAdditions.length);
+    if (typeof hordeHiddenUnits !== 'undefined') hordeHiddenUnits.splice(0, hordeHiddenUnits.length);
     hordeCurrentSeason = 0; hordeRevealed = false;
+    if (typeof hordeHiddenCount !== 'undefined') hordeHiddenCount = 0;
     runDeaths = 0; runDustSpent = 0;
     tileState.forEach(function(t, i) {
         t.type = i === 12 ? 'Ville' : null;
