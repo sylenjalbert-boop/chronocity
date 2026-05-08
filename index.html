@@ -936,12 +936,7 @@
         <!-- Ligne 2 : Compétences (utilisent l'action — remplacent Attaquer) -->
         <div id="dng-skills-row" style="display:none;flex-direction:column;gap:4px">
             <div style="font-size:9px;color:#c49220;text-align:center;letter-spacing:1px;font-family:Cinzel,serif;padding:2px 0">⚡ COMPÉTENCES — utilise l'action</div>
-            <div style="display:flex;gap:6px;justify-content:center;flex-wrap:wrap">
-                <button class="dng-btn" id="dng-btn-fireball" onclick="dungeonUseSkill('fireball')" style="background:linear-gradient(135deg,#3a1000,#5a1800);color:#ff9060;border:1px solid #c04020;min-width:90px">🔥 Boule de Feu</button>
-                <button class="dng-btn" id="dng-btn-bless"    onclick="dungeonUseSkill('bless')"    style="background:linear-gradient(135deg,#1a1000,#2a2000);color:#ffd060;border:1px solid #806000;min-width:90px">🌟 Bénédiction</button>
-                <button class="dng-btn" id="dng-btn-rage-skill" onclick="dungeonUseSkill('rage')"   style="background:linear-gradient(135deg,#2a0800,#3a1000);color:#ffb080;border:1px solid #803000;min-width:90px">💢 Rage</button>
-                <button class="dng-btn" id="dng-btn-heal-skill" onclick="dungeonUseSkill('heal')"   style="background:linear-gradient(135deg,#041a0a,#082a10);color:#80ffb0;border:1px solid #206040;min-width:90px">💊 Soin</button>
-            </div>
+            <div id="class-skill-btns" style="display:flex;gap:6px;justify-content:center;flex-wrap:wrap"></div>
         </div>
 
         <!-- Ligne 3 : Glyphes + Potions (hors action — dynamique) -->
@@ -8013,25 +8008,24 @@ function applyClassBonuses(key) {
 function renderClassSkills() {
     const row = document.getElementById('dng-skills-row');
     if (!row) return;
+    const btnRow = document.getElementById('class-skill-btns');
+    if (!btnRow) return;
 
-    if (!avatarClass || !CLASS_DATA[avatarClass]) {
-        row.style.display = 'none';
+    // Pas de classe → compétences de base
+    if (!avatarClass || !CLASS_DATA || !CLASS_DATA[avatarClass]) {
+        btnRow.innerHTML =
+            '<button class="dng-btn" onclick="dungeonUseSkill(\'fireball\')" style="background:linear-gradient(135deg,#3a1000,#5a1800);color:#ff9060;border:1px solid #c04020;min-width:90px">🔥 Boule de Feu</button>' +
+            '<button class="dng-btn" onclick="dungeonUseSkill(\'bless\')"    style="background:linear-gradient(135deg,#1a1000,#2a2000);color:#ffd060;border:1px solid #806000;min-width:90px">🌟 Bénédiction</button>' +
+            '<button class="dng-btn" onclick="dungeonUseSkill(\'rage\')"     style="background:linear-gradient(135deg,#2a0800,#3a1000);color:#ffb080;border:1px solid #803000;min-width:90px">💢 Rage</button>' +
+            '<button class="dng-btn" onclick="dungeonUseSkill(\'heal\')"     style="background:linear-gradient(135deg,#041a0a,#082a10);color:#80ffb0;border:1px solid #206040;min-width:90px">💊 Soin</button>';
+        row.style.display = 'flex';
         return;
     }
 
     const skills = CLASS_DATA[avatarClass].skills.filter(function(s){ return !s.passive; });
     if (skills.length === 0) { row.style.display = 'none'; return; }
 
-    // Trouver ou créer le conteneur de boutons
-    let btnRow = row.querySelector('#class-skill-btns');
-    if (!btnRow) {
-        row.innerHTML =
-            '<div style="font-size:9px;color:#c49220;text-align:center;letter-spacing:1px;font-family:Cinzel,serif;padding:2px 0">⚡ COMPÉTENCES — utilise l\'action</div>' +
-            '<div id="class-skill-btns" style="display:flex;gap:6px;justify-content:center;flex-wrap:wrap"></div>';
-        btnRow = row.querySelector('#class-skill-btns');
-    }
     btnRow.innerHTML = '';
-
     skills.forEach(function(s) {
         var used = dungeonState['skill_'+s.id+'_used'];
         var btn = document.createElement('button');
