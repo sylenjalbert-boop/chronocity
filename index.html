@@ -518,6 +518,18 @@
         .ew-slot.equipped { border-color:#4cffaa;background:#081808;color:#d4c49a; }
         .ew-slot-item { font-size:9px;color:#4cffaa;font-weight:bold;text-align:right;max-width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
 
+        
+        .tile-terrain-eligible {
+            box-shadow: 0 0 0 3px #e0c080, 0 0 15px rgba(224,192,128,0.6) !important;
+            cursor: crosshair !important;
+            z-index: 9000 !important;
+            position: relative !important;
+        }
+        .tile-terrain-eligible:hover {
+            box-shadow: 0 0 0 3px #fff4c0, 0 0 25px rgba(255,244,192,0.8) !important;
+            transform: scale(1.05);
+        }
+
         </style>
 </head>
 <body>
@@ -606,6 +618,27 @@
 
 
 <!-- ═══ FENÊTRE PRÉ-DONJON ═══ -->
+
+
+
+<!-- ═══ MODAL CHOIX TERRAIN ═══ -->
+<div id="terrain-type-modal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);z-index:15000;align-items:center;justify-content:center">
+<div style="background:#0a0810;border:1px solid #6a5020;border-radius:12px;padding:20px;width:min(95vw,400px);display:flex;flex-direction:column;gap:10px">
+    <div style="font-family:Cinzel,serif;font-size:15px;color:#e0c080;text-align:center">🗼 Choisir le nouveau terrain</div>
+    <div id="terrain-type-warning" style="display:none;background:#2a1008;border:1px solid #6a3010;border-radius:6px;padding:8px;font-size:11px;color:#ffb060"></div>
+    <div id="terrain-type-list" style="display:flex;flex-direction:column;gap:6px"></div>
+    <button onclick="cancelTerrainMod()" style="background:#1a0a0a;border:1px solid #5a2020;color:#ff8060;border-radius:6px;padding:8px;cursor:pointer;font-size:11px">Annuler</button>
+</div>
+</div>
+
+
+<!-- ═══ OVERLAY MODE TERRAIN ═══ -->
+<div id="terrain-mod-overlay" style="display:none;position:fixed;top:20px;left:50%;transform:translateX(-50%);z-index:9999;background:#1a1408;border:1px solid #e0c080;border-radius:10px;padding:12px 24px;text-align:center;box-shadow:0 0 30px rgba(224,192,128,0.4)">
+    <div style="font-family:Cinzel,serif;font-size:14px;color:#e0c080">🗼 Cliquez sur une tuile à transformer</div>
+    <div style="font-size:10px;color:#a09060;margin-top:4px">Tuiles éligibles entourées en doré</div>
+    <button onclick="cancelTerrainMod()" style="margin-top:8px;background:#2a1008;border:1px solid #6a3010;color:#ff8060;border-radius:6px;padding:5px 20px;font-size:11px;cursor:pointer">✕ Annuler</button>
+</div>
+
 <div id="pre-dungeon-window" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.82);z-index:10001;align-items:center;justify-content:center">
 <div style="background:#080810;border:1px solid #3a2a3a;border-radius:14px;width:min(96vw,460px);padding:20px;display:flex;flex-direction:column;gap:12px;box-shadow:0 0 40px rgba(100,30,60,0.4)">
     <div style="font-family:Cinzel,serif;font-size:17px;color:#c0a060;text-align:center;letter-spacing:2px">⚔ Partir en Donjon</div>
@@ -1032,7 +1065,8 @@
         <div style="display:flex;background:#060610;border-bottom:1px solid #1a1a2e">
             <button class="meta-tab active" id="mtab-hero"  onclick="metaTab('hero')">⚔ Avatar</button>
             <button class="meta-tab"        id="mtab-city"  onclick="metaTab('city')">🏰 Ville</button>
-            <button class="meta-tab"        id="mtab-level" onclick="metaTab('level')">📈 Niveau</button>
+            <button class="meta-tab"        id="mtab-level"     onclick="metaTab('level')">📈 Niveau</button>
+            <button class="meta-tab"        id="mtab-legendary" onclick="metaTab('legendary')">🥚 Légendaire</button>
         </div>
 
         <!-- Contenu onglets -->
@@ -1045,7 +1079,8 @@
             </div>
             <div id="meta-tab-hero"  class="meta-panel" style="pointer-events:all"></div>
             <div id="meta-tab-city"  class="meta-panel" style="display:none;pointer-events:all"></div>
-            <div id="meta-tab-level" class="meta-panel" style="display:none;pointer-events:all"></div>
+            <div id="meta-tab-level"     class="meta-panel" style="display:none;pointer-events:all"></div>
+            <div id="meta-tab-legendary" class="meta-panel" style="display:none;pointer-events:all"></div>
         </div>
 
         <!-- Bouton Jouer -->
@@ -1898,7 +1933,11 @@ let activeSlot = null; // slot actuellement chargé (null = nouvelle partie sans
 const META_DEFAULTS = {
     dust: 0,
     shells: 0,           // coquilles d'oeuf du temps
-    shellsEarned: [],    // ['4','8'...] saisons hivernales déjà gagnées           // poussière accumulée non dépensée
+    shellsEarned: [],    // ['4','8'...] saisons hivernales déjà gagnées
+    legendary: {
+        grandeTour: false, arbreElfique: false,
+        forteresseNaine: false, sanctuaire: false, palaisMiroirs: false
+    },
     heroLevel: 0,      // niveau héros (0 = non acheté)
     cityLevel: 0,      // niveau ville
     // Achats héros (nombre d'achats de chaque stat)
@@ -1944,6 +1983,7 @@ function loadMeta() {
         def.cityLevel  = saved.cityLevel  || 0;
         def.shells     = saved.shells     || 0;
         def.shellsEarned = saved.shellsEarned || [];
+        if (saved.legendary) Object.assign(def.legendary, saved.legendary);
         // Migration et deep merge
         if (saved.hero) {
             Object.assign(def.hero, saved.hero);
@@ -4115,7 +4155,10 @@ let avatarMagicWeapon   = false; // Arme magique (épée runique)
 let avatarAntiRange     = false; // Pavois : bonus vs distance
 let avatarBlessedNecklace = false; // Collier béni : immunité baisse ATK liche
 let avatarImmunePoison  = false; // Immunité poison
-let avatarImmuneStun    = false; // Immunité stun
+let avatarImmuneStun    = false;
+let avatarArmorType     = null;   // 'robe' | 'light' | 'heavy'
+let avatarClass         = null;   // 'archer' | 'warrior' | 'mage' | 'adventurer'
+let avatarMagicDmg      = 0;      // dégâts fixes ignorant armure (baguette/baton) // Immunité stun
 // Glyphes (items à usage unique achetés en boutique, rechargeable)
 let glyphFireball   = 0; // nb de charges
 let potionHeal      = 0; // nb de potions de soin
@@ -4203,6 +4246,33 @@ const EQUIPMENT_CATALOG = [
     { id:'CeintureStun',   name:'Ceinture anti-stun',    slot:'belt', gold:150, mana:0, pop:0, req:null,
       icon:'🪢', desc:'Immunité stun (troll)',
       apply: () => { avatarImmuneStun=true; }, remove: () => { avatarImmuneStun=false; } },
+
+    // ── Armures — Robe ──
+    { id:'Robe',        name:'Robe de mage',       slot:'armor', armorType:'robe',  gold:80,  mana:30, pop:0, req:'tourmagie',
+      icon:'👘', desc:'DEF +1 — réservée Mage et Aventurier',
+      apply:  function(){ def+=1; avatarArmorType='robe'; },
+      remove: function(){ def-=1; avatarArmorType=null; } },
+    // ── Armures — Légères ──
+    { id:'CuirLeger',   name:'Armure légère',      slot:'armor', armorType:'light', gold:120, mana:0,  pop:0, req:null,
+      icon:'🥋', desc:'DEF +1, HP max +2',
+      apply:  function(){ def+=1; avatarMaxHp+=2; avatarHp=Math.min(avatarHp+2,avatarMaxHp); avatarArmorType='light'; },
+      remove: function(){ def-=1; avatarMaxHp=Math.max(1,avatarMaxHp-2); avatarHp=Math.min(avatarHp,avatarMaxHp); avatarArmorType=null; } },
+    // ── Armures — Lourdes ──
+    { id:'CuirLourd',   name:'Armure lourde',      slot:'armor', armorType:'heavy', gold:200, mana:0,  pop:0, req:'caserne',
+      icon:'⛓', desc:'DEF +3, Prot +1, HP max +4',
+      apply:  function(){ def+=3; protection+=1; avatarMaxHp+=4; avatarHp=Math.min(avatarHp+4,avatarMaxHp); avatarArmorType='heavy'; },
+      remove: function(){ def-=3; protection-=1; avatarMaxHp=Math.max(1,avatarMaxHp-4); avatarHp=Math.min(avatarHp,avatarMaxHp); avatarArmorType=null; } },
+    // ── Armes magiques (Mage + Aventurier) ──
+    { id:'Baguette',    name:'Baguette magique',   slot:'weapon_main', gold:100, mana:60, pop:0, req:'tourmagie',
+      icon:'🪄', desc:'Dégâts fixes 2 (ignore armure), Distance',
+      isMagicWand:true,
+      apply:  function(){ avatarMagicDmg=2; avatarRanged=true; },
+      remove: function(){ avatarMagicDmg=0; avatarRanged=false; } },
+    { id:'Baton',       name:'Bâton magique',      slot:'weapon_main', gold:180, mana:100, pop:0, req:'tourmagie',
+      icon:'🪄', desc:'Dégâts fixes 4 (ignore armure), Distance',
+      isMagicWand:true,
+      apply:  function(){ avatarMagicDmg=4; avatarRanged=true; },
+      remove: function(){ avatarMagicDmg=0; avatarRanged=false; } },
     // ── Glyphes ──
     { id:'Fireball',    name:'Glyphe de Boule de Feu', slot:'glyph', gold:150,  mana:60, pop:0, req:null,
       icon:'🔥', desc:'4 dégâts directs',
@@ -5226,6 +5296,9 @@ function renderBuildPanelList() {
         if (b.ok) card.onclick = () => selectBuildingForPlacement(b.name);
         container.appendChild(card);
     });
+
+    // ── Section Bâtiments Légendaires ──
+    renderLegendaryBuildingPanel(container);
 }
 
 function renderBuildTilePicker(el, buildingName) {
@@ -5585,6 +5658,22 @@ function renderTileGrid() {
             }
         }
         grid.appendChild(cell);
+
+        // Mode modification terrain : assombrir non-éligibles, illuminer éligibles
+        if (window._terrainModMode) {
+            const eligible = tileState[i].revealed && i !== 12 && tileState[i].type;
+            if (eligible) {
+                cell.style.outline = '3px solid #e0c080';
+                cell.style.outlineOffset = '2px';
+                cell.style.filter = 'brightness(1.2)';
+                cell.style.cursor = 'crosshair';
+                const origOnclick = cell.onclick;
+                cell.onclick = (function(ti){ return function(e){ e.stopPropagation(); onTerrainModTileClick(ti); }; })(i);
+            } else {
+                cell.style.opacity = '0.3';
+                cell.style.pointerEvents = 'none';
+            }
+        }
     });
 }
 
@@ -5920,7 +6009,7 @@ function buyBuilding(name, tileIdx) {
 }
 
 function metaTab(tab) {
-    ['hero','city','level'].forEach(t => {
+    ['hero','city','level','legendary'].forEach(t => {
         const panel = document.getElementById('meta-tab-'+t);
         const btn   = document.getElementById('mtab-'+t);
         if(panel) panel.style.display = t===tab ? '' : 'none';
@@ -5929,6 +6018,7 @@ function metaTab(tab) {
     if(tab==='hero')  renderMetaHero();
     if(tab==='city')  renderMetaCity();
     if(tab==='level') renderMetaLevel();
+    if(tab==='legendary') renderMetaLegendary();
 }
 
 function startNewRun() {
@@ -6612,6 +6702,7 @@ function restoreGameState(s) {
     avatarRanged = false; avatarPiercing = false; avatarScythe = false;
     avatarMagicWeapon = false; avatarAntiRange = false;
     avatarBlessedNecklace = false; avatarImmunePoison = false; avatarImmuneStun = false;
+    avatarArmorType = null; avatarMagicDmg = 0;
 
     // Appliquer la méta (atk, def, dmg, prot bonus)
     const m = getMeta();
@@ -7149,6 +7240,7 @@ function initNewRun() {
     avatarRanged = false; avatarPiercing = false; avatarScythe = false;
     avatarMagicWeapon = false; avatarAntiRange = false;
     avatarBlessedNecklace = false; avatarImmunePoison = false; avatarImmuneStun = false;
+    avatarArmorType = null; avatarMagicDmg = 0;
     glyphFireball = 0; glyphRage = 0; glyphBless = 0;
     potionHeal = 0; potionAntiPoison = 0;
     ownedEquipment = {};
@@ -7327,6 +7419,376 @@ function isWinterHive() {
     // Hiver = saison dont l'index (currentSeason-1) % 4 === 3
     return (currentSeason - 1) % 4 === 3;
 }
+
+
+function renderMetaLegendary() {
+    const el = document.getElementById('meta-tab-legendary');
+    if (!el) return;
+    const m = getMeta();
+    const shells = m.shells || 0;
+    const leg = m.legendary || {};
+
+    const BUILDINGS = [
+        { key:'grandeTour',     icon:'🗼', name:'Grande Tour',       desc:'Debloque les sorts puissants en jeu.' },
+        { key:'arbreElfique',   icon:'🌳', name:'Arbre Elfique',     desc:'Debloque les unites et options elfiques.' },
+        { key:'forteresseNaine',icon:'⚒',  name:'Forteresse Naine', desc:'Debloque les unites et options naines.' },
+        { key:'sanctuaire',     icon:'✨', name:'Sanctuaire',        desc:'Debloque les benedictions et inquisiteurs.' },
+        { key:'palaisMiroirs',  icon:'🪞', name:'Palais des Miroirs',desc:'Permet de choisir une classe pour l\u0027avatar.' },
+    ];
+
+    el.innerHTML = '';
+
+    var title = document.createElement('div');
+    title.className = 'meta-cat-title';
+    title.style.color = '#e0c080';
+    title.textContent = '🥚 Batiments Legendaires — 1 Coquille chacun';
+    el.appendChild(title);
+
+    var info = document.createElement('div');
+    info.style.cssText = 'font-size:11px;color:#6a5a4a;margin-bottom:8px';
+    info.textContent = 'Ces batiments persistent entre les runs.';
+    el.appendChild(info);
+
+    var shellCount = document.createElement('div');
+    shellCount.style.cssText = 'font-size:12px;color:#e0c080;margin-bottom:10px;font-weight:bold';
+    shellCount.textContent = '🥚 Coquilles disponibles : ' + shells;
+    el.appendChild(shellCount);
+
+    BUILDINGS.forEach(function(b) {
+        var owned = !!leg[b.key];
+        var row = document.createElement('div');
+        row.className = 'meta-row';
+        row.style.cssText = 'border:1px solid '+(owned?'#4a3a10':'#2a2010')+';background:'+(owned?'#1a1408':'#0e0c06')+';border-radius:8px;margin-bottom:6px;padding:8px 10px';
+
+        var info2 = document.createElement('div');
+        info2.style.flex = '1';
+        info2.innerHTML = '<div class="meta-row-name" style="color:'+(owned?'#e0c080':'#6a5a3a')+'">'+b.icon+' '+b.name+(owned?' ✓':'')+'</div>'+
+                          '<div class="meta-row-sub">'+b.desc+'</div>';
+        row.appendChild(info2);
+
+        if (!owned) {
+            var btn = document.createElement('button');
+            btn.className = 'meta-buy-btn';
+            btn.style.cssText = 'background:linear-gradient(135deg,#1a1408,#2a2010);border-color:#6a5020;color:#e0c080';
+            btn.disabled = shells < 1;
+            btn.textContent = '🥚1';
+            btn.onclick = (function(key){ return function(){ buyLegendaryBuilding(key); }; })(b.key);
+            row.appendChild(btn);
+        } else {
+            var badge = document.createElement('div');
+            badge.style.cssText = 'font-size:10px;color:#4cffaa;padding:0 8px';
+            badge.textContent = 'Possede';
+            row.appendChild(badge);
+        }
+        el.appendChild(row);
+    });
+}
+
+
+function buyLegendaryBuilding(key) {
+    const m = getMeta();
+    if ((m.shells||0) < 1) { addLog('❌ Pas assez de coquilles.'); return; }
+    if (!m.legendary) m.legendary = {};
+    if (m.legendary[key]) { addLog('Déjà possédé.'); return; }
+    m.shells--;
+    m.legendary[key] = true;
+    saveMeta(m);
+    window._meta = m;
+    addLog('🥚 ' + key + ' acheté !');
+    updateStats();
+    renderMetaLegendary();
+}
+
+
+// ═══════════════════════════════════════════════
+// PANNEAU VILLE — BATIMENTS LEGENDAIRES
+// ═══════════════════════════════════════════════
+
+const LEGENDARY_OPTIONS = {
+    grandeTour: [
+        { key:'gt_boostAtk',    name:'Boost ATK',           desc:'+1 ATK a toutes les unites ville',             gold:150, mana:50,  pop:0  },
+        { key:'gt_modifTerrain',name:'Modification Terrain',desc:'Transforme une tuile revelee en autre type',    gold:300, mana:100, pop:0  },
+        { key:'gt_boostTraits', name:'Renforcement Traits',  desc:'+1 a tous les traits des unites ville',        gold:200, mana:100, pop:50 },
+    ],
+    arbreElfique: [
+        { key:'ae_eclaireurs',  name:'Eclaireurs',           desc:'Scouter la horde pour voir les unites cachees', gold:80,  mana:0,   pop:20 },
+        { key:'ae_fabricant',   name:'Fabricant d\'arc',     desc:'Archers +1 ATK et +1 anti-vol',                gold:120, mana:0,   pop:30 },
+        { key:'ae_druidique',   name:'Cercle Druidique',     desc:'Debloque recrutement Dryade (ATK 6, elite)',   gold:150, mana:80,  pop:0  },
+    ],
+    forteresseNaine: [
+        { key:'fn_forgeron',    name:'Forgeron',             desc:'Infanterie +1 ATK (renouvelable)',             gold:100, mana:50,  pop:30 },
+        { key:'fn_runes',       name:'Maitre des Runes',     desc:'Acheter rune anti-demon ou anti-mort-vivant',  gold:80,  mana:80,  pop:0  },
+        { key:'fn_ingenieurs',  name:'Ingenieurs',           desc:'Debloque Ingenieur (ATK 4, anti-sapeur II)',   gold:130, mana:60,  pop:0  },
+    ],
+    sanctuaire: [
+        { key:'sa_aura',        name:'Aura de Purete',       desc:'Elites gagnent anti-mort-vivant',             gold:100, mana:150, pop:50 },
+        { key:'sa_inquisiteurs',name:'Inquisiteurs',         desc:'Debloque Inquisiteur (ATK 6, anti-demon III)', gold:200, mana:100, pop:0  },
+        { key:'sa_benediction', name:'Benediction',          desc:'Plaines/Collines/Lacs +5 Or +5 Pop/recolte',  gold:0,   mana:300, pop:0  },
+    ],
+    palaisMiroirs: [
+        { key:'pm_classe',      name:'Choisir une Classe',   desc:'Archer / Guerrier / Mage / Aventurier',       gold:0,   mana:0,   pop:0  },
+    ],
+};
+
+const LEGENDARY_NAMES = {
+    grandeTour:'🗼 Grande Tour', arbreElfique:'🌳 Arbre Elfique',
+    forteresseNaine:'⚒ Forteresse Naine', sanctuaire:'✨ Sanctuaire',
+    palaisMiroirs:'🪞 Palais des Miroirs'
+};
+
+function renderLegendaryBuildingPanel(container) {
+    const m = getMeta();
+    const leg = m.legendary || {};
+    const opts = m.legendaryOptions || {};
+
+    // Aucun bâtiment légendaire acheté → ne rien afficher
+    const hasAny = Object.values(leg).some(Boolean);
+    if (!hasAny) return;
+
+    var sep = document.createElement('div');
+    sep.style.cssText = 'border-top:1px solid #3a2a10;margin:10px 0 6px;font-family:Cinzel,serif;font-size:10px;color:#8a7040;letter-spacing:1px;padding-top:6px';
+    sep.textContent = '— BATIMENTS LEGENDAIRES —';
+    container.appendChild(sep);
+
+    Object.keys(leg).forEach(function(bKey) {
+        if (!leg[bKey]) return;
+        var options = LEGENDARY_OPTIONS[bKey] || [];
+
+        var bDiv = document.createElement('div');
+        bDiv.style.cssText = 'background:#0e0c06;border:1px solid #3a2a10;border-radius:8px;padding:8px 10px;margin-bottom:6px';
+
+        var bTitle = document.createElement('div');
+        bTitle.style.cssText = 'font-family:Cinzel,serif;font-size:11px;color:#e0c080;margin-bottom:6px';
+        bTitle.textContent = LEGENDARY_NAMES[bKey] || bKey;
+        bDiv.appendChild(bTitle);
+
+        options.forEach(function(opt) {
+            var owned = !!opts[opt.key];
+            var canAfford = gold >= opt.gold && mana >= opt.mana && population >= opt.pop;
+            var isRenewable = opt.key === 'fn_forgeron' || opt.key === 'gt_modifTerrain';
+            var isSpecial = opt.key === 'pm_classe' || isRenewable;
+
+            var row = document.createElement('div');
+            row.style.cssText = 'display:flex;align-items:center;gap:6px;padding:4px 0;border-bottom:1px solid #1a1406';
+
+            var info = document.createElement('div');
+            info.style.flex = '1';
+            info.innerHTML = '<div style="font-size:11px;color:'+(owned&&!isRenewable?'#4cffaa':'#c0a060')+'">'+(owned&&!isRenewable?'\u2713 ':'')+opt.name+'</div>'+
+                             '<div style="font-size:9px;color:#6a5a3a">'+opt.desc+'</div>'+
+                             '<div style="font-size:9px;color:#8a7040">'+
+                             (opt.gold?'\uD83E\uDE99'+opt.gold+' ':'')+
+                             (opt.mana?'\u2728'+opt.mana+' ':'')+
+                             (opt.pop?'\uD83D\uDC65'+opt.pop:'')+
+                             '</div>';
+            row.appendChild(info);
+
+            if (!owned || isRenewable) {
+                var btn = document.createElement('button');
+                btn.style.cssText = 'background:linear-gradient(135deg,#1a1408,#2a2010);border:1px solid #'+(canAfford?'6a5020':'3a2a10')+';color:'+(canAfford?'#e0c080':'#4a3a20')+';border-radius:5px;padding:3px 8px;font-size:10px;cursor:'+(canAfford?'pointer':'not-allowed');
+                btn.disabled = !canAfford;
+                btn.textContent = 'Acheter';
+                btn.onclick = (function(k){ return function(){ useLegendaryOption(k); }; })(opt.key);
+                row.appendChild(btn);
+            }
+            bDiv.appendChild(row);
+        });
+
+        container.appendChild(bDiv);
+    });
+}
+
+function useLegendaryOption(key) {
+    const m = getMeta();
+    if (!m.legendaryOptions) m.legendaryOptions = {};
+    const opts = m.legendaryOptions;
+    const opt = (function(){
+        for (var bk in LEGENDARY_OPTIONS) {
+            var found = LEGENDARY_OPTIONS[bk].find(function(o){ return o.key===key; });
+            if (found) return found;
+        }
+        return null;
+    })();
+    if (!opt) return;
+    if (gold < opt.gold || mana < opt.mana || population < opt.pop) {
+        addLog('❌ Ressources insuffisantes pour ' + (opt.name||key) + '.'); return;
+    }
+    gold -= opt.gold; mana -= opt.mana; population -= opt.pop;
+
+    // Options qui ouvrent un modal : marquer comme utilisé immédiatement
+    // puis lancer le modal (le coût est déjà payé)
+    const isModal = key === 'gt_modifTerrain' || key === 'pm_classe';
+    if (!isModal) {
+        opts[key] = true;
+        m.legendaryOptions = opts;
+        saveMeta(m);
+        window._meta = m;
+    }
+    updateStats();
+    renderBuildPanelList();
+
+    applyLegendaryOption(key, opts);
+    if (!isModal) addLog('🗼 ' + (opt.name||key) + ' activé !');
+}
+
+function applyLegendaryOption(key, opts) {
+    if (key === 'gt_boostAtk') {
+        cityArmy.forEach(function(u){ u.atk += 1; });
+        addLog('🗼 Grande Tour : toutes les unités +1 ATK');
+    }
+    else if (key === 'gt_modifTerrain') {
+        startTerrainModMode();
+        return;
+    }
+    else if (key === 'ae_fabricant') {
+        cityArmy.forEach(function(u){
+            if (u.id === 'Archer' || u.name === 'Archer') {
+                u.atk += 1;
+                if (!u.traits.includes('anti-vol')) u.traits.push('anti-vol');
+                else u.traits.push('anti-vol'); // +1 anti-vol
+            }
+        });
+        addLog('🌳 Arbre Elfique : Archers +1 ATK +1 anti-vol');
+    }
+    else if (key === 'fn_forgeron') {
+        cityArmy.forEach(function(u){
+            if (u.traits && u.traits.includes('infanterie')) u.atk += 1;
+        });
+        addLog('⚒ Forgeron : Infanterie +1 ATK');
+    }
+    else if (key === 'sa_benediction') {
+        // Bonus récolte sur plaines/collines/lacs géré dans collect()
+        addLog('✨ Bénédiction : Plaines/Collines/Lacs +5 Or +5 Pop par récolte');
+    }
+    else if (key === 'gt_boostTraits') {
+        cityArmy.forEach(function(u){
+            u.traits = u.traits.map(function(t){ return t; }); // copie
+            // Ajouter +1 de chaque anti-trait
+            var antiTraits = u.traits.filter(function(t){ return t.startsWith('anti'); });
+            antiTraits.forEach(function(t){ u.traits.push(t); });
+        });
+        addLog('🗼 Renforcement : tous les traits +1');
+    }
+    // pm_classe, ae_eclaireurs, fn_runes, fn_ingenieurs, ae_druidique, sa_aura, sa_inquisiteurs
+    // seront implémentés dans les étapes suivantes
+}
+
+
+
+let terrainModTileIdx = -1;
+
+function startTerrainModMode() {
+    terrainModTileIdx = -1;
+    window._terrainModMode = true;
+    // Afficher l'overlay flou
+    const ov = document.getElementById('terrain-mod-overlay');
+    if (ov) ov.style.display = 'block';
+    // Mettre les tuiles éligibles en doré (pointer-events au-dessus de l'overlay)
+    renderTileGrid();
+    document.querySelectorAll('.tile-terrain-eligible').forEach(function(el){
+        el.style.zIndex = '9000';
+        el.style.position = 'relative';
+    });
+}
+
+function cancelTerrainMod() {
+    window._terrainModMode = false;
+    terrainModTileIdx = -1;
+    const ov = document.getElementById('terrain-mod-overlay');
+    if (ov) ov.style.display = 'none';
+    const m = document.getElementById('terrain-type-modal');
+    if (m) m.style.display = 'none';
+    renderTileGrid();
+}
+
+function onTerrainModTileClick(idx) {
+    if (!window._terrainModMode) return;
+    const tile = tileState[idx];
+    if (!tile || !tile.revealed || idx === 12 || !tile.type) return;
+    terrainModTileIdx = idx;
+    openTerrainTypeModal(idx);
+}
+
+function openTerrainTypeModal(idx) {
+    const tile = tileState[idx];
+    const modal = document.getElementById('terrain-type-modal');
+    const warning = document.getElementById('terrain-type-warning');
+    const list = document.getElementById('terrain-type-list');
+    if (!modal || !list) return;
+
+    // Avertissement bâtiments
+    if (tile.buildings && tile.buildings.length > 0) {
+        warning.style.display = 'block';
+        warning.innerHTML = '⚠ Ces bâtiments seront détruits : <b>' + tile.buildings.join(', ') + '</b>';
+    } else {
+        warning.style.display = 'none';
+    }
+
+    // Liste des types disponibles (pas le type actuel)
+    const TYPES = [
+        { type:'Prairie',  emoji:'🌾', desc:'2 emplacements' },
+        { type:'Collines', emoji:'⛰', desc:'+10 Or/tour, 1 emplacement' },
+        { type:'Montagne', emoji:'🏔', desc:'+30 Mana, +5 Mana/tour, +5 Or/tour, 0 emplacement' },
+        { type:'Lac',      emoji:'💧', desc:'+10 Pop, +5 Pop/tour, 1 emplacement' },
+        { type:'Forêt',    emoji:'🌲', desc:'+1 Fortification, 1 emplacement' },
+    ];
+
+    list.innerHTML = '';
+    TYPES.forEach(function(t) {
+        if (t.type === tile.type) return; // pas le type actuel
+        var btn = document.createElement('button');
+        btn.style.cssText = 'display:flex;align-items:center;gap:8px;width:100%;background:#0e0c06;border:1px solid #3a2a10;border-radius:7px;padding:8px 12px;cursor:pointer;text-align:left';
+        btn.innerHTML = '<span style="font-size:22px">'+t.emoji+'</span>'+
+                        '<div><div style="font-size:12px;color:#e0c080;font-family:Cinzel,serif">'+t.type+'</div>'+
+                        '<div style="font-size:10px;color:#7a6a4a">'+t.desc+'</div></div>';
+        btn.onmouseover = function(){ this.style.borderColor='#e0c080'; };
+        btn.onmouseout  = function(){ this.style.borderColor='#3a2a10'; };
+        btn.onclick = (function(newType){ return function(){ confirmTerrainMod(newType); }; })(t.type);
+        list.appendChild(btn);
+    });
+
+    modal.style.display = 'flex';
+}
+
+function confirmTerrainMod(newType) {
+    const idx = terrainModTileIdx;
+    const tile = tileState[idx];
+    if (!tile || idx < 0) return;
+
+    const oldType = tile.type;
+    const destroyedBuildings = tile.buildings ? [...tile.buildings] : [];
+
+    // Supprimer les bâtiments
+    tile.buildings = [];
+    tile.type = newType;
+
+    // Appliquer les effets immédiats du nouveau terrain
+    var tt = TILE_TYPES[newType];
+    if (newType === 'Montagne') { mana += 30; manaperturn += 5; goldperturn += 5; }
+    else if (newType === 'Lac')  { population += 10; populationperturn += 5; space += tt ? tt.slots : 1; }
+    else if (newType === 'Forêt') { fortifications += 1; space += tt ? tt.slots : 1; }
+    else if (tt) { space += tt.slots; }
+
+    // Fermer modal et désactiver mode
+    document.getElementById('terrain-type-modal').style.display = 'none';
+    const _tov = document.getElementById('terrain-mod-overlay');
+    if (_tov) _tov.style.display = 'none';
+    window._terrainModMode = false;
+
+    // Recalcul complet
+    recalcBuildingEffects();
+    updateStats();
+    renderTileGrid();
+    renderBuildPanelList();
+
+    // Marquer option utilisée
+    var m = getMeta();
+    if (!m.legendaryOptions) m.legendaryOptions = {};
+    m.legendaryOptions['gt_modifTerrain'] = true;
+    saveMeta(m); window._meta = m;
+
+    addLog('🗼 ' + oldType + ' → ' + newType + (destroyedBuildings.length ? ' (détruit : ' + destroyedBuildings.join(', ') + ')' : ''));
+}
+
 
 </script>
 
