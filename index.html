@@ -837,6 +837,7 @@
         <div id="dungeon-reward">
             <h3 id="dr-title"></h3>
             <div class="reward-loot" id="dr-loot"></div>
+            <div id="dr-shell" style="display:none;margin:6px 0;font-size:14px;color:#e0c080;font-family:Cinzel,serif">🥚 Coquille d'Oeuf du Temps acquise !</div>
             <div class="reward-desc" id="dr-desc"></div>
             <div style="display:flex;gap:10px;justify-content:center;margin-top:4px">
                 <button class="dng-btn dng-btn-attack" id="dr-continue" onclick="dungeonNextRoom()">Continuer ▶</button>
@@ -1139,6 +1140,7 @@
             <div class="res-row"><span class="res-label">🛡 DEF</span><span class="res-val" id="res-def">—</span></div>
             <div style="border-top:1px solid #1a1a2e;margin:6px 0"></div>
             <div class="res-row"><span class="res-label" style="color:#ffd060">✨ Poussière</span><span class="res-val" id="res-dust" style="color:#ffd060">0</span></div>
+            <div class="res-row"><span class="res-label" style="color:#e0c080">🥚 Coquilles</span><span class="res-val" id="shells-display" style="color:#e0c080">0</span></div>
             <div style="border-top:1px solid #1a1a2e;margin:8px 0"></div>
             <div class="res-title">⚔ Armée / 👹 Horde</div>
             <div id="res-army-summary" style="font-size:10px;color:#aaa;cursor:pointer" onclick="openArmyModal('city')">
@@ -1759,6 +1761,7 @@ function offerDungeon() {
     const skip = document.getElementById('tile-skip-btn');
     if (skip) skip.innerHTML = '';
     hideExplorePopup();
+    dungeonState._startTurn = currentTurn; // mémoriser le tour de lancement
     showPreDungeonWindow(() => { openDungeon(() => { nextTurn(); }); });
 }
 
@@ -1893,7 +1896,9 @@ const META_KEY = 'cityRogue_meta';
 let activeSlot = null; // slot actuellement chargé (null = nouvelle partie sans slot)
 
 const META_DEFAULTS = {
-    dust: 0,           // poussière accumulée non dépensée
+    dust: 0,
+    shells: 0,           // coquilles d'oeuf du temps
+    shellsEarned: [],    // ['4','8'...] saisons hivernales déjà gagnées           // poussière accumulée non dépensée
     heroLevel: 0,      // niveau héros (0 = non acheté)
     cityLevel: 0,      // niveau ville
     // Achats héros (nombre d'achats de chaque stat)
@@ -1937,6 +1942,8 @@ function loadMeta() {
         def.dust       = saved.dust       || 0;
         def.heroLevel  = saved.heroLevel  || 0;
         def.cityLevel  = saved.cityLevel  || 0;
+        def.shells     = saved.shells     || 0;
+        def.shellsEarned = saved.shellsEarned || [];
         // Migration et deep merge
         if (saved.hero) {
             Object.assign(def.hero, saved.hero);
@@ -4006,6 +4013,18 @@ function dungeonRoomWon() {
         btnFlee.onclick = () => {
             dngLog('🏆 Donjon complété !', 'dlog-loot');
             addLog('Donjon complété ! Butin : ' + dungeonState.collectedLoot.join(' | '));
+            // Coquille si boss hivernal (dernier tour d'exploration = tour 9, hiver)
+            const isBossRoom = room && room.isBoss;
+            const dungeonStartTurn = dungeonState._startTurn || currentTurn;
+            if (isBossRoom && isWinterHive() && dungeonStartTurn === 9) {
+                const got = awardShell();
+                const drShell = document.getElementById('dr-shell');
+                if (drShell) drShell.style.display = got ? 'block' : 'none';
+                if (got) dngLog('🥚 Coquille d\'Oeuf du Temps ! Boss hivernal vaincu.', 'dlog-loot');
+            } else {
+                const drShell = document.getElementById('dr-shell');
+                if (drShell) drShell.style.display = 'none';
+            }
             dungeonComplete();
         };
     } else {
@@ -5355,6 +5374,7 @@ function equipTab(tab) {
 // ---- Ressources ----
 function updateResPanel() {
     const set = (id, val) => { const e=document.getElementById(id); if(e) e.textContent=val; };
+    set('shells-display', getShells());
     const setSub = (id, val) => { const e=document.getElementById(id); if(e) e.textContent=val; };
     set('res-gold', gold);
     setSub('res-gold-sub', goldperturn>0 ? '+'+goldperturn+' en récolte' : '');
@@ -6156,6 +6176,16 @@ function renderMetaLevel() {
 
     let html = '<div class="meta-cat-title">Niveaux — débloquent stats et compétences supplémentaires</div>';
 
+    // Coquilles d'Oeuf du Temps
+    const shells = m.shells || 0;
+    html += '<div class="meta-row" style="background:#1a1408;border:1px solid #4a3a10;border-radius:6px;margin-bottom:8px;padding:6px 8px">' +
+        '<div style="flex:1">' +
+            '<div class="meta-row-name" style="color:#e0c080">🥚 Coquilles d\'Oeuf du Temps</div>' +
+            '<div class="meta-row-sub">Gagnées en battant le boss hivernal (S4, S8, S12...)</div>' +
+        '</div>' +
+        '<div style="font-size:16px;font-weight:bold;color:#e0c080;padding:0 8px">' + shells + '</div>' +
+        '</div>';
+
     // Niveau héros
     html += '<div class="meta-row" style="margin-bottom:6px">' +
         '<div style="flex:1">' +
@@ -6768,6 +6798,7 @@ function renderMetaSummary() {
     html += row('✦ Poussière dépensée', runDustSpent + ' ✦', '#ffd060');
 
     html += row('🌟 Poussière totale', m.dust + ' ✦', '#ffd060');
+    html += row('🥚 Coquilles', (m.shells||0) + ' 🥚', '#e0c080');
 
     html += section('HÉROS');
     html += row('Niveau héros', m.heroLevel || 0);
@@ -7069,7 +7100,11 @@ function restartRunAfterDefeat() {
 function resetRunFromMenu(keepMeta) {
     if (typeof hideSaveMenu === 'function') hideSaveMenu();
     if (!keepMeta) {
+        const oldMeta = getMeta();
         const emptyMeta = JSON.parse(JSON.stringify(META_DEFAULTS));
+        // Préserver les coquilles et l'historique même lors d'un reset total
+        emptyMeta.shells = oldMeta.shells || 0;
+        emptyMeta.shellsEarned = oldMeta.shellsEarned || [];
         localStorage.setItem(META_KEY, JSON.stringify(emptyMeta));
         window._meta = emptyMeta;
         runDeaths = 0; runDustSpent = 0;
@@ -7251,6 +7286,46 @@ function formatTraits(traits, useClass) {
         }
         return '<span style="font-size:10px;padding:1px 4px;border-radius:3px;background:'+(isAnti?'#0a2a1a':'#1a1a2e')+';color:'+(isAnti?'#4cffaa':'#8888ff')+'">'+label+'</span>';
     }).join(' ');
+}
+
+
+// ═══════════════════════════════════════════════
+// COQUILLES D'OEUF DU TEMPS
+// ═══════════════════════════════════════════════
+
+function getShells() { return getMeta().shells || 0; }
+
+function awardShell() {
+    // Vérifier si l'hiver actuel a déjà donné une coquille
+    const m = getMeta();
+    if (!m.shells) m.shells = 0;
+    if (!m.shellsEarned) m.shellsEarned = [];
+    const key = String(currentSeason);
+    if (m.shellsEarned.includes(key)) return false; // déjà gagné
+    m.shells++;
+    m.shellsEarned.push(key);
+    saveMeta(m);
+    window._meta = m;
+    addLog('🥚 Coquille d\'Oeuf du Temps obtenue ! Total : ' + m.shells);
+    updateStats();
+    if (typeof renderMetaLevel === 'function') renderMetaLevel();
+    if (typeof renderMetaSummary === 'function') renderMetaSummary();
+    return true;
+}
+
+function spendShells(n) {
+    const m = getMeta();
+    if ((m.shells||0) < n) return false;
+    m.shells -= n;
+    saveMeta(m);
+    window._meta = m;
+    updateStats();
+    return true;
+}
+
+function isWinterHive() {
+    // Hiver = saison dont l'index (currentSeason-1) % 4 === 3
+    return (currentSeason - 1) % 4 === 3;
 }
 
 </script>
