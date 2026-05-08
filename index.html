@@ -660,7 +660,7 @@
         <button onclick="closePredngWindow();openEquipWindow(true);" style="flex:1;background:linear-gradient(135deg,#1a1030,#2a1a40);border:1px solid #5040a0;color:#c080ff;border-radius:8px;padding:10px 0;font-family:Cinzel,serif;font-size:12px;cursor:pointer">⚔ S&#39;équiper</button>
         <button onclick="confirmEnterDungeon()" style="flex:2;background:linear-gradient(135deg,#1a0a0a,#3a1010);border:1px solid #8a3030;color:#ffb0b0;border-radius:8px;padding:10px 0;font-family:Cinzel,serif;font-size:13px;cursor:pointer;letter-spacing:1px">▶ Entrer dans le Donjon</button>
     </div>
-    <button onclick="closePredngWindow()" style="background:none;border:none;color:#4a3a5a;cursor:pointer;font-size:11px">← Annuler</button>
+    <button onclick="closePredngWindow(true)" style="background:none;border:none;color:#4a3a5a;cursor:pointer;font-size:11px">← Annuler</button>
 </div>
 </div>
 
@@ -6408,20 +6408,23 @@ function showPreDungeonWindow(callback) {
     w.style.display = 'flex';
 }
 
-function closePredngWindow() {
+function closePredngWindow(cancelled) {
     const w = document.getElementById('pre-dungeon-window');
     if (w) w.style.display = 'none';
     ewPredungeonCallback = null;
     ewFromPreDungeon = false;
-    // Débloquer le tour si on annule
-    if (typeof setWaitingDungeon === 'function') setWaitingDungeon(false);
-    if (typeof setTurnProcessing === 'function') setTurnProcessing(false);
+    // Débloquer le tour seulement si on annule
+    if (cancelled) {
+        if (typeof setWaitingDungeon === 'function') setWaitingDungeon(false);
+        if (typeof setTurnProcessing === 'function') setTurnProcessing(false);
+    }
 }
 
 function confirmEnterDungeon() {
-    closePredngWindow();
     closeEquipWindow();
-    if (ewPredungeonCallback) { ewPredungeonCallback(); ewPredungeonCallback = null; }
+    const cb = ewPredungeonCallback;
+    closePredngWindow(false); // ne pas reset le tour
+    if (cb) cb();
 }
 
 // ── Fenêtre équipement ──
