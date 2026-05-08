@@ -2418,10 +2418,14 @@ function openDungeon(afterCallback) {
     dungeonState.remainingRooms = pool.length;
     dungeonState.curseActive = false;
     dungeonState.poisonActive = false;
-    dungeonState.chosenDoorLabel = 'A'; // défaut
+    dungeonState.chosenDoorLabel = 'A';
     dungeonState.noFleeNext = false;
     dungeonState.collectedLoot = [];
     dungeonState.pendingAfterDungeon = afterCallback;
+    // Reset compétences de classe
+    Object.keys(dungeonState).forEach(function(k){
+        if (k.startsWith('skill_') && k.endsWith('_used')) delete dungeonState[k];
+    });
     if (avatarMaxHp === 0) { avatarMaxHp = 9; avatarHp = avatarMaxHp; }
     dungeonState.avatarHp    = avatarHp;
     dungeonState.avatarMaxHp = avatarMaxHp;
@@ -6165,6 +6169,44 @@ function renderMetaHero() {
             '</div>';
     });
 
+    
+    // ── Section compétences de classe ──
+    const clsKey = (m.legendaryOptions || {}).classeAvatar;
+    if (clsKey && typeof CLASS_DATA !== 'undefined' && CLASS_DATA[clsKey]) {
+        const clsData = CLASS_DATA[clsKey];
+        const skillLvls = m.hero.skillLevels || {};
+        const maxSkillLvl = 1 + heroLvl; // même limite que les stats
+
+        html += '<div class="meta-cat-title" style="color:' + clsData.color + '">' + clsData.icon + ' Compétences — ' + clsData.name + '</div>';
+        html += '<div style="font-size:10px;color:#6a5a4a;margin-bottom:6px">Niveau max : ' + maxSkillLvl + ' (limité par niveau héros)</div>';
+
+        clsData.skills.forEach(function(sk) {
+            const skId = 'cls_' + sk.id;
+            const lvl = skillLvls[skId] || 0;
+            const cost = 2 + lvl * 3 + Math.floor(lvl / 2); // coût croissant
+            const canBuy = dustTotal >= cost && lvl < maxSkillLvl;
+            const isPassive = !!sk.passive;
+            const isFree = !!sk.free;
+            html += '<div class="meta-row">' +
+                '<div style="flex:1">' +
+                    '<div class="meta-row-name" style="color:' + sk.color + '">' + sk.icon + ' ' + sk.name +
+                    (isPassive ? ' <span style="font-size:9px;color:#6a5a7a">(passif)</span>' : '') +
+                    (isFree    ? ' <span style="font-size:9px;color:#4cffaa">(gratuit)</span>' : '') +
+                    '</div>' +
+                    '<div class="meta-row-sub">' + sk.desc + '</div>' +
+                    '<div class="meta-row-sub" style="color:#8a7050">Niv. ' + lvl + (lvl < maxSkillLvl ? ' → Coût : ' + cost + ' ✦' : ' (max)') + '</div>' +
+                '</div>' +
+                '<div class="meta-row-right">' +
+                    (lvl > 0 ? '<div class="meta-row-val">' + lvl + '</div>' : '') +
+                    (canBuy ?
+                        '<button class="meta-buy-btn" onclick="buyClassSkill(\'' + skId + '\')">' + cost + ' ✦</button>' :
+                        '<button class="meta-buy-btn" disabled style="opacity:.4">' + (lvl >= maxSkillLvl ? 'Max' : cost + ' ✦') + '</button>'
+                    ) +
+                '</div>' +
+            '</div>';
+        });
+    }
+
     el.innerHTML = html;
     // Délégation d'événements — plus fiable que les onclick inline sur mobile
     el.querySelectorAll('[data-buy-skill]').forEach(function(btn) {
@@ -8050,6 +8092,7 @@ function dungeonUseClassSkill(skillId) {
     // Marquer utilisé (sauf gratuit)
     if (!isFree) dungeonState['skill_'+skillId+'_used'] = true;
 
+    const skLvl = getClassSkillLevel(skillId);
     const enemies = getAllLivingEnemies ? getAllLivingEnemies() : [];
     const front = dungeonState.enemies ? dungeonState.enemies.front.filter(function(e){return e.hp>0;}) : [];
     const back  = dungeonState.enemies ? dungeonState.enemies.back.filter(function(e){return e.hp>0;})  : [];
@@ -8060,9 +8103,11 @@ function dungeonUseClassSkill(skillId) {
         // ─ ARCHER ─
         case 'volley': {
             const col = back.length > 0 && target && back.includes(target) ? back : front;
+            const maxTargets = 1 + skLvl;
+            const colSlice = col.slice(0, maxTargets);
             const dmg = Math.max(1, atk);
-            col.forEach(function(e){ e.hp = Math.max(0, e.hp - dmg); });
-            dngLog('🏹 Volée ! -'+dmg+' HP à '+col.length+' cible(s)', 'dlog-good');
+            colSlice.forEach(function(e){ e.hp = Math.max(0, e.hp - dmg); });
+            dngLog('🏹 Volée ! -'+dmg+' HP à '+colSlice.length+' cible(s) (niv.'+skLvl+')', 'dlog-good');
             setTimeout(function(){ renderEnemyPanel(); checkAllEnemiesDead(); }, 100);
             if (!isFree) finishRound();
             break;
@@ -8088,7 +8133,7 @@ function dungeonUseClassSkill(skillId) {
         }
         // ─ MAGE ─
         case 'zap': {
-            const magDmg = Math.max(2, (avatarMagicDmg||2) * 2);
+            const magDmg = Math.max(2, (avatarMagicDmg||2) * 2 + skLvl * 3);
             if (target) { target.hp = Math.max(0, target.hp - magDmg); }
             dngLog('⚡ Zap ! -'+magDmg+' dégâts magiques.', 'dlog-good');
             setTimeout(function(){ renderEnemyPanel(); checkAllEnemiesDead(); }, 100);
@@ -8098,8 +8143,8 @@ function dungeonUseClassSkill(skillId) {
         case 'freeze': {
             allE.forEach(function(e){ e._frozen = true; });
             dungeonState._freezeActive = true;
-            dngLog('❄ Freeze ! Ennemis bloqués 3 rounds.', 'dlog-good');
-            dungeonState._freezeTurns = 3;
+            dungeonState._freezeTurns = 3 + skLvl;
+            dngLog('❄ Freeze ! Ennemis bloqués '+(3+skLvl)+' rounds.', 'dlog-good');
             if (!isFree) finishRound();
             break;
         }
@@ -8118,8 +8163,9 @@ function dungeonUseClassSkill(skillId) {
         }
         // ─ AVENTURIER ─
         case 'poison_cloud': {
-            dungeonState._poisonCloud = (dungeonState._poisonCloud||0) + Math.max(1, Math.floor(atk/2));
-            dngLog('☁ Nuage de poison ! -'+dungeonState._poisonCloud+' HP/tour sur tous.', 'dlog-good');
+            const pcDmg = Math.max(1, 1 + skLvl);
+            dungeonState._poisonCloud = (dungeonState._poisonCloud||0) + pcDmg;
+            dngLog('☁ Nuage de poison ! -'+dungeonState._poisonCloud+' HP/tour sur tous (niv.'+skLvl+').', 'dlog-good');
             if (!isFree) finishRound();
             break;
         }
@@ -8136,19 +8182,41 @@ function dungeonUseClassSkill(skillId) {
             break;
         }
         case 'curse': {
-            allE.forEach(function(e){ e._curse = (e._curse||0) + Math.max(1, Math.floor(atk/2)); });
-            dngLog('💀 Malédiction ! -'+Math.floor(atk/2)+' ATK sur tous.', 'dlog-good');
+            const curseDmg = Math.max(1, 1 + skLvl);
+            allE.forEach(function(e){ e._curse = (e._curse||0) + curseDmg; });
+            dngLog('💀 Malédiction ! -'+curseDmg+' ATK sur tous (niv.'+skLvl+').', 'dlog-good');
             if (!isFree) finishRound();
             break;
         }
         case 'mirror': {
-            dungeonState._mirrorShield = Math.max(2, atk);
+            dungeonState._mirrorShield = Math.max(2, atk + skLvl * 2);
             dngLog('🪞 Images miroir ! -'+dungeonState._mirrorShield+' dégâts reçus ce round.', 'dlog-good');
             if (!isFree) finishRound();
             break;
         }
     }
     updateStats && updateStats();
+}
+
+
+function buyClassSkill(skId) {
+    const m = getMeta();
+    if (!m.hero.skillLevels) m.hero.skillLevels = {};
+    const lvl = m.hero.skillLevels[skId] || 0;
+    const maxLvl = 1 + (m.heroLevel || 0);
+    if (lvl >= maxLvl) { addLog('Niveau maximum atteint.'); return; }
+    const cost = 2 + lvl * 3 + Math.floor(lvl / 2);
+    if ((m.dust || 0) < cost) { addLog('Poussière insuffisante.'); return; }
+    m.dust -= cost;
+    m.hero.skillLevels[skId] = lvl + 1;
+    saveMeta(m); window._meta = m;
+    addLog('✦ ' + skId + ' niveau ' + (lvl+1) + ' !');
+    renderMetaHero();
+}
+
+function getClassSkillLevel(skillId) {
+    const m = getMeta();
+    return (m.hero.skillLevels || {})['cls_' + skillId] || 0;
 }
 
 </script>
