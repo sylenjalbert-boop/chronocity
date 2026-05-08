@@ -7995,29 +7995,36 @@ function applyClassBonuses(key) {
 function renderClassSkills() {
     const row = document.getElementById('dng-skills-row');
     if (!row) return;
-    const skillsWrap = row.querySelector('div:last-child') || row;
-    // Vider les boutons existants
-    const btnRow = row.querySelector('div.skills-btn-row') || (function(){
-        var d = row.querySelector('div:nth-child(2)');
-        return d;
-    })();
-    if (!btnRow) return;
+
+    if (!avatarClass || !CLASS_DATA[avatarClass]) {
+        row.style.display = 'none';
+        return;
+    }
+
+    const skills = CLASS_DATA[avatarClass].skills.filter(function(s){ return !s.passive; });
+    if (skills.length === 0) { row.style.display = 'none'; return; }
+
+    // Trouver ou créer le conteneur de boutons
+    let btnRow = row.querySelector('#class-skill-btns');
+    if (!btnRow) {
+        row.innerHTML =
+            '<div style="font-size:9px;color:#c49220;text-align:center;letter-spacing:1px;font-family:Cinzel,serif;padding:2px 0">⚡ COMPÉTENCES — utilise l\'action</div>' +
+            '<div id="class-skill-btns" style="display:flex;gap:6px;justify-content:center;flex-wrap:wrap"></div>';
+        btnRow = row.querySelector('#class-skill-btns');
+    }
     btnRow.innerHTML = '';
 
-    if (!avatarClass || !CLASS_DATA[avatarClass]) return;
-    const skills = CLASS_DATA[avatarClass].skills;
-
     skills.forEach(function(s) {
-        if (s.passive) return; // passifs pas en bouton
         var used = dungeonState['skill_'+s.id+'_used'];
         var btn = document.createElement('button');
         btn.className = 'dng-btn';
-        btn.style.cssText = 'min-width:90px;background:linear-gradient(135deg,#0a0818,#181028);border-color:'+s.color+';color:'+s.color+(used?';opacity:.4':'');
+        btn.style.cssText = 'min-width:90px;background:linear-gradient(135deg,#0a0818,#181028);border:1px solid '+s.color+';color:'+s.color+(used?';opacity:.4':'');
         btn.disabled = !!used;
-        btn.innerHTML = s.icon + ' ' + s.name + (s.free?' <span style="font-size:8px;color:#aaa">(gratuit)</span>':'');
+        btn.innerHTML = s.icon + ' ' + s.name + (s.free ? ' <span style="font-size:8px;color:#aaa">(gratuit)</span>' : '');
         btn.onclick = (function(sid){ return function(){ dungeonUseClassSkill(sid); }; })(s.id);
         btnRow.appendChild(btn);
     });
+    row.style.display = 'flex';
 }
 
 function dungeonUseClassSkill(skillId) {
