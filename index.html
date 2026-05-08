@@ -657,7 +657,7 @@
     <div id="predng-stats" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px"></div>
     <div id="predng-equip" style="font-size:11px;color:#9a8a6a;background:#0a0812;border-radius:8px;padding:8px;line-height:1.9"></div>
     <div style="display:flex;gap:8px">
-        <button onclick="closePredngWindow();openEquipWindow(true);" style="flex:1;background:linear-gradient(135deg,#1a1030,#2a1a40);border:1px solid #5040a0;color:#c080ff;border-radius:8px;padding:10px 0;font-family:Cinzel,serif;font-size:12px;cursor:pointer">⚔ S&#39;équiper</button>
+        <button onclick="openEquipWindow(true)" style="flex:1;background:linear-gradient(135deg,#1a1030,#2a1a40);border:1px solid #5040a0;color:#c080ff;border-radius:8px;padding:10px 0;font-family:Cinzel,serif;font-size:12px;cursor:pointer">⚔ S&#39;équiper</button>
         <button onclick="confirmEnterDungeon()" style="flex:2;background:linear-gradient(135deg,#1a0a0a,#3a1010);border:1px solid #8a3030;color:#ffb0b0;border-radius:8px;padding:10px 0;font-family:Cinzel,serif;font-size:13px;cursor:pointer;letter-spacing:1px">▶ Entrer dans le Donjon</button>
     </div>
     <button onclick="closePredngWindow(true)" style="background:none;border:none;color:#4a3a5a;cursor:pointer;font-size:11px">← Annuler</button>
@@ -5097,11 +5097,14 @@ function updateStats() {
 	document.getElementById('populationperturn').textContent = populationperturn;
     updateTimeline();
     updateBuildingCards();
-    // updateEquipmentCards est couvert par renderActionEquipTab() ci-dessous
     updateArmyPanels();
-    renderTileGrid();
     updateResPanel();
-    renderBuildPanelList();
+    // Ne pas reconstruire la grille et le panneau bâtiments si la fenêtre équipement est ouverte
+    const ewOpen = document.getElementById('equip-window')?.style.display === 'flex';
+    if (!ewOpen) {
+        renderTileGrid();
+        renderBuildPanelList();
+    }
     renderActionEquipTab();
 }
 
@@ -6462,9 +6465,13 @@ function closePredngWindow(cancelled) {
 }
 
 function confirmEnterDungeon() {
-    closeEquipWindow();
     const cb = ewPredungeonCallback;
-    closePredngWindow(false); // ne pas reset le tour
+    ewFromPreDungeon = false;
+    ewPredungeonCallback = null;
+    const w = document.getElementById('equip-window');
+    if (w) w.style.display = 'none';
+    const pd = document.getElementById('pre-dungeon-window');
+    if (pd) pd.style.display = 'none';
     if (cb) cb();
 }
 
@@ -6474,6 +6481,11 @@ function openEquipWindow(fromPredng) {
     if (!w) return;
     ewCurrentSlot = null;
     ewFromPreDungeon = !!fromPredng;
+    // Masquer le pré-donjon sans effacer le callback
+    if (fromPredng) {
+        const pd = document.getElementById('pre-dungeon-window');
+        if (pd) pd.style.display = 'none';
+    }
     w.style.display = 'flex';
     renderEquipWindow();
 }
@@ -6484,6 +6496,8 @@ function closeEquipWindow() {
     if (ewFromPreDungeon && ewPredungeonCallback) {
         ewFromPreDungeon = false;
         showPreDungeonWindow(ewPredungeonCallback);
+    } else {
+        ewFromPreDungeon = false;
     }
 }
 
@@ -6658,29 +6672,35 @@ function renderEwCatalog() {
 function ewHandleItemClick(item) {
     const slot = ewCurrentSlot;
     if (!slot) return;
-    // Acheter si pas possédé (ou glyphe/potion : achat multiple)
-    if (!ownedEquipment[item.id] || item.isGlyph || item.isPotion) {
-        if (gold < item.gold || mana < (item.mana||0) || population < (item.pop||0)) {
-            addLog('❌ Ressources insuffisantes pour ' + item.name);
-            return;
+    try {
+        // Acheter si pas possédé (ou glyphe/potion : achat multiple)
+        if (!ownedEquipment[item.id] || item.isGlyph || item.isPotion) {
+            if (gold < item.gold || mana < (item.mana||0) || population < (item.pop||0)) {
+                addLog('❌ Ressources insuffisantes pour ' + item.name);
+                return;
+            }
+            gold -= item.gold; mana -= (item.mana||0); population -= (item.pop||0);
+            ownedEquipment[item.id] = true;
+            if (item.isGlyph || item.isPotion) { if(item.apply) item.apply(); }
+            addLog('✅ ' + item.name + ' acheté !');
+            updateStats();
         }
-        gold -= item.gold; mana -= (item.mana||0); population -= (item.pop||0);
-        ownedEquipment[item.id] = true;
-        if (item.isGlyph || item.isPotion) item.apply();
-        addLog('✅ ' + item.name + ' acheté !');
-        updateStats();
+        // Équiper dans le slot
+        if (slot.startsWith('glyph_')) {
+            const idx = parseInt(slot.split('_')[1]);
+            if (item.isGlyph) equippedItems.glyphs[idx] = item.id;
+        } else if (slot.startsWith('potion_')) {
+            const idx = parseInt(slot.split('_')[1]);
+            if (item.isPotion) equippedItems.potions[idx] = item.id;
+        } else if (!item.isGlyph && !item.isPotion) {
+            ewEquipInSlot(slot, item);
+        }
+        renderEquipWindow();
+    } catch(e) {
+        console.error('ewHandleItemClick error:', e);
+        addLog('⚠ Erreur équipement : ' + e.message);
+        renderEquipWindow();
     }
-    // Équiper dans le slot
-    if (slot.startsWith('glyph_')) {
-        const idx = parseInt(slot.split('_')[1]);
-        if (item.isGlyph) equippedItems.glyphs[idx] = item.id;
-    } else if (slot.startsWith('potion_')) {
-        const idx = parseInt(slot.split('_')[1]);
-        if (item.isPotion) equippedItems.potions[idx] = item.id;
-    } else if (!item.isGlyph && !item.isPotion) {
-        ewEquipInSlot(slot, item);
-    }
-    renderEquipWindow();
 }
 
 function ewEquipInSlot(slot, item) {
