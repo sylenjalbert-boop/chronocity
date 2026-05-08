@@ -1943,7 +1943,7 @@ let activeSlot = null; // slot actuellement chargé (null = nouvelle partie sans
 
 const META_DEFAULTS = {
     dust: 0,
-    shells: 0,           // coquilles d'oeuf du temps
+    shells: 1,           // coquilles d'oeuf du temps (1 pour tests)
     shellsEarned: [],    // ['4','8'...] saisons hivernales déjà gagnées
     legendary: {
         grandeTour: false, arbreElfique: false,
@@ -2058,9 +2058,13 @@ function applyMetaBonuses() {
 // Sauvegarder la poussière gagnée ce run
     // Classe avatar (Palais des Miroirs)
     const cls = (getMeta().legendaryOptions || {}).classeAvatar;
-    if (cls) {
+    if (cls && CLASS_DATA && CLASS_DATA[cls]) {
         avatarClass = cls;
         applyClassBonuses(cls);
+        // Mettre à jour le nom affiché
+        const clsData = CLASS_DATA[cls];
+        const nameEl = document.getElementById('dng-avatar-name');
+        if (nameEl) nameEl.textContent = clsData.icon + ' ' + clsData.name;
     }
 
 function saveRunDust() {
@@ -7562,8 +7566,19 @@ function chooseClassFromMeta(key) {
     if (!m.legendaryOptions) m.legendaryOptions = {};
     m.legendaryOptions.classeAvatar = key;
     saveMeta(m); window._meta = m;
-    addLog('🪞 Classe choisie : ' + CLASS_DATA[key].name + ' ! Active dès le prochain run.');
+    // Appliquer immédiatement au run en cours
+    avatarClass = key;
+    applyClassBonuses(key);
+    // Mettre à jour le nom de l'avatar affiché
+    const cls = CLASS_DATA[key];
+    ['dng-avatar-name','avatar-name-display'].forEach(function(id){
+        const el = document.getElementById(id);
+        if (el) el.textContent = cls.icon + ' ' + cls.name;
+    });
+    updateStats();
     renderMetaLegendary();
+    if (typeof renderClassSkills === 'function') renderClassSkills();
+    addLog('🪞 Classe choisie : ' + cls.name + ' ! Compétences actives maintenant.');
 }
 
 
