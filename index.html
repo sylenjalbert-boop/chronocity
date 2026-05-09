@@ -2076,17 +2076,16 @@ function hitThresholdForEnemy(enemy, defVal) {
     const isBack = dungeonState.enemies && dungeonState.enemies.back &&
                    dungeonState.enemies.back.indexOf(enemy) !== -1;
     const bonus = isBack ? -1 : 0;
-    // Crushing Blow passif : -1 DEF par touche accumulée
-    const crushDef = Math.max(0, (enemy.def||0) - (enemy._crushingDef||0));
-    const effectiveDef = defVal + (crushDef - (enemy.def||0)); // ajustement
     // Warcry : augmente le seuil de toucher de l'ennemi
     const warcryPenalty = enemy._warcryThreshold || 0;
     return Math.min(6, Math.max(2, hitThreshold(enemy.atk, defVal) + bonus + warcryPenalty));
 }
 
 function hitThreshold(atkVal, defVal, useSeasonal) {
-    // useSeasonal=true : inclut tour+saison dans la difficulté
-    const difficulty = useSeasonal ? defVal + Math.floor(currentTurn/2) + Math.floor(currentSeason/2) : defVal;
+    // defVal déjà calculé avec tour et crushing si useSeasonal
+    const difficulty = useSeasonal
+        ? defVal + Math.floor(currentSeason/4)
+        : defVal;
     if (atkVal >= difficulty * 2) return 2;
     if (atkVal > difficulty)      return 3;
     if (atkVal === difficulty)    return 4;
@@ -2693,7 +2692,9 @@ function moveMobileEnemies() {
 }
 
 function dngSetupZones() {
-    const enemyDef = dungeonState.enemy ? Math.max(1, dungeonState.enemy.def - (dungeonState.enemy._crushingDef||0)) : 2;
+    const crushing = dungeonState.enemy ? (dungeonState.enemy._crushingDef||0) : 0;
+    const rawDef = dungeonState.enemy ? dungeonState.enemy.def : 2;
+    const enemyDef = Math.max(1, rawDef + Math.floor(currentTurn/2) - crushing);
     const t = hitThreshold(atk, enemyDef, true);
     // Vitesse constante plus rapide
     dngTiming.speed = 1.4;
@@ -3413,12 +3414,14 @@ function makeGridCell(e, isBack, row) {
 
     const crushDef  = e._crushingDef  || 0;
     const crushProt = e._crushingProt || 0;
-    const defEff  = Math.max(1, (e.def||0)  - crushDef);
+    const defEff  = Math.max(1, (e.def||0) + Math.floor(currentTurn/2) - crushDef);
     const protEff = Math.max(0, (e.protection||0) - crushProt);
+    const thrAvatar = hitThreshold(atk, defEff, true);
     const statsHtml = '<div style="font-size:7px;color:#9a8a7a;text-align:center;line-height:1.4;margin-top:1px">'+
         '❤'+Math.max(0,e.hp)+'/'+e.maxHp+
         ' 🛡'+defEff+(crushDef?'<span style="color:#ff8040">('+e.def+')</span>':'')+
         ' 💫'+protEff+(crushProt?'<span style="color:#ff8040">('+e.protection+')</span>':'')+
+        ' <span style="color:#80c0ff">'+thrAvatar+'+</span>'+
         '</div>';
 
     cell.innerHTML =
