@@ -2693,7 +2693,7 @@ function moveMobileEnemies() {
 }
 
 function dngSetupZones() {
-    const enemyDef = dungeonState.enemy ? Math.max(0, dungeonState.enemy.def - (dungeonState.enemy._crushingDef||0)) : 2;
+    const enemyDef = dungeonState.enemy ? Math.max(1, dungeonState.enemy.def - (dungeonState.enemy._crushingDef||0)) : 2;
     const t = hitThreshold(atk, enemyDef, true);
     // Vitesse constante plus rapide
     dngTiming.speed = 1.4;
@@ -3411,11 +3411,22 @@ function makeGridCell(e, isBack, row) {
     const enemyDiceId = 'dng-hist-enemy-' + (isBack ? 'b' : 'f') + row;
     cell.setAttribute('data-dice-id', enemyDiceId);
 
+    const crushDef  = e._crushingDef  || 0;
+    const crushProt = e._crushingProt || 0;
+    const defEff  = Math.max(1, (e.def||0)  - crushDef);
+    const protEff = Math.max(0, (e.protection||0) - crushProt);
+    const statsHtml = '<div style="font-size:7px;color:#9a8a7a;text-align:center;line-height:1.4;margin-top:1px">'+
+        '❤'+Math.max(0,e.hp)+'/'+e.maxHp+
+        ' 🛡'+defEff+(crushDef?'<span style="color:#ff8040">('+e.def+')</span>':'')+
+        ' 💫'+protEff+(crushProt?'<span style="color:#ff8040">('+e.protection+')</span>':'')+
+        '</div>';
+
     cell.innerHTML =
         '<div style="'+thrStyle+'">'+thrLabel+'</div>'+
         imgHtml+
         '<div id="'+enemyDiceId+'" style="display:flex;gap:2px;flex-wrap:wrap;justify-content:center;min-height:18px;margin-bottom:2px"></div>'+
         '<div style="font-size:8px;color:#aaa;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+e.name+'</div>'+
+        statsHtml+
         '<div style="background:#1a0a0a;border-radius:3px;height:4px;margin:2px 0;overflow:hidden">'+
             '<div style="background:'+hpColor+';height:100%;width:'+hpPct+'%;transition:width .3s"></div>'+
         '</div>'+
