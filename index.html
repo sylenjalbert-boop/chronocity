@@ -538,7 +538,7 @@
 <div id="home-screen" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:#06040a;z-index:20000;flex-direction:column;align-items:center;justify-content:center;gap:20px">
     <div style="text-align:center;margin-bottom:10px">
         <div style="font-family:Cinzel,serif;font-size:28px;color:#c0a060;letter-spacing:3px;text-shadow:0 0 20px rgba(180,140,60,0.4)">⚔ Chronocity — A Rogue City Builder</div>
-        <div style="font-size:11px;color:#4a3a5a;margin-top:6px;letter-spacing:2px">VERSION 0.9.4</div>
+        <div style="font-size:11px;color:#4a3a5a;margin-top:6px;letter-spacing:2px">VERSION 0.9.5</div>
     </div>
     <div id="home-menu" style="display:flex;flex-direction:column;gap:10px;width:min(340px,90vw)">
         <button onclick="homeLoad()" style="width:100%;padding:16px 0;font-family:Cinzel,serif;font-size:14px;cursor:pointer;border-radius:8px;background:linear-gradient(135deg,#1a1030,#2a1a40);color:#c080ff;border:1px solid #5040a0">📂 Charger une partie</button>
@@ -1990,6 +1990,7 @@ function loadMeta() {
         def.shells     = saved.shells     || 0;
         def.shellsEarned = saved.shellsEarned || [];
         if (saved.legendary) Object.assign(def.legendary, saved.legendary);
+        if (saved.legendaryOptions) def.legendaryOptions = Object.assign(def.legendaryOptions || {}, saved.legendaryOptions);
         // Migration et deep merge
         if (saved.hero) {
             Object.assign(def.hero, saved.hero);
@@ -2045,22 +2046,19 @@ function applyMetaBonuses() {
     protection += m.hero.prot;
     def      += m.hero.def;
     window._metaHpBonus = m.hero.hpMax * 3;
-    // Ville — fortifications/conscrit/space gérés par recalcBuildingEffects
+    // Ville
     window._metaCityPower = m.city.power || 0;
     window._metaGarrison = [...(m.city.garrison||[])];
-}
-
-// Sauvegarder la poussière gagnée ce run
     // Classe avatar (Palais des Miroirs)
-    const cls = (getMeta().legendaryOptions || {}).classeAvatar;
-    if (cls && CLASS_DATA && CLASS_DATA[cls]) {
+    const cls = (m.legendaryOptions || {}).classeAvatar;
+    if (cls && typeof CLASS_DATA !== 'undefined' && CLASS_DATA[cls]) {
         avatarClass = cls;
         applyClassBonuses(cls);
-        // Mettre à jour le nom affiché
         const clsData = CLASS_DATA[cls];
         const nameEl = document.getElementById('dng-avatar-name');
         if (nameEl) nameEl.textContent = clsData.icon + ' ' + clsData.name;
     }
+}
 
 function saveRunDust() {
     const m = getMeta();
@@ -2075,11 +2073,15 @@ function saveRunDust() {
 
 // ===== NOUVEAU SYSTÈME DE COMBAT =====
 function hitThresholdForEnemy(enemy, defVal) {
-    // Les ennemis du rang arrière ont +1 pour toucher
     const isBack = dungeonState.enemies && dungeonState.enemies.back &&
                    dungeonState.enemies.back.indexOf(enemy) !== -1;
-    const bonus = isBack ? -1 : 0; // -1 sur le seuil = plus facile pour eux
-    return Math.max(2, hitThreshold(enemy.atk, defVal) + bonus);
+    const bonus = isBack ? -1 : 0;
+    // Crushing Blow passif : -1 DEF par touche accumulée
+    const crushDef = Math.max(0, (enemy.def||0) - (enemy._crushingDef||0));
+    const effectiveDef = defVal + (crushDef - (enemy.def||0)); // ajustement
+    // Warcry : augmente le seuil de toucher de l'ennemi
+    const warcryPenalty = enemy._warcryThreshold || 0;
+    return Math.min(6, Math.max(2, hitThreshold(enemy.atk, defVal) + bonus + warcryPenalty));
 }
 
 function hitThreshold(atkVal, defVal, useSeasonal) {
@@ -2424,7 +2426,7 @@ function openDungeon(afterCallback) {
     dungeonState.pendingAfterDungeon = afterCallback;
     // Reset compétences de classe
     Object.keys(dungeonState).forEach(function(k){
-        if (k.startsWith('skill_') && k.endsWith('_used')) delete dungeonState[k];
+        if (k.startsWith('skill_') && (k.endsWith('_used') || k.endsWith('_uses'))) delete dungeonState[k];
     });
     if (avatarMaxHp === 0) { avatarMaxHp = 9; avatarHp = avatarMaxHp; }
     dungeonState.avatarHp    = avatarHp;
@@ -2691,7 +2693,8 @@ function moveMobileEnemies() {
 }
 
 function dngSetupZones() {
-    const t = hitThreshold(atk, dungeonState.enemy ? dungeonState.enemy.def : 2, true);
+    const enemyDef = dungeonState.enemy ? Math.max(0, dungeonState.enemy.def - (dungeonState.enemy._crushingDef||0)) : 2;
+    const t = hitThreshold(atk, enemyDef, true);
     // Vitesse constante plus rapide
     dngTiming.speed = 1.4;
     // % de la barre selon seuil de toucher
@@ -2705,15 +2708,24 @@ function dngSetupZones() {
     const halfW = hitPct * 0.15;
     const normW = hitPct * 0.20;
     const perfW = hitPct * 0.10 / 2; // ×1.2 central partagé en 2
+    const arcBonus = window._arcElfique ? 0.5 : 0;
+    // Mettre à jour les labels si arc elfique
+    if (arcBonus > 0) {
+        const labelMap = {'dng-lh1':'×1','dng-lh2':'×1','dng-ln1':'×1.5','dng-ln2':'×1.5','dng-lp1':'×1.7'};
+        Object.entries(labelMap).forEach(function(e){ const el=document.getElementById(e[0]); if(el) el.textContent=e[1]; });
+    } else {
+        const labelMap = {'dng-lh1':'×0.5','dng-lh2':'×0.5','dng-ln1':'×1','dng-ln2':'×1','dng-lp1':'×1.2'};
+        Object.entries(labelMap).forEach(function(e){ const el=document.getElementById(e[0]); if(el) el.textContent=e[1]; });
+    }
     const zones9 = [
         {id:'dng-za1', lid:'dng-la1', w:mExt,      mult:0},
-        {id:'dng-zh1', lid:'dng-lh1', w:halfW,     mult:0.5},
-        {id:'dng-zn1', lid:'dng-ln1', w:normW,     mult:1},
+        {id:'dng-zh1', lid:'dng-lh1', w:halfW,     mult:0.5+arcBonus},
+        {id:'dng-zn1', lid:'dng-ln1', w:normW,     mult:1+arcBonus},
         {id:'dng-zm1', lid:'dng-lm1', w:mSep,      mult:0},
-        {id:'dng-zp1', lid:'dng-lp1', w:perfW*2,   mult:1.2},
+        {id:'dng-zp1', lid:'dng-lp1', w:perfW*2,   mult:1.2+arcBonus},
         {id:'dng-zm2', lid:'dng-lm2', w:mSep,      mult:0},
-        {id:'dng-zn2', lid:'dng-ln2', w:normW,     mult:1},
-        {id:'dng-zh2', lid:'dng-lh2', w:halfW,     mult:0.5},
+        {id:'dng-zn2', lid:'dng-ln2', w:normW,     mult:1+arcBonus},
+        {id:'dng-zh2', lid:'dng-lh2', w:halfW,     mult:0.5+arcBonus},
         {id:'dng-za2', lid:'dng-la2', w:mExt,      mult:0},
     ];
     let p = 0;
@@ -2907,7 +2919,14 @@ function dungeonBarClick() {
     const zone=dngGetZone(pos);
     // Rage : Dmg ×2
     const effectiveDmg = rageActive ? avatarDmg*2 : avatarDmg;
-    const base=Math.max(1,effectiveDmg-dungeonState.enemy.protection);
+    // _piercingNext : ignore la protection
+    const baseProt = dungeonState.enemy.protection;
+    const effectiveProt = dungeonState._piercingNext ? 0 : Math.max(0, baseProt - (dungeonState.enemy._crushingProt||0));
+    if (dungeonState._piercingNext) {
+        dungeonState._piercingNext = false;
+        dngLog('🎯 Flèche perçante : protection ignorée !', 'dlog-good');
+    }
+    const base=Math.max(1,effectiveDmg-effectiveProt);
     let dmg=0,badge='',bcls='',fc='',zlabel='';
     if(zone==='miss'){
         badge='0 — timing manqué !';bcls='dng-r-miss';fc='#400000';zlabel='0';
@@ -2939,6 +2958,34 @@ function dungeonBarClick() {
     if(dmg>0){
         dungeonState.enemy.hp-=dmg;
         dungeonShowDmg('enemy',dmg,'#4cff8a');
+
+        // ── Crushing Blow (Guerrier passif) : réduit DEF/Prot par touche selon niveau ──
+        if (avatarClass === 'warrior') {
+            const crushLvl = getClassSkillLevel ? (getClassSkillLevel('crushing')||0) : 0;
+            // Niv 1-2 : -1 DEF | Niv 3-4 : -1 DEF -1 Prot | Niv 5+ : -2 DEF -1 Prot
+            const defRed  = crushLvl >= 5 ? 2 : 1;
+            const protRed = crushLvl >= 3 ? 1 : 0;
+            const prev = dungeonState.enemy._crushingDef || 0;
+            dungeonState.enemy._crushingDef  = prev + defRed;
+            dungeonState.enemy._crushingProt = (dungeonState.enemy._crushingProt||0) + protRed;
+            if (prev === 0) {
+                let msg = '🔨 Crushing Blow ! -'+defRed+' DEF';
+                if (protRed) msg += ' -'+protRed+' Prot';
+                msg += ' par touche (niv.'+crushLvl+').';
+                dngLog(msg, 'dlog-good');
+            }
+            setTimeout(function(){ dngSetupZones(); }, 50);
+        }
+
+        // ── Tir vampirique : soigne les dégâts infligés ──
+        if (dungeonState._vampiricNext) {
+            dungeonState._vampiricNext = false;
+            const heal = dmg;
+            dungeonState.avatarHp = Math.min(avatarMaxHp, dungeonState.avatarHp + heal);
+            avatarHp = dungeonState.avatarHp;
+            if (typeof applyHpUpdate === 'function') applyHpUpdate();
+            dngLog('🧛 Tir vampirique : +' + heal + ' HP !', 'dlog-good');
+        }
 
         // ── Faux : frappe toutes les unités du rang avant ──
         if (avatarScythe) {
@@ -3292,7 +3339,11 @@ function renderEnemyPanel() {
     // Mettre à jour les éléments cachés pour compatibilité
     document.getElementById('dng-enemy-name').textContent = target.name;
     document.getElementById('dng-enemy-hp-text').textContent = 'HP: '+Math.max(0,target.hp)+'/'+target.maxHp;
-    document.getElementById('dng-enemy-stats').textContent = 'ATK: '+target.atk+' | Dmg: '+target.dmg+' | DEF: '+target.def+' | Prot: '+target.protection;
+    const crushDef  = target._crushingDef  || 0;
+    const crushProt = target._crushingProt || 0;
+    const defDisplay  = crushDef  ? (Math.max(0,target.def -crushDef) +' 🔨('+target.def+')')  : target.def;
+    const protDisplay = crushProt ? (Math.max(0,target.protection-crushProt)+' 🔨('+target.protection+')') : target.protection;
+    document.getElementById('dng-enemy-stats').textContent = 'ATK: '+target.atk+' | Dmg: '+target.dmg+' | DEF: '+defDisplay+' | Prot: '+protDisplay;
     // Remplir la grille 2×3
     const grid = document.getElementById('dng-enemy-grid');
     if (!grid) return;
@@ -4031,6 +4082,18 @@ function dungeonFlee() {
 }
 
 function dungeonRoomWon() {
+    // Reset compétences après chaque victoire (par combat, pas par donjon)
+    skillUsed = { Fireball:false, Benediction:false, Rage:false, Soin:false };
+    // Reset effets de classe sur les ennemis
+    if (dungeonState.enemies) {
+        [...(dungeonState.enemies.front||[]), ...(dungeonState.enemies.back||[])].forEach(function(e){
+            delete e._crushingDef; delete e._warcryThreshold;
+        });
+    }
+    Object.keys(dungeonState).forEach(function(k){
+        if (k.startsWith('skill_') && (k.endsWith('_used') || k.endsWith('_uses'))) delete dungeonState[k];
+    });
+    renderClassSkills();
     // Collecter le loot — porte B (bonus) = pas de poussière
     const isBonusDoor = dungeonState.chosenDoorLabel === 'B';
     // Collecter le loot de tous les ennemis morts (hp<=0) + l'ennemi courant si hp<=0
@@ -4211,10 +4274,10 @@ const EQUIPMENT_CATALOG = [
       icon:'🪓', desc:'Dmg +2, ATK -1',
       apply: () => { avatarDmg+=2; atk-=1; },
       remove: () => { avatarDmg-=2; atk+=1; } },
-    { id:'Arc', is2h:true, is2h:true,         name:'Arc elfique',      slot:'weapon_main', gold:150,  mana:0,  pop:0, req:'archerie',
-      icon:'🏹', desc:'ATK +3, Distance',
-      apply: () => { atk+=3; avatarRanged=true; },
-      remove: () => { atk-=3; avatarRanged=false; } },
+    { id:'Arc', is2h:true, name:'Arc elfique', slot:'weapon_main', gold:150, mana:0, pop:0, req:'archerie',
+      icon:'🏹', desc:'ATK +2, Dmg +2, Distance. Planche de dégâts +0.5.',
+      apply: () => { atk+=2; avatarDmg+=2; avatarRanged=true; window._arcElfique=true; },
+      remove: () => { atk-=2; avatarDmg-=2; avatarRanged=false; window._arcElfique=false; } },
     { id:'Arbalete', is2h:true, is2h:true,    name:'Arbalète lourde',  slot:'weapon_main', gold:210,  mana:0,  pop:0, req:'archerie',
       icon:'🏹', desc:'ATK +2, Dmg +2, Distance, Perçant',
       apply: () => { atk+=2; avatarDmg+=2; avatarRanged=true; avatarPiercing=true; },
@@ -6809,7 +6872,7 @@ function restoreGameState(s) {
     avatarRanged = false; avatarPiercing = false; avatarScythe = false;
     avatarMagicWeapon = false; avatarAntiRange = false;
     avatarBlessedNecklace = false; avatarImmunePoison = false; avatarImmuneStun = false;
-    avatarArmorType = null; avatarMagicDmg = 0;
+    avatarArmorType = null; avatarMagicDmg = 0; avatarClass = null; window._arcElfique = false;
 
     // Appliquer la méta (atk, def, dmg, prot bonus)
     const m = getMeta();
@@ -7347,7 +7410,7 @@ function initNewRun() {
     avatarRanged = false; avatarPiercing = false; avatarScythe = false;
     avatarMagicWeapon = false; avatarAntiRange = false;
     avatarBlessedNecklace = false; avatarImmunePoison = false; avatarImmuneStun = false;
-    avatarArmorType = null; avatarMagicDmg = 0;
+    avatarArmorType = null; avatarMagicDmg = 0; avatarClass = null; window._arcElfique = false;
     glyphFireball = 0; glyphRage = 0; glyphBless = 0;
     potionHeal = 0; potionAntiPoison = 0;
     ownedEquipment = {};
@@ -7679,9 +7742,7 @@ const LEGENDARY_OPTIONS = {
         { key:'sa_inquisiteurs',name:'Inquisiteurs',         desc:'Debloque Inquisiteur (ATK 6, anti-demon III)', gold:200, mana:100, pop:0  },
         { key:'sa_benediction', name:'Benediction',          desc:'Plaines/Collines/Lacs +5 Or +5 Pop/recolte',  gold:0,   mana:300, pop:0  },
     ],
-    palaisMiroirs: [
-        { key:'pm_classe',      name:'Choisir une Classe',   desc:'Archer / Guerrier / Mage / Aventurier',       gold:0,   mana:0,   pop:0  },
-    ],
+    palaisMiroirs: [],  // Choix de classe géré dans la méta
 };
 
 const LEGENDARY_NAMES = {
@@ -7958,14 +8019,15 @@ const CLASS_DATA = {
         skills: [
             { id:'volley',    name:'Volée de flèches', icon:'🏹', desc:'Dégâts sur toute une colonne', color:'#40c080' },
             { id:'explosive', name:'Flèche explosive',  icon:'💥', desc:'(Passif) Dégâts aux ennemis adjacents si touche', color:'#ff8040', passive:true },
-            { id:'piercing',  name:'Flèche perçante',   icon:'🎯', desc:'(Gratuit) Ignore la protection', color:'#40ffaa', free:true },
+            { id:'piercing',  name:'Flèche perçante',   icon:'🎯', desc:'Ignore la protection. Utilisations = 1 + niveau. Gratuit.', color:'#40ffaa', free:true, dynamicUses:true },
+            { id:'vampiric',  name:'Tir vampirique',    icon:'🧛', desc:'Prochain tir soigne les dégâts infligés. Utilisations = 2 + niveau. Gratuit.', color:'#ff60a0', free:true, dynamicUses:true, baseUses:2 },
         ]
     },
     warrior: {
         name: 'Guerrier', icon: '⚔',
         desc: 'Toutes armures, +10 HP.',
         color: '#ff8040',
-        bonuses: { hpFlat:10 },
+        bonuses: { hpFlat:10, prot:3 },
         skills: [
             { id:'warcry',    name:'Cri de guerre',   icon:'📣', desc:'ATK ennemis ÷2 ce round', color:'#ff8040' },
             { id:'stun',      name:'Stun',             icon:'💫', desc:'Bloque 1 ennemi 2 tours (touche sur 2+)', color:'#ffd060' },
@@ -8051,12 +8113,16 @@ function applyClassBonuses(key) {
     const b = cls.bonuses || {};
     if (b.atk)      atk += b.atk;
     if (b.hpFlat)   { avatarMaxHp += b.hpFlat; avatarHp = Math.min(avatarHp + b.hpFlat, avatarMaxHp); }
+    if (b.prot)     { protection += b.prot; }
     if (b.freeBaguette) {
-        // Équiper baguette gratuite si slot libre
         if (!equippedItems.weapon_main) {
             const wand = EQUIPMENT_CATALOG.find(function(i){ return i.id === 'Baguette'; });
             if (wand) { equippedItems.weapon_main = 'Baguette'; if(wand.apply) wand.apply(); }
         }
+    }
+    if (key === 'archer' && !equippedItems.weapon_main) {
+        const arc = EQUIPMENT_CATALOG.find(function(i){ return i.id === 'Arc'; });
+        if (arc) { equippedItems.weapon_main = 'Arc'; ownedEquipment['Arc'] = true; if(arc.apply) arc.apply(); }
     }
     if (b.scoutHorde) {
         // Débloque action scouter (même effet que ae_eclaireurs)
@@ -8073,28 +8139,66 @@ function renderClassSkills() {
     const btnRow = document.getElementById('class-skill-btns');
     if (!btnRow) return;
 
-    // Pas de classe → compétences de base
+    // Classe → afficher TOUS les skills (actifs + passifs)
+    // Sans classe → anciens skills méta, seulement si achetés
     if (!avatarClass || !CLASS_DATA || !CLASS_DATA[avatarClass]) {
-        btnRow.innerHTML =
-            '<button class="dng-btn" onclick="dungeonUseSkill(\'fireball\')" style="background:linear-gradient(135deg,#3a1000,#5a1800);color:#ff9060;border:1px solid #c04020;min-width:90px">🔥 Boule de Feu</button>' +
-            '<button class="dng-btn" onclick="dungeonUseSkill(\'bless\')"    style="background:linear-gradient(135deg,#1a1000,#2a2000);color:#ffd060;border:1px solid #806000;min-width:90px">🌟 Bénédiction</button>' +
-            '<button class="dng-btn" onclick="dungeonUseSkill(\'rage\')"     style="background:linear-gradient(135deg,#2a0800,#3a1000);color:#ffb080;border:1px solid #803000;min-width:90px">💢 Rage</button>' +
-            '<button class="dng-btn" onclick="dungeonUseSkill(\'heal\')"     style="background:linear-gradient(135deg,#041a0a,#082a10);color:#80ffb0;border:1px solid #206040;min-width:90px">💊 Soin</button>';
+        // Skills méta : seulement ceux achetés
+        const metaSkills = [];
+        const skillMap = [
+            { id:'fireball', metaId:'Fireball',    icon:'🔥', label:'Boule de Feu',   fn:"dungeonUseSkill('fireball')", color:'#ff9060', bg:'#3a1000' },
+            { id:'bless',    metaId:'Benediction', icon:'🌟', label:'Bénédiction',    fn:"dungeonUseSkill('bless')",    color:'#ffd060', bg:'#1a1000' },
+            { id:'rage',     metaId:'Rage',        icon:'💢', label:'Rage',           fn:"dungeonUseSkill('rage')",     color:'#ffb080', bg:'#2a0800' },
+            { id:'heal',     metaId:'Soin',        icon:'💊', label:'Soin',           fn:"dungeonUseSkill('heal')",     color:'#80ffb0', bg:'#041a0a' },
+        ];
+        skillMap.forEach(function(s) {
+            var owned = hasMetaSkill(s.metaId);
+            var used = owned && skillUsed && skillUsed[s.metaId];
+            var btn = document.createElement('button');
+            btn.className = 'dng-btn';
+            btn.style.cssText = 'min-width:90px;background:linear-gradient(135deg,'+s.bg+','+s.bg+'88);border:1px solid '+(owned?s.color:'#2a1a2a')+';color:'+(owned?s.color:'#3a2a3a')+(used?';opacity:.4':'')+(owned?'':';cursor:not-allowed');
+            btn.disabled = !owned || !!used;
+            btn.title = owned ? '' : 'Non acheté dans la méta';
+            btn.innerHTML = s.icon + ' ' + s.label;
+            if (owned) btn.setAttribute('onclick', s.fn);
+            btnRow.appendChild(btn);
+        });
         row.style.display = 'flex';
         return;
     }
 
-    const skills = CLASS_DATA[avatarClass].skills.filter(function(s){ return !s.passive; });
+    const skills = CLASS_DATA[avatarClass].skills; // TOUS les skills, actifs ET passifs
     if (skills.length === 0) { row.style.display = 'none'; return; }
 
     btnRow.innerHTML = '';
     skills.forEach(function(s) {
-        var used = dungeonState['skill_'+s.id+'_used'];
+        if (s.passive) {
+            // Passif : afficher comme badge informatif, pas de bouton
+            var badge = document.createElement('div');
+            badge.style.cssText = 'font-size:9px;padding:2px 7px;border-radius:10px;background:#0a0818;border:1px dashed '+s.color+';color:'+s.color+';display:flex;align-items:center;gap:3px';
+            badge.innerHTML = s.icon + ' <span style="color:#6a5a7a">' + s.name + '</span> <span style="color:'+s.color+';font-size:8px">(passif actif)</span>';
+            btnRow.appendChild(badge);
+            return;
+        }
+
+        var uses = dungeonState['skill_'+s.id+'_uses'] || 0;
+        var skLevel = getClassSkillLevel ? (getClassSkillLevel(s.id)||0) : 0;
+        var maxU;
+        if (s.dynamicUses) {
+            maxU = (s.baseUses || 1) + skLevel;
+        } else if (!s.free) {
+            maxU = 1 + skLevel; // 1× par combat + niveau
+        } else {
+            maxU = null; // gratuit sans limite (ex: rewind)
+        }
+        var used = maxU !== null ? (uses >= maxU) : false;
         var btn = document.createElement('button');
         btn.className = 'dng-btn';
         btn.style.cssText = 'min-width:90px;background:linear-gradient(135deg,#0a0818,#181028);border:1px solid '+s.color+';color:'+s.color+(used?';opacity:.4':'');
         btn.disabled = !!used;
-        btn.innerHTML = s.icon + ' ' + s.name + (s.free ? ' <span style="font-size:8px;color:#aaa">(gratuit)</span>' : '');
+        var useLabel = maxU !== null
+            ? ' <span style="font-size:8px;color:#aaa">('+uses+'/'+maxU+')</span>'
+            : (s.free ? ' <span style="font-size:8px;color:#aaa">(gratuit)</span>' : '');
+        btn.innerHTML = s.icon + ' ' + s.name + useLabel;
         btn.onclick = (function(sid){ return function(){ dungeonUseClassSkill(sid); }; })(s.id);
         btnRow.appendChild(btn);
     });
@@ -8119,6 +8223,25 @@ function dungeonUseClassSkill(skillId) {
     const allE  = [...front, ...back];
     const target = dungeonState.enemy && dungeonState.enemy.hp > 0 ? dungeonState.enemy : front[0];
 
+    const skillDef = avatarClass && CLASS_DATA[avatarClass] ?
+        CLASS_DATA[avatarClass].skills.find(function(s){ return s.id===skillId; }) : null;
+    if (!skillDef) return;
+    const skLv = getClassSkillLevel ? (getClassSkillLevel(skillId)||0) : 0;
+    if (skillDef.dynamicUses) {
+        const uses2 = dungeonState['skill_'+skillId+'_uses'] || 0;
+        const maxU2 = (skillDef.baseUses || 1) + skLv;
+        if (uses2 >= maxU2) { dngLog('Compétence épuisée pour ce combat.', 'dlog-bad'); return; }
+        dungeonState['skill_'+skillId+'_uses'] = uses2 + 1;
+        renderClassSkills();
+    } else if (!skillDef.free) {
+        // 1× par combat, augmente avec niveau
+        const maxUses = 1 + skLv;
+        const uses3 = dungeonState['skill_'+skillId+'_uses'] || 0;
+        if (uses3 >= maxUses) { dngLog('Compétence épuisée pour ce combat.', 'dlog-bad'); return; }
+        dungeonState['skill_'+skillId+'_uses'] = uses3 + 1;
+        renderClassSkills();
+    }
+
     switch(skillId) {
         // ─ ARCHER ─
         case 'volley': {
@@ -8132,16 +8255,22 @@ function dungeonUseClassSkill(skillId) {
             if (!isFree) finishRound();
             break;
         }
-        case 'piercing': { // gratuit : prochain tir ignore protection
+        case 'piercing': {
             dungeonState._piercingNext = true;
             dngLog('🎯 Flèche perçante : prochain tir ignore la protection.', 'dlog-good');
             renderClassSkills();
             break;
         }
+        case 'vampiric': {
+            dungeonState._vampiricNext = true;
+            dngLog('🧛 Tir vampirique activé : prochain tir soigne les dégâts.', 'dlog-good');
+            break;
+        }
         // ─ GUERRIER ─
         case 'warcry': {
-            allE.forEach(function(e){ e._warcry = true; });
-            dngLog('📣 Cri de guerre ! ATK ennemis ÷2 ce round.', 'dlog-good');
+            const warcryBonus = 2 + skLvl; // +2 seuil de base, +1 par niveau
+            allE.forEach(function(e){ e._warcryThreshold = (e._warcryThreshold||0) + warcryBonus; });
+            dngLog('📣 Cri de guerre ! Seuil de toucher des ennemis +'+warcryBonus+' ce combat.', 'dlog-good');
             if (!isFree) finishRound();
             break;
         }
