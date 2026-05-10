@@ -3104,10 +3104,7 @@ function dungeonBarClick() {
 
             animEnemyDie(er, et, function() {
                 if (ehit) {
-                    const baseDmg = calcDamage(room.dmg, protection);
-                    const mirrorRed = dungeonState._mirrorShield || 0;
-                    const ed = Math.max(1, baseDmg - mirrorRed);
-                    if (mirrorRed > 0 && baseDmg > mirrorRed) dngLog('🪞 Images miroir : -'+mirrorRed+' dégâts !', 'dlog-good');
+                    const ed = calcDamage(room.dmg, protection);
                     avatarTakeDamage(ed, 'bar_enemy');
                     dngLog(room.emoji+' '+room.name+' : dé '+er+' ('+et+'+) ✓ → -'+ed+' HP', 'dlog-bad');
 
@@ -3628,7 +3625,9 @@ function enemyAttack(room) {
     dngRenderHist();
     if(ehit){
         const ed = calcDamage(room.dmg, protection);
-        if (dungeonState._manaArmor && dungeonState._manaArmor > 0) {
+        if (ed <= 0) {
+            // pas de dégâts
+        } else if (dungeonState._manaArmor && dungeonState._manaArmor > 0) {
             const absorbedEd = Math.min(dungeonState._manaArmor, ed);
             dungeonState._manaArmor -= absorbedEd;
             const remainingEd = ed - absorbedEd;
@@ -3717,6 +3716,17 @@ function dealDamageToEnemy(e, dmg) {
 }
 
 function avatarTakeDamage(dmg, source) {
+    // Images miroir : réduit les dégâts (sauf rewind qui est direct)
+    if (source !== 'rewind' && dungeonState._mirrorShield && dungeonState._mirrorShield > 0) {
+        const absorbed = Math.min(dungeonState._mirrorShield, dmg);
+        dmg = Math.max(0, dmg - absorbed);
+        if (absorbed > 0) dngLog('🪞 Images miroir absorbe '+absorbed+' dégâts !', 'dlog-good');
+        if (dmg <= 0) {
+            const hpEl = document.getElementById('dng-avatar-hp-text');
+            if (hpEl) hpEl.textContent = 'HP: '+Math.max(0,dungeonState.avatarHp)+'/'+dungeonState.avatarMaxHp+(dungeonState._manaArmor?' 🔷'+dungeonState._manaArmor:'');
+            return;
+        }
+    }
     if (dungeonState._manaArmor && dungeonState._manaArmor > 0) {
         const absorbed = Math.min(dungeonState._manaArmor, dmg);
         dungeonState._manaArmor -= absorbed;
@@ -4118,10 +4128,7 @@ function dungeonUseSkill(type) {
         const er = rollDie(6);
         animEnemyDie(er, et, function() {
             if (er >= et) {
-                const baseDmg2 = calcDamage(room.dmg, protection);
-                const mirrorRed2 = dungeonState._mirrorShield || 0;
-                const ed = Math.max(1, baseDmg2 - mirrorRed2);
-                if (mirrorRed2 > 0 && baseDmg2 > mirrorRed2) dngLog('🪞 Images miroir : -'+mirrorRed2+' dégâts !', 'dlog-good');
+                const ed = calcDamage(room.dmg, protection);
                 avatarTakeDamage(ed, 'multi');
                 dngLog(room.name+' riposte : dé '+er+' ('+et+'+) ✓ → -'+ed+' HP', 'dlog-bad');
             } else {
