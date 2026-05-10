@@ -3625,29 +3625,8 @@ function enemyAttack(room) {
     dngRenderHist();
     if(ehit){
         const ed = calcDamage(room.dmg, protection);
-        if (ed <= 0) {
-            // pas de dégâts
-        } else if (dungeonState._manaArmor && dungeonState._manaArmor > 0) {
-            const absorbedEd = Math.min(dungeonState._manaArmor, ed);
-            dungeonState._manaArmor -= absorbedEd;
-            const remainingEd = ed - absorbedEd;
-            if (absorbedEd > 0) dngLog('🔷 Armure de mana absorbe '+absorbedEd+' dégâts !', 'dlog-good');
-            if (remainingEd > 0) { dungeonState.avatarHp -= remainingEd; dungeonShowDmg('avatar', remainingEd, '#ff6060'); flashDmgAvatar(); }
-            if (dungeonState._manaArmor <= 0) { dungeonState._manaArmor = 0; dngLog('🔷 Armure de mana brisée !', 'dlog-bad'); }
-            // Mettre à jour l'affichage HP/armure immédiatement
-            const hpEl = document.getElementById('dng-avatar-hp-text');
-            if (hpEl) hpEl.textContent = 'HP: '+Math.max(0,dungeonState.avatarHp)+'/'+dungeonState.avatarMaxHp+(dungeonState._manaArmor?' 🔷'+dungeonState._manaArmor:'');
-            dungeonUpdateHpBar('avatar', dungeonState.avatarHp, dungeonState.avatarMaxHp);
-            if (dungeonState.avatarHp <= 0) { applyHpUpdate(); setTimeout(dungeonAvatarDied, 300); return; }
-        } else {
-            dungeonState.avatarHp -= ed;
-            dungeonShowDmg('avatar', ed, '#ff6060');
-            flashDmgAvatar();
-        }
-        const as=document.getElementById('dng-avatar-side');
-        if(as)as.classList.add('shake');
-        setTimeout(()=>{if(as)as.classList.remove('shake');},300);
-        dngLog(room.name+' : dé '+er+' ('+et+'+) ✓ → -'+ed+' dégâts'+(dungeonState._manaArmor !== undefined && ed > 0 ? ' (armure)' : ' HP'),'dlog-bad');
+        avatarTakeDamage(ed, 'enemy');
+        dngLog(room.name+' : dé '+er+' ('+et+'+) ✓ → -'+ed+' dégâts','dlog-bad');
         // Effets spéciaux
         if(room.special==='poison'&&!dungeonState.poisonActive){
             dungeonState.poisonActive=true;
