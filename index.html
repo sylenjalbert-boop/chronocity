@@ -7046,6 +7046,8 @@ function restoreGameState(s) {
         }
         const nameEl = document.getElementById('dng-avatar-name');
         if (nameEl) nameEl.textContent = CLASS_DATA[clsKey].icon + ' ' + CLASS_DATA[clsKey].name;
+        // Rafraîchir les compétences de classe
+        setTimeout(function(){ if (typeof renderClassSkills === 'function') renderClassSkills(); }, 100);
     }
 }
 
@@ -7077,6 +7079,7 @@ function loadFromSlot(slot) {
         restoreGameState(state);
         updateStats(); renderTileGrid(); updateArmyPanels();
         renderBuildPanelList(); renderActionEquipTab(); updateTimeline();
+        if (typeof renderClassSkills === 'function') renderClassSkills();
         showSaveNotif('✅ S' + state.currentSeason + ' · Tour ' + state.currentTurn + ' chargé');
         hideSaveMenu();
     } catch(e) { console.error(e); showSaveNotif('❌ ' + e.message); }
