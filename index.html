@@ -3104,7 +3104,10 @@ function dungeonBarClick() {
 
             animEnemyDie(er, et, function() {
                 if (ehit) {
-                    const ed = calcDamage(room.dmg, protection);
+                    const baseDmg = calcDamage(room.dmg, protection);
+                    const mirrorRed = dungeonState._mirrorShield || 0;
+                    const ed = Math.max(1, baseDmg - mirrorRed);
+                    if (mirrorRed > 0 && baseDmg > mirrorRed) dngLog('🪞 Images miroir : -'+mirrorRed+' dégâts !', 'dlog-good');
                     avatarTakeDamage(ed, 'bar_enemy');
                     dngLog(room.emoji+' '+room.name+' : dé '+er+' ('+et+'+) ✓ → -'+ed+' HP', 'dlog-bad');
 
@@ -3766,6 +3769,19 @@ function triggerRoundEffects() {
     const goblins = all.filter(function(e){ return e.name && e.name.toLowerCase().indexOf('gobelin') !== -1; });
     const necros  = all.filter(function(e){ return e.special === 'necromancer'; });
 
+    // ── Nuage de poison (Aventurier) : dégâts sur tous les ennemis vivants ──
+    if (dungeonState._poisonCloud && dungeonState._poisonCloud > 0) {
+        all.forEach(function(e) {
+            dealDamageToEnemy(e, dungeonState._poisonCloud);
+        });
+        dngLog('☁ Nuage de poison : -'+dungeonState._poisonCloud+' HP sur tous les ennemis !', 'dlog-good');
+        setTimeout(function(){ renderEnemyPanel(); checkAllEnemiesDead(); }, 100);
+    }
+
+    // ── Images miroir : réinitialiser après chaque round (1 round seulement) ──
+    // Le mirrorShield est appliqué dans calcDamage via protection bonus — reset ici
+    dungeonState._mirrorShieldReset = true;
+
     // Gobelins : appel à l'aide au round 5
     if (dungeonState.roundCounter === 5 && goblins.length > 0) {
         const gobPool = pool.filter(function(m){ return m.name && m.name.toLowerCase().indexOf('gobelin') !== -1; });
@@ -4104,7 +4120,10 @@ function dungeonUseSkill(type) {
         const er = rollDie(6);
         animEnemyDie(er, et, function() {
             if (er >= et) {
-                const ed = calcDamage(room.dmg, protection);
+                const baseDmg2 = calcDamage(room.dmg, protection);
+                const mirrorRed2 = dungeonState._mirrorShield || 0;
+                const ed = Math.max(1, baseDmg2 - mirrorRed2);
+                if (mirrorRed2 > 0 && baseDmg2 > mirrorRed2) dngLog('🪞 Images miroir : -'+mirrorRed2+' dégâts !', 'dlog-good');
                 avatarTakeDamage(ed, 'multi');
                 dngLog(room.name+' riposte : dé '+er+' ('+et+'+) ✓ → -'+ed+' HP', 'dlog-bad');
             } else {
@@ -8460,9 +8479,9 @@ function dungeonUseClassSkill(skillId) {
         }
         // ─ AVENTURIER ─
         case 'poison_cloud': {
-            const pcDmg = Math.max(1, 1 + skLvl);
-            dungeonState._poisonCloud = (dungeonState._poisonCloud||0) + pcDmg;
-            dngLog('☁ Nuage de poison ! -'+dungeonState._poisonCloud+' HP/tour sur tous (niv.'+skLvl+').', 'dlog-good');
+            const pcDmg = 1 + skLvl;
+            dungeonState._poisonCloud = Math.max(dungeonState._poisonCloud||0, pcDmg);
+            dngLog('☁ Nuage de poison ! -'+pcDmg+' HP/tour sur tous (niv.'+skLvl+').', 'dlog-good');
             if (!isFree) finishRound(true);
             break;
         }
