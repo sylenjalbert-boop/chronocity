@@ -8286,7 +8286,7 @@ function renderClassSkills() {
     // Sans classe → anciens skills méta, seulement si achetés
     if (!avatarClass || !CLASS_DATA || !CLASS_DATA[avatarClass]) {
         // Skills méta : seulement ceux achetés
-        const metaSkills = [];
+        btnRow.innerHTML = '';
         const skillMap = [
             { id:'fireball', metaId:'Fireball',    icon:'🔥', label:'Boule de Feu',   fn:"dungeonUseSkill('fireball')", color:'#ff9060', bg:'#3a1000' },
             { id:'bless',    metaId:'Benediction', icon:'🌟', label:'Bénédiction',    fn:"dungeonUseSkill('bless')",    color:'#ffd060', bg:'#1a1000' },
