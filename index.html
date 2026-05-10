@@ -2575,7 +2575,7 @@ function enterRoom(roomEntry) {
         if (timing) timing.style.display = '';
         const done = dungeonState.visitedRooms.filter(Boolean).length;
         document.getElementById('dungeon-floor-label').textContent = `Salle ${done}/${dungeonState.generatedRooms.length}`;
-        document.getElementById('dng-avatar-hp-text').textContent = `HP: ${dungeonState.avatarHp}/${dungeonState.avatarMaxHp}`;
+        document.getElementById('dng-avatar-hp-text').textContent = 'HP: '+Math.max(0,dungeonState.avatarHp)+'/'+dungeonState.avatarMaxHp+(dungeonState._manaArmor?' 🔷'+dungeonState._manaArmor:'');
         document.getElementById('dng-avatar-stats').textContent   = `ATK: ${atk} | Dmg: ${avatarDmg} | DEF: ${def} | Prot: ${protection}`;
         dungeonUpdateHpBar('avatar', dungeonState.avatarHp, dungeonState.avatarMaxHp);
         updateGlyphButtons();
@@ -2695,7 +2695,8 @@ function dngSetupZones() {
     const crushing = dungeonState.enemy ? (dungeonState.enemy._crushingDef||0) : 0;
     const rawDef = dungeonState.enemy ? dungeonState.enemy.def : 2;
     const enemyDef = Math.max(1, rawDef + Math.floor(currentTurn/2) - crushing);
-    const t = hitThreshold(atk, enemyDef, true);
+    // Arme magique : seuil fixe 3+ (67% de toucher)
+    const t = (avatarMagicDmg > 0) ? 3 : hitThreshold(atk, enemyDef, true);
     // Vitesse constante plus rapide
     dngTiming.speed = 1.4;
     // % de la barre selon seuil de toucher
@@ -2919,13 +2920,15 @@ function dungeonBarClick() {
     const pos=dngTiming.pos;
     const zone=dngGetZone(pos);
     // Rage : Dmg ×2
-    const effectiveDmg = rageActive ? avatarDmg*2 : avatarDmg;
-    // _piercingNext : ignore la protection
+    const isMagicAttack = avatarMagicDmg > 0;
+    const arcaneLvl = (isMagicAttack && avatarClass === 'mage' && typeof getClassSkillLevel === 'function') ? (getClassSkillLevel('arcane')||0) : 0;
+    const effectiveDmg = isMagicAttack ? avatarMagicDmg + arcaneLvl : (rageActive ? avatarDmg*2 : avatarDmg);
+    // _piercingNext et armes magiques ignorent la protection
     const baseProt = dungeonState.enemy.protection;
-    const effectiveProt = dungeonState._piercingNext ? 0 : Math.max(0, baseProt - (dungeonState.enemy._crushingProt||0));
+    const effectiveProt = (isMagicAttack || dungeonState._piercingNext) ? 0 : Math.max(0, baseProt - (dungeonState.enemy._crushingProt||0));
     if (dungeonState._piercingNext) {
         dungeonState._piercingNext = false;
-        dngLog('🎯 Flèche perçante : protection ignorée !', 'dlog-good');
+        if (!isMagicAttack) dngLog('🎯 Flèche perçante : protection ignorée !', 'dlog-good');
     }
     const base=Math.max(1,effectiveDmg-effectiveProt);
     let dmg=0,badge='',bcls='',fc='',zlabel='';
@@ -2960,6 +2963,18 @@ function dungeonBarClick() {
         dungeonState.enemy.hp-=dmg;
         dungeonShowDmg('enemy',dmg,'#4cff8a');
 
+        // ── Freeze brisé si l'ennemi reçoit des dégâts ──
+        if (dungeonState.enemy._frozen) {
+            dungeonState.enemy._frozen = false;
+            if (dungeonState._freezeTurns > 0) dungeonState._freezeTurns--;
+            if (dungeonState._freezeTurns <= 0) {
+                dungeonState._freezeActive = false;
+                const allE2 = getAllLivingEnemies ? getAllLivingEnemies() : [];
+                allE2.forEach(function(e){ e._frozen = false; });
+            }
+            dngLog('❄ Freeze brisé par les dégâts ! L\'ennemi peut contre-attaquer.', 'dlog-bad');
+        }
+
         // ── Crushing Blow (Guerrier passif) : réduit DEF/Prot par touche selon niveau ──
         if (avatarClass === 'warrior') {
             const crushLvl = getClassSkillLevel ? (getClassSkillLevel('crushing')||0) : 0;
@@ -2992,7 +3007,7 @@ function dungeonBarClick() {
         if (avatarScythe) {
             dungeonState.enemies.front.forEach(function(e) {
                 if (e === dungeonState.enemy || e.hp <= 0) return;
-                e.hp = Math.max(0, e.hp - dmg);
+                dealDamageToEnemy(e, dmg);
                 dngLog('⚰ Faux : ' + e.name + ' -' + dmg + ' HP', 'dlog-good');
             });
         }
@@ -3046,7 +3061,16 @@ function dungeonBarClick() {
         const living = getAllLivingEnemies();
         if (living.length === 0) { finishRound(); return; }
 
-        // Fonction récursive : chaque ennemi attaque à son tour
+        // Freeze : si l'attaque est un miss et qu'il y a des ennemis gelés, pas de riposte
+        const anyFrozen = living.some(function(e){ return e._frozen; });
+        const wasMiss = zone === 'miss';
+        if (wasMiss && anyFrozen) {
+            dngLog('❄ Attaque ratée — les ennemis gelés ne ripostent pas !', 'dlog-good');
+            finishRound();
+            return;
+        }
+
+        // Fonction récursive : chaque ennemi attaque à son tour (les gelés sont bloqués dans enemyAttack)
         function attackNext(idx) {
             if (idx >= living.length) {
                 applyHpUpdate();
@@ -3063,8 +3087,7 @@ function dungeonBarClick() {
                 dungeonState.dragonBreathCounter++;
                 if (dungeonState.dragonBreathCounter % 4 === 0) {
                     const breathDmg = Math.max(1, room.dmg - protection);
-                    dungeonState.avatarHp -= breathDmg;
-                    dungeonShowDmg('avatar', breathDmg, '#ff4000');
+                    avatarTakeDamage(breathDmg, 'dragon');
                     dngLog('🔥 '+room.name+' souffle ! -'+breathDmg+' HP', 'dlog-bad');
                     applyHpUpdate();
                     if (dungeonState.avatarHp <= 0) { setTimeout(dungeonAvatarDied, 300); return; }
@@ -3082,9 +3105,7 @@ function dungeonBarClick() {
             animEnemyDie(er, et, function() {
                 if (ehit) {
                     const ed = calcDamage(room.dmg, protection);
-                    dungeonState.avatarHp -= ed;
-                    dungeonShowDmg('avatar', ed, '#ff6060');
-                    flashDmgAvatar();
+                    avatarTakeDamage(ed, 'bar_enemy');
                     dngLog(room.emoji+' '+room.name+' : dé '+er+' ('+et+'+) ✓ → -'+ed+' HP', 'dlog-bad');
 
                     if (room.special === 'poison' && !dungeonState.poisonActive) {
@@ -3111,8 +3132,7 @@ function dungeonBarClick() {
                             const er2 = rollDie(6);
                             if (er2 >= et2) {
                                 const ed2 = calcDamage(e2.dmg, protection);
-                                dungeonState.avatarHp -= ed2;
-                                dungeonShowDmg('avatar', ed2, '#ff4040');
+                                avatarTakeDamage(ed2, 'stun_multi');
                                 dngLog(e2.emoji+' '+e2.name+' profite du stun : -'+ed2+' HP', 'dlog-bad');
                                 // Effets spéciaux des autres monstres pendant le stun
                                 if (e2.special === 'lifesteal') {
@@ -3424,11 +3444,19 @@ function makeGridCell(e, isBack, row) {
         ' <span style="color:#80c0ff">'+thrAvatar+'+</span>'+
         '</div>';
 
+    // Effet visuel freeze
+    if (e._frozen) {
+        cell.style.filter = 'hue-rotate(180deg) brightness(1.3)';
+        cell.style.border = '2px solid #80c0ff';
+        cell.style.boxShadow = '0 0 8px rgba(128,192,255,0.6)';
+    }
+
     cell.innerHTML =
         '<div style="'+thrStyle+'">'+thrLabel+'</div>'+
+        (e._frozen ? '<div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:28px;opacity:0.7;pointer-events:none">❄</div>' : '')+
         imgHtml+
         '<div id="'+enemyDiceId+'" style="display:flex;gap:2px;flex-wrap:wrap;justify-content:center;min-height:18px;margin-bottom:2px"></div>'+
-        '<div style="font-size:8px;color:#aaa;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+e.name+'</div>'+
+        '<div style="font-size:8px;color:'+(e._frozen?'#80c0ff':'#aaa')+';text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+e.name+(e._frozen?' ❄':'')+' </div>'+
         statsHtml+
         '<div style="background:#1a0a0a;border-radius:3px;height:4px;margin:2px 0;overflow:hidden">'+
             '<div style="background:'+hpColor+';height:100%;width:'+hpPct+'%;transition:width .3s"></div>'+
@@ -3572,8 +3600,24 @@ function checkAllEnemiesDead() {
 
 
 function enemyAttack(room) {
-    // Un ennemi attaque l'avatar
     if (!room || room.hp <= 0) return;
+
+    // ── Freeze : ennemi bloqué ──
+    if (room._frozen) {
+        dngLog('❄ '+room.name+' est gelé et ne peut pas attaquer !', 'dlog-good');
+        // Décrémenter le compteur global de freeze
+        if (dungeonState._freezeTurns > 0) {
+            dungeonState._freezeTurns--;
+            if (dungeonState._freezeTurns <= 0) {
+                // Dégel de tous les ennemis
+                const allE = getAllLivingEnemies ? getAllLivingEnemies() : [];
+                allE.forEach(function(e){ e._frozen = false; });
+                dungeonState._freezeActive = false;
+                dngLog('❄ Freeze terminé ! Les ennemis sont libres.', 'dlog-bad');
+            }
+        }
+        return;
+    }
     const et = hitThreshold(room.atk, def);
     const er = rollDie(6);
     const ehit = er >= et;
@@ -3581,13 +3625,27 @@ function enemyAttack(room) {
     dngRenderHist();
     if(ehit){
         const ed = calcDamage(room.dmg, protection);
-        dungeonState.avatarHp -= ed;
-        dungeonShowDmg('avatar', ed, '#ff6060');
-        flashDmgAvatar();
+        if (dungeonState._manaArmor && dungeonState._manaArmor > 0) {
+            const absorbedEd = Math.min(dungeonState._manaArmor, ed);
+            dungeonState._manaArmor -= absorbedEd;
+            const remainingEd = ed - absorbedEd;
+            if (absorbedEd > 0) dngLog('🔷 Armure de mana absorbe '+absorbedEd+' dégâts !', 'dlog-good');
+            if (remainingEd > 0) { dungeonState.avatarHp -= remainingEd; dungeonShowDmg('avatar', remainingEd, '#ff6060'); flashDmgAvatar(); }
+            if (dungeonState._manaArmor <= 0) { dungeonState._manaArmor = 0; dngLog('🔷 Armure de mana brisée !', 'dlog-bad'); }
+            // Mettre à jour l'affichage HP/armure immédiatement
+            const hpEl = document.getElementById('dng-avatar-hp-text');
+            if (hpEl) hpEl.textContent = 'HP: '+Math.max(0,dungeonState.avatarHp)+'/'+dungeonState.avatarMaxHp+(dungeonState._manaArmor?' 🔷'+dungeonState._manaArmor:'');
+            dungeonUpdateHpBar('avatar', dungeonState.avatarHp, dungeonState.avatarMaxHp);
+            if (dungeonState.avatarHp <= 0) { applyHpUpdate(); setTimeout(dungeonAvatarDied, 300); return; }
+        } else {
+            dungeonState.avatarHp -= ed;
+            dungeonShowDmg('avatar', ed, '#ff6060');
+            flashDmgAvatar();
+        }
         const as=document.getElementById('dng-avatar-side');
         if(as)as.classList.add('shake');
         setTimeout(()=>{if(as)as.classList.remove('shake');},300);
-        dngLog(room.name+' : dé '+er+' ('+et+'+) ✓ → -'+ed+' HP','dlog-bad');
+        dngLog(room.name+' : dé '+er+' ('+et+'+) ✓ → -'+ed+' dégâts'+(dungeonState._manaArmor !== undefined && ed > 0 ? ' (armure)' : ' HP'),'dlog-bad');
         // Effets spéciaux
         if(room.special==='poison'&&!dungeonState.poisonActive){
             dungeonState.poisonActive=true;
@@ -3613,8 +3671,7 @@ function enemyAttack(room) {
             const er2=rollDie(6);const et2=hitThreshold(room.atk,def);
             if(er2>=et2){
                 const ed2=calcDamage(room.dmg,protection);
-                dungeonState.avatarHp-=ed2;
-                dungeonShowDmg('avatar',ed2,'#ff4040');
+                avatarTakeDamage(ed2, 'stun');
                 dngLog('👹 Deuxième frappe : -'+ed2+' HP','dlog-bad');
             }
         }
@@ -3630,17 +3687,58 @@ function applyHpUpdate(){
         avatarHp=dungeonState.avatarHp;
         dngLog('☠ Poison : -1 HP','dlog-bad');
     }
-    document.getElementById('dng-avatar-hp-text').textContent='HP: '+Math.max(0,dungeonState.avatarHp)+'/'+dungeonState.avatarMaxHp;
+    document.getElementById('dng-avatar-hp-text').textContent='HP: '+Math.max(0,dungeonState.avatarHp)+'/'+dungeonState.avatarMaxHp + (dungeonState._manaArmor ? ' 🔷'+dungeonState._manaArmor : '');
     dungeonUpdateHpBar('avatar',dungeonState.avatarHp,dungeonState.avatarMaxHp);
     avatarHp=Math.max(0,dungeonState.avatarHp);
     updateStats();
 }
 
-function finishRound(){
+// Helper : inflige des dégâts à l'avatar en passant par l'armure de mana
+// Helper : inflige des dégâts à un ennemi et brise le freeze si actif
+function dealDamageToEnemy(e, dmg) {
+    if (!e || dmg <= 0) return;
+    e.hp = Math.max(0, e.hp - dmg);
+    // Brise le freeze
+    if (e._frozen) {
+        e._frozen = false;
+        if (dungeonState._freezeTurns > 0) {
+            dungeonState._freezeTurns--;
+            if (dungeonState._freezeTurns <= 0) {
+                dungeonState._freezeActive = false;
+                const allE = getAllLivingEnemies ? getAllLivingEnemies() : [];
+                allE.forEach(function(e2){ e2._frozen = false; });
+            }
+        }
+        dngLog('❄ Freeze brisé !', 'dlog-bad');
+    }
+}
+
+function avatarTakeDamage(dmg, source) {
+    if (dungeonState._manaArmor && dungeonState._manaArmor > 0) {
+        const absorbed = Math.min(dungeonState._manaArmor, dmg);
+        dungeonState._manaArmor -= absorbed;
+        const remaining = dmg - absorbed;
+        if (absorbed > 0) dngLog('🔷 Armure de mana absorbe '+absorbed+' dégâts !', 'dlog-good');
+        if (dungeonState._manaArmor <= 0) { dungeonState._manaArmor = 0; dngLog('🔷 Armure de mana brisée !', 'dlog-bad'); }
+        if (remaining > 0) { dungeonState.avatarHp -= remaining; dungeonShowDmg('avatar', remaining, '#ff6060'); flashDmgAvatar(); }
+    } else {
+        dungeonState.avatarHp -= dmg;
+        dungeonShowDmg('avatar', dmg, '#ff6060');
+        flashDmgAvatar();
+    }
+    document.getElementById('dng-avatar-hp-text').textContent='HP: '+Math.max(0,dungeonState.avatarHp)+'/'+dungeonState.avatarMaxHp+(dungeonState._manaArmor?' 🔷'+dungeonState._manaArmor:'');
+    avatarHp = Math.max(0, dungeonState.avatarHp);
+}
+
+function finishRound(triggerRetaliation){
     const rb2=document.getElementById('dng-result');if(rb2)rb2.textContent='';
     dungeonState.roundCounter++;
-    // Effets de round : gobelin appel aide (round 5) + nécromancien invocation
     triggerRoundEffects();
+    // Riposte ennemie uniquement si demandée (skills actions)
+    if (triggerRetaliation && dungeonState.active && dungeonState.enemies) {
+        const living = [...dungeonState.enemies.front, ...dungeonState.enemies.back].filter(function(e){ return e.hp>0; });
+        living.forEach(function(e){ setTimeout(function(){ if(dungeonState.active) enemyAttack(e); }, 200); });
+    }
     dngShowAttackBtn(true);
     updateGlyphButtons();
 }
@@ -3869,7 +3967,7 @@ function dungeonLoadRoom(roomIdx) {
     }).join('');
 
     document.getElementById('dungeon-floor-label').textContent = `Salle ${roomIdx+1}/3`;
-    document.getElementById('dng-avatar-hp-text').textContent = `HP: ${dungeonState.avatarHp}/${dungeonState.avatarMaxHp}`;
+    document.getElementById('dng-avatar-hp-text').textContent = 'HP: '+Math.max(0,dungeonState.avatarHp)+'/'+dungeonState.avatarMaxHp+(dungeonState._manaArmor?' 🔷'+dungeonState._manaArmor:'');
     document.getElementById('dng-avatar-stats').textContent   = `ATK: ${atk} | Dmg: ${avatarDmg} | DEF: ${def} | Prot: ${protection}`;
     dungeonUpdateHpBar('avatar', dungeonState.avatarHp, dungeonState.avatarMaxHp);
     document.getElementById('dng-enemy-name').textContent  = room.name;
@@ -3991,7 +4089,7 @@ function dungeonUseSkill(type) {
         const healed = Math.min(healAmt, dungeonState.avatarMaxHp - dungeonState.avatarHp);
         dungeonState.avatarHp = Math.min(dungeonState.avatarMaxHp, dungeonState.avatarHp + healAmt);
         avatarHp = dungeonState.avatarHp;
-        document.getElementById('dng-avatar-hp-text').textContent = 'HP: '+dungeonState.avatarHp+'/'+dungeonState.avatarMaxHp;
+        document.getElementById('dng-avatar-hp-text').textContent = 'HP: '+Math.max(0,dungeonState.avatarHp)+'/'+dungeonState.avatarMaxHp+(dungeonState._manaArmor?' 🔷'+dungeonState._manaArmor:'');
         dungeonUpdateHpBar('avatar', dungeonState.avatarHp, dungeonState.avatarMaxHp);
         dngLog('💊 Soin (Niv.'+soinLvl+') ! +'+healed+' HP.', 'dlog-good');
     }
@@ -4007,9 +4105,7 @@ function dungeonUseSkill(type) {
         animEnemyDie(er, et, function() {
             if (er >= et) {
                 const ed = calcDamage(room.dmg, protection);
-                dungeonState.avatarHp -= ed;
-                dungeonShowDmg('avatar', ed, '#ff6060');
-                flashDmgAvatar();
+                avatarTakeDamage(ed, 'multi');
                 dngLog(room.name+' riposte : dé '+er+' ('+et+'+) ✓ → -'+ed+' HP', 'dlog-bad');
             } else {
                 dngLog(room.name+' riposte : dé '+er+' ('+et+'+) ✗ raté', 'dlog-info');
@@ -4098,6 +4194,7 @@ function dungeonFlee() {
 function dungeonRoomWon() {
     // Reset compétences après chaque victoire (par combat, pas par donjon)
     skillUsed = { Fireball:false, Benediction:false, Rage:false, Soin:false };
+    dungeonState._manaArmor = 0;
     // Reset effets de classe sur les ennemis
     if (dungeonState.enemies) {
         [...(dungeonState.enemies.front||[]), ...(dungeonState.enemies.back||[])].forEach(function(e){
@@ -6933,6 +7030,23 @@ function restoreGameState(s) {
     if (s.fortifications !== undefined) {
         fortifications = Math.min(s.fortifications, getMaxFort());
     }
+
+    // Ré-appliquer la classe après restauration des équipements
+    const clsKey = (getMeta().legendaryOptions || {}).classeAvatar;
+    if (clsKey && typeof CLASS_DATA !== 'undefined' && CLASS_DATA[clsKey]) {
+        avatarClass = clsKey;
+        // Ne pas rappeler applyClassBonuses (stats déjà dans la save) — juste restaurer les flags
+        if (clsKey === 'archer') window._arcElfique = (equippedItems.weapon_main === 'Arc');
+        if (clsKey === 'mage' || clsKey === 'adventurer') {
+            const wand = equippedItems.weapon_main;
+            if (wand === 'Baguette' || wand === 'Baton') {
+                const item = (typeof EQUIPMENT_CATALOG !== 'undefined') ? EQUIPMENT_CATALOG.find(function(i){ return i.id === wand; }) : null;
+                if (item) avatarMagicDmg = item.id === 'Baguette' ? 2 : 4;
+            }
+        }
+        const nameEl = document.getElementById('dng-avatar-name');
+        if (nameEl) nameEl.textContent = CLASS_DATA[clsKey].icon + ' ' + CLASS_DATA[clsKey].name;
+    }
 }
 
 function saveToSlot(slot) {
@@ -8054,10 +8168,11 @@ const CLASS_DATA = {
         color: '#c080ff',
         bonuses: { freeBaguette:true },
         skills: [
-            { id:'shield',    name:'Bouclier de mana', icon:'🛡', desc:'(Passif) Absorbe X dégâts',         color:'#c080ff', passive:true },
+            { id:'shield',    name:'Armure de mana',   icon:'🔷', desc:'Active : ajoute des PV temporaires absorbés avant les PV réels. Relancer remet au max.', color:'#c080ff' },
             { id:'zap',       name:'Zap',               icon:'⚡', desc:'X dégâts magiques, 1 cible',        color:'#ffd060' },
             { id:'freeze',    name:'Freeze',             icon:'❄', desc:'Bloque ennemis 3 rounds (annulé si dégâts)', color:'#80c0ff' },
-            { id:'rewind',    name:'Rewind',             icon:'⏪', desc:'Recharge les compétences (coûte HP, gratuit)', color:'#ff80c0', free:true },
+            { id:'arcane',    name:'Arcane',              icon:'🔮', desc:'(Passif) Dégâts de baguette/bâton +1 par niveau.', color:'#c080ff', passive:true },
+            { id:'rewind',    name:'Rewind',             icon:'⏪', desc:'Recharge les compétences (coûte HP). Action. Utilisations = 1 + niveau.', color:'#ff80c0', dynamicUses:true },
         ]
     },
     adventurer: {
@@ -8225,7 +8340,8 @@ function dungeonUseClassSkill(skillId) {
                   CLASS_DATA[avatarClass].skills.find(function(s){ return s.id===skillId; });
     if (!skill) return;
     const isFree = !!skill.free;
-    if (!isFree && dngTiming.phase === 'timing') return;
+    // Actions libres passent toujours. Actions normales bloquées pendant timing sauf skills qui utilisent action
+    if (dngTiming.phase === 'timing' && isFree) return; // les gratuits ne peuvent pas interrompre le timing
 
     // Marquer utilisé (sauf gratuit)
     if (!isFree) dungeonState['skill_'+skillId+'_used'] = true;
@@ -8263,10 +8379,10 @@ function dungeonUseClassSkill(skillId) {
             const maxTargets = 1 + skLvl;
             const colSlice = col.slice(0, maxTargets);
             const dmg = Math.max(1, atk);
-            colSlice.forEach(function(e){ e.hp = Math.max(0, e.hp - dmg); });
+            colSlice.forEach(function(e){ dealDamageToEnemy(e, dmg); });
             dngLog('🏹 Volée ! -'+dmg+' HP à '+colSlice.length+' cible(s) (niv.'+skLvl+')', 'dlog-good');
             setTimeout(function(){ renderEnemyPanel(); checkAllEnemiesDead(); }, 100);
-            if (!isFree) finishRound();
+            if (!isFree) finishRound(true);
             break;
         }
         case 'piercing': {
@@ -8285,22 +8401,32 @@ function dungeonUseClassSkill(skillId) {
             const warcryBonus = 2 + skLvl; // +2 seuil de base, +1 par niveau
             allE.forEach(function(e){ e._warcryThreshold = (e._warcryThreshold||0) + warcryBonus; });
             dngLog('📣 Cri de guerre ! Seuil de toucher des ennemis +'+warcryBonus+' ce combat.', 'dlog-good');
-            if (!isFree) finishRound();
+            if (!isFree) finishRound(true);
             break;
         }
         case 'stun': {
             if (target) { target._stunTurns = 2; target._stunBlock = true; }
             dngLog('💫 Stun ! '+( target?target.name:'cible')+' bloqué 2 tours.', 'dlog-good');
-            if (!isFree) finishRound();
+            if (!isFree) finishRound(true);
             break;
         }
         // ─ MAGE ─
+        case 'shield': {
+            const shieldLvl = skLvl;
+            const armorAmt = Math.max(3, 3 + shieldLvl * 2);
+            dungeonState._manaArmor = armorAmt;
+            dngLog('🔷 Armure de mana : +'+armorAmt+' PV temporaires !', 'dlog-good');
+            if (typeof applyHpUpdate === 'function') applyHpUpdate();
+            renderClassSkills();
+            finishRound(true);
+            break;
+        }
         case 'zap': {
             const magDmg = Math.max(2, (avatarMagicDmg||2) * 2 + skLvl * 3);
-            if (target) { target.hp = Math.max(0, target.hp - magDmg); }
+            if (target) { dealDamageToEnemy(target, magDmg); }
             dngLog('⚡ Zap ! -'+magDmg+' dégâts magiques.', 'dlog-good');
             setTimeout(function(){ renderEnemyPanel(); checkAllEnemiesDead(); }, 100);
-            if (!isFree) finishRound();
+            finishRound(true); // action → riposte
             break;
         }
         case 'freeze': {
@@ -8308,20 +8434,25 @@ function dungeonUseClassSkill(skillId) {
             dungeonState._freezeActive = true;
             dungeonState._freezeTurns = 3 + skLvl;
             dngLog('❄ Freeze ! Ennemis bloqués '+(3+skLvl)+' rounds.', 'dlog-good');
-            if (!isFree) finishRound();
+            if (!isFree) finishRound(true);
             break;
         }
-        case 'rewind': { // gratuit, coûte HP
+        case 'rewind': {
+            // Rewind : coûte 15% HP (ignore armure de mana), recharge toutes les compétences SAUF rewind lui-même
             const hpCost = Math.floor(avatarMaxHp * 0.15);
             dungeonState.avatarHp = Math.max(1, dungeonState.avatarHp - hpCost);
             avatarHp = dungeonState.avatarHp;
-            // Réinitialiser tous les skills utilisés
+            // Reset toutes les compétences SAUF les uses de rewind
+            const rewindUses = dungeonState['skill_rewind_uses'];
             Object.keys(dungeonState).forEach(function(k){
-                if (k.startsWith('skill_') && k.endsWith('_used')) delete dungeonState[k];
+                if (k.startsWith('skill_')) delete dungeonState[k];
             });
-            dngLog('⏪ Rewind ! Compétences rechargées (-'+hpCost+' HP).', 'dlog-good');
-            applyHpUpdate && applyHpUpdate();
+            if (rewindUses !== undefined) dungeonState['skill_rewind_uses'] = rewindUses;
+            skillUsed = { Fireball:false, Benediction:false, Rage:false, Soin:false };
+            dngLog('⏪ Rewind ! Compétences rechargées (-'+hpCost+' HP directs).', 'dlog-good');
+            if (typeof applyHpUpdate === 'function') applyHpUpdate();
             renderClassSkills();
+            finishRound(true);
             break;
         }
         // ─ AVENTURIER ─
@@ -8329,7 +8460,7 @@ function dungeonUseClassSkill(skillId) {
             const pcDmg = Math.max(1, 1 + skLvl);
             dungeonState._poisonCloud = (dungeonState._poisonCloud||0) + pcDmg;
             dngLog('☁ Nuage de poison ! -'+dungeonState._poisonCloud+' HP/tour sur tous (niv.'+skLvl+').', 'dlog-good');
-            if (!isFree) finishRound();
+            if (!isFree) finishRound(true);
             break;
         }
         case 'blade_trap': {
@@ -8337,24 +8468,24 @@ function dungeonUseClassSkill(skillId) {
             const tdmg = Math.max(2, atk);
             col2.forEach(function(e){
                 const reduced = Math.max(0, tdmg - (e.protection||0));
-                e.hp = Math.max(0, e.hp - reduced);
+                dealDamageToEnemy(e, reduced);
             });
             dngLog('⚙ Pièges de lames ! -'+tdmg+' dégâts (prot. appliquée).', 'dlog-good');
             setTimeout(function(){ renderEnemyPanel(); checkAllEnemiesDead(); }, 100);
-            if (!isFree) finishRound();
+            if (!isFree) finishRound(true);
             break;
         }
         case 'curse': {
             const curseDmg = Math.max(1, 1 + skLvl);
             allE.forEach(function(e){ e._curse = (e._curse||0) + curseDmg; });
             dngLog('💀 Malédiction ! -'+curseDmg+' ATK sur tous (niv.'+skLvl+').', 'dlog-good');
-            if (!isFree) finishRound();
+            if (!isFree) finishRound(true);
             break;
         }
         case 'mirror': {
             dungeonState._mirrorShield = Math.max(2, atk + skLvl * 2);
             dngLog('🪞 Images miroir ! -'+dungeonState._mirrorShield+' dégâts reçus ce round.', 'dlog-good');
-            if (!isFree) finishRound();
+            if (!isFree) finishRound(true);
             break;
         }
     }
