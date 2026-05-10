@@ -644,6 +644,18 @@
 </div>
 </div>
 
+
+<!-- ═══ MODAL RUNES ═══ -->
+<div id="rune-choice-modal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);z-index:15000;align-items:center;justify-content:center">
+<div style="background:#0a0810;border:1px solid #6a50a0;border-radius:12px;padding:20px;width:min(95vw,380px);display:flex;flex-direction:column;gap:10px">
+    <div style="font-family:Cinzel,serif;font-size:14px;color:#e0c080;text-align:center">⚒ Maître des Runes</div>
+    <div style="font-size:11px;color:#7a6a4a;text-align:center">Choisissez une rune à graver sur vos unités</div>
+    <button onclick="applyRune('anti-demon')" style="background:#1a0818;border:1px solid #c060ff;color:#c060ff;border-radius:7px;padding:10px;cursor:pointer;font-size:12px">💜 Rune Anti-Démon — toutes unités +1 anti-démon</button>
+    <button onclick="applyRune('anti-mort-vivant')" style="background:#080818;border:1px solid #60a0ff;color:#60a0ff;border-radius:7px;padding:10px;cursor:pointer;font-size:12px">💙 Rune Anti-Mort-Vivant — toutes unités +1 anti-mort-vivant</button>
+    <button onclick="document.getElementById('rune-choice-modal').style.display='none'" style="background:#1a0a0a;border:1px solid #5a2020;color:#ff8060;border-radius:6px;padding:8px;cursor:pointer;font-size:11px">Annuler</button>
+</div>
+</div>
+
 <div id="terrain-mod-overlay" style="display:none;position:fixed;top:20px;left:50%;transform:translateX(-50%);z-index:9999;background:#1a1408;border:1px solid #e0c080;border-radius:10px;padding:12px 24px;text-align:center;box-shadow:0 0 30px rgba(224,192,128,0.4)">
     <div style="font-family:Cinzel,serif;font-size:14px;color:#e0c080">🗼 Cliquez sur une tuile à transformer</div>
     <div style="font-size:10px;color:#a09060;margin-top:4px">Tuiles éligibles entourées en doré</div>
@@ -1495,6 +1507,16 @@ function addLog(message) {
         gold += goldperturn;
 		mana += manaperturn;
 		population += populationperturn;
+		// Bénédiction (Sanctuaire) : +5 Or +5 Pop sur Prairies/Collines/Lacs
+		const opts2 = (getMeta().legendaryOptions || {});
+		if (opts2.sa_benediction) {
+			const blessedTiles = tileState.filter(function(t){ return t.revealed && (t.type === 'Prairie' || t.type === 'Collines' || t.type === 'Lac'); });
+			if (blessedTiles.length > 0) {
+				const bonus = blessedTiles.length * 5;
+				gold += bonus; population += bonus;
+				addLog('✨ Bénédiction : +'+bonus+' Or +'+bonus+' Pop ('+blessedTiles.length+' tuiles bénie(s))');
+			}
+		}
 		addLog("Vous avez gagné " + goldperturn + " Or !");
 		addLog("Vous avez gagné " + manaperturn + " Mana !");
 		addLog("Vous avez gagné " + populationperturn + " Population !");
@@ -4572,6 +4594,17 @@ const UNIT_CATALOG = [
     { id:'Paladin',       name:'Paladin',           icon:'⚜', atk:4, atkMag:2, traits:['anti-cavalerie','anti-mort-vivant'],
       gold:55, pop:10, mana:10, req:'academie_temple',
       desc:'Élite : anti-cavalerie et anti-mort-vivant. Requiert Académie + Temple.' },
+    // ── Unités Légendaires ──
+    { id:'Dryade',       name:'Dryade',         icon:'🌿', atk:6, atkMag:0, traits:['infanterie','elite'], elite:true,
+      gold:0, pop:30, mana:80, req:'ae_druidique',
+      desc:'Elite elfique. Infanterie. Mana+Pop uniquement, pas de conscription. Requiert Cercle Druidique.' },
+    { id:'Ingenieur',    name:'Ingénieur',       icon:'⚙',  atk:4, atkMag:0, traits:['anti-sapeur','anti-sapeur','anti-distance','anti-distance'],
+      gold:80, pop:20, mana:30, req:'fn_ingenieurs',
+      desc:'Anti-Sapeur II, Anti-Distance II. Requiert Ingénieurs.' },
+    { id:'Inquisiteur',  name:'Inquisiteur',     icon:'⚜',  atk:6, atkMag:0, traits:['anti-demon','anti-demon','anti-demon'],
+      gold:120, pop:25, mana:60, req:'sa_inquisiteurs',
+      desc:'ATK 6, Anti-Démon III. Renforce +1 anti-démon aux autres unités. Requiert Inquisiteurs.' },
+
 ];
 
 // Catalogue de la horde par saison
@@ -5104,9 +5137,22 @@ function recruitUnit(unitDef) {
     gold -= unitDef.gold;
     population -= unitDef.pop;
     mana -= unitDef.mana;
-    conscrit -= 1;
-    cityArmy.push({...unitDef});
+    // Élites ne consomment pas de conscription
+    if (!unitDef.elite) conscrit -= 1;
+    const newUnit = {...unitDef, traits: [...(unitDef.traits||[])]};
+    cityArmy.push(newUnit);
     addLog('Recruté : '+unitDef.icon+' '+unitDef.name+' (ATK '+unitDef.atk+', Mag '+unitDef.atkMag+')');
+
+    // Inquisiteur : renforce anti-démon +1 sur les autres unités
+    if (unitDef.id === 'Inquisiteur') {
+        cityArmy.forEach(function(u) {
+            if (u === newUnit) return;
+            if (u.traits && u.traits.includes('anti-demon')) {
+                u.traits.push('anti-demon');
+                addLog('\u2728 ' + u.name + ' renforc\u00e9 : +1 anti-d\u00e9mon !');
+            }
+        });
+    }
     updateStats();
     renderRecruitList();
     updateArmyPanels();
@@ -8049,8 +8095,35 @@ function applyLegendaryOption(key, opts) {
         openClassChoiceModal();
         return;
     }
-    // ae_eclaireurs, fn_runes, fn_ingenieurs, ae_druidique, sa_aura, sa_inquisiteurs
-    // seront implémentés dans les étapes suivantes
+    else if (key === 'ae_eclaireurs') {
+        // Débloque l'action "Scouter" sur l'écran de horde
+        window._metaScout = true;
+        addLog('🌳 Éclaireurs : vous pouvez désormais scouter la horde avant chaque bataille !');
+    }
+    else if (key === 'ae_druidique') {
+        addLog('🌳 Cercle Druidique : Dryade disponible au recrutement !');
+        // Unité débloquée via req:'ae_druidique' dans UNIT_CATALOG
+    }
+    else if (key === 'fn_runes') {
+        // Ouvre un choix de rune
+        openRuneChoiceModal();
+        return;
+    }
+    else if (key === 'fn_ingenieurs') {
+        addLog('⛒ Ingénieurs disponibles au recrutement !');
+    }
+    else if (key === 'sa_aura') {
+        cityArmy.forEach(function(u){
+            if (u.elite || u.req) { // unités élites
+                if (!u.traits.includes('anti-mort-vivant')) u.traits.push('anti-mort-vivant');
+            }
+        });
+        addLog('✨ Aura de Pureté : unités élites gagnent anti-mort-vivant !');
+    }
+    else if (key === 'sa_inquisiteurs') {
+        addLog('✨ Inquisiteurs disponibles au recrutement !');
+    }
+    // pm_classe géré séparément
 }
 
 
@@ -8546,6 +8619,22 @@ function buyClassSkill(skId) {
 function getClassSkillLevel(skillId) {
     const m = getMeta();
     return (m.hero.skillLevels || {})['cls_' + skillId] || 0;
+}
+
+
+function openRuneChoiceModal() {
+    document.getElementById('rune-choice-modal').style.display = 'flex';
+}
+
+function applyRune(traitName) {
+    document.getElementById('rune-choice-modal').style.display = 'none';
+    cityArmy.forEach(function(u){ u.traits.push(traitName); });
+    addLog('⚒ Rune '+traitName+' gravée sur toutes les unités !');
+    const m = getMeta();
+    if (!m.legendaryOptions) m.legendaryOptions = {};
+    m.legendaryOptions['fn_runes'] = true;
+    saveMeta(m); window._meta = m;
+    renderBuildPanelList();
 }
 
 </script>
