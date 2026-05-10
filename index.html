@@ -3033,6 +3033,25 @@ function dungeonBarClick() {
             dngLog('🧛 Tir vampirique : +' + heal + ' HP !', 'dlog-good');
         }
 
+        // ── Flèche explosive (Archer passif) : dégâts aux ennemis adjacents ──
+        if (avatarClass === 'archer') {
+            const explosiveLvl = typeof getClassSkillLevel === 'function' ? (getClassSkillLevel('explosive')||0) : 0;
+            if (explosiveLvl > 0) {
+                const splashDmg = explosiveLvl; // 1 par niveau
+                const target = dungeonState.enemy;
+                const front = dungeonState.enemies ? dungeonState.enemies.front.filter(function(e){ return e.hp>0; }) : [];
+                const back  = dungeonState.enemies ? dungeonState.enemies.back.filter(function(e){ return e.hp>0; })  : [];
+                const allE = [...front, ...back];
+                var splashCount = 0;
+                allE.forEach(function(e) {
+                    if (e === target) return;
+                    dealDamageToEnemy(e, splashDmg);
+                    splashCount++;
+                });
+                if (splashCount > 0) dngLog('💥 Flèche explosive : -'+splashDmg+' HP aux '+splashCount+' ennemi(s) adjacents !', 'dlog-good');
+            }
+        }
+
         // ── Faux : frappe toutes les unités du rang avant ──
         if (avatarScythe) {
             dungeonState.enemies.front.forEach(function(e) {
