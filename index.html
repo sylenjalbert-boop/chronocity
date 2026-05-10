@@ -2947,6 +2947,14 @@ function dungeonBarClick() {
         dmg=Math.ceil(base*1.2);
         badge=`✦ ×1.2 — ${dmg} dégâts !`;bcls='dng-r-perf';fc='#003820';zlabel='×1.2';
         dngLog(`Vous : ×1.2 PARFAIT → -${dmg} HP !`,'dlog-good');
+        // Guerrier passif : soin sur coup parfait
+        if (avatarClass === 'warrior') {
+            const healLvl = typeof getClassSkillLevel === 'function' ? (getClassSkillLevel('perfect_heal')||0) : 0;
+            const healAmt = 1 + healLvl;
+            dungeonState.avatarHp = Math.min(dungeonState.avatarMaxHp, dungeonState.avatarHp + healAmt);
+            avatarHp = dungeonState.avatarHp;
+            dngLog('⚔ Coup parfait ! +'+healAmt+' HP', 'dlog-good');
+        }
     }
     dngPushHist(dngTiming.histPlayer,zlabel,null);
     dngRenderHist();
@@ -8186,6 +8194,7 @@ const CLASS_DATA = {
             { id:'warcry',    name:'Cri de guerre',   icon:'📣', desc:'ATK ennemis ÷2 ce round', color:'#ff8040' },
             { id:'stun',      name:'Stun',             icon:'💫', desc:'Bloque 1 ennemi 2 tours (touche sur 2+)', color:'#ffd060' },
             { id:'crushing',  name:'Crushing Blow',    icon:'🔨', desc:'(Passif) -1 DEF ennemi par touche', color:'#ff6060', passive:true },
+            { id:'perfect_heal', name:'Second Souffle', icon:'💚', desc:'(Passif) Coup parfait (×1.2) → +1 HP (+1 par niveau)', color:'#4cffaa', passive:true },
         ]
     },
     mage: {
