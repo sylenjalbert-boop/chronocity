@@ -3719,7 +3719,13 @@ function avatarTakeDamage(dmg, source) {
         flashDmgAvatar();
     }
     document.getElementById('dng-avatar-hp-text').textContent='HP: '+Math.max(0,dungeonState.avatarHp)+'/'+dungeonState.avatarMaxHp+(dungeonState._manaArmor?' 🔷'+dungeonState._manaArmor:'');
+    dungeonUpdateHpBar && dungeonUpdateHpBar('avatar', dungeonState.avatarHp, dungeonState.avatarMaxHp);
     avatarHp = Math.max(0, dungeonState.avatarHp);
+    // Vérification de survie
+    if (dungeonState.avatarHp <= 0) {
+        dungeonState.avatarHp = 0;
+        setTimeout(function(){ if (typeof dungeonAvatarDied === 'function') dungeonAvatarDied(); }, 300);
+    }
 }
 
 function finishRound(triggerRetaliation){
