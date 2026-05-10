@@ -3602,6 +3602,18 @@ function checkAllEnemiesDead() {
 function enemyAttack(room) {
     if (!room || room.hp <= 0) return;
 
+    // ── Stun : ennemi bloqué ──
+    if (room._stunBlock) {
+        room._stunTurns = (room._stunTurns || 1) - 1;
+        dngLog('💫 '+room.name+' est stun et ne peut pas attaquer ! ('+room._stunTurns+' tour(s) restant)', 'dlog-good');
+        if (room._stunTurns <= 0) {
+            room._stunBlock = false;
+            room._stunTurns = 0;
+            dngLog('💫 Stun terminé sur '+room.name+' !', 'dlog-info');
+        }
+        return;
+    }
+
     // ── Freeze : ennemi bloqué ──
     if (room._frozen) {
         dngLog('❄ '+room.name+' est gelé et ne peut pas attaquer !', 'dlog-good');
