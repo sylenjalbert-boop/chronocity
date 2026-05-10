@@ -3778,9 +3778,7 @@ function triggerRoundEffects() {
         setTimeout(function(){ renderEnemyPanel(); checkAllEnemiesDead(); }, 100);
     }
 
-    // ── Images miroir : réinitialiser après chaque round (1 round seulement) ──
-    // Le mirrorShield est appliqué dans calcDamage via protection bonus — reset ici
-    dungeonState._mirrorShieldReset = true;
+    // ── Images miroir : persiste tout le combat, reset dans dungeonRoomWon ──
 
     // Gobelins : appel à l'aide au round 5
     if (dungeonState.roundCounter === 5 && goblins.length > 0) {
@@ -4214,6 +4212,8 @@ function dungeonRoomWon() {
     // Reset compétences après chaque victoire (par combat, pas par donjon)
     skillUsed = { Fireball:false, Benediction:false, Rage:false, Soin:false };
     dungeonState._manaArmor = 0;
+    dungeonState._poisonCloud = 0;   // Nuage de poison : reset entre combats
+    dungeonState._mirrorShield = 0;  // Images miroir : reset entre combats
     // Reset effets de classe sur les ennemis
     if (dungeonState.enemies) {
         [...(dungeonState.enemies.front||[]), ...(dungeonState.enemies.back||[])].forEach(function(e){
