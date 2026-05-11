@@ -2067,7 +2067,10 @@ function applyMetaBonuses() {
     avatarDmg+= m.hero.dmg;
     protection += m.hero.prot;
     def      += m.hero.def;
-    window._metaHpBonus = m.hero.hpMax * 3;
+    const hpBonus = (m.hero.hpMax || 0) * 3;
+    avatarMaxHp += hpBonus;
+    avatarHp = avatarMaxHp;
+    window._metaHpBonus = hpBonus;
     // Ville
     window._metaCityPower = m.city.power || 0;
     window._metaGarrison = [...(m.city.garrison||[])];
@@ -7628,11 +7631,8 @@ function initNewRun() {
     population = 50 + (m.city.pop || 0);
     dust = m.dust || 0;
     fortifications = 1; conscrit = 3; space = 0;
-    atk = 1 + (m.hero.atk || 0);
-    def = 1 + (m.hero.def || 0);
-    avatarDmg = 1 + (m.hero.dmg || 0);
-    protection = 0 + (m.hero.prot || 0);
-    avatarMaxHp = 9 + (m.hero.hpMax || 0) * 3;
+    atk = 1; def = 1; avatarDmg = 1; protection = 0;
+    avatarMaxHp = 9;
     avatarHp = avatarMaxHp;
     avatarRanged = false; avatarPiercing = false; avatarScythe = false;
     avatarMagicWeapon = false; avatarAntiRange = false;
