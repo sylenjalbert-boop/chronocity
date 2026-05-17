@@ -39,7 +39,7 @@
         body.processing #main-content-row{filter:blur(2px);pointer-events:none;transition:filter 0.2s;}
         body.processing #sec-build{filter:blur(2px);pointer-events:none;transition:filter 0.2s;}
         body.processing #sec-tax{filter:blur(2px);pointer-events:none;transition:filter 0.2s;}
-        body.processing:not(.waiting-dungeon) #sec-tile{filter:blur(2px);pointer-events:none;transition:filter 0.2s;}
+        body.processing #sec-tile{filter:blur(2px);pointer-events:none;transition:filter 0.2s;}
         #explore-popup .ep-icon{font-size:34px;margin-bottom:5px;}
         #explore-popup .ep-title{font-family:'Cinzel',serif;font-weight:bold;font-size:15px;margin-bottom:6px;}
         #explore-popup .ep-bonus{font-size:20px;font-weight:bold;margin:3px 0;}
@@ -1122,7 +1122,7 @@
     <div id="main-layout">
 
         <!-- BARRE D'ACTIONS HORIZONTALE -->
-        <div id="action-bar">
+        <div id="action-bar" style="display:none">
 
             <!-- Section TUILE -->
             <div class="action-section" id="sec-tile" style="display:flex;flex-direction:column;">
@@ -1130,7 +1130,6 @@
                 <div id="tile-preview-card"></div>
                 <button class="action-main-btn" id="btn-reveal-tile" onclick="doRevealTile()">Révéler</button>
                 <div id="tile-action-hint" class="action-hint" style="flex:1"></div>
-                <div id="tile-skip-btn"></div>
             </div>
 
             <!-- Section CONSTRUIRE -->
@@ -1161,7 +1160,7 @@
         </div>
 
         <!-- Panneau équipement/armée -->
-        <div id="equip-panel">
+        <div id="equip-panel" style="display:none">
             <div id="equip-tabs">
                 <button class="eq-tab active" id="etab-army" onclick="equipTab('army')">🛡 Armée</button>
             </div>
@@ -1170,7 +1169,7 @@
         </div>
 
         <!-- Panneau ressources -->
-        <div id="res-panel">
+        <div id="res-panel" style="display:none">
             <div class="res-title">Ressources</div>
             <div class="res-row"><span class="res-label">🪙 Or</span><span class="res-val" id="res-gold">—</span></div>
             <div class="res-sub" id="res-gold-sub"></div>
@@ -1317,21 +1316,14 @@ let cityArmy = [];       // unités défensives recrutées (persistent)
 let hordeArmy = [];      // unités de la horde (s'accumulent)
 let hordeRevealed = false; // dévoilée au tour 5
 let turnProcessing = false; // verrou : empêche les clics multiples pendant un tour
-let waitingDungeon = false;  // attend le choix donjon — bloque tout sauf les boutons donjon
+let tileRevealedThisTurn = false; // 1 révélation max par tour
+let dungeonUsedThisTurn  = false; // 1 donjon max par tour
+let actionsParTour       = 1;     // nombre d'actions principales par tour
+window.actionsDisponibles = 1;    // compteur d'actions restantes ce tour (sur window pour clarity)
 function setTurnProcessing(val) {
     turnProcessing = val;
     if (val) document.body.classList.add('processing');
-    else if (!waitingDungeon) document.body.classList.remove('processing');
-}
-function setWaitingDungeon(val) {
-    waitingDungeon = val;
-    if (val) {
-        document.body.classList.add('processing');
-        document.body.classList.add('waiting-dungeon');
-    } else {
-        document.body.classList.remove('waiting-dungeon');
-        if (!turnProcessing) document.body.classList.remove('processing');
-    }
+    else document.body.classList.remove('processing');
 }
 let actionBuildingSelected = null; // bâtiment en attente de placement sur tuile
 
@@ -1684,6 +1676,9 @@ function showTurnAnimation(turnNum, season, callback) {
             addLog('⚔ La horde approche ! Préparez vos défenses et cliquez ⚔ dans la frise quand vous êtes prêt.');
         }
         updateStats();
+        tileRevealedThisTurn = false;
+        dungeonUsedThisTurn  = false;
+        window.actionsDisponibles = actionsParTour;
         setTurnProcessing(false); // déverrouiller : le tour est résolu
     });
 }
@@ -1807,26 +1802,6 @@ function showAvatarExplorePrompt(tile) {
     document.getElementById('avatar-explore-prompt').style.display = 'block';
 }
 
-function skipDungeon() {
-    const hint = document.getElementById('tile-action-hint');
-    if (hint) hint.innerHTML = '';
-    const skip = document.getElementById('tile-skip-btn');
-    if (skip) skip.innerHTML = '';
-    hideExplorePopup();
-    setWaitingDungeon(false);
-    setTurnProcessing(true);
-    nextTurn();
-}
-
-function offerDungeon() {
-    const hint = document.getElementById('tile-action-hint');
-    if (hint) hint.innerHTML = '';
-    const skip = document.getElementById('tile-skip-btn');
-    if (skip) skip.innerHTML = '';
-    hideExplorePopup();
-    dungeonState._startTurn = currentTurn; // mémoriser le tour de lancement
-    showPreDungeonWindow(() => { openDungeon(() => { nextTurn(); }); });
-}
 
 function avatarExplore(yes) {
     document.getElementById('avatar-explore-prompt').style.display = 'none';
@@ -2790,18 +2765,17 @@ function dngGetZone(pos) {
             const z = dngTiming.zones9[i];
             if (pos >= z.pos && pos < z.pos + z.w) {
                 let mult = z.mult;
-                if (mult === 0) return 'miss';
-                if (mult === 0.5 && timingHalfBonus) mult = 1 + (window._arcElfique ? 0.5 : 0);
-                if (mult === 1   && timingNormalBonus) mult = 1.2 + (window._arcElfique ? 0.5 : 0);
-                if (mult <= 0.5) return 'half';
-                if (mult <= 1)   return 'normal';
-                if (mult <= 1.2) return 'perfect';
-                return 'perfect_arc'; // 1.5, 1.7
+                if (mult === 0) return { type: 'miss', mult: 0 };
+                if (mult === 0.5 && timingHalfBonus) mult = 1;
+                if (mult === 1   && timingNormalBonus) mult = 1.2;
+                if (mult <= 0.5) return { type: 'half',    mult: mult };
+                if (mult <= 1)   return { type: 'normal',  mult: mult };
+                return { type: 'perfect', mult: mult };
             }
         }
-        return 'miss';
+        return { type: 'miss', mult: 0 };
     }
-    return 'miss';
+    return { type: 'miss', mult: 0 };
 }
 
 function dngStartAnim() {
@@ -2944,7 +2918,9 @@ function dungeonBarClick() {
     dngStopAnim();
     dngShowAttackBtn(false); // garder jauge visible pendant résolution
     const pos=dngTiming.pos;
-    const zone=dngGetZone(pos);
+    const zoneResult = dngGetZone(pos);
+    const zone = zoneResult.type;
+    const zoneMult = zoneResult.mult;
     // Rage : Dmg ×2
     const isMagicAttack = avatarMagicDmg > 0;
     const arcaneLvl = (isMagicAttack && avatarClass === 'mage' && typeof getClassSkillLevel === 'function') ? (getClassSkillLevel('arcane')||0) : 0;
@@ -2969,25 +2945,11 @@ function dungeonBarClick() {
         dmg=base;
         badge=`×1 — ${dmg} dégât`;bcls='dng-r-norm';fc='#1a3000';zlabel='×1';
         dngLog(`Vous : ×1 → -${dmg} HP`,'dlog-good');
-    } else if(zone==='perfect_arc'){
-        // Arc elfique : ×1.5 normal ou ×1.7 parfait selon la zone touchée
-        const arcZone = dngTiming.zones9 ? dngTiming.zones9.find(function(z){ return z.pos <= dngTiming.pos && dngTiming.pos < z.pos + z.w; }) : null;
-        const arcMult = arcZone ? arcZone.mult : 1.5;
-        dmg=Math.ceil(base*arcMult);
-        badge=`✦ ×${arcMult} — ${dmg} dégâts !`;bcls='dng-r-perf';fc='#003820';zlabel='×'+arcMult;
-        dngLog(`Vous : ×${arcMult} ARC ELFIQUE → -${dmg} HP !`,'dlog-good');
-        // Second Souffle (Guerrier passif sur coup parfait)
-        if (avatarClass === 'warrior') {
-            const healLvl = typeof getClassSkillLevel === 'function' ? (getClassSkillLevel('perfect_heal')||0) : 0;
-            const healAmt = 1 + healLvl;
-            dungeonState.avatarHp = Math.min(avatarMaxHp, dungeonState.avatarHp + healAmt);
-            avatarHp = dungeonState.avatarHp;
-            dngLog('⚔ Coup parfait ! +'+healAmt+' HP', 'dlog-good');
-        }
     } else {
-        dmg=Math.ceil(base*1.2);
-        badge=`✦ ×1.2 — ${dmg} dégâts !`;bcls='dng-r-perf';fc='#003820';zlabel='×1.2';
-        dngLog(`Vous : ×1.2 PARFAIT → -${dmg} HP !`,'dlog-good');
+        dmg=Math.ceil(base*zoneMult);
+        const multLabel = '×'+zoneMult.toFixed(1);
+        badge=`✦ ${multLabel} — ${dmg} dégâts !`;bcls='dng-r-perf';fc='#003820';zlabel=multLabel;
+        dngLog(`Vous : ${multLabel} PARFAIT → -${dmg} HP !`,'dlog-good');
         // Guerrier passif : soin sur coup parfait
         if (avatarClass === 'warrior') {
             const healLvl = typeof getClassSkillLevel === 'function' ? (getClassSkillLevel('perfect_heal')||0) : 0;
@@ -4406,9 +4368,8 @@ function dungeonAvatarDied() {
 
 function closeDungeon() {
     document.getElementById('dungeon-screen')?.classList.remove('show');
-    setWaitingDungeon(false);
     setTurnProcessing(false);
-    document.body.classList.remove('processing', 'waiting-dungeon');
+    document.body.classList.remove('processing');
     // Annuler les bonus temporaires du donjon (hors boss)
     if (dungeonTempAtk  > 0) { atk        -= dungeonTempAtk;  addLog('⚔ Bonus ATK donjon (+'+dungeonTempAtk+') expiré.'); }
     if (dungeonTempDmg  > 0) { avatarDmg  -= dungeonTempDmg;  addLog('🗡 Bonus Dmg donjon (+'+dungeonTempDmg+') expiré.'); }
@@ -5458,7 +5419,7 @@ function renderTilePreview() {
 }
 
 function doRevealTile() {
-    if (turnProcessing || waitingDungeon) return;
+    if (turnProcessing || tileRevealedThisTurn) return;
     if (currentTurn === 10) {
         addLog("⚔ Impossible d'explorer — la Horde attaque ! Lancez le combat.");
         return;
@@ -5469,7 +5430,10 @@ function doRevealTile() {
     // Choisir une tuile aléatoire non révélée
     const idx = unrevealedIdxs[Math.floor(Math.random()*unrevealedIdxs.length)];
     if (!nextTileType) generateNextTile();
+    tileRevealedThisTurn = true;
     applyTileReveal(idx, nextTileType);
+    // Fermer le popover d'action après révélation
+    if (typeof closeActionPanel === "function") closeActionPanel();
     nextTileType = null; // sera regénéré au prochain affichage
 }
 
@@ -5514,30 +5478,11 @@ function applyTileReveal(idx, forceType) {
     renderTileGrid();
     renderTilePreview();
     renderBuildPanelList();
-    // Retirer le flou d'exploration
     hideExplorePopup();
-    // Proposer donjon ou nextTurn
-    const turnAtClick = currentTurn;
-    const exploreTurns = [1,3,7,9];
     randomWeather();
-    if (exploreTurns.includes(turnAtClick) && !avatarBlocked) {
-        // Tour exploration : proposer donjon ou skip (qui appellera nextTurn)
-        setTimeout(function() {
-            const hint = document.getElementById('tile-action-hint');
-            if (hint) {
-                hint.innerHTML =
-                    '<button onclick="offerDungeon()" style="background:linear-gradient(135deg,#1a0a2a,#2a1040);color:#c080ff;border:1px solid #6040a0;border-radius:5px;padding:4px 10px;cursor:pointer;font-size:11px;font-family:Cinzel,serif;width:100%;margin-top:3px">🏰 Partir en Donjon</button>';
-                const skipBtn = document.getElementById('tile-skip-btn');
-                if (skipBtn) skipBtn.innerHTML = '<button onclick="skipDungeon()" style="background:linear-gradient(135deg,#2a1200,#4a2200);color:#ffaa40;border:1px solid #c06010;border-radius:5px;padding:6px 10px;cursor:pointer;font-size:11px;font-family:Cinzel,serif;width:100%;margin-top:4px;letter-spacing:0.5px;box-shadow:0 0 8px rgba(200,80,0,0.3)">✦ Continuer sans donjon</button>';
-            }
-            setTurnProcessing(false);
-            setWaitingDungeon(true);
-        }, 1000);
-    } else {
-        // Tour non-exploration : action prise, bloquer jusqu'à nextTurn
-        // turnProcessing reste true jusqu'à ce que nextTurn le remet à false
-        setTimeout(() => nextTurn(), 2200);
-    }
+    tileRevealedThisTurn = true;
+    window.actionsDisponibles = Math.max(0, window.actionsDisponibles - 1);
+    setTurnProcessing(false);
 };
 
 // ---- Section CONSTRUIRE ----
@@ -5660,7 +5605,7 @@ function renderBuildTilePicker(el, buildingName) {
 // ---- Section IMPÔTS ----
 
 function doTaxAndClose() {
-    if (turnProcessing || waitingDungeon) { addLog("⏳ Choisissez d'abord votre option donjon."); return; }
+    if (turnProcessing) return;
     if (currentTurn === 10) {
         addLog('⚔ Impossible de percevoir — la Horde attaque ! Lancez le combat.');
         return;
@@ -5668,7 +5613,8 @@ function doTaxAndClose() {
     setTurnProcessing(true);
     collect();
     updateStats();
-    setTimeout(() => nextTurn(), 400);
+    window.actionsDisponibles = Math.max(0, window.actionsDisponibles - 1);
+    setTurnProcessing(false);
 }
 
 function renderTaxPanel() {
@@ -6271,7 +6217,7 @@ function runCombatHorde() {
 }
 
 function buyBuilding(name, tileIdx) {
-    if (turnProcessing || waitingDungeon) { addLog("⏳ Choisissez d'abord votre option donjon."); return; }
+    if (turnProcessing) return;
     // Trouver le coût dans renderBuildPanelList buildings array
     const buildings = [
         { name:'Ferme',              gold:30,  pop:0,  mana:0  },
@@ -6320,7 +6266,8 @@ function buyBuilding(name, tileIdx) {
     updateStats();
     renderTileGrid();
     renderBuildPanelList();
-    setTimeout(() => nextTurn(), 400);
+    window.actionsDisponibles = Math.max(0, window.actionsDisponibles - 1);
+    setTurnProcessing(false);
 }
 
 function metaTab(tab) {
@@ -6748,7 +6695,6 @@ function closePredngWindow(cancelled) {
     ewFromPreDungeon = false;
     // Débloquer le tour seulement si on annule
     if (cancelled) {
-        if (typeof setWaitingDungeon === 'function') setWaitingDungeon(false);
         if (typeof setTurnProcessing === 'function') setTurnProcessing(false);
     }
 }
@@ -7621,7 +7567,6 @@ function resetRunFromMenu(keepMeta) {
 
 function initNewRun() {
     if (typeof setTurnProcessing === 'function') setTurnProcessing(false);
-    if (typeof setWaitingDungeon === 'function') setWaitingDungeon(false);
     dungeonState.active = false;
     ['endScreen','pre-dungeon-window','equip-window','combat-intro'].forEach(function(id){
         const el = document.getElementById(id);
@@ -8677,7 +8622,7 @@ function applyRune(traitName) {
 	
 
 <!-- ===== CLARITY OVERLAY (non-destructive readability layer) ===== -->
-<style id="clarity-overlay-css">
+<style>
 /* ============================================================
    CLARITY OVERLAY — non-destructive readability layer
    Toggleable via body.clarity-on / body.clarity-off
@@ -9608,8 +9553,196 @@ body.clarity-on #clarity-resbar {
     font-style: italic;
 }
 
+
+/* === Recruit modal === */
+#clarity-recruit-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 49996;
+    display: none;
+    align-items: center;
+    justify-content: center;
+}
+#clarity-recruit-modal.open { display: flex; }
+#clarity-recruit-modal .crm-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(4, 3, 6, 0.78);
+    backdrop-filter: blur(2px);
+}
+#clarity-recruit-modal .crm-card {
+    position: relative;
+    width: min(680px, 92vw);
+    max-height: 82vh;
+    background: linear-gradient(180deg, #0e0c10, #08070c);
+    border: 1.5px solid #2a5080;
+    border-radius: 14px;
+    box-shadow: 0 20px 80px rgba(0,0,0,0.85), 0 0 60px rgba(80,160,255,0.15);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    animation: crmIn 0.25s cubic-bezier(.34,1.56,.64,1);
+}
+@keyframes crmIn {
+    from { opacity: 0; transform: scale(0.92); }
+    to   { opacity: 1; transform: scale(1); }
+}
+#clarity-recruit-modal .crm-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 22px;
+    border-bottom: 1px solid #1a2a4a;
+    background: #0a1018;
+    flex-shrink: 0;
+}
+#clarity-recruit-modal .crm-title {
+    font-family: 'Cinzel', serif;
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    color: #80c0ff;
+}
+#clarity-recruit-modal .crm-close {
+    width: 30px; height: 30px;
+    border: 1px solid #2a4a7a;
+    background: transparent;
+    color: #cebf9a;
+    border-radius: 50%;
+    font-size: 18px;
+    line-height: 1;
+    cursor: pointer;
+    transition: all 0.12s;
+}
+#clarity-recruit-modal .crm-close:hover {
+    background: #182840;
+    color: #fff;
+    border-color: #4a7ab0;
+}
+#clarity-recruit-modal .crm-body {
+    padding: 16px 22px 20px;
+    overflow-y: auto;
+    flex: 1 1 auto;
+}
+
+
+/* === Legacy layout retired: clarity is the only mode === */
+#cfr-toggle,
+#clarity-floating-toggle { display: none !important; }
+
+
+/* === Mobile landscape support (matches the game's own breakpoint) === */
+@media (orientation:landscape) and (max-width:1024px) and (max-height:600px) {
+    /* Tuiles plus petites */
+    body.clarity-on #tile-grid {
+        grid-template-columns: repeat(5, 68px) !important;
+        grid-template-rows:    repeat(5, 68px) !important;
+        gap: 3px !important;
+    }
+    body.clarity-on .tile-cell  { width: 68px !important; height: 68px !important; }
+    body.clarity-on .tile-emoji { font-size: 24px !important; }
+    body.clarity-on .tile-name,
+    body.clarity-on .tile-bld   { font-size: 8px !important; }
+    body.clarity-on .tile-slots { font-size: 7px !important; }
+
+    /* Colonnes latérales compactes */
+    body.clarity-on #main-content-row { gap: 6px !important; padding: 4px 6px !important; }
+    body.clarity-on #clarity-free-rail {
+        flex: 0 0 110px !important;
+        padding: 6px !important;
+        gap: 4px !important;
+    }
+    body.clarity-on #clarity-action-dock {
+        flex: 0 0 130px !important;
+        padding: 6px !important;
+        gap: 4px !important;
+    }
+    body.clarity-on #clarity-free-rail .cfr-label,
+    body.clarity-on #clarity-action-dock::before {
+        font-size: 8px !important;
+        padding-bottom: 4px !important;
+        margin-bottom: 2px !important;
+    }
+    body.clarity-on #clarity-free-rail .cfr-btn,
+    body.clarity-on .cad-btn {
+        font-size: 9px !important;
+        padding: 6px 8px !important;
+        gap: 5px !important;
+    }
+    body.clarity-on .cad-ico { font-size: 14px !important; }
+
+    /* Bandeau ressources : 3 cartes compactes */
+    body.clarity-on #clarity-resbar {
+        grid-template-columns: 1fr 1fr 1fr !important;
+        gap: 6px !important;
+        padding: 4px 8px !important;
+    }
+    body.clarity-on .crb-group { padding: 4px 8px !important; gap: 2px !important; }
+    body.clarity-on .crb-grp-label { font-size: 8px !important; padding-bottom: 3px !important; margin-bottom: 2px !important; letter-spacing: 1px !important; }
+    body.clarity-on .crb-row { gap: 4px !important; padding: 1px 0 !important; grid-template-columns: 14px 1fr auto auto !important; }
+    body.clarity-on .crb-row .crb-ico  { font-size: 11px !important; }
+    body.clarity-on .crb-row .crb-name { font-size: 9px !important; }
+    body.clarity-on .crb-row .crb-val  { font-size: 11px !important; }
+    body.clarity-on .crb-row .crb-delta { font-size: 8px !important; }
+
+    /* Banner du haut : plus dense, masquer l'instruction longue */
+    #clarity-banner { padding: 4px 8px !important; gap: 8px !important; flex-wrap: wrap; font-size: 10px !important; }
+    #clarity-banner .cb-instr { display: none !important; }
+    #clarity-banner .cb-sep   { display: none !important; }
+    #clarity-banner .cb-turn  { font-size: 11px !important; }
+    #clarity-banner .cb-threat { font-size: 9px !important; padding: 3px 7px !important; gap: 5px !important; }
+    #clarity-banner .cb-threat .ct-countdown { font-size: 11px !important; }
+    #clarity-banner .cb-pill { font-size: 9px !important; padding: 2px 7px !important; }
+    #clarity-banner .cb-endturn { font-size: 10px !important; padding: 4px 10px !important; }
+
+    /* Popover en bas : pleine largeur */
+    #clarity-action-popover {
+        width: 96vw !important;
+        max-width: 96vw !important;
+        bottom: 6px !important;
+        max-height: 65vh !important;
+    }
+    .cap-header { padding: 6px 12px !important; }
+    .cap-title  { font-size: 11px !important; }
+    .cap-body   { padding: 8px 12px 12px !important; }
+
+    /* Threat preview adapté */
+    #clarity-threat-big {
+        min-width: 0 !important;
+        width: 90vw !important;
+        max-width: 90vw !important;
+        padding: 14px 18px !important;
+    }
+    #clarity-threat-big .ctb-countdown { gap: 6px !important; margin-bottom: 10px !important; }
+    #clarity-threat-big .ctb-label    { font-size: 10px !important; }
+    #clarity-threat-big .ctb-num      { font-size: 38px !important; }
+    #clarity-threat-big .ctb-vs       { gap: 14px !important; margin: 8px 0 10px !important; }
+    #clarity-threat-big .ctb-side     { min-width: 70px !important; }
+    #clarity-threat-big .ctb-side-label { font-size: 9px !important; }
+    #clarity-threat-big .ctb-side-val { font-size: 28px !important; }
+    #clarity-threat-big .ctb-vs-sep   { font-size: 14px !important; }
+    #clarity-threat-big .ctb-verdict  { font-size: 13px !important; }
+    #clarity-threat-big .ctb-sub      { font-size: 10px !important; }
+
+    /* Recruit modal scrollable */
+    #clarity-recruit-modal .crm-card { max-height: 92vh !important; width: 96vw !important; }
+    #clarity-recruit-modal .crm-header { padding: 8px 14px !important; }
+    #clarity-recruit-modal .crm-body { padding: 8px 14px !important; }
+}
+
+/* Tablette / petit desktop en paysage — réduire un cran */
+@media (orientation:landscape) and (min-width:1025px) and (max-width:1280px) {
+    body.clarity-on #tile-grid {
+        grid-template-columns: repeat(5, 100px) !important;
+        grid-template-rows:    repeat(5, 100px) !important;
+    }
+    body.clarity-on .tile-cell  { width: 100px !important; height: 100px !important; }
+    body.clarity-on .tile-emoji { font-size: 32px !important; }
+    body.clarity-on #clarity-free-rail   { flex: 0 0 150px !important; }
+    body.clarity-on #clarity-action-dock { flex: 0 0 170px !important; }
+}
 </style>
-<script id="clarity-overlay-js">
+<script>
 /* ============================================================
    CLARITY OVERLAY — non-destructive readability layer
    Adds: top banner, action-category chips, free-actions rail,
@@ -9661,7 +9794,7 @@ body.clarity-on #clarity-resbar {
     };
 
     function openActionPanel(action) {
-        if (actionSpent || actionBusy || pendingNext) return; // can't act
+        if ((window.actionsDisponibles || 0) <= 0) return; // plus d'action disponible
         if (currentAction === action) { closeActionPanel(); return; }
         if (currentAction) closeActionPanel(true);
         const sec = document.getElementById(SECTION_IDS[action]);
@@ -9694,25 +9827,14 @@ body.clarity-on #clarity-resbar {
     }
 
     // ---------- on/off ----------
-    function isEnabled() {
-        const v = localStorage.getItem(LS_ENABLED);
-        return v === null ? true : v === '1';
-    }
-    function setEnabled(on) {
-        localStorage.setItem(LS_ENABLED, on ? '1' : '0');
-        document.body.classList.toggle('clarity-on', on);
-        document.body.classList.toggle('clarity-off', !on);
-        const t = document.getElementById('cfr-toggle-text');
-        if (t) t.textContent = on ? 'Clarté : ON' : 'Clarté : OFF';
-        const ft = document.getElementById('cft-text');
-        if (ft) ft.textContent = on ? 'Clarté ON' : 'Clarté OFF';
+    // Forced ON permanently — the legacy layout is retired.
+    function isEnabled() { return true; }
+    function setEnabled(_on) {
+        document.body.classList.add('clarity-on');
+        document.body.classList.remove('clarity-off');
     }
 
     // ---------- state tracking ----------
-    let actionSpent = false;   // main action of this turn consumed
-    let actionBusy  = false;   // animation in progress
-    let pendingNext = false;   // a main action ran; nextTurn deferred until user clicks End Turn
-    let origNextRef = null;    // original nextTurn (pre-wrap)
     let lastTurn    = -1;
     let lastSeason  = -1;
 
@@ -10029,7 +10151,8 @@ body.clarity-on #clarity-resbar {
         const turn = readTurn();
         const exploreTurns = [1, 3, 7, 9];
         const avatarBlocked = window.avatarBlocked === true;
-        const available = exploreTurns.includes(turn) && !avatarBlocked && !pendingNext;
+        const dungeonUsed = window.dungeonUsedThisTurn === true;
+        const available = exploreTurns.includes(turn) && !avatarBlocked && !dungeonUsed;
         btn.style.display = available ? '' : 'none';
     }
 
@@ -10042,22 +10165,25 @@ body.clarity-on #clarity-resbar {
         const season = readSeason();
         t.textContent = `Tour ${turn} / 10 · Saison ${season}`;
 
+        const actions = window.actionsDisponibles !== undefined ? window.actionsDisponibles : 1;
+        const busy = isTurnProcessing();
+
         let actionLabel, actionCls;
         if (turn === 10) {
             actionLabel = '⚔ COMBAT DE HORDE';
             actionCls   = 'action-busy';
-        } else if (actionBusy) {
+        } else if (busy) {
             actionLabel = '⏳ Action en cours…';
             actionCls   = 'action-busy';
-        } else if (actionSpent) {
+        } else if (actions <= 0) {
             actionLabel = '✓ Action prise';
             actionCls   = 'action-spent';
         } else {
-            actionLabel = '○ Action disponible';
+            actionLabel = `○ ${actions} action${actions > 1 ? 's' : ''} disponible${actions > 1 ? 's' : ''}`;
             actionCls   = 'action-avail';
         }
 
-        const showEndTurn = pendingNext && !actionBusy && turn !== 10;
+        const showEndTurn = actions <= 0 && !busy && turn !== 10;
         s.innerHTML = `
             <span class="cb-pill ${actionCls}">🟡 ${actionLabel}</span>
             <span class="cb-pill free">🔵 Gratuit dispo</span>
@@ -10068,7 +10194,7 @@ body.clarity-on #clarity-resbar {
             if (btn) btn.addEventListener('click', endTurn);
         }
 
-        document.body.classList.toggle('clarity-spent', actionSpent || actionBusy);
+        document.body.classList.toggle('clarity-spent', actions <= 0 || busy);
         renderThreat();
         updateDungeonButton();
         renderResBar();
@@ -10076,91 +10202,34 @@ body.clarity-on #clarity-resbar {
 
     // ---------- end-turn handler ----------
     function endTurn() {
-        if (!pendingNext) return;
-        pendingNext = false;
-        actionBusy = true;
-        renderStatus();
+        if ((window.actionsDisponibles || 0) > 0) return; // action encore dispo
         if (window.setTurnProcessing) window.setTurnProcessing(true);
-        // Call the original (unwrapped) nextTurn so it actually advances
-        if (origNextRef) origNextRef.apply(window);
-        else if (window.nextTurn && window.nextTurn.__clarityRealCall) {
-            window.nextTurn.__clarityRealCall();
-        }
+        if (window.nextTurn) window.nextTurn();
     }
 
     // ---------- hooks into existing game logic ----------
     function installHooks() {
-        // nextTurn → consumed an action; reset spent on new turn
-        const origNext = window.nextTurn;
-        if (typeof origNext === 'function' && !origNext.__clarityWrapped) {
-            origNextRef = origNext;
-            const wrapped = function () {
-                // If a main action just ran and Clarté is ON, defer turn advance
-                // until the user clicks End Turn. Free actions remain available.
-                if (pendingNext && document.body.classList.contains('clarity-on')) {
-                    actionBusy = false;
-                    // unlock the UI so the player can use free actions
-                    // (mirror what nextTurn would have done at its end)
-                    document.body.classList.remove('processing');
-                    if (window.setTurnProcessing) {
-                        try { window.setTurnProcessing(false); } catch(e){}
+        // Les actions principales (doRevealTile, buyBuilding, doTaxAndClose) décrémentent
+        // directement window.actionsDisponibles — plus besoin de wrapper ici.
+        // On wrappe uniquement pour fermer le popover et rafraîchir le statut.
+        const wrapAction = (fnName) => {
+            const orig = window[fnName];
+            if (typeof orig === 'function' && !orig.__clarityWrapped) {
+                window[fnName] = function () {
+                    const before = window.actionsDisponibles;
+                    const r = orig.apply(this, arguments);
+                    if (window.actionsDisponibles < before) {
+                        closeActionPanel();
+                        renderStatus();
                     }
-                    renderStatus();
-                    return; // deferred
-                }
-                const r = origNext.apply(this, arguments);
-                actionSpent = false;
-                actionBusy  = false;
-                pendingNext = false;
-                renderStatus();
-                return r;
-            };
-            wrapped.__clarityWrapped = true;
-            wrapped.__clarityRealCall = () => origNext.apply(window);
-            window.nextTurn = wrapped;
-        }
-
-        // doRevealTile → main action
-        const origReveal = window.doRevealTile;
-        if (typeof origReveal === 'function' && !origReveal.__clarityWrapped) {
-            window.doRevealTile = function () {
-                const before = isTurnProcessing();
-                const r = origReveal.apply(this, arguments);
-                if (!before && isTurnProcessing()) {
-                    actionSpent = true; actionBusy = true; pendingNext = true; closeActionPanel(); renderStatus();
-                }
-                return r;
-            };
-            window.doRevealTile.__clarityWrapped = true;
-        }
-
-        // buyBuilding → main action (only counts when accepted)
-        const origBuy = window.buyBuilding;
-        if (typeof origBuy === 'function' && !origBuy.__clarityWrapped) {
-            window.buyBuilding = function () {
-                const beforeProc = isTurnProcessing();
-                const r = origBuy.apply(this, arguments);
-                if (!beforeProc && isTurnProcessing()) {
-                    actionSpent = true; actionBusy = true; pendingNext = true; closeActionPanel(); renderStatus();
-                }
-                return r;
-            };
-            window.buyBuilding.__clarityWrapped = true;
-        }
-
-        // doTaxAndClose → main action
-        const origTax = window.doTaxAndClose;
-        if (typeof origTax === 'function' && !origTax.__clarityWrapped) {
-            window.doTaxAndClose = function () {
-                const before = isTurnProcessing();
-                const r = origTax.apply(this, arguments);
-                if (!before && isTurnProcessing()) {
-                    actionSpent = true; actionBusy = true; pendingNext = true; closeActionPanel(); renderStatus();
-                }
-                return r;
-            };
-            window.doTaxAndClose.__clarityWrapped = true;
-        }
+                    return r;
+                };
+                window[fnName].__clarityWrapped = true;
+            }
+        };
+        wrapAction('doRevealTile');
+        wrapAction('buyBuilding');
+        wrapAction('doTaxAndClose');
     }
 
     // ---------- poll for state drift ----------
@@ -10169,17 +10238,10 @@ body.clarity-on #clarity-resbar {
         const s = readSeason();
         if (t !== lastTurn || s !== lastSeason) {
             lastTurn = t; lastSeason = s;
-            actionSpent = false;
-            actionBusy = false;
             renderStatus();
         } else {
-            const busyNow = isTurnProcessing();
-            if (busyNow !== actionBusy) {
-                actionBusy = busyNow;
-                renderStatus();
-            }
+            renderStatus();
         }
-        // Always refresh the resource strip + threat (cheap, values change between turns)
         renderResBar();
         renderThreat();
         updateDungeonButton();
@@ -10277,12 +10339,52 @@ body.clarity-on #clarity-resbar {
     }
 
     // ---------- free-rail handlers ----------
+    function openRecruitModal() {
+        let modal = document.getElementById('clarity-recruit-modal');
+        if (!modal) {
+            modal = document.createElement('div');
+            modal.id = 'clarity-recruit-modal';
+            modal.innerHTML = `
+                <div class="crm-backdrop"></div>
+                <div class="crm-card">
+                    <div class="crm-header">
+                        <span class="crm-title">⚔ Recruter des troupes</span>
+                        <button class="crm-close" type="button">×</button>
+                    </div>
+                    <div class="crm-body" id="crm-body"></div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+            modal.querySelector('.crm-close').addEventListener('click', () => modal.classList.remove('open'));
+            modal.querySelector('.crm-backdrop').addEventListener('click', () => modal.classList.remove('open'));
+        }
+        const body = modal.querySelector('#crm-body');
+        body.innerHTML = '';
+        if (typeof window.renderRecruitListIn === 'function') {
+            window.renderRecruitListIn(body);
+        } else {
+            body.textContent = 'Recrutement indisponible.';
+        }
+        modal.classList.add('open');
+
+        // Re-render the list each time an action happens (recruit / dismiss).
+        // The game's recruitUnit() calls renderActionArmyTab() which targets a
+        // different container, so we observe DOM mutations on body for clicks.
+        body.addEventListener('click', () => {
+            // small delay to let game logic run, then refresh
+            setTimeout(() => {
+                if (modal.classList.contains('open')) {
+                    body.innerHTML = '';
+                    if (typeof window.renderRecruitListIn === 'function') window.renderRecruitListIn(body);
+                }
+            }, 50);
+        }, { once: false });
+    }
+
     function onFreeAction(target) {
         switch (target) {
             case 'recruit':
-                if (typeof window.equipTab === 'function') window.equipTab('army');
-                const army = document.getElementById('equip-panel');
-                if (army) army.scrollIntoView({block: 'nearest'});
+                openRecruitModal();
                 break;
             case 'equip':
                 if (typeof window.openEquipWindow === 'function') window.openEquipWindow();
@@ -10297,9 +10399,11 @@ body.clarity-on #clarity-resbar {
                 // Dungeon is a FREE action — do NOT advance the turn at exit.
                 if (typeof window.showPreDungeonWindow === 'function'
                         && typeof window.openDungeon === 'function') {
+                    window.dungeonUsedThisTurn = true;
                     window.showPreDungeonWindow(() => {
                         window.openDungeon(() => { /* no nextTurn — free action */ });
                     });
+                    updateDungeonButton();
                 }
                 break;
         }
@@ -10391,7 +10495,6 @@ body.clarity-on #clarity-resbar {
         setTimeout(boot, 100);
     }
 })();
-
 </script>
 </body>
 </html>
