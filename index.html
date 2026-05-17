@@ -1140,9 +1140,9 @@
 
             <!-- Section IMPÔTS -->
             <div class="action-section" id="sec-tax">
-                <div class="action-section-title">💰 Impôts</div>
+                <div class="action-section-title">🐴 Caravane</div>
                 <div id="tax-resources"></div>
-                <button class="action-main-btn" id="btn-tax" onclick="doTaxAndClose()">Percevoir</button>
+                <button class="action-main-btn" id="btn-tax" onclick="doTaxAndClose()">Envoyer</button>
             </div>
 
         </div>
@@ -1290,7 +1290,7 @@ let rageRounds = 0;
 let xp = 0; // legacy, alias de dust
 let dust = 0; // Poussière du Temps (méta-progression)
 let hasFireball = false;
-let avatarBlocked = false;
+window.avatarBlocked = false;
 let avatarBlockedSeason = -1; // saison pendant laquelle l'avatar a été bloqué
 // HP de l'avatar (persistants entre les combats)
 let avatarHp = 0;       // initialisé après chargement
@@ -1317,7 +1317,7 @@ let hordeArmy = [];      // unités de la horde (s'accumulent)
 let hordeRevealed = false; // dévoilée au tour 5
 let turnProcessing = false; // verrou : empêche les clics multiples pendant un tour
 let tileRevealedThisTurn = false; // 1 révélation max par tour
-let dungeonUsedThisTurn  = false; // 1 donjon max par tour
+window.dungeonUsedThisTurn  = false; // 1 donjon max par tour (sur window pour clarity)
 let actionsParTour       = 1;     // nombre d'actions principales par tour
 window.actionsDisponibles = 1;    // compteur d'actions restantes ce tour (sur window pour clarity)
 function setTurnProcessing(val) {
@@ -1624,14 +1624,14 @@ function showTurnAnimation(turnNum, season, callback) {
     if (currentTurn > 10) {
         currentTurn = 1;
         currentSeason++;
-        // avatarBlocked sera remis à false au tour 1 de la nouvelle saison (voir ci-dessous)
+        // window.avatarBlocked sera remis à false au tour 1 de la nouvelle saison (voir ci-dessous)
     }
     showTurnAnimation(currentTurn, currentSeason, () => {
         // Début de nouvelle saison : débloquer l'avatar
         // Il est bloqué pendant toute la saison suivant le combat (N+1)
         // et libre à partir de la saison N+2
-        if (currentTurn === 1 && avatarBlocked && currentSeason > avatarBlockedSeason + 1) {
-            avatarBlocked = false;
+        if (currentTurn === 1 && window.avatarBlocked && currentSeason > avatarBlockedSeason + 1) {
+            window.avatarBlocked = false;
             avatarBlockedSeason = -1;
             addLog("L'avatar est à nouveau disponible pour explorer.");
         }
@@ -1677,7 +1677,7 @@ function showTurnAnimation(turnNum, season, callback) {
         }
         updateStats();
         tileRevealedThisTurn = false;
-        dungeonUsedThisTurn  = false;
+        window.dungeonUsedThisTurn  = false;
         window.actionsDisponibles = actionsParTour;
         setTurnProcessing(false); // déverrouiller : le tour est résolu
     });
@@ -1901,7 +1901,7 @@ function launchHordeBattle() {
 function showAvatarHordePrompt() {
     document.getElementById('avatar-atk-val').textContent = atk;
     const btn = document.querySelector('#avatar-horde-prompt button:first-of-type');
-    if (avatarBlocked) {
+    if (window.avatarBlocked) {
         btn.disabled = true;
         btn.style.opacity = '0.4';
         btn.title = "L'avatar est indisponible cette saison";
@@ -1919,7 +1919,7 @@ function avatarJoinHorde(yes) {
     avatarSentToHorde = yes;
     if (yes) {
         addLog("L'avatar rejoint la défense ! Son ATK (" + atk + ") s'ajoute à la puissance.");
-        avatarBlocked = true;
+        window.avatarBlocked = true;
         avatarBlockedSeason = currentSeason;
     }
     runCombatHorde();
@@ -4931,7 +4931,7 @@ function renderArmyTabCity() {
         });
         html += '</table>';
     }
-    html += '<p style="font-size:11px;color:#9a8a6a;margin-top:8px">Fortifications : '+fortifications+' | Avatar : '+(avatarBlocked?'indisponible':'disponible')+'</p>';
+    html += '<p style="font-size:11px;color:#9a8a6a;margin-top:8px">Fortifications : '+fortifications+' | Avatar : '+(window.avatarBlocked?'indisponible':'disponible')+'</p>';
     el.innerHTML = html;
 }
 
@@ -5396,7 +5396,7 @@ function renderTilePreview() {
     const el = document.getElementById('tile-preview-card');
     if (!el) return;
     const exploreTurns = [1,3,7,9];
-    const canExplore = exploreTurns.includes(currentTurn) && !avatarBlocked;
+    const canExplore = exploreTurns.includes(currentTurn) && !window.avatarBlocked;
     const unrevealedCount = tileState.filter((_,i)=>i!==12&&!tileState[i].revealed).length;
     if (unrevealedCount === 0) {
         el.innerHTML = '<div style="color:#7a6a50;font-size:11px">Toutes les tuiles révélées</div>';
@@ -5607,7 +5607,7 @@ function renderBuildTilePicker(el, buildingName) {
 function doTaxAndClose() {
     if (turnProcessing) return;
     if (currentTurn === 10) {
-        addLog('⚔ Impossible de percevoir — la Horde attaque ! Lancez le combat.');
+        addLog("⚔ Impossible d'envoyer la caravane — la Horde attaque ! Lancez le combat.");
         return;
     }
     setTurnProcessing(true);
@@ -7611,9 +7611,12 @@ function initNewRun() {
     hordeCurrentSeason = 0; hordeRevealed = false;
     if (typeof hordeHiddenCount !== 'undefined') hordeHiddenCount = 0;
     runDeaths = 0; runDustSpent = 0;
-    avatarBlocked = false;
+    window.avatarBlocked = false;
     if (typeof avatarBlockedSeason !== 'undefined') avatarBlockedSeason = -1;
     if (typeof avatarSentToHorde !== 'undefined') avatarSentToHorde = false;
+    tileRevealedThisTurn = false;
+    window.dungeonUsedThisTurn  = false;
+    window.actionsDisponibles = actionsParTour;
     tileState.forEach(function(t, i) {
         t.type = i === 12 ? 'Ville' : null;
         t.buildings = [];
@@ -7634,6 +7637,10 @@ function initNewRun() {
     });
     document.getElementById('dungeon-screen')?.classList.remove('show');
     addLog('✦ Nouvelle partie — Bonne chance !');
+    // Forcer la mise à jour du bouton donjon après reset
+    setTimeout(function() {
+        if (typeof updateDungeonButtonExternal === 'function') updateDungeonButtonExternal();
+    }, 200);
 }
 
 
@@ -9766,7 +9773,7 @@ body.clarity-on #clarity-resbar {
                 <span class="cad-ico">🏗</span><span class="cad-label">Construire</span>
             </button>
             <button class="cad-btn" data-action="tax">
-                <span class="cad-ico">💰</span><span class="cad-label">Percevoir l'impôt</span>
+                <span class="cad-ico">💰</span><span class="cad-label">Envoyer une caravane</span>
             </button>
         `;
         return d;
@@ -9790,7 +9797,7 @@ body.clarity-on #clarity-resbar {
     const ACTION_TITLES = {
         tile:  '🗺 Révéler une tuile',
         build: '🏗 Construire un bâtiment',
-        tax:   '💰 Percevoir l\'impôt',
+        tax:   '💰 Envoyer une caravane',
     };
 
     function openActionPanel(action) {
@@ -9861,7 +9868,7 @@ body.clarity-on #clarity-resbar {
             <span class="cb-threat" id="cb-threat" style="display:none"></span>
             <span class="cb-sep"></span>
             <span class="cb-instr">
-                Choisis <b>1 action principale</b> ce tour (Révéler · Construire · Impôts).
+                Choisis <b>1 action principale</b> ce tour (Révéler · Construire · Caravane).
                 Les actions <b style="color:#80c0ff">gratuites</b> (recruter, équiper, sort, donjon) ne consomment pas ton tour.
             </span>
             <span class="cb-status" id="cb-status"></span>
@@ -9922,7 +9929,7 @@ body.clarity-on #clarity-resbar {
         r.innerHTML = `
             <div class="crb-group crb-eco">
                 <div class="crb-grp-label">💰 Économie</div>
-                <div class="crb-row" title="Or — gagné par les Impôts. Sert à construire et recruter.">
+                <div class="crb-row" title="Or — gagné par les Caravanes. Sert à construire et recruter.">
                     <span class="crb-ico">🪙</span>
                     <span class="crb-name">Or</span>
                     <span class="crb-val" id="crb-gold">—</span>
@@ -10150,9 +10157,8 @@ body.clarity-on #clarity-resbar {
         if (!btn) return;
         const turn = readTurn();
         const exploreTurns = [1, 3, 7, 9];
-        const avatarBlocked = window.avatarBlocked === true;
         const dungeonUsed = window.dungeonUsedThisTurn === true;
-        const available = exploreTurns.includes(turn) && !avatarBlocked && !dungeonUsed;
+        const available = exploreTurns.includes(turn) && !window.avatarBlocked && !dungeonUsed;
         btn.style.display = available ? '' : 'none';
     }
 
@@ -10265,7 +10271,7 @@ body.clarity-on #clarity-resbar {
                 <div class="ct-rule r-action">
                     <span class="ct-rule-ic">🟡</span>
                     <div>Chaque tour, choisis <b>1 action principale</b> parmi 3 :
-                    <br>· <b>🗺 Révéler</b> une tuile · <b>🏗 Construire</b> un bâtiment · <b>💰 Impôts</b> (récolter)</div>
+                    <br>· <b>🗺 Révéler</b> une tuile · <b>🏗 Construire</b> un bâtiment · <b>🐴 Caravane</b> (récolter)</div>
                 </div>
                 <div class="ct-rule r-free">
                     <span class="ct-rule-ic">🔵</span>
@@ -10471,6 +10477,9 @@ body.clarity-on #clarity-resbar {
 
         // initial toggle state
         setEnabled(isEnabled());
+
+        // Exposer updateDungeonButton pour que initNewRun puisse le forcer
+        window.updateDungeonButtonExternal = updateDungeonButton;
 
         // hooks + initial render
         installHooks();
