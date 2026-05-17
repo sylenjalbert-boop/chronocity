@@ -2790,12 +2790,13 @@ function dngGetZone(pos) {
             const z = dngTiming.zones9[i];
             if (pos >= z.pos && pos < z.pos + z.w) {
                 let mult = z.mult;
-                if (mult === 0)   return 'miss';
-                if (mult === 0.5 && timingHalfBonus)   mult = 1;
-                if (mult === 1   && timingNormalBonus) mult = 1.2;
-                if (mult === 0.5) return 'half';
-                if (mult === 1)   return 'normal';
-                return 'perfect'; // 1.2
+                if (mult === 0) return 'miss';
+                if (mult === 0.5 && timingHalfBonus) mult = 1 + (window._arcElfique ? 0.5 : 0);
+                if (mult === 1   && timingNormalBonus) mult = 1.2 + (window._arcElfique ? 0.5 : 0);
+                if (mult <= 0.5) return 'half';
+                if (mult <= 1)   return 'normal';
+                if (mult <= 1.2) return 'perfect';
+                return 'perfect_arc'; // 1.5, 1.7
             }
         }
         return 'miss';
@@ -2968,6 +2969,21 @@ function dungeonBarClick() {
         dmg=base;
         badge=`×1 — ${dmg} dégât`;bcls='dng-r-norm';fc='#1a3000';zlabel='×1';
         dngLog(`Vous : ×1 → -${dmg} HP`,'dlog-good');
+    } else if(zone==='perfect_arc'){
+        // Arc elfique : ×1.5 normal ou ×1.7 parfait selon la zone touchée
+        const arcZone = dngTiming.zones9 ? dngTiming.zones9.find(function(z){ return z.pos <= dngTiming.pos && dngTiming.pos < z.pos + z.w; }) : null;
+        const arcMult = arcZone ? arcZone.mult : 1.5;
+        dmg=Math.ceil(base*arcMult);
+        badge=`✦ ×${arcMult} — ${dmg} dégâts !`;bcls='dng-r-perf';fc='#003820';zlabel='×'+arcMult;
+        dngLog(`Vous : ×${arcMult} ARC ELFIQUE → -${dmg} HP !`,'dlog-good');
+        // Second Souffle (Guerrier passif sur coup parfait)
+        if (avatarClass === 'warrior') {
+            const healLvl = typeof getClassSkillLevel === 'function' ? (getClassSkillLevel('perfect_heal')||0) : 0;
+            const healAmt = 1 + healLvl;
+            dungeonState.avatarHp = Math.min(avatarMaxHp, dungeonState.avatarHp + healAmt);
+            avatarHp = dungeonState.avatarHp;
+            dngLog('⚔ Coup parfait ! +'+healAmt+' HP', 'dlog-good');
+        }
     } else {
         dmg=Math.ceil(base*1.2);
         badge=`✦ ×1.2 — ${dmg} dégâts !`;bcls='dng-r-perf';fc='#003820';zlabel='×1.2';
@@ -8659,5 +8675,1723 @@ function applyRune(traitName) {
 </script>
 
 	
+
+<!-- ===== CLARITY OVERLAY (non-destructive readability layer) ===== -->
+<style id="clarity-overlay-css">
+/* ============================================================
+   CLARITY OVERLAY — non-destructive readability layer
+   Toggleable via body.clarity-on / body.clarity-off
+   ============================================================ */
+
+body.clarity-off #clarity-banner,
+body.clarity-off .clarity-chip,
+body.clarity-off #clarity-tutorial,
+body.clarity-off #clarity-free-rail { display: none !important; }
+
+/* Streamlining: hide redundant army panel when overlay is ON (accessible via free rail) */
+body.clarity-on #equip-panel { display: none !important; }
+body.clarity-on #res-army-summary,
+body.clarity-on #res-horde-summary { display: none !important; }
+body.clarity-on #res-panel .res-title:nth-of-type(3) { display: none !important; }
+
+/* === City-as-hero layout: enlarge grid, compact resources === */
+body.clarity-on #res-panel { display: none !important; }
+body.clarity-on #main-content-row { justify-content: center; }
+body.clarity-on #game-area { flex: 1 1 auto; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; padding-top: 8px; }
+body.clarity-on #tile-grid {
+    grid-template-columns: repeat(5, 130px) !important;
+    grid-template-rows:    repeat(5, 130px) !important;
+    gap: 6px !important;
+}
+body.clarity-on .tile-cell { width: 130px !important; height: 130px !important; }
+body.clarity-on .tile-emoji { font-size: 40px !important; }
+body.clarity-on .tile-name  { font-size: 11px !important; margin-top: 4px !important; }
+body.clarity-on .tile-bld   { font-size: 10px !important; }
+body.clarity-on .tile-slots { font-size: 10px !important; top: 4px !important; right: 5px !important; }
+
+/* Compact resources strip in banner */
+#clarity-resbar {
+    display: flex;
+    gap: 14px;
+    align-items: center;
+    padding: 5px 14px;
+    background: #0a0810;
+    border-bottom: 1px solid #1a1a28;
+    font-family: 'Crimson Text', Georgia, serif;
+    font-size: 12px;
+    color: #cebf9a;
+    flex-wrap: wrap;
+    flex-shrink: 0;
+}
+#clarity-resbar .crb-item {
+    display: inline-flex; align-items: baseline; gap: 4px;
+    padding: 2px 4px;
+}
+#clarity-resbar .crb-val {
+    font-family: 'Cinzel', serif; font-weight: 700; color: #e8b840; font-size: 13px;
+}
+#clarity-resbar .crb-delta { font-size: 10px; color: #28b080; }
+#clarity-resbar .crb-delta.neg { color: #e07070; }
+#clarity-resbar .crb-sep { width: 1px; height: 16px; background: #2a2418; }
+#clarity-resbar .crb-stat .crb-val { color: #cebf9a; font-size: 12px; }
+
+/* Horde threat pill in banner */
+#clarity-banner .cb-threat {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 5px 11px;
+    border-radius: 8px;
+    background: linear-gradient(135deg, #1a0608, #0c0406);
+    border: 1px solid #5a1818;
+    font-family: 'Cinzel', serif;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.8px;
+    color: #e07070;
+    white-space: nowrap;
+}
+#clarity-banner .cb-threat .ct-countdown {
+    color: #ffd060;
+    font-size: 13px;
+}
+#clarity-banner .cb-threat .ct-vs {
+    color: #6a5a3a;
+    font-size: 9px;
+    letter-spacing: 1px;
+}
+#clarity-banner .cb-threat .ct-num.ok    { color: #28b080; }
+#clarity-banner .cb-threat .ct-num.warn  { color: #e8b840; }
+#clarity-banner .cb-threat .ct-num.bad   { color: #e07070; }
+#clarity-banner .cb-threat.imminent {
+    border-color: #c23030;
+    box-shadow: 0 0 14px rgba(194,48,48,0.35);
+    animation: cbThreatPulse 1.4s ease-in-out infinite;
+}
+@keyframes cbThreatPulse {
+    0%,100% { box-shadow: 0 0 14px rgba(194,48,48,0.35); }
+    50%     { box-shadow: 0 0 22px rgba(224,80,80,0.6); }
+}
+
+/* Dungeon button: stand out from regular free rail */
+#clarity-free-rail .cfr-btn.cfr-dungeon {
+    background: linear-gradient(135deg, #200a38, #100418);
+    border-color: #5040a0;
+    color: #c080ff;
+    box-shadow: 0 0 10px rgba(144,80,224,0.25);
+    animation: cfrDungeonPulse 1.8s ease-in-out infinite;
+}
+#clarity-free-rail .cfr-btn.cfr-dungeon:hover {
+    background: linear-gradient(135deg, #2a1048, #180a28);
+    color: #ffffff;
+    box-shadow: 0 0 16px rgba(144,80,224,0.5);
+}
+@keyframes cfrDungeonPulse {
+    0%,100% { box-shadow: 0 0 10px rgba(144,80,224,0.25); }
+    50%     { box-shadow: 0 0 18px rgba(144,80,224,0.5); }
+}
+
+/* always-visible floating toggle so the user can turn clarity back ON */
+#clarity-floating-toggle {
+    position: fixed;
+    bottom: 14px;
+    right: 14px;
+    z-index: 49997;
+    padding: 7px 12px;
+    border-radius: 18px;
+    border: 1px solid #6a4c14;
+    background: linear-gradient(135deg, #1a1408, #0a0804);
+    color: #e8b840;
+    font-family: 'Cinzel', serif;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    cursor: pointer;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.6), 0 0 12px rgba(232,184,64,0.15);
+    transition: all 0.15s;
+    opacity: 0.7;
+}
+#clarity-floating-toggle:hover {
+    opacity: 1;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.6), 0 0 18px rgba(232,184,64,0.4);
+}
+body.clarity-off #clarity-floating-toggle {
+    color: #6a5a3a;
+    border-color: #3a3020;
+}
+
+/* ───────── Top banner ───────── */
+#clarity-banner {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 8px 14px;
+    background: linear-gradient(180deg, #0a0a14, #07060c);
+    border-bottom: 1px solid #2a2418;
+    color: #cebf9a;
+    font-family: 'Crimson Text', Georgia, serif;
+    font-size: 12px;
+    flex-shrink: 0;
+}
+#clarity-banner .cb-turn {
+    font-family: 'Cinzel', serif;
+    font-weight: 700;
+    font-size: 13px;
+    color: #e8b840;
+    letter-spacing: 1px;
+    white-space: nowrap;
+}
+#clarity-banner .cb-sep {
+    width: 1px;
+    height: 22px;
+    background: #2a2418;
+}
+#clarity-banner .cb-instr {
+    flex: 1;
+    color: #9a8a6a;
+    font-size: 11.5px;
+    line-height: 1.4;
+}
+#clarity-banner .cb-instr b { color: #e8b840; }
+#clarity-banner .cb-status {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    white-space: nowrap;
+}
+#clarity-banner .cb-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 9px;
+    border-radius: 11px;
+    font-family: 'Cinzel', serif;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.8px;
+}
+#clarity-banner .cb-pill.action-avail {
+    background: #1a1408;
+    color: #e8b840;
+    border: 1px solid #6a4c14;
+}
+#clarity-banner .cb-pill.action-spent {
+    background: #08120a;
+    color: #5a8a70;
+    border: 1px solid #1a3a2a;
+    opacity: 0.7;
+}
+#clarity-banner .cb-pill.action-busy {
+    background: #0a1424;
+    color: #6a90c8;
+    border: 1px solid #2a4a7a;
+    animation: cbPulse 1s ease-in-out infinite;
+}
+#clarity-banner .cb-pill.free {
+    background: #08141e;
+    color: #5aaaff;
+    border: 1px solid #2a4a7a;
+}
+#clarity-banner .cb-help {
+    background: transparent;
+    border: 1px solid #3a3020;
+    color: #9a8a6a;
+    border-radius: 50%;
+    width: 22px;
+    height: 22px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-family: 'Cinzel', serif;
+    font-size: 11px;
+    font-weight: 700;
+}
+#clarity-banner .cb-help:hover {
+    color: #e8b840;
+    border-color: #6a4c14;
+}
+
+#clarity-banner .cb-endturn {
+    padding: 6px 16px;
+    border: 1px solid #6a4c14;
+    border-radius: 6px;
+    background: linear-gradient(135deg, #3a2800, #281a00);
+    color: #ffd060;
+    font-family: 'Cinzel', serif;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1.2px;
+    cursor: pointer;
+    box-shadow: 0 0 14px rgba(232,184,64,0.4);
+    animation: cbEndPulse 1.6s ease-in-out infinite;
+    transition: all 0.15s;
+}
+#clarity-banner .cb-endturn:hover {
+    filter: brightness(1.2);
+    box-shadow: 0 0 22px rgba(232,184,64,0.7);
+    transform: translateY(-1px);
+}
+@keyframes cbEndPulse {
+    0%, 100% { box-shadow: 0 0 14px rgba(232,184,64,0.4); }
+    50%      { box-shadow: 0 0 22px rgba(232,184,64,0.7); }
+}
+@keyframes cbPulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(106,144,200,0.4); }
+    50% { box-shadow: 0 0 0 4px rgba(106,144,200,0); }
+}
+
+/* ───────── Action chips on existing buttons/sections ───────── */
+.clarity-chip {
+    position: absolute;
+    top: 4px;
+    right: 6px;
+    padding: 2px 7px;
+    border-radius: 9px;
+    font-family: 'Cinzel', serif;
+    font-size: 8.5px;
+    font-weight: 700;
+    letter-spacing: 0.8px;
+    pointer-events: none;
+    z-index: 10;
+}
+.clarity-chip.cc-action {
+    background: linear-gradient(135deg, #4a3408, #2a1c00);
+    color: #ffd060;
+    border: 1px solid #8a6020;
+    box-shadow: 0 0 6px rgba(232,184,64,0.25);
+}
+.clarity-chip.cc-free {
+    background: linear-gradient(135deg, #0a2438, #061826);
+    color: #80c0ff;
+    border: 1px solid #2a5080;
+}
+
+/* host sections must be relative for the chip */
+body.clarity-on #sec-tile,
+body.clarity-on #sec-build,
+body.clarity-on #sec-tax {
+    position: relative;
+}
+
+/* When main action is spent → dim the 3 main cards */
+body.clarity-on.clarity-spent #sec-tile,
+body.clarity-on.clarity-spent #sec-build,
+body.clarity-on.clarity-spent #sec-tax {
+    opacity: 0.55;
+    filter: saturate(0.6);
+    transition: opacity 0.3s, filter 0.3s;
+}
+
+/* ───────── Free-actions rail ───────── */
+#clarity-free-rail {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    padding: 6px 8px;
+    background: #07060c;
+    border-bottom: 1px solid #1a1a28;
+    flex-shrink: 0;
+    flex-wrap: wrap;
+}
+#clarity-free-rail .cfr-label {
+    font-family: 'Cinzel', serif;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 1.2px;
+    color: #5aaaff;
+    margin-right: 4px;
+    text-transform: uppercase;
+}
+#clarity-free-rail .cfr-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 10px;
+    border-radius: 6px;
+    background: #08141e;
+    border: 1px solid #2a4a7a;
+    color: #a0c8e8;
+    font-family: 'Cinzel', serif;
+    font-size: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    letter-spacing: 0.4px;
+    transition: all 0.15s;
+}
+#clarity-free-rail .cfr-btn:hover {
+    background: #102438;
+    border-color: #4a7ab0;
+    color: #ffffff;
+}
+#clarity-free-rail .cfr-btn .cfr-ico { font-size: 13px; }
+#clarity-free-rail .cfr-spacer { flex: 1; }
+#clarity-free-rail .cfr-toggle {
+    padding: 3px 8px;
+    border: 1px solid #3a3020;
+    background: transparent;
+    color: #9a8a6a;
+    border-radius: 5px;
+    cursor: pointer;
+    font-family: 'Cinzel', serif;
+    font-size: 9px;
+    letter-spacing: 0.8px;
+}
+#clarity-free-rail .cfr-toggle:hover {
+    color: #e8b840;
+    border-color: #6a4c14;
+}
+
+/* ───────── Tutorial overlay ───────── */
+#clarity-tutorial {
+    position: fixed;
+    inset: 0;
+    background: rgba(4, 3, 6, 0.85);
+    z-index: 50000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(3px);
+    animation: ctFade 0.25s ease;
+}
+@keyframes ctFade { from { opacity: 0; } to { opacity: 1; } }
+#clarity-tutorial .ct-card {
+    width: 560px;
+    max-width: 92vw;
+    background: linear-gradient(180deg, #0e0c10, #08070c);
+    border: 1px solid #3a2c10;
+    border-radius: 14px;
+    padding: 28px 32px 20px;
+    box-shadow: 0 20px 80px rgba(0,0,0,0.8), 0 0 60px rgba(196,146,32,0.08);
+    color: #cebf9a;
+    font-family: 'Crimson Text', Georgia, serif;
+}
+#clarity-tutorial .ct-step {
+    font-family: 'Cinzel', serif;
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: #6a5a3a;
+    margin-bottom: 6px;
+}
+#clarity-tutorial .ct-title {
+    font-family: 'Cinzel', serif;
+    font-size: 22px;
+    font-weight: 700;
+    color: #e8b840;
+    margin-bottom: 14px;
+    letter-spacing: 0.5px;
+}
+#clarity-tutorial .ct-body {
+    font-size: 14px;
+    line-height: 1.65;
+    color: #cebf9a;
+}
+#clarity-tutorial .ct-body p { margin: 0 0 10px; }
+#clarity-tutorial .ct-body b { color: #ffd060; }
+#clarity-tutorial .ct-rule {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    padding: 8px 10px;
+    margin: 6px 0;
+    background: #0a0810;
+    border-left: 3px solid #6a4c14;
+    border-radius: 4px;
+    font-size: 13px;
+}
+#clarity-tutorial .ct-rule .ct-rule-ic {
+    font-size: 20px;
+    line-height: 1;
+}
+#clarity-tutorial .ct-rule.r-action { border-left-color: #c49220; }
+#clarity-tutorial .ct-rule.r-free { border-left-color: #5aaaff; }
+#clarity-tutorial .ct-rule.r-battle { border-left-color: #c23030; }
+#clarity-tutorial .ct-rule b { color: #ffd060; }
+#clarity-tutorial .ct-rule.r-free b { color: #80c0ff; }
+#clarity-tutorial .ct-rule.r-battle b { color: #e07070; }
+#clarity-tutorial .ct-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 1px solid #2a2418;
+}
+#clarity-tutorial .ct-dots {
+    display: flex;
+    gap: 6px;
+}
+#clarity-tutorial .ct-dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: #2a2418;
+}
+#clarity-tutorial .ct-dot.active { background: #e8b840; }
+#clarity-tutorial .ct-btn {
+    padding: 8px 22px;
+    border: 1px solid #6a4c14;
+    border-radius: 6px;
+    background: linear-gradient(135deg, #281a00, #3a2800);
+    color: #e8b840;
+    font-family: 'Cinzel', serif;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+#clarity-tutorial .ct-btn:hover {
+    filter: brightness(1.2);
+    box-shadow: 0 0 12px rgba(232,184,64,0.3);
+}
+#clarity-tutorial .ct-btn.secondary {
+    background: transparent;
+    color: #9a8a6a;
+    border-color: #3a3020;
+}
+#clarity-tutorial .ct-btn.secondary:hover {
+    color: #e8b840;
+}
+
+/* spotlight ring around highlighted element */
+.clarity-spotlight {
+    position: absolute;
+    pointer-events: none;
+    border-radius: 12px;
+    border: 2px solid #e8b840;
+    box-shadow: 0 0 0 9999px rgba(4,3,6,0.78), 0 0 30px rgba(232,184,64,0.6);
+    z-index: 49998;
+    transition: all 0.3s ease;
+    animation: ctRingPulse 1.5s ease-in-out infinite;
+}
+@keyframes ctRingPulse {
+    0%, 100% { box-shadow: 0 0 0 9999px rgba(4,3,6,0.78), 0 0 30px rgba(232,184,64,0.6); }
+    50%      { box-shadow: 0 0 0 9999px rgba(4,3,6,0.78), 0 0 50px rgba(232,184,64,0.9); }
+}
+.clarity-spotlight-tip {
+    position: absolute;
+    background: #0e0c10;
+    border: 1px solid #6a4c14;
+    border-radius: 8px;
+    padding: 10px 14px;
+    color: #cebf9a;
+    font-family: 'Crimson Text', Georgia, serif;
+    font-size: 12.5px;
+    line-height: 1.5;
+    max-width: 280px;
+    z-index: 49999;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.8);
+}
+.clarity-spotlight-tip b { color: #ffd060; }
+
+
+/* === Point 3: action dock + popover === */
+body.clarity-on #action-bar { display: none !important; }
+
+/* Push the grid up: compress vertical chrome above it */
+body.clarity-on #main-layout { padding: 4px 8px 4px !important; gap: 4px !important; }
+body.clarity-on #game-area { padding-top: 0 !important; }
+body.clarity-on #timeline { margin: 0 !important; padding: 4px 8px !important; flex-shrink: 0; }
+body.clarity-on #clarity-banner { padding-top: 5px !important; padding-bottom: 5px !important; }
+body.clarity-on #clarity-resbar { padding-top: 4px !important; padding-bottom: 4px !important; }
+body.clarity-on #clarity-free-rail { padding-top: 4px !important; padding-bottom: 4px !important; }
+
+/* Make the action dock a clean row right under the grid */
+#clarity-action-dock {
+    display: none;
+    gap: 10px;
+    justify-content: center;
+    margin-top: 14px;
+    flex-wrap: wrap;
+}
+body.clarity-on #clarity-action-dock { display: flex; }
+
+.cad-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    padding: 11px 22px;
+    border-radius: 10px;
+    border: 1.5px solid #6a4c14;
+    background: linear-gradient(135deg, #1c1408, #0e0a04);
+    color: #e8b840;
+    font-family: 'Cinzel', serif;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 1.2px;
+    cursor: pointer;
+    transition: all 0.15s;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.5);
+}
+.cad-btn:hover {
+    border-color: #b08828;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.6), 0 0 14px rgba(232,184,64,0.3);
+    transform: translateY(-1px);
+}
+.cad-btn.active {
+    background: linear-gradient(135deg, #3a2810, #1a1004);
+    border-color: #ffd060;
+    box-shadow: 0 0 22px rgba(255,208,96,0.5), inset 0 0 12px rgba(255,208,96,0.15);
+    color: #ffe080;
+}
+.cad-ico { font-size: 18px; line-height: 1; }
+.cad-label { white-space: nowrap; }
+
+/* When the player can't take an action, dim the dock */
+body.clarity-spent #clarity-action-dock .cad-btn {
+    opacity: 0.4;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+/* The popover that hosts the chosen section */
+#clarity-action-popover {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    width: min(720px, 92vw);
+    max-height: 60vh;
+    background: linear-gradient(180deg, #0e0a08, #08060a);
+    border: 1.5px solid #6a4c14;
+    border-radius: 14px;
+    box-shadow: 0 -10px 40px rgba(0,0,0,0.85), 0 0 28px rgba(232,184,64,0.12);
+    padding: 0;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.18s, transform 0.18s;
+    z-index: 49998;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+#clarity-action-popover.open {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+    pointer-events: auto;
+}
+.cap-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 18px;
+    border-bottom: 1px solid #2a2418;
+    background: #0a0808;
+    flex-shrink: 0;
+}
+.cap-title {
+    font-family: 'Cinzel', serif;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 1.3px;
+    color: #ffd060;
+    text-transform: uppercase;
+}
+.cap-close {
+    width: 26px; height: 26px;
+    border: 1px solid #4a3618;
+    background: transparent;
+    color: #cebf9a;
+    border-radius: 50%;
+    font-size: 16px;
+    line-height: 1;
+    cursor: pointer;
+    transition: all 0.12s;
+}
+.cap-close:hover {
+    background: #2a1808;
+    color: #ffd060;
+    border-color: #ffd060;
+}
+.cap-body {
+    padding: 14px 18px 18px;
+    overflow-y: auto;
+    flex: 1 1 auto;
+}
+/* Sections (sec-tile/sec-build/sec-tax) inherit their game styles but lose their card frame inside the popover */
+.cap-body .action-section {
+    background: transparent !important;
+    border: none !important;
+    padding: 0 !important;
+}
+.cap-body .action-section-title { display: none !important; } /* title is in popover header */
+
+
+/* === Flanking columns: free LEFT, paid RIGHT, grid CENTER === */
+body.clarity-on #main-content-row {
+    align-items: stretch !important;
+    gap: 14px !important;
+    padding: 6px 12px;
+}
+
+/* Free rail: now a vertical column on the LEFT */
+body.clarity-on #clarity-free-rail {
+    flex: 0 0 180px;
+    flex-direction: column;
+    align-items: stretch;
+    align-self: flex-start;
+    background: linear-gradient(180deg, #0a1420, #08101a);
+    border: 1px solid #1a3050;
+    border-radius: 10px;
+    padding: 12px 10px !important;
+    gap: 7px !important;
+    margin: 0 !important;
+    flex-wrap: nowrap !important;
+}
+body.clarity-on #clarity-free-rail .cfr-label {
+    font-size: 10px;
+    text-align: center;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #1a3050;
+    margin-bottom: 4px;
+}
+body.clarity-on #clarity-free-rail .cfr-btn {
+    width: 100%;
+    justify-content: flex-start;
+    padding: 8px 10px;
+    font-size: 11px;
+}
+body.clarity-on #clarity-free-rail .cfr-spacer {
+    flex: 1 0 auto;
+    min-height: 8px;
+}
+body.clarity-on #clarity-free-rail .cfr-toggle {
+    width: 100%;
+    text-align: center;
+}
+
+/* Action dock: vertical column on the RIGHT */
+body.clarity-on #clarity-action-dock {
+    flex: 0 0 200px;
+    flex-direction: column;
+    align-items: stretch;
+    align-self: flex-start;
+    background: linear-gradient(180deg, #1a1408, #0e0a04);
+    border: 1.5px solid #4a3614;
+    border-radius: 10px;
+    padding: 12px 10px;
+    gap: 8px !important;
+    margin: 0 !important;
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+}
+body.clarity-on #clarity-action-dock::before {
+    content: "🟡 1 ACTION / TOUR";
+    font-family: 'Cinzel', serif;
+    font-size: 10px;
+    font-weight: 700;
+    color: #ffd060;
+    letter-spacing: 1.4px;
+    text-align: center;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #4a3614;
+    margin-bottom: 4px;
+}
+body.clarity-on .cad-btn {
+    width: 100%;
+    justify-content: flex-start;
+    padding: 12px 14px;
+    font-size: 12px;
+}
+
+/* Game-area: ensure it grows to fill between the rails */
+body.clarity-on #game-area {
+    flex: 1 1 auto !important;
+    min-width: 0;
+}
+
+
+/* === Restructured resource bar: 3 grouped cards (Économie / Cité / Avatar) === */
+body.clarity-on #clarity-resbar {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 14px !important;
+    padding: 10px 14px !important;
+    background: #0a0810 !important;
+    border-bottom: 1px solid #1a1a28;
+    align-items: stretch;
+}
+.crb-group {
+    background: linear-gradient(180deg, #0f0c14, #08060c);
+    border: 1px solid #221a28;
+    border-radius: 8px;
+    padding: 8px 12px 9px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+.crb-group.crb-eco    { border-color: #3a2a08; }
+.crb-group.crb-city   { border-color: #1a3050; }
+.crb-group.crb-avatar { border-color: #2a1840; }
+.crb-grp-label {
+    font-family: 'Cinzel', serif;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1.6px;
+    text-transform: uppercase;
+    padding-bottom: 5px;
+    margin-bottom: 3px;
+    border-bottom: 1px solid #1c1822;
+}
+.crb-eco    .crb-grp-label { color: #e8b840; border-bottom-color: #3a2a08; }
+.crb-city   .crb-grp-label { color: #6ab0ff; border-bottom-color: #1a3050; }
+.crb-avatar .crb-grp-label { color: #c890ff; border-bottom-color: #2a1840; }
+
+.crb-row {
+    display: grid;
+    grid-template-columns: 18px 1fr auto auto;
+    align-items: baseline;
+    gap: 8px;
+    padding: 2px 0;
+    cursor: help;
+}
+.crb-row .crb-ico  { font-size: 13px; line-height: 1; text-align: center; }
+.crb-row .crb-name {
+    font-family: 'Crimson Text', Georgia, serif;
+    font-size: 11px;
+    color: #9a8c6a;
+    letter-spacing: 0.3px;
+}
+.crb-row .crb-val  {
+    font-family: 'Cinzel', serif;
+    font-weight: 700;
+    font-size: 15px;
+    color: #f0d878;
+    text-align: right;
+    min-width: 28px;
+}
+.crb-row.crb-stat .crb-val { color: #d8d0c0; font-size: 13px; }
+.crb-row .crb-delta {
+    font-family: 'Crimson Text', Georgia, serif;
+    font-size: 10px;
+    color: #28b080;
+    min-width: 32px;
+    text-align: right;
+}
+.crb-row .crb-delta.neg { color: #e07070; }
+.crb-row .crb-delta:empty { min-width: 0; }
+.crb-row:hover .crb-name { color: #cebf9a; }
+
+
+/* === Big threat preview that flies back to the banner pill === */
+#clarity-threat-big {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(1);
+    transform-origin: center center;
+    z-index: 9999;
+    min-width: 460px;
+    padding: 28px 44px 24px;
+    border-radius: 18px;
+    background: linear-gradient(180deg, #0e0a08, #06040a);
+    border: 2px solid #6a4c14;
+    box-shadow: 0 20px 80px rgba(0,0,0,0.85), 0 0 60px rgba(0,0,0,0.6);
+    font-family: 'Crimson Text', Georgia, serif;
+    text-align: center;
+    pointer-events: none;
+    animation: ctbIn 0.45s cubic-bezier(.34,1.56,.64,1);
+}
+@keyframes ctbIn {
+    0%   { opacity: 0; transform: translate(-50%, -50%) scale(0.6); }
+    100% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+}
+#clarity-threat-big.fade-out { opacity: 0; transition: opacity 0.4s; }
+
+/* Outcome themes */
+#clarity-threat-big.outcome-win {
+    border-color: #28b080;
+    box-shadow: 0 20px 80px rgba(0,0,0,0.85), 0 0 80px rgba(40,176,128,0.5);
+    background: linear-gradient(180deg, #08140e, #04080a);
+}
+#clarity-threat-big.outcome-doubt {
+    border-color: #e8b840;
+    box-shadow: 0 20px 80px rgba(0,0,0,0.85), 0 0 80px rgba(232,184,64,0.45);
+    background: linear-gradient(180deg, #140e08, #08060a);
+}
+#clarity-threat-big.outcome-lose {
+    border-color: #e07070;
+    box-shadow: 0 20px 80px rgba(0,0,0,0.85), 0 0 80px rgba(224,80,80,0.5);
+    background: linear-gradient(180deg, #140a0a, #08040a);
+}
+#clarity-threat-big.outcome-unknown {
+    border-color: #8a6aff;
+    box-shadow: 0 20px 80px rgba(0,0,0,0.85), 0 0 80px rgba(138,106,255,0.4);
+}
+
+#clarity-threat-big .ctb-countdown {
+    display: flex;
+    align-items: baseline;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 16px;
+}
+#clarity-threat-big .ctb-label {
+    font-family: 'Cinzel', serif;
+    font-size: 14px;
+    color: #9a8a6a;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+}
+#clarity-threat-big .ctb-num {
+    font-family: 'Cinzel', serif;
+    font-size: 64px;
+    font-weight: 700;
+    color: #ffd060;
+    line-height: 1;
+    text-shadow: 0 0 30px rgba(255,208,96,0.5);
+}
+#clarity-threat-big.outcome-lose .ctb-num { color: #ff8080; text-shadow: 0 0 30px rgba(255,128,128,0.6); }
+#clarity-threat-big.outcome-win  .ctb-num { color: #50d8a0; text-shadow: 0 0 30px rgba(80,216,160,0.5); }
+
+#clarity-threat-big .ctb-vs {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 28px;
+    margin: 14px 0 18px;
+}
+#clarity-threat-big .ctb-side {
+    text-align: center;
+    min-width: 110px;
+}
+#clarity-threat-big .ctb-side-label {
+    font-family: 'Cinzel', serif;
+    font-size: 11px;
+    color: #7a6a4a;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+}
+#clarity-threat-big .ctb-side-val {
+    font-family: 'Cinzel', serif;
+    font-size: 44px;
+    font-weight: 700;
+    line-height: 1;
+}
+#clarity-threat-big .ctb-you .ctb-side-val { color: #cebf9a; }
+#clarity-threat-big.outcome-win  .ctb-you .ctb-side-val { color: #50d8a0; }
+#clarity-threat-big.outcome-doubt .ctb-you .ctb-side-val { color: #ffd060; }
+#clarity-threat-big.outcome-lose .ctb-you .ctb-side-val { color: #e07070; }
+#clarity-threat-big .ctb-horde .ctb-side-val { color: #e07070; }
+#clarity-threat-big .ctb-vs-sep {
+    font-family: 'Cinzel', serif;
+    font-size: 18px;
+    color: #4a3614;
+    letter-spacing: 2px;
+}
+
+#clarity-threat-big .ctb-hidden {
+    font-family: 'Cinzel', serif;
+    font-size: 38px;
+    color: #6a5a8a;
+    letter-spacing: 12px;
+    margin: 18px 0;
+}
+
+#clarity-threat-big .ctb-verdict {
+    font-family: 'Cinzel', serif;
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    margin-top: 4px;
+}
+#clarity-threat-big.outcome-win   .ctb-verdict { color: #50d8a0; }
+#clarity-threat-big.outcome-doubt .ctb-verdict { color: #ffd060; }
+#clarity-threat-big.outcome-lose  .ctb-verdict { color: #e07070; }
+#clarity-threat-big.outcome-unknown .ctb-verdict { color: #b09aff; }
+
+#clarity-threat-big .ctb-sub {
+    font-size: 12px;
+    color: #8a7a5a;
+    margin-top: 6px;
+    font-style: italic;
+}
+
+</style>
+<script id="clarity-overlay-js">
+/* ============================================================
+   CLARITY OVERLAY — non-destructive readability layer
+   Adds: top banner, action-category chips, free-actions rail,
+         first-run tutorial, help button, on/off toggle.
+   Hooks into existing functions WITHOUT replacing them.
+   ============================================================ */
+(function () {
+    'use strict';
+
+    const LS_TUTORIAL = 'clarity_tutorial_seen_v1';
+    const LS_ENABLED  = 'clarity_enabled_v1';
+
+    function buildActionDock() {
+        const d = document.createElement('div');
+        d.id = 'clarity-action-dock';
+        d.innerHTML = `
+            <button class="cad-btn" data-action="tile">
+                <span class="cad-ico">🗺</span><span class="cad-label">Révéler une tuile</span>
+            </button>
+            <button class="cad-btn" data-action="build">
+                <span class="cad-ico">🏗</span><span class="cad-label">Construire</span>
+            </button>
+            <button class="cad-btn" data-action="tax">
+                <span class="cad-ico">💰</span><span class="cad-label">Percevoir l'impôt</span>
+            </button>
+        `;
+        return d;
+    }
+
+    function buildActionPopover() {
+        const p = document.createElement('div');
+        p.id = 'clarity-action-popover';
+        p.innerHTML = `
+            <div class="cap-header">
+                <span class="cap-title" id="cap-title">—</span>
+                <button class="cap-close" id="cap-close" title="Fermer">×</button>
+            </div>
+            <div class="cap-body" id="cap-body"></div>
+        `;
+        return p;
+    }
+
+    let currentAction = null;
+    const SECTION_IDS  = { tile: 'sec-tile',  build: 'sec-build', tax: 'sec-tax' };
+    const ACTION_TITLES = {
+        tile:  '🗺 Révéler une tuile',
+        build: '🏗 Construire un bâtiment',
+        tax:   '💰 Percevoir l\'impôt',
+    };
+
+    function openActionPanel(action) {
+        if (actionSpent || actionBusy || pendingNext) return; // can't act
+        if (currentAction === action) { closeActionPanel(); return; }
+        if (currentAction) closeActionPanel(true);
+        const sec = document.getElementById(SECTION_IDS[action]);
+        const body = document.getElementById('cap-body');
+        const pop  = document.getElementById('clarity-action-popover');
+        const title = document.getElementById('cap-title');
+        if (!sec || !body || !pop) return;
+        body.appendChild(sec);
+        sec.style.display = 'flex';
+        pop.classList.add('open');
+        if (title) title.textContent = ACTION_TITLES[action] || '';
+        currentAction = action;
+        document.querySelectorAll('#clarity-action-dock .cad-btn').forEach(b => {
+            b.classList.toggle('active', b.dataset.action === action);
+        });
+    }
+
+    function closeActionPanel(skipFade) {
+        if (!currentAction) return;
+        const sec = document.getElementById(SECTION_IDS[currentAction]);
+        const bar = document.getElementById('action-bar');
+        if (sec && bar) bar.appendChild(sec);
+        currentAction = null;
+        if (!skipFade) {
+            const pop = document.getElementById('clarity-action-popover');
+            if (pop) pop.classList.remove('open');
+            document.querySelectorAll('#clarity-action-dock .cad-btn.active')
+                    .forEach(b => b.classList.remove('active'));
+        }
+    }
+
+    // ---------- on/off ----------
+    function isEnabled() {
+        const v = localStorage.getItem(LS_ENABLED);
+        return v === null ? true : v === '1';
+    }
+    function setEnabled(on) {
+        localStorage.setItem(LS_ENABLED, on ? '1' : '0');
+        document.body.classList.toggle('clarity-on', on);
+        document.body.classList.toggle('clarity-off', !on);
+        const t = document.getElementById('cfr-toggle-text');
+        if (t) t.textContent = on ? 'Clarté : ON' : 'Clarté : OFF';
+        const ft = document.getElementById('cft-text');
+        if (ft) ft.textContent = on ? 'Clarté ON' : 'Clarté OFF';
+    }
+
+    // ---------- state tracking ----------
+    let actionSpent = false;   // main action of this turn consumed
+    let actionBusy  = false;   // animation in progress
+    let pendingNext = false;   // a main action ran; nextTurn deferred until user clicks End Turn
+    let origNextRef = null;    // original nextTurn (pre-wrap)
+    let lastTurn    = -1;
+    let lastSeason  = -1;
+
+    function readTurn() {
+        const n = parseInt(document.getElementById('currentTurn')?.textContent, 10);
+        return isNaN(n) ? (window.currentTurn || 1) : n;
+    }
+    function readSeason() {
+        const n = parseInt(document.getElementById('saison')?.textContent, 10);
+        return isNaN(n) ? (window.currentSeason || 1) : n;
+    }
+    // turnProcessing is `let`-scoped in the game's script (not on window).
+    // Proxy via the body class that setTurnProcessing() toggles.
+    function isTurnProcessing() {
+        return document.body.classList.contains('processing');
+    }
+
+    // ---------- inject UI ----------
+    function buildBanner() {
+        const bar = document.createElement('div');
+        bar.id = 'clarity-banner';
+        bar.innerHTML = `
+            <span class="cb-turn" id="cb-turn">Tour 1 / Saison 1</span>
+            <span class="cb-threat" id="cb-threat" style="display:none"></span>
+            <span class="cb-sep"></span>
+            <span class="cb-instr">
+                Choisis <b>1 action principale</b> ce tour (Révéler · Construire · Impôts).
+                Les actions <b style="color:#80c0ff">gratuites</b> (recruter, équiper, sort, donjon) ne consomment pas ton tour.
+            </span>
+            <span class="cb-status" id="cb-status"></span>
+            <button class="cb-help" id="cb-help" title="Revoir le tutoriel">?</button>
+        `;
+        return bar;
+    }
+
+    function buildFreeRail() {
+        const r = document.createElement('div');
+        r.id = 'clarity-free-rail';
+        r.innerHTML = `
+            <span class="cfr-label">🔵 Gratuit</span>
+            <button class="cfr-btn" data-target="recruit">
+                <span class="cfr-ico">⚔</span> Recruter
+            </button>
+            <button class="cfr-btn" data-target="equip">
+                <span class="cfr-ico">🛡</span> Équiper
+            </button>
+            <button class="cfr-btn" data-target="army">
+                <span class="cfr-ico">🏰</span> Mon armée
+            </button>
+            <button class="cfr-btn" data-target="horde">
+                <span class="cfr-ico">👹</span> La horde
+            </button>
+            <button class="cfr-btn cfr-dungeon" data-target="dungeon" id="cfr-dungeon" style="display:none">
+                <span class="cfr-ico">🐉</span> Explorer le donjon
+            </button>
+            <span class="cfr-spacer"></span>
+            <button class="cfr-toggle" id="cfr-toggle">
+                <span id="cfr-toggle-text">Clarté : ON</span>
+            </button>
+        `;
+        return r;
+    }
+
+    function chip(text, cls) {
+        const c = document.createElement('div');
+        c.className = 'clarity-chip ' + cls;
+        c.textContent = text;
+        return c;
+    }
+
+    function injectChips() {
+        const tile  = document.getElementById('sec-tile');
+        const build = document.getElementById('sec-build');
+        const tax   = document.getElementById('sec-tax');
+        [tile, build, tax].forEach(el => {
+            if (el && !el.querySelector('.clarity-chip')) {
+                el.appendChild(chip('🟡 1 ACTION', 'cc-action'));
+            }
+        });
+    }
+
+    function buildResBar() {
+        const r = document.createElement('div');
+        r.id = 'clarity-resbar';
+        r.innerHTML = `
+            <div class="crb-group crb-eco">
+                <div class="crb-grp-label">💰 Économie</div>
+                <div class="crb-row" title="Or — gagné par les Impôts. Sert à construire et recruter.">
+                    <span class="crb-ico">🪙</span>
+                    <span class="crb-name">Or</span>
+                    <span class="crb-val" id="crb-gold">—</span>
+                    <span class="crb-delta" id="crb-gold-d"></span>
+                </div>
+                <div class="crb-row" title="Mana — gagné par certains bâtiments. Sert aux sorts.">
+                    <span class="crb-ico">✨</span>
+                    <span class="crb-name">Mana</span>
+                    <span class="crb-val" id="crb-mana">—</span>
+                    <span class="crb-delta" id="crb-mana-d"></span>
+                </div>
+                <div class="crb-row" title="Population — habitants de ta cité. Sert à recruter.">
+                    <span class="crb-ico">👥</span>
+                    <span class="crb-name">Population</span>
+                    <span class="crb-val" id="crb-pop">—</span>
+                    <span class="crb-delta" id="crb-pop-d"></span>
+                </div>
+            </div>
+            <div class="crb-group crb-city">
+                <div class="crb-grp-label">🏰 Cité</div>
+                <div class="crb-row crb-stat" title="Fortifications — ajoutées à la défense lors de l'assaut de la horde.">
+                    <span class="crb-ico">🏰</span>
+                    <span class="crb-name">Fortifications</span>
+                    <span class="crb-val" id="crb-fort">—</span>
+                </div>
+                <div class="crb-row crb-stat" title="Conscrits — soldats recrutés et prêts à défendre.">
+                    <span class="crb-ico">⚔</span>
+                    <span class="crb-name">Conscrits</span>
+                    <span class="crb-val" id="crb-cons">—</span>
+                </div>
+                <div class="crb-row crb-stat" title="Slots libres — emplacements disponibles pour construire.">
+                    <span class="crb-ico">🏗</span>
+                    <span class="crb-name">Slots libres</span>
+                    <span class="crb-val" id="crb-space">—</span>
+                </div>
+            </div>
+            <div class="crb-group crb-avatar">
+                <div class="crb-grp-label">🧙 Avatar</div>
+                <div class="crb-row crb-stat" title="Points de vie de ton avatar.">
+                    <span class="crb-ico">❤</span>
+                    <span class="crb-name">PV</span>
+                    <span class="crb-val" id="crb-hp">—</span>
+                </div>
+                <div class="crb-row crb-stat" title="Attaque de l'avatar (équipement + base).">
+                    <span class="crb-ico">⚔</span>
+                    <span class="crb-name">Attaque</span>
+                    <span class="crb-val" id="crb-atk">—</span>
+                </div>
+                <div class="crb-row crb-stat" title="Défense de l'avatar (équipement + base).">
+                    <span class="crb-ico">🛡</span>
+                    <span class="crb-name">Défense</span>
+                    <span class="crb-val" id="crb-def">—</span>
+                </div>
+            </div>
+        `;
+        return r;
+    }
+
+    function renderResBar() {
+        const setVal = (id, srcId) => {
+            const dst = document.getElementById(id);
+            const src = document.getElementById(srcId);
+            if (dst && src) dst.textContent = src.textContent.trim() || '—';
+        };
+        setVal('crb-gold', 'res-gold');
+        setVal('crb-mana', 'res-mana');
+        setVal('crb-pop',  'res-pop');
+        setVal('crb-fort', 'res-fort');
+        setVal('crb-cons', 'res-conscrit');
+        setVal('crb-space','res-space');
+        setVal('crb-hp',   'res-hp');
+        setVal('crb-atk',  'res-atk');
+        setVal('crb-def',  'res-def');
+
+        // Deltas (gain/turn) from hidden spans
+        const setDelta = (id, srcId) => {
+            const dst = document.getElementById(id);
+            const src = document.getElementById(srcId);
+            if (!dst || !src) return;
+            const v = parseInt(src.textContent, 10);
+            if (isNaN(v) || v === 0) { dst.textContent = ''; return; }
+            dst.textContent = (v > 0 ? '+' : '') + v + '/t';
+            dst.classList.toggle('neg', v < 0);
+        };
+        setDelta('crb-gold-d', 'goldperturn');
+        setDelta('crb-mana-d', 'manaperturn');
+        setDelta('crb-pop-d',  'populationperturn');
+    }
+
+    // ---------- horde threat indicator ----------
+    function readNum(id) {
+        const el = document.getElementById(id);
+        if (!el) return null;
+        const n = parseInt(el.textContent, 10);
+        return isNaN(n) ? null : n;
+    }
+    function computeThreat() {
+        const turn = readTurn();
+        const cityPow = readNum('city-power-total') || 0;
+        const hordeTxt = document.getElementById('horde-power-total')?.textContent.trim();
+        const hordePow = hordeTxt && hordeTxt !== '?' ? parseInt(hordeTxt, 10) : null;
+        const fort = readNum('fortifications') || 0;
+        const totalDef = cityPow + fort;
+        const turnsLeft = Math.max(0, 10 - turn);
+        let outcome = 'unknown';
+        if (hordePow !== null && hordePow > 0) {
+            const ratio = totalDef / hordePow;
+            if (ratio >= 1.2) outcome = 'win';
+            else if (ratio >= 0.85) outcome = 'doubt';
+            else outcome = 'lose';
+        }
+        return { turn, turnsLeft, totalDef, hordePow, outcome };
+    }
+    function renderThreat() {
+        const el = document.getElementById('cb-threat');
+        if (!el) return;
+        const t = computeThreat();
+        el.style.display = 'inline-flex';
+        el.classList.toggle('imminent', t.turnsLeft <= 2);
+
+        let html = '<span>⚔ Horde dans</span> <span class="ct-countdown">' + t.turnsLeft + '</span><span>tour' + (t.turnsLeft===1?'':'s') + '</span>';
+        if (t.hordePow !== null) {
+            const cls = t.outcome === 'win' ? 'ok' : (t.outcome === 'doubt' ? 'warn' : 'bad');
+            html += '<span class="ct-vs">·</span>'
+                  + '<span>Toi <b class="ct-num ' + cls + '">' + t.totalDef + '</b></span>'
+                  + '<span class="ct-vs">vs</span>'
+                  + '<span>Horde <b class="ct-num bad">' + t.hordePow + '</b></span>';
+        } else if (t.turn >= 1) {
+            html += '<span class="ct-vs">· révélée au tour 5</span>';
+        }
+        el.innerHTML = html;
+    }
+
+    // ---------- big threat preview after turn popup ----------
+    function showThreatPreview() {
+        const t = computeThreat();
+        if (t.turn >= 10) return; // skip on battle turn
+
+        // Build big floating card
+        const big = document.createElement('div');
+        big.id = 'clarity-threat-big';
+        big.classList.add('outcome-' + t.outcome);
+
+        const oTitle = {
+            win:   '✅ Victoire assurée',
+            doubt: '⚖ Combat incertain',
+            lose:  '☠ Défaite probable',
+            unknown: '👁 Horde non révélée',
+        }[t.outcome];
+        const oSub = {
+            win:   'Ton armée devrait écraser la horde.',
+            doubt: 'Le combat sera serré — renforce-toi.',
+            lose:  'Tu vas perdre. Recrute, construis, prie.',
+            unknown: 'La compo de la horde sera dévoilée au tour 5.',
+        }[t.outcome];
+
+        big.innerHTML = `
+            <div class="ctb-countdown">
+                <span class="ctb-label">⚔ Horde dans</span>
+                <span class="ctb-num">${t.turnsLeft}</span>
+                <span class="ctb-label">tour${t.turnsLeft===1?'':'s'}</span>
+            </div>
+            ${t.hordePow !== null ? `
+                <div class="ctb-vs">
+                    <div class="ctb-side ctb-you">
+                        <div class="ctb-side-label">Ta défense</div>
+                        <div class="ctb-side-val">${t.totalDef}</div>
+                    </div>
+                    <div class="ctb-vs-sep">VS</div>
+                    <div class="ctb-side ctb-horde">
+                        <div class="ctb-side-label">Horde</div>
+                        <div class="ctb-side-val">${t.hordePow}</div>
+                    </div>
+                </div>
+            ` : `
+                <div class="ctb-hidden">?  ?  ?</div>
+            `}
+            <div class="ctb-verdict">${oTitle}</div>
+            <div class="ctb-sub">${oSub}</div>
+        `;
+        document.body.appendChild(big);
+
+        // After dwell, fly to small pill position
+        const dwell = 1200;
+        setTimeout(() => {
+            const target = document.getElementById('cb-threat');
+            if (!target) { big.classList.add('fade-out'); setTimeout(() => big.remove(), 400); return; }
+            const tRect = target.getBoundingClientRect();
+            const bRect = big.getBoundingClientRect();
+
+            // Compute scale to roughly match the small pill width
+            const scale = Math.max(0.12, tRect.width / bRect.width);
+            const dx = (tRect.left + tRect.width / 2) - (bRect.left + bRect.width / 2);
+            const dy = (tRect.top + tRect.height / 2) - (bRect.top + bRect.height / 2);
+            big.style.transition = 'transform 0.7s cubic-bezier(.5,0,.3,1), opacity 0.55s ease';
+            big.style.transform  = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px)) scale(${scale})`;
+            big.style.opacity    = '0';
+            setTimeout(() => big.remove(), 750);
+        }, dwell);
+    }
+
+    // ---------- watch turn-overlay close to trigger threat preview ----------
+    let _threatObserver = null;
+    function installTurnOverlayWatch() {
+        if (_threatObserver) return;
+        const ovl = document.getElementById('turn-overlay');
+        if (!ovl) return;
+        let wasShown = ovl.classList.contains('show');
+        _threatObserver = new MutationObserver(() => {
+            const isShown = ovl.classList.contains('show');
+            if (wasShown && !isShown) {
+                // popup just closed → show threat preview if clarity is on
+                if (document.body.classList.contains('clarity-on')) {
+                    setTimeout(showThreatPreview, 150);
+                }
+            }
+            wasShown = isShown;
+        });
+        _threatObserver.observe(ovl, { attributes: true, attributeFilter: ['class'] });
+    }
+
+    // ---------- dungeon availability ----------
+    function updateDungeonButton() {
+        const btn = document.getElementById('cfr-dungeon');
+        if (!btn) return;
+        const turn = readTurn();
+        const exploreTurns = [1, 3, 7, 9];
+        const avatarBlocked = window.avatarBlocked === true;
+        const available = exploreTurns.includes(turn) && !avatarBlocked && !pendingNext;
+        btn.style.display = available ? '' : 'none';
+    }
+
+    // ---------- status pill ----------
+    function renderStatus() {
+        const s = document.getElementById('cb-status');
+        const t = document.getElementById('cb-turn');
+        if (!s || !t) return;
+        const turn = readTurn();
+        const season = readSeason();
+        t.textContent = `Tour ${turn} / 10 · Saison ${season}`;
+
+        let actionLabel, actionCls;
+        if (turn === 10) {
+            actionLabel = '⚔ COMBAT DE HORDE';
+            actionCls   = 'action-busy';
+        } else if (actionBusy) {
+            actionLabel = '⏳ Action en cours…';
+            actionCls   = 'action-busy';
+        } else if (actionSpent) {
+            actionLabel = '✓ Action prise';
+            actionCls   = 'action-spent';
+        } else {
+            actionLabel = '○ Action disponible';
+            actionCls   = 'action-avail';
+        }
+
+        const showEndTurn = pendingNext && !actionBusy && turn !== 10;
+        s.innerHTML = `
+            <span class="cb-pill ${actionCls}">🟡 ${actionLabel}</span>
+            <span class="cb-pill free">🔵 Gratuit dispo</span>
+            ${showEndTurn ? '<button class="cb-endturn" id="cb-endturn">▶ Fin du tour</button>' : ''}
+        `;
+        if (showEndTurn) {
+            const btn = document.getElementById('cb-endturn');
+            if (btn) btn.addEventListener('click', endTurn);
+        }
+
+        document.body.classList.toggle('clarity-spent', actionSpent || actionBusy);
+        renderThreat();
+        updateDungeonButton();
+        renderResBar();
+    }
+
+    // ---------- end-turn handler ----------
+    function endTurn() {
+        if (!pendingNext) return;
+        pendingNext = false;
+        actionBusy = true;
+        renderStatus();
+        if (window.setTurnProcessing) window.setTurnProcessing(true);
+        // Call the original (unwrapped) nextTurn so it actually advances
+        if (origNextRef) origNextRef.apply(window);
+        else if (window.nextTurn && window.nextTurn.__clarityRealCall) {
+            window.nextTurn.__clarityRealCall();
+        }
+    }
+
+    // ---------- hooks into existing game logic ----------
+    function installHooks() {
+        // nextTurn → consumed an action; reset spent on new turn
+        const origNext = window.nextTurn;
+        if (typeof origNext === 'function' && !origNext.__clarityWrapped) {
+            origNextRef = origNext;
+            const wrapped = function () {
+                // If a main action just ran and Clarté is ON, defer turn advance
+                // until the user clicks End Turn. Free actions remain available.
+                if (pendingNext && document.body.classList.contains('clarity-on')) {
+                    actionBusy = false;
+                    // unlock the UI so the player can use free actions
+                    // (mirror what nextTurn would have done at its end)
+                    document.body.classList.remove('processing');
+                    if (window.setTurnProcessing) {
+                        try { window.setTurnProcessing(false); } catch(e){}
+                    }
+                    renderStatus();
+                    return; // deferred
+                }
+                const r = origNext.apply(this, arguments);
+                actionSpent = false;
+                actionBusy  = false;
+                pendingNext = false;
+                renderStatus();
+                return r;
+            };
+            wrapped.__clarityWrapped = true;
+            wrapped.__clarityRealCall = () => origNext.apply(window);
+            window.nextTurn = wrapped;
+        }
+
+        // doRevealTile → main action
+        const origReveal = window.doRevealTile;
+        if (typeof origReveal === 'function' && !origReveal.__clarityWrapped) {
+            window.doRevealTile = function () {
+                const before = isTurnProcessing();
+                const r = origReveal.apply(this, arguments);
+                if (!before && isTurnProcessing()) {
+                    actionSpent = true; actionBusy = true; pendingNext = true; closeActionPanel(); renderStatus();
+                }
+                return r;
+            };
+            window.doRevealTile.__clarityWrapped = true;
+        }
+
+        // buyBuilding → main action (only counts when accepted)
+        const origBuy = window.buyBuilding;
+        if (typeof origBuy === 'function' && !origBuy.__clarityWrapped) {
+            window.buyBuilding = function () {
+                const beforeProc = isTurnProcessing();
+                const r = origBuy.apply(this, arguments);
+                if (!beforeProc && isTurnProcessing()) {
+                    actionSpent = true; actionBusy = true; pendingNext = true; closeActionPanel(); renderStatus();
+                }
+                return r;
+            };
+            window.buyBuilding.__clarityWrapped = true;
+        }
+
+        // doTaxAndClose → main action
+        const origTax = window.doTaxAndClose;
+        if (typeof origTax === 'function' && !origTax.__clarityWrapped) {
+            window.doTaxAndClose = function () {
+                const before = isTurnProcessing();
+                const r = origTax.apply(this, arguments);
+                if (!before && isTurnProcessing()) {
+                    actionSpent = true; actionBusy = true; pendingNext = true; closeActionPanel(); renderStatus();
+                }
+                return r;
+            };
+            window.doTaxAndClose.__clarityWrapped = true;
+        }
+    }
+
+    // ---------- poll for state drift ----------
+    function pollLoop() {
+        const t = readTurn();
+        const s = readSeason();
+        if (t !== lastTurn || s !== lastSeason) {
+            lastTurn = t; lastSeason = s;
+            actionSpent = false;
+            actionBusy = false;
+            renderStatus();
+        } else {
+            const busyNow = isTurnProcessing();
+            if (busyNow !== actionBusy) {
+                actionBusy = busyNow;
+                renderStatus();
+            }
+        }
+        // Always refresh the resource strip + threat (cheap, values change between turns)
+        renderResBar();
+        renderThreat();
+        updateDungeonButton();
+    }
+
+    // ---------- tutorial ----------
+    const TUTORIAL_STEPS = [
+        {
+            title: 'Bienvenue à Chronocity',
+            body: `
+                <p>Tu diriges une cité menacée par la <b>Horde</b>. Tu as <b>10 tours</b> par saison pour la préparer.</p>
+                <div class="ct-rule r-battle">
+                    <span class="ct-rule-ic">⚔</span>
+                    <div>Au <b>tour 10</b>, la Horde attaque ta ville. Si tu perds, tu recommences (avec des bonus).</div>
+                </div>
+            `,
+        },
+        {
+            title: 'Le rythme d\'un tour',
+            body: `
+                <div class="ct-rule r-action">
+                    <span class="ct-rule-ic">🟡</span>
+                    <div>Chaque tour, choisis <b>1 action principale</b> parmi 3 :
+                    <br>· <b>🗺 Révéler</b> une tuile · <b>🏗 Construire</b> un bâtiment · <b>💰 Impôts</b> (récolter)</div>
+                </div>
+                <div class="ct-rule r-free">
+                    <span class="ct-rule-ic">🔵</span>
+                    <div>Tu peux aussi faire des <b>actions gratuites</b> sans limite : <b>recruter</b> des troupes, <b>équiper</b> ton avatar, <b>acheter</b> dans les bâtiments, ou <b>entrer dans le donjon</b> (quand disponible).</div>
+                </div>
+                <p style="font-size:12px;color:#9a8a6a">Le bandeau en haut t'indique en permanence : <b>🟡 action dispo / prise</b> et les options 🔵 gratuites.</p>
+            `,
+        },
+        {
+            title: 'Ce que tu construis sert au combat',
+            body: `
+                <p>Chaque <b>tuile révélée</b> rejoint ta ville et offre des emplacements de bâtiments.</p>
+                <p>Les <b>bâtiments</b> donnent : ressources (or, mana, pop), fortifications, ou débloquent le recrutement (Caserne → unités, Académie → unités d'élite).</p>
+                <p>Au tour 10, <b>ton armée + tes fortifications</b> affrontent la Horde. Préparez-la !</p>
+                <div class="ct-rule r-battle">
+                    <span class="ct-rule-ic">👁</span>
+                    <div>La composition de la Horde se <b>révèle au tour 5</b>. Adapte ta défense en conséquence.</div>
+                </div>
+            `,
+        },
+    ];
+
+    let tutStep = 0;
+    function showTutorial(force) {
+        if (!force && localStorage.getItem(LS_TUTORIAL) === '1') return;
+        tutStep = 0;
+        const overlay = document.createElement('div');
+        overlay.id = 'clarity-tutorial';
+        overlay.innerHTML = `
+            <div class="ct-card">
+                <div class="ct-step" id="ct-step-label"></div>
+                <div class="ct-title" id="ct-title"></div>
+                <div class="ct-body" id="ct-body"></div>
+                <div class="ct-actions">
+                    <button class="ct-btn secondary" id="ct-skip">Passer</button>
+                    <div class="ct-dots" id="ct-dots"></div>
+                    <button class="ct-btn" id="ct-next">Suivant ▶</button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(overlay);
+
+        const renderStep = () => {
+            const s = TUTORIAL_STEPS[tutStep];
+            overlay.querySelector('#ct-step-label').textContent = `ÉTAPE ${tutStep+1} / ${TUTORIAL_STEPS.length}`;
+            overlay.querySelector('#ct-title').textContent = s.title;
+            overlay.querySelector('#ct-body').innerHTML = s.body;
+            const dots = overlay.querySelector('#ct-dots');
+            dots.innerHTML = TUTORIAL_STEPS.map((_, i) =>
+                `<div class="ct-dot ${i === tutStep ? 'active' : ''}"></div>`
+            ).join('');
+            overlay.querySelector('#ct-next').textContent =
+                tutStep === TUTORIAL_STEPS.length - 1 ? 'Commencer ✓' : 'Suivant ▶';
+        };
+
+        const close = () => {
+            overlay.remove();
+            localStorage.setItem(LS_TUTORIAL, '1');
+        };
+
+        overlay.querySelector('#ct-skip').onclick = close;
+        overlay.querySelector('#ct-next').onclick = () => {
+            if (tutStep < TUTORIAL_STEPS.length - 1) {
+                tutStep++; renderStep();
+            } else {
+                close();
+            }
+        };
+
+        renderStep();
+    }
+
+    // ---------- free-rail handlers ----------
+    function onFreeAction(target) {
+        switch (target) {
+            case 'recruit':
+                if (typeof window.equipTab === 'function') window.equipTab('army');
+                const army = document.getElementById('equip-panel');
+                if (army) army.scrollIntoView({block: 'nearest'});
+                break;
+            case 'equip':
+                if (typeof window.openEquipWindow === 'function') window.openEquipWindow();
+                break;
+            case 'army':
+                if (typeof window.openArmyModal === 'function') window.openArmyModal('city');
+                break;
+            case 'horde':
+                if (typeof window.openArmyModal === 'function') window.openArmyModal('horde');
+                break;
+            case 'dungeon':
+                // Dungeon is a FREE action — do NOT advance the turn at exit.
+                if (typeof window.showPreDungeonWindow === 'function'
+                        && typeof window.openDungeon === 'function') {
+                    window.showPreDungeonWindow(() => {
+                        window.openDungeon(() => { /* no nextTurn — free action */ });
+                    });
+                }
+                break;
+        }
+    }
+
+    // ---------- boot ----------
+    function boot() {
+        // top of body — banner
+        const banner = buildBanner();
+        const rail   = buildFreeRail();
+        const resbar = buildResBar();
+
+        // Insert before timeline if present, else at top
+        const tl = document.getElementById('timeline');
+        if (tl && tl.parentNode) {
+            tl.parentNode.insertBefore(banner, tl);
+            tl.parentNode.insertBefore(resbar, tl.nextSibling);
+        } else {
+            document.body.insertBefore(banner, document.body.firstChild);
+            document.body.insertBefore(resbar, banner.nextSibling);
+        }
+
+        injectChips();
+
+        // === Flanking rails: FREE actions LEFT, PAID actions RIGHT, grid CENTER ===
+        const dock = buildActionDock();
+        const mcr  = document.getElementById('main-content-row');
+        const gameArea = document.getElementById('game-area');
+        if (mcr && gameArea) {
+            mcr.insertBefore(rail, gameArea);        // free actions LEFT
+            mcr.insertBefore(dock, gameArea.nextSibling); // paid actions RIGHT
+        } else {
+            document.body.appendChild(rail);
+            document.body.appendChild(dock);
+        }
+        dock.querySelectorAll('.cad-btn').forEach(b => {
+            b.addEventListener('click', () => openActionPanel(b.dataset.action));
+        });
+
+        const popover = buildActionPopover();
+        document.body.appendChild(popover);
+        popover.querySelector('#cap-close').addEventListener('click', () => closeActionPanel());
+
+        // wire free-rail buttons
+        rail.querySelectorAll('.cfr-btn').forEach(b => {
+            b.addEventListener('click', () => onFreeAction(b.dataset.target));
+        });
+        rail.querySelector('#cfr-toggle').addEventListener('click', () => {
+            setEnabled(!isEnabled());
+        });
+
+        // help button
+        banner.querySelector('#cb-help').addEventListener('click', () => showTutorial(true));
+
+        // always-visible floating toggle (so user can re-enable when OFF)
+        const floatBtn = document.createElement('button');
+        floatBtn.id = 'clarity-floating-toggle';
+        floatBtn.innerHTML = '✨ <span id="cft-text">Clarté ON</span>';
+        floatBtn.title = 'Activer/désactiver le calque de clarté';
+        floatBtn.addEventListener('click', () => {
+            setEnabled(!isEnabled());
+            document.getElementById('cft-text').textContent = isEnabled() ? 'Clarté ON' : 'Clarté OFF';
+        });
+        document.body.appendChild(floatBtn);
+
+        // initial toggle state
+        setEnabled(isEnabled());
+
+        // hooks + initial render
+        installHooks();
+        installTurnOverlayWatch();
+        renderStatus();
+
+        // re-hook periodically (some game scripts reassign globals)
+        setInterval(() => {
+            installHooks();
+            installTurnOverlayWatch();
+            pollLoop();
+        }, 400);
+
+        // first-run tutorial
+        setTimeout(() => showTutorial(false), 800);
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', boot);
+    } else {
+        // Game's own DOMContentLoaded runs first; wait a tick to let it finish.
+        setTimeout(boot, 100);
+    }
+})();
+
+</script>
 </body>
 </html>
