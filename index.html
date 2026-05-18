@@ -545,6 +545,7 @@
         <button onclick="homeLoad()" style="width:100%;padding:16px 0;font-family:Cinzel,serif;font-size:14px;cursor:pointer;border-radius:8px;background:linear-gradient(135deg,#1a1030,#2a1a40);color:#c080ff;border:1px solid #5040a0">📂 Charger une partie</button>
         <button onclick="homeNew()"  style="width:100%;padding:16px 0;font-family:Cinzel,serif;font-size:14px;cursor:pointer;border-radius:8px;background:linear-gradient(135deg,#0a1a0a,#1a2a0a);color:#4cffaa;border:1px solid #2a5a2a">✦ Commencer une partie</button>
         <button onclick="openGlossary()" style="width:100%;padding:16px 0;font-family:Cinzel,serif;font-size:14px;cursor:pointer;border-radius:8px;background:linear-gradient(135deg,#0a0818,#1a1028);color:#9a8a6a;border:1px solid #2a1a3a">📖 Glossaire</button>
+        <a href="mailto:chronocity.roguegame@gmail.com?subject=Feedback%20/%20Bug%20Chronocity" style="display:block;width:100%;padding:16px 0;font-family:Cinzel,serif;font-size:14px;cursor:pointer;border-radius:8px;background:linear-gradient(135deg,#1a0a0a,#2a1010);color:#ff9060;border:1px solid #5a2a1a;text-align:center;text-decoration:none;box-sizing:border-box">📧 Feedback / Bug</a>
     </div>
     <div id="home-slots" style="display:none;flex-direction:column;gap:8px;width:min(360px,92vw)"></div>
     <button id="home-back-btn" onclick="homeBack()" style="display:none;background:none;border:none;color:#4a3a5a;cursor:pointer;font-size:12px">← Retour</button>
@@ -9928,6 +9929,7 @@ body.clarity-on #clarity-resbar {
                 Les actions <b style="color:#80c0ff">libres</b> (recruter, équiper, sort, donjon) ne consomment pas ton tour.
             </span>
             <span class="cb-status" id="cb-status"></span>
+            <a href="mailto:chronocity.roguegame@gmail.com?subject=Feedback%20/%20Bug%20Chronocity" class="cb-help" title="Envoyer un feedback ou signaler un bug" style="text-decoration:none;font-size:13px">📧</a>
             <button class="cb-help" id="cb-help" title="Revoir le tutoriel">?</button>
         `;
         return bar;
