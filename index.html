@@ -19,7 +19,7 @@
             --shadow:0 4px 20px rgba(0,0,0,0.8);
         }
         *{box-sizing:border-box;margin:0;padding:0;}
-        body{display:flex;flex-direction:column;font-family:'Crimson Text',Georgia,serif;background:var(--bg-root);color:var(--text);height:100vh;overflow:hidden;background-image:radial-gradient(ellipse at 15% 50%,rgba(100,70,14,.04) 0%,transparent 55%),radial-gradient(ellipse at 85% 20%,rgba(120,25,25,.03) 0%,transparent 50%);}
+        body{display:flex;flex-direction:column;font-family:'Crimson Text',Georgia,serif;background:var(--bg-root);color:var(--text);height:100vh;overflow-y:auto;overflow-x:hidden;background-image:radial-gradient(ellipse at 15% 50%,rgba(100,70,14,.04) 0%,transparent 55%),radial-gradient(ellipse at 85% 20%,rgba(120,25,25,.03) 0%,transparent 50%);}
         #timeline{width:100%;background:var(--bg-panel);padding:8px 16px;display:flex;align-items:center;gap:14px;border-bottom:1px solid var(--border);flex-shrink:0;}
         #timeline-season{color:var(--gold-l);font-family:'Cinzel',serif;font-size:11px;letter-spacing:1.5px;white-space:nowrap;min-width:90px;}
         #timeline-steps{display:flex;gap:0;align-items:center;flex:1;}
@@ -69,15 +69,15 @@
         #turn-season-badge{display:inline-block;margin-top:12px;padding:3px 12px;border-radius:16px;font-family:'Cinzel',serif;font-size:11px;font-weight:bold;}
         #turn-progress{width:100%;height:2px;background:var(--border);border-radius:2px;margin-top:18px;overflow:hidden;}
         #turn-progress-bar{height:100%;border-radius:2px;transition:none;}
-        #error-popup{display:none;position:fixed;top:60px;left:50%;transform:translateX(-50%);background:#3a0a0a;border:1px solid var(--red-l);border-radius:8px;padding:12px 18px;color:#ffd0d0;font-size:13px;z-index:9999;min-width:260px;max-width:400px;text-align:center;box-shadow:var(--shadow);animation:slideDown .2s ease;}
+        #error-popup{display:none;position:fixed;top:130px;left:50%;transform:translateX(-50%);background:#3a0a0a;border:1px solid var(--red-l);border-radius:8px;padding:12px 18px;color:#ffd0d0;font-size:13px;z-index:9999;min-width:260px;max-width:400px;text-align:center;box-shadow:var(--shadow);animation:slideDown .2s ease;}
         #error-popup .error-title{font-family:'Cinzel',serif;font-weight:bold;font-size:14px;margin-bottom:5px;color:var(--red-l);}
         #error-popup .error-rows{font-size:12px;line-height:1.8;}
         #error-popup .ok{color:var(--teal-l);}#error-popup .ko{color:var(--red-l);}
-        #main-content{display:flex;flex:1;overflow:hidden;}
-        #main-layout{display:flex;flex-direction:column;gap:6px;padding:6px 8px 8px;flex:1;overflow:hidden;}
+        #main-content{display:flex;flex:1;overflow:visible;}
+        #main-layout{display:flex;flex-direction:column;gap:6px;padding:6px 8px 8px;flex:1;overflow:visible;}
         #action-bar{display:flex;gap:6px;flex-shrink:0;}
         #action-bar .action-section{flex:1;min-width:0;}
-        #main-content-row{display:flex;gap:8px;flex:1;overflow:hidden;align-items:flex-start;min-height:0;}
+        #main-content-row{display:flex;gap:8px;flex:1;overflow:visible;align-items:flex-start;min-height:0;}
         #game-area{flex:0 0 auto;}
         #tile-grid{display:grid;grid-template-columns:repeat(5,76px);grid-template-rows:repeat(5,76px);gap:4px;}
         .tile-cell{width:76px;height:76px;border-radius:5px;position:relative;overflow:hidden;border:2px solid transparent;transition:border-color .15s,transform .12s;display:flex;flex-direction:column;align-items:center;justify-content:center;}
@@ -114,6 +114,7 @@
         .res-row:last-child{border-bottom:none;}
         .res-label{font-size:10px;color:var(--text-m);}
         .res-val{font-family:'Cinzel',serif;font-size:11px;font-weight:bold;color:var(--gold-l);}
+        .res-val.res-danger{color:#ff4040 !important;}
         .res-sub{font-size:9px;color:var(--teal-l);text-align:right;padding-bottom:3px;min-height:12px;}
         .building-count{display:inline-block;background:var(--gold);color:#1a0e00;border-radius:8px;padding:1px 6px;font-size:11px;font-weight:bold;margin-left:3px;}
         .city-building-row{display:flex;justify-content:space-between;align-items:center;padding:3px 0;border-bottom:1px solid var(--border);font-size:12px;}
@@ -538,7 +539,7 @@
 <div id="home-screen" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:#06040a;z-index:20000;flex-direction:column;align-items:center;justify-content:center;gap:20px">
     <div style="text-align:center;margin-bottom:10px">
         <div style="font-family:Cinzel,serif;font-size:28px;color:#c0a060;letter-spacing:3px;text-shadow:0 0 20px rgba(180,140,60,0.4)">⚔ Chronocity — A Rogue City Builder</div>
-        <div style="font-size:11px;color:#4a3a5a;margin-top:6px;letter-spacing:2px">VERSION 0.12</div>
+        <div style="font-size:11px;color:#4a3a5a;margin-top:6px;letter-spacing:2px">VERSION 0.13</div>
     </div>
     <div id="home-menu" style="display:flex;flex-direction:column;gap:10px;width:min(340px,90vw)">
         <button onclick="homeLoad()" style="width:100%;padding:16px 0;font-family:Cinzel,serif;font-size:14px;cursor:pointer;border-radius:8px;background:linear-gradient(135deg,#1a1030,#2a1a40);color:#c080ff;border:1px solid #5040a0">📂 Charger une partie</button>
@@ -974,7 +975,7 @@
 <!-- Frise de progression -->
 <div id="timeline">
     <div id="timeline-season">Saison 1</div>
-    <div style="font-family:Cinzel,serif;font-size:9px;color:#3a3050;margin-left:auto;padding-left:8px;white-space:nowrap">v0.12</div>
+    <div style="font-family:Cinzel,serif;font-size:9px;color:#3a3050;margin-left:auto;padding-left:8px;white-space:nowrap">v0.13</div>
     <div id="timeline-steps"></div>
     <button onclick="toggleSaveMenu()" style="background:linear-gradient(135deg,#1a1030,#2a1a40);border:1px solid #4a3060;color:#c0a060;font-size:14px;cursor:pointer;padding:2px 8px;border-radius:5px;white-space:nowrap;flex-shrink:0" title="Sauvegardes">💾 Save</button>
     <button onclick="toggleMetaSummary()" style="background:linear-gradient(135deg,#101a10,#1a2a1a);border:1px solid #2a5a2a;color:#4cffaa;font-size:14px;cursor:pointer;padding:2px 8px;border-radius:5px;white-space:nowrap;flex-shrink:0" title="Résumé méta">✦ Méta</button>
@@ -1493,22 +1494,29 @@ function addLog(message) {
 }
 
 	function collect() {
-        gold += goldperturn;
-		mana += manaperturn;
-		population += populationperturn;
+        const conjonctionTurns = [2, 4, 6, 8];
+        const isConjonction = conjonctionTurns.includes(currentTurn);
+        const mult = isConjonction ? 2 : 1;
+        gold += goldperturn * mult;
+		mana += manaperturn * mult;
+		population += populationperturn * mult;
 		// Bénédiction (Sanctuaire) : +5 Or +5 Pop sur Prairies/Collines/Lacs
 		const opts2 = (getMeta().legendaryOptions || {});
 		if (opts2.sa_benediction) {
 			const blessedTiles = tileState.filter(function(t){ return t.revealed && (t.type === 'Prairie' || t.type === 'Collines' || t.type === 'Lac'); });
 			if (blessedTiles.length > 0) {
-				const bonus = blessedTiles.length * 5;
+				const bonus = blessedTiles.length * 5 * mult;
 				gold += bonus; population += bonus;
 				addLog('✨ Bénédiction : +'+bonus+' Or +'+bonus+' Pop ('+blessedTiles.length+' tuiles bénie(s))');
 			}
 		}
-		addLog("Vous avez gagné " + goldperturn + " Or !");
-		addLog("Vous avez gagné " + manaperturn + " Mana !");
-		addLog("Vous avez gagné " + populationperturn + " Population !");
+        if (isConjonction) {
+            addLog('🌟 Conjonction ! Caravane ×2 — Vous avez gagné ' + (goldperturn*2) + ' Or, ' + (manaperturn*2) + ' Mana, ' + (populationperturn*2) + ' Population !');
+        } else {
+            addLog("Vous avez gagné " + goldperturn + " Or !");
+            addLog("Vous avez gagné " + manaperturn + " Mana !");
+            addLog("Vous avez gagné " + populationperturn + " Population !");
+        }
 	}
 
 // fonction qui gére les tours et les events des tours
@@ -1516,13 +1524,13 @@ function addLog(message) {
 const turnEvents = [
     null,
     { icon: '🗺', name: 'Exploration', desc: 'Révélez une tuile ce tour. Votre avatar pourra partir en donjon — pensez à l\'équiper avant !', color: '#1a3a5a', border: '#4a90d9' },
-    { icon: '⭐', name: 'Récolte',     desc: 'Effectuez votre action, puis vous récolterez l\'or, la population et le mana produits.', color: '#3a2a00', border: '#e0a020' },
+    { icon: '⭐', name: 'Conjonction',  desc: 'Les caravanes n\'osent traverser les steppes qu\'au temps des Conjonctions, lorsque les anciennes routes reviennent dans le cours du monde. Envoyez une caravane ce tour pour récolter ×2 ressources !', color: '#3a2a00', border: '#e0a020' },
     { icon: '🗺', name: 'Exploration', desc: 'Révélez une tuile ce tour. Votre avatar pourra partir en donjon — pensez à l\'équiper avant !', color: '#1a3a5a', border: '#4a90d9' },
-    { icon: '⭐', name: 'Récolte',     desc: 'Effectuez votre action, puis vous récolterez l\'or, la population et le mana produits.', color: '#3a2a00', border: '#e0a020' },
+    { icon: '⭐', name: 'Conjonction',  desc: 'Les caravanes n\'osent traverser les steppes qu\'au temps des Conjonctions, lorsque les anciennes routes reviennent dans le cours du monde. Envoyez une caravane ce tour pour récolter ×2 ressources !', color: '#3a2a00', border: '#e0a020' },
     { icon: '🔭', name: 'Rapport des éclaireurs', desc: 'Consultez la composition de la horde dans le panneau Horde — elle vient d\'être mise à jour.', color: '#3a1a3a', border: '#c060c0' },
-    { icon: '⭐', name: 'Récolte',     desc: 'Effectuez votre action, puis vous récolterez l\'or, la population et le mana produits.', color: '#3a2a00', border: '#e0a020' },
+    { icon: '⭐', name: 'Conjonction',  desc: 'Les caravanes n\'osent traverser les steppes qu\'au temps des Conjonctions, lorsque les anciennes routes reviennent dans le cours du monde. Envoyez une caravane ce tour pour récolter ×2 ressources !', color: '#3a2a00', border: '#e0a020' },
     { icon: '🗺', name: 'Exploration', desc: 'Révélez une tuile ce tour. Votre avatar pourra partir en donjon — pensez à l\'équiper avant !', color: '#1a3a5a', border: '#4a90d9' },
-    { icon: '⭐', name: 'Récolte',     desc: 'Effectuez votre action, puis vous récolterez l\'or, la population et le mana produits.', color: '#3a2a00', border: '#e0a020' },
+    { icon: '⭐', name: 'Conjonction',  desc: 'Les caravanes n\'osent traverser les steppes qu\'au temps des Conjonctions, lorsque les anciennes routes reviennent dans le cours du monde. Envoyez une caravane ce tour pour récolter ×2 ressources !', color: '#3a2a00', border: '#e0a020' },
     { icon: '🗺', name: 'Exploration', desc: 'Révélez une tuile ce tour. Votre avatar pourra partir en donjon — pensez à l\'équiper avant !', color: '#1a3a5a', border: '#4a90d9' },
     { icon: '⚔',  name: 'La Horde attaque !', desc: 'Recrutez vos dernières unités, équipez votre avatar, puis cliquez ⚔ dans la frise pour lancer le combat.', color: '#3a0a0a', border: '#e05050', isBattleTurn: true },
 ];
@@ -1611,10 +1619,6 @@ function showTurnAnimation(turnNum, season, callback) {
 }
 
 	function nextTurn() {
-    // Récolte en fin de tour de récolte (avant d'incrémenter)
-    const harvestTurns = [2, 4, 6, 8];
-    if (harvestTurns.includes(currentTurn)) { collect(); }
-
     // On incrémente d'abord pour annoncer le BON tour à venir
     currentTurn++;
     // Cas fin de saison : reset du compteur seulement
@@ -1749,13 +1753,13 @@ function updateTimeline() {
 
     const stepInfos = [
         { num: 1,  label: 'Explore',  type: 'explore' },
-        { num: 2,  label: 'Récolte',  type: 'collect' },
+        { num: 2,  label: 'Conjonction',  type: 'collect' },
         { num: 3,  label: 'Explore',  type: 'explore' },
-        { num: 4,  label: 'Récolte',  type: 'collect' },
+        { num: 4,  label: 'Conjonction',  type: 'collect' },
         { num: 5,  label: 'Éclaireurs', type: 'scout' },
-        { num: 6,  label: 'Récolte',  type: 'collect' },
+        { num: 6,  label: 'Conjonction',  type: 'collect' },
         { num: 7,  label: 'Explore',  type: 'explore' },
-        { num: 8,  label: 'Récolte',  type: 'collect' },
+        { num: 8,  label: 'Conjonction',  type: 'collect' },
         { num: 9,  label: 'Explore',  type: 'explore' },
         { num: 10, label: 'COMBAT',   type: 'battle'  },
     ];
@@ -5484,8 +5488,8 @@ function applyTileReveal(idx, forceType) {
             break;
         case 'Lac':
             population += 10; populationperturn += 5; space += 1;
-            logMessage = 'Lac révélé ! +10 Pop (+5 en récolte).';
-            showExplorePopup('Lac 💧', '+10 Pop | +5/récolte | +1 Emplacement', "Des réfugiés s'installent au bord du lac.");
+            logMessage = 'Lac révélé ! +10 Pop (+5 par Conjonction).';
+            showExplorePopup('Lac 💧', '+10 Pop | +5/Conjonction | +1 Emplacement', "Des réfugiés s'installent au bord du lac.");
             break;
         case 'Forêt':
             fortifications += 1; space += 1;
@@ -5524,11 +5528,11 @@ function renderBuildPanelList() {
         return;
     }
     const buildings = [
-        { name:'Ferme',               gold:30,  pop:0,  mana:0,  icon:'🌾', bonus:'+10 Pop | +5/récolte' },
-        { name:'Mine',                gold:0,   pop:20, mana:0,  icon:'⛏',  bonus:'+20 Or | +10/récolte' },
+        { name:'Ferme',               gold:30,  pop:0,  mana:0,  icon:'🌾', bonus:'+10 Pop | +5/Conjonction' },
+        { name:'Mine',                gold:0,   pop:20, mana:0,  icon:'⛏',  bonus:'+20 Or | +10/Conjonction' },
         { name:'Caserne',             gold:110, pop:10, mana:0,  icon:'⚔',  bonus:'+2 Conscription' },
         { name:'Tour de Garde',       gold:90,  pop:10, mana:0,  icon:'🗼', bonus:'+1 Conscr. | +1 Fort.' },
-        { name:'Tour de Magie',       gold:40,  pop:5,  mana:20, icon:'🔮', bonus:'+1 Conscr. | +20 Mana | +10/récolte' },
+        { name:'Tour de Magie',       gold:40,  pop:5,  mana:20, icon:'🔮', bonus:'+1 Conscr. | +20 Mana | +10/Conjonction' },
         { name:'Académie militaire',  gold:160, pop:30, mana:40, icon:'🏛', bonus:'Soldat Pavois', req:'2 Casernes + Tour Magie' },
         { name:'Archerie',            gold:90,  pop:10, mana:0,  icon:'🏹', bonus:'Archers + armes distance', req:'1 Caserne' },
         { name:'Église',              gold:70,  pop:5,  mana:20, icon:'⛪', bonus:'Prêtres + Soin mineur' },
@@ -5642,6 +5646,16 @@ function renderTaxPanel() {
     if (!el) return;
     el.innerHTML = '';
 
+    // Bandeau Conjonction
+    const conjonctionTurns = [2, 4, 6, 8];
+    if (conjonctionTurns.includes(currentTurn)) {
+        const banner = document.createElement('div');
+        banner.style.cssText = 'background:linear-gradient(135deg,#3a2a00,#5a4000);border:1px solid #e0a020;border-radius:6px;padding:6px 8px;margin-bottom:8px;text-align:center;animation:ctRingPulse 1.5s ease-in-out infinite';
+        banner.innerHTML = '<div style="font-size:13px;color:#ffd060;font-weight:bold">⭐ Conjonction active !</div>' +
+            '<div style="font-size:10px;color:#c0a060;margin-top:2px">Caravane ×2 ressources ce tour</div>';
+        el.appendChild(banner);
+    }
+
     // Totaux
     const totals = document.createElement('div');
     totals.style.cssText = 'display:flex;gap:10px;padding:4px 0 6px;border-bottom:1px solid #1a1a2e;margin-bottom:6px';
@@ -5731,14 +5745,16 @@ function updateResPanel() {
     set('shells-display', getShells());
     const setSub = (id, val) => { const e=document.getElementById(id); if(e) e.textContent=val; };
     set('res-gold', gold);
-    setSub('res-gold-sub', goldperturn>0 ? '+'+goldperturn+' en récolte' : '');
+    setSub('res-gold-sub', goldperturn>0 ? '+'+goldperturn+' par Conjonction' : '');
     set('res-mana', mana);
-    setSub('res-mana-sub', manaperturn>0 ? '+'+manaperturn+' en récolte' : '');
+    setSub('res-mana-sub', manaperturn>0 ? '+'+manaperturn+' par Conjonction' : '');
     set('res-pop', population);
-    setSub('res-pop-sub', populationperturn>0 ? '+'+populationperturn+' en récolte' : '');
+    setSub('res-pop-sub', populationperturn>0 ? '+'+populationperturn+' par Conjonction' : '');
     set('res-fort', fortifications);
     set('res-conscrit', conscrit);
     set('res-space', space);
+    const resSpace = document.getElementById('res-space');
+    if (resSpace) resSpace.classList.toggle('res-danger', space <= 0);
     set('res-hp', avatarHp+'/'+avatarMaxHp);
     set('res-atk', atk);
     set('res-dmg', avatarDmg);
@@ -7037,7 +7053,7 @@ function cleanForSave(obj) {
 
 function getGameState() {
     return {
-        version: '0.12',
+        version: '0.13',
         date: new Date().toISOString(),
         currentTurn, currentSeason,
         gold, mana, population, dust,
@@ -9229,19 +9245,24 @@ body.clarity-spent #clarity-action-dock .cad-btn {
     cursor: not-allowed;
     pointer-events: none;
 }
+body.clarity-spent #clarity-action-dock #cad-endturn-btn {
+    opacity: 1;
+    cursor: pointer;
+    pointer-events: auto;
+}
 
 /* The popover that hosts the chosen section */
 #clarity-action-popover {
     position: fixed;
-    bottom: 24px;
+    top: 130px;
     left: 50%;
-    transform: translateX(-50%) translateY(20px);
+    transform: translateX(-50%) translateY(-20px);
     width: min(720px, 92vw);
     max-height: 60vh;
     background: linear-gradient(180deg, #0e0a08, #08060a);
     border: 1.5px solid #6a4c14;
     border-radius: 14px;
-    box-shadow: 0 -10px 40px rgba(0,0,0,0.85), 0 0 28px rgba(232,184,64,0.12);
+    box-shadow: 0 10px 40px rgba(0,0,0,0.85), 0 0 28px rgba(232,184,64,0.12);
     padding: 0;
     opacity: 0;
     pointer-events: none;
@@ -9447,6 +9468,7 @@ body.clarity-on #clarity-resbar {
     min-width: 28px;
 }
 .crb-row.crb-stat .crb-val { color: #d8d0c0; font-size: 13px; }
+.crb-row .crb-val.res-danger { color: #ff4040 !important; }
 .crb-row .crb-delta {
     font-family: 'Crimson Text', Georgia, serif;
     font-size: 10px;
@@ -9903,7 +9925,7 @@ body.clarity-on #clarity-resbar {
             <span class="cb-sep"></span>
             <span class="cb-instr">
                 Choisis <b>1 action principale</b> ce tour (Révéler · Construire · Caravane).
-                Les actions <b style="color:#80c0ff">gratuites</b> (recruter, équiper, sort, donjon) ne consomment pas ton tour.
+                Les actions <b style="color:#80c0ff">libres</b> (recruter, équiper, sort, donjon) ne consomment pas ton tour.
             </span>
             <span class="cb-status" id="cb-status"></span>
             <button class="cb-help" id="cb-help" title="Revoir le tutoriel">?</button>
@@ -9915,7 +9937,7 @@ body.clarity-on #clarity-resbar {
         const r = document.createElement('div');
         r.id = 'clarity-free-rail';
         r.innerHTML = `
-            <span class="cfr-label">🔵 Gratuit</span>
+            <span class="cfr-label">🔵 Libre</span>
             <button class="cfr-btn" data-target="recruit">
                 <span class="cfr-ico">⚔</span> Recruter
             </button>
@@ -10034,6 +10056,9 @@ body.clarity-on #clarity-resbar {
         setVal('crb-fort', 'res-fort');
         setVal('crb-cons', 'res-conscrit');
         setVal('crb-space','res-space');
+        const crbSpace = document.getElementById('crb-space');
+        const resSpaceSrc = document.getElementById('res-space');
+        if (crbSpace && resSpaceSrc) crbSpace.classList.toggle('res-danger', resSpaceSrc.classList.contains('res-danger'));
         setVal('crb-hp',   'res-hp');
         setVal('crb-atk',  'res-atk');
         setVal('crb-def',  'res-def');
@@ -10203,7 +10228,12 @@ body.clarity-on #clarity-resbar {
         if (!s || !t) return;
         const turn = readTurn();
         const season = readSeason();
-        t.textContent = `Tour ${turn} / 10 · Saison ${season}`;
+        const seasonNames = ['Printemps', 'Été', 'Automne', 'Hiver'];
+        const seasonName = seasonNames[(season - 1) % 4];
+        t.textContent = `Tour ${turn} / 10 · Saison ${season} — ${seasonName}`;
+        // Masquer l'affichage redondant de la timeline
+        const tlSeason = document.getElementById('timeline-season');
+        if (tlSeason) tlSeason.style.display = 'none';
 
         const actions = window.actionsDisponibles !== undefined ? window.actionsDisponibles : 1;
         const busy = isTurnProcessing();
@@ -10224,15 +10254,34 @@ body.clarity-on #clarity-resbar {
         }
 
         const showEndTurn = actions <= 0 && !busy && turn !== 10;
+
+        // Basculer dock : cacher les 3 boutons et montrer Fin de tour (ou l'inverse)
+        const dock = document.getElementById('clarity-action-dock');
+        if (dock) {
+            dock.querySelectorAll('.cad-btn[data-action]').forEach(b => {
+                b.style.display = showEndTurn ? 'none' : '';
+            });
+            let endBtn = document.getElementById('cad-endturn-btn');
+            if (showEndTurn) {
+                if (!endBtn) {
+                    endBtn = document.createElement('button');
+                    endBtn.id = 'cad-endturn-btn';
+                    endBtn.className = 'cad-btn';
+                    endBtn.style.cssText = 'flex:1;background:linear-gradient(135deg,#1a3a1a,#0a2a0a);border-color:#4cffaa;color:#4cffaa;font-size:15px;font-weight:bold;letter-spacing:1px';
+                    endBtn.innerHTML = '▶ Fin du tour';
+                    endBtn.addEventListener('click', endTurn);
+                    dock.appendChild(endBtn);
+                }
+                endBtn.style.display = '';
+            } else if (endBtn) {
+                endBtn.style.display = 'none';
+            }
+        }
+
         s.innerHTML = `
             <span class="cb-pill ${actionCls}">🟡 ${actionLabel}</span>
-            <span class="cb-pill free">🔵 Gratuit dispo</span>
-            ${showEndTurn ? '<button class="cb-endturn" id="cb-endturn">▶ Fin du tour</button>' : ''}
+            <span class="cb-pill free">🔵 Libre dispo</span>
         `;
-        if (showEndTurn) {
-            const btn = document.getElementById('cb-endturn');
-            if (btn) btn.addEventListener('click', endTurn);
-        }
 
         document.body.classList.toggle('clarity-spent', actions <= 0 || busy);
         renderThreat();
@@ -10305,13 +10354,24 @@ body.clarity-on #clarity-resbar {
                 <div class="ct-rule r-action">
                     <span class="ct-rule-ic">🟡</span>
                     <div>Chaque tour, choisis <b>1 action principale</b> parmi 3 :
-                    <br>· <b>🗺 Révéler</b> une tuile · <b>🏗 Construire</b> un bâtiment · <b>🐴 Caravane</b> (récolter)</div>
+                    <br>· <b>🗺 Révéler</b> une tuile · <b>🏗 Construire</b> un bâtiment · <b>🐴 Caravane</b> (envoyer une caravane)</div>
                 </div>
                 <div class="ct-rule r-free">
                     <span class="ct-rule-ic">🔵</span>
-                    <div>Tu peux aussi faire des <b>actions gratuites</b> sans limite : <b>recruter</b> des troupes, <b>équiper</b> ton avatar, <b>acheter</b> dans les bâtiments, ou <b>entrer dans le donjon</b> (quand disponible).</div>
+                    <div>Tu peux aussi faire des <b>actions libres</b> sans limite : <b>recruter</b> des troupes, <b>équiper</b> ton avatar, <b>acheter</b> dans les bâtiments, ou <b>entrer dans le donjon</b> (quand disponible).</div>
                 </div>
-                <p style="font-size:12px;color:#9a8a6a">Le bandeau en haut t'indique en permanence : <b>🟡 action dispo / prise</b> et les options 🔵 gratuites.</p>
+                <p style="font-size:12px;color:#9a8a6a">Le bandeau en haut t'indique en permanence : <b>🟡 action dispo / prise</b> et les options 🔵 libres.</p>
+            `,
+        },
+        {
+            title: 'Les Conjonctions ⭐',
+            body: `
+                <div class="ct-rule r-action" style="border-color:#e0a020;background:rgba(58,42,0,0.4)">
+                    <span class="ct-rule-ic">⭐</span>
+                    <div><em style="color:#e0c060">"Les caravanes n'osent traverser les steppes qu'au temps des Conjonctions, lorsque les anciennes routes reviennent dans le cours du monde."</em></div>
+                </div>
+                <p>Aux tours <b>2, 4, 6 et 8</b>, une Conjonction s'ouvre. Si tu envoies une caravane ce tour, tu récupères <b>×2 ressources</b> (or, mana, population).</p>
+                <p style="font-size:12px;color:#9a8a6a">Les ressources ne sont <b>plus récoltées automatiquement</b> : c'est à toi d'envoyer la caravane pour en profiter !</p>
             `,
         },
         {
@@ -10324,6 +10384,17 @@ body.clarity-on #clarity-resbar {
                     <span class="ct-rule-ic">👁</span>
                     <div>La composition de la Horde se <b>révèle au tour 5</b>. Adapte ta défense en conséquence.</div>
                 </div>
+            `,
+        },
+        {
+            title: 'Poussière du Temps & Méta-progression ✨',
+            body: `
+                <p>À chaque victoire ou défaite tu gagnes de la <b>✨ Poussière du Temps</b>. Elle persiste entre les parties et te permet d'acheter des <b>améliorations permanentes</b> (plus d'or de départ, meilleur avatar, bâtiments bonus…).</p>
+                <div class="ct-rule r-free">
+                    <span class="ct-rule-ic">🥚</span>
+                    <div>Les <b>Coquilles d'Œuf du Temps</b> sont des objets rares récupérés en donjon. Elles débloquent des <b>options légendaires</b> uniques et puissantes, inaccessibles autrement.</div>
+                </div>
+                <p style="font-size:12px;color:#9a8a6a">Accède à la méta-progression depuis le menu <b>≡</b> en haut à droite. Chaque run te rend plus fort !</p>
             `,
         },
     ];
