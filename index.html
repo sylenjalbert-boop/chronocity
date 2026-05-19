@@ -4685,15 +4685,21 @@ const UNIT_CATALOG = [
       gold:55, pop:10, mana:10, req:'academie_temple',
       desc:'Élite : anti-cavalerie et anti-mort-vivant. Requiert Académie + Temple.' },
     // ── Unités Légendaires ──
-    { id:'Dryade',       name:'Dryade',         icon:'🌿', atk:6, atkMag:0, traits:['infanterie','elite'], elite:true,
+    { id:'Dryade',       name:'Dryade',         icon:'🌿', atk:6, atkMag:0, traits:['infanterie','elite','invocation'], elite:true,
       gold:0, pop:30, mana:80, req:'ae_druidique',
-      desc:'Elite elfique. Infanterie. Mana+Pop uniquement, pas de conscription. Requiert Cercle Druidique.' },
-    { id:'Ingenieur',    name:'Ingénieur',       icon:'⚙',  atk:4, atkMag:0, traits:['anti-sapeur','anti-sapeur','anti-distance','anti-distance'],
+      desc:'Elite elfique. Invocation. Mana+Pop uniquement, pas de conscription. Requiert Cercle Druidique.' },
+    { id:'Ingenieur',    name:'Ingénieur',       icon:'⚙',  atk:4, atkMag:0, traits:['anti-sapeur','anti-sapeur','anti-distance','anti-distance'], elite:true,
       gold:80, pop:20, mana:30, req:'fn_ingenieurs',
       desc:'Anti-Sapeur II, Anti-Distance II. Requiert Ingénieurs.' },
-    { id:'Inquisiteur',  name:'Inquisiteur',     icon:'⚜',  atk:6, atkMag:0, traits:['anti-demon','anti-demon','anti-demon'],
+    { id:'Inquisiteur',  name:'Inquisiteur',     icon:'⚜',  atk:6, atkMag:0, traits:['anti-demon','anti-demon','anti-demon'], elite:true,
       gold:120, pop:25, mana:60, req:'sa_inquisiteurs',
       desc:'ATK 6, Anti-Démon III. Renforce +1 anti-démon aux autres unités. Requiert Inquisiteurs.' },
+    { id:'Garde',        name:'Garde',           icon:'🛡',  atk:4, atkMag:0, traits:['infanterie','anti-pillard'],
+      gold:15, pop:3,  mana:0,  req:'tourdeGarde',
+      desc:'ATK 4 | Infanterie | Anti-Pillard. Requiert Tour de Garde.' },
+    { id:'Elementaire',  name:'Élémentaire',     icon:'✨',  atk:2, atkMag:0, traits:['infanterie','invocation'],
+      gold:0,  pop:10, mana:40, req:'tourMagie',
+      desc:'Invoqué depuis la Tour de Magie. ATK 2 | Infanterie. Requiert Tour de Magie.' },
 
 ];
 
@@ -5216,7 +5222,8 @@ function renderRecruitList() {
 }
 
 function recruitUnit(unitDef) {
-    if (conscrit <= 0) {
+    const isInvocation = unitDef.traits && unitDef.traits.includes('invocation');
+    if (!isInvocation && conscrit <= 0) {
         addLog('Capacité de conscription insuffisante ! Construisez des Casernes.');
         return;
     }
@@ -5227,8 +5234,7 @@ function recruitUnit(unitDef) {
     gold -= unitDef.gold;
     population -= unitDef.pop;
     mana -= unitDef.mana;
-    // Élites ne consomment pas de conscription
-    if (!unitDef.elite) conscrit -= 1;
+    if (!isInvocation) conscrit -= 1;
     const newUnit = {...unitDef, traits: [...(unitDef.traits||[])]};
     cityArmy.push(newUnit);
     addLog('Recruté : '+unitDef.icon+' '+unitDef.name+' (ATK '+unitDef.atk+', Mag '+unitDef.atkMag+')');
@@ -5848,9 +5854,12 @@ const EQ_REQ_LABELS = {
 function checkEqReq(req) {
     if (!req) return true;
     const bc = buildingCounts;
+    const opts = (getMeta().legendaryOptions || {});
     switch(req) {
         case 'caserne':          return (bc['Caserne']||0)>=1;
         case 'tourmagie':        return (bc['Tour de Magie']||0)>=1;
+        case 'tourMagie':        return (bc['Tour de Magie']||0)>=1;
+        case 'tourdeGarde':      return (bc['Tour de Garde']||0)>=1;
         case 'archerie':         return (bc['Archerie']||0)>=1;
         case 'eglise':           return (bc['Église']||0)>=1;
         case 'temple':           return (bc['Temple']||0)>=1;
@@ -5858,6 +5867,10 @@ function checkEqReq(req) {
         case 'caserne_mine':     return (bc['Caserne']||0)>=1 && (bc['Mine']||0)>=1;
         case 'tourmagie_eglise': return (bc['Tour de Magie']||0)>=1 && (bc['Église']||0)>=1;
         case 'academie_temple':  return (bc['Académie militaire']||0)>=1 && (bc['Temple']||0)>=1;
+        // Options légendaires
+        case 'ae_druidique':     return !!opts.ae_druidique;
+        case 'fn_ingenieurs':    return !!opts.fn_ingenieurs;
+        case 'sa_inquisiteurs':  return !!opts.sa_inquisiteurs;
         default:                 return (bc[req]||0)>=1;
     }
 }
@@ -6073,8 +6086,8 @@ function renderRecruitListIn(el) {
         p.textContent='Construisez une Caserne pour recruter des soldats.';el.appendChild(p);
     }
     UNIT_CATALOG.forEach(u => {
-        const available = u.req===null||u.req===undefined ? true : typeof u.req==='function' ? u.req() : u.req==='caserne' ? hasCaserne : hasAcademie;
-        const canAfford = gold>=u.gold && population>=u.pop && mana>=u.mana && conscrit>0;
+        const available = u.req===null||u.req===undefined ? true : typeof u.req==='function' ? u.req() : checkEqReq(u.req);
+        const canAfford = gold>=u.gold && population>=u.pop && mana>=u.mana && ((u.traits&&u.traits.includes('invocation')) || conscrit>0);
         const card=document.createElement('div');
         card.className='unit-card'+((!available||!canAfford)?' unit-disabled':'');
         const traitHtml=formatTraits(u.traits, true);
