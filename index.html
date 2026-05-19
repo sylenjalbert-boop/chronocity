@@ -2337,7 +2337,7 @@ const TRAP_ROOMS = [
       resolve: () => { atk=Math.max(1,atk-1); dungeonState.curseActive=true; return 'ATK -1 (donjon)'; } },
     { type:'piege_poison', emoji:'🌫', name:'Piège — Brume empoisonnée',
       desc:'Un nuage verdâtre vous envahit les poumons.',
-      resolve: () => { dungeonState.poisonActive=true; return '-1 HP/round en combat'; } },
+      resolve: () => { dungeonState.poisonActive=true; dungeonState.poisonRoundsLeft=3; return '-1 HP/round pendant 3 rounds'; } },
     { type:'piege_effondrement', emoji:'🪨', name:'Piège — Effondrement',
       desc:'Des pierres bloquent la sortie derrière vous !',
       resolve: () => { dungeonState.noFleeNext=true; return 'Fuite bloquée (prochaine salle)'; } },
@@ -2550,9 +2550,10 @@ function enterRoom(roomEntry) {
             ? 'https://raw.githubusercontent.com/sylenjalbert-boop/chronocity/main/img/trone.jpg'
             : 'https://raw.githubusercontent.com/sylenjalbert-boop/chronocity/main/img/salle%20combat.jpg';
         const ds = document.getElementById('dungeon-screen');
-        ds.style.backgroundImage = `url('${bgUrl}')`;
-        ds.style.backgroundSize = 'cover';
-        ds.style.backgroundPosition = 'center';
+        const dh = document.getElementById('dungeon-header');
+        if (dh) { dh.style.background = ''; }
+        ds.style.background = `linear-gradient(to bottom, rgba(6,4,8,0) 0%, rgba(6,4,8,0) 35%, rgba(6,4,8,0.85) 55%, #060408 70%) , url('${bgUrl}') center 25% / cover no-repeat`;
+        ds.style.backgroundAttachment = 'local';
         dungeonState.stunNext = false;
         dungeonState.dragonBreathCounter = 0;
         dungeonState.licheAtkReduction = 0;
@@ -3128,13 +3129,7 @@ function dungeonBarClick() {
 
             // Stun : ennemi bloqué, ne riposte pas
             if (room._stunBlock) {
-                room._stunTurns = (room._stunTurns || 1) - 1;
-                dngLog('💫 '+room.name+' est stun et ne riposte pas ! ('+room._stunTurns+' tour(s) restant)', 'dlog-good');
-                if (room._stunTurns <= 0) {
-                    room._stunBlock = false;
-                    room._stunTurns = 0;
-                    dngLog('💫 Stun terminé sur '+room.name+' !', 'dlog-info');
-                }
+                dngLog('💫 '+room.name+' est stun et ne riposte pas !', 'dlog-good');
                 setTimeout(function(){ attackNext(idx+1); }, 200);
                 return;
             }
@@ -3165,7 +3160,8 @@ function dungeonBarClick() {
 
                     if (room.special === 'poison' && !dungeonState.poisonActive) {
                         dungeonState.poisonActive = true;
-                        dngLog("🕷 Venin ! Poison actif", 'dlog-bad');
+                        dungeonState.poisonRoundsLeft = 3;
+                        dngLog("🕷 Venin ! Poison actif (3 rounds)", 'dlog-bad');
                         dungeonShowStatus('☠ Empoisonné');
                     }
                     if (room.special === 'lifesteal') {
@@ -3196,7 +3192,8 @@ function dungeonBarClick() {
                                 }
                                 if (e2.special === 'poison' && !dungeonState.poisonActive) {
                                     dungeonState.poisonActive = true;
-                                    dngLog('🕷 Venin pendant le stun !', 'dlog-bad');
+                                    dungeonState.poisonRoundsLeft = 3;
+                                    dngLog('🕷 Venin pendant le stun ! (3 rounds)', 'dlog-bad');
                                 }
                             } else {
                                 dngLog(e2.emoji+' '+e2.name+' rate pendant le stun', 'dlog-info');
@@ -3697,7 +3694,8 @@ function enemyAttack(room) {
         // Effets spéciaux
         if(room.special==='poison'&&!dungeonState.poisonActive){
             dungeonState.poisonActive=true;
-            dngLog("Venin d\'araignée ! Poison actif","dlog-bad");
+            dungeonState.poisonRoundsLeft=3;
+            dngLog("Venin d\'araignée ! Poison actif (3 rounds)","dlog-bad");
             dungeonShowStatus('☠ Empoisonné');
         }
         if(room.special==='lifesteal'){
@@ -3733,7 +3731,13 @@ function applyHpUpdate(){
     if(dungeonState.poisonActive){
         dungeonState.avatarHp=Math.max(1,dungeonState.avatarHp-1);
         avatarHp=dungeonState.avatarHp;
-        dngLog('☠ Poison : -1 HP','dlog-bad');
+        dungeonState.poisonRoundsLeft = (dungeonState.poisonRoundsLeft || 1) - 1;
+        dngLog('☠ Poison : -1 HP (' + dungeonState.poisonRoundsLeft + ' round(s) restant)','dlog-bad');
+        if (dungeonState.poisonRoundsLeft <= 0) {
+            dungeonState.poisonActive = false;
+            dungeonState.poisonRoundsLeft = 0;
+            dngLog('☠ Poison dissipé.', 'dlog-info');
+        }
     }
     document.getElementById('dng-avatar-hp-text').textContent='HP: '+Math.max(0,dungeonState.avatarHp)+'/'+dungeonState.avatarMaxHp + (dungeonState._manaArmor ? ' 🔷'+dungeonState._manaArmor : '');
     dungeonUpdateHpBar('avatar',dungeonState.avatarHp,dungeonState.avatarMaxHp);
@@ -3840,7 +3844,32 @@ function triggerRoundEffects() {
         setTimeout(function(){ renderEnemyPanel(); checkAllEnemiesDead(); }, 100);
     }
 
-    // ── Images miroir : persiste tout le combat, reset dans dungeonRoomWon ──
+    // ── Cri de guerre (Guerrier) : expiration après 5 rounds ──
+    if (dungeonState._warcryRoundsLeft > 0) {
+        dungeonState._warcryRoundsLeft--;
+        if (dungeonState._warcryRoundsLeft <= 0) {
+            all.forEach(function(e){ e._warcryThreshold = 0; });
+            dngLog('📣 Cri de guerre expiré.', 'dlog-info');
+        }
+    }
+
+    // ── Malédiction (Aventurier) : expiration ──
+    if (dungeonState._curseRoundsLeft > 0) {
+        dungeonState._curseRoundsLeft--;
+        if (dungeonState._curseRoundsLeft <= 0) {
+            all.forEach(function(e){ e._curse = 0; });
+            dngLog('💀 Malédiction expirée.', 'dlog-info');
+        }
+    }
+
+    // ── Images miroir (Aventurier) : expiration après X rounds ──
+    if (dungeonState._mirrorRoundsLeft > 0) {
+        dungeonState._mirrorRoundsLeft--;
+        if (dungeonState._mirrorRoundsLeft <= 0) {
+            dungeonState._mirrorShield = 0;
+            dngLog('🪞 Images miroir expirées.', 'dlog-info');
+        }
+    }
 
     // Gobelins : appel à l'aide au round 5
     if (dungeonState.roundCounter === 5 && goblins.length > 0) {
@@ -3930,6 +3959,39 @@ function dngUpdateCombatUI() {
 
     // Afficher/masquer la section
     if (glyphsRow) glyphsRow.style.display = count > 0 ? 'flex' : 'none';
+
+    // ── Marqueurs d'états actifs (débuffs/buffs) ──
+    let statusRow = document.getElementById('dng-status-markers');
+    if (!statusRow) {
+        statusRow = document.createElement('div');
+        statusRow.id = 'dng-status-markers';
+        statusRow.style.cssText = 'display:flex;gap:5px;justify-content:center;flex-wrap:wrap;margin-top:4px;min-height:22px';
+        actifs.parentNode.insertBefore(statusRow, actifs.nextSibling);
+    }
+    statusRow.innerHTML = '';
+    const markers = [];
+    if (dungeonState.poisonActive)
+        markers.push({ icon:'☠', label:'Poison', rounds: dungeonState.poisonRoundsLeft, color:'#60ff60', bg:'#0a1a0a', border:'#206020' });
+    if (dungeonState._warcryRoundsLeft > 0)
+        markers.push({ icon:'📣', label:'Cri de guerre', rounds: dungeonState._warcryRoundsLeft, color:'#ff9060', bg:'#1a0a04', border:'#602010' });
+    if (dungeonState._curseRoundsLeft > 0)
+        markers.push({ icon:'💀', label:'Malédiction', rounds: dungeonState._curseRoundsLeft, color:'#c060ff', bg:'#100a1a', border:'#502080' });
+    if (dungeonState._mirrorRoundsLeft > 0)
+        markers.push({ icon:'🪞', label:'Images miroir', rounds: dungeonState._mirrorRoundsLeft, color:'#80c0ff', bg:'#041020', border:'#204060' });
+    if (dungeonState._freezeActive)
+        markers.push({ icon:'❄', label:'Freeze', rounds: dungeonState._freezeTurns, color:'#80e8ff', bg:'#04101a', border:'#206080' });
+    if (dungeonState._manaArmor > 0)
+        markers.push({ icon:'🔷', label:'Armure mana', rounds: dungeonState._manaArmor+' pts', color:'#60b0ff', bg:'#040c1a', border:'#203060' });
+    if (rageActive)
+        markers.push({ icon:'💢', label:'Rage', rounds: null, color:'#ff6030', bg:'#120400', border:'#601800' });
+
+    markers.forEach(function(m) {
+        const pill = document.createElement('span');
+        pill.style.cssText = 'display:inline-flex;align-items:center;gap:3px;padding:2px 7px;border-radius:10px;font-size:10px;font-weight:bold;background:'+m.bg+';color:'+m.color+';border:1px solid '+m.border+';white-space:nowrap';
+        pill.textContent = m.icon + ' ' + m.label + (m.rounds !== null ? ' ' + m.rounds : '');
+        statusRow.appendChild(pill);
+    });
+
     // Compétences de classe
     if (typeof renderClassSkills === 'function') renderClassSkills();
 }
@@ -4393,6 +4455,10 @@ function dungeonAvatarDied() {
 
 function closeDungeon() {
     document.getElementById('dungeon-screen')?.classList.remove('show');
+    const dh = document.getElementById('dungeon-header');
+    if (dh) { dh.style.background = ''; }
+    const ds = document.getElementById('dungeon-screen');
+    if (ds) { ds.style.background = ''; ds.style.backgroundAttachment = ''; }
     setTurnProcessing(false);
     document.body.classList.remove('processing');
     // Annuler les bonus temporaires du donjon (hors boss)
@@ -8544,9 +8610,10 @@ function dungeonUseClassSkill(skillId) {
         }
         // ─ GUERRIER ─
         case 'warcry': {
-            const warcryBonus = 2 + skLvl; // +2 seuil de base, +1 par niveau
+            const warcryBonus = 2 + skLvl;
             allE.forEach(function(e){ e._warcryThreshold = (e._warcryThreshold||0) + warcryBonus; });
-            dngLog('📣 Cri de guerre ! Seuil de toucher des ennemis +'+warcryBonus+' ce combat.', 'dlog-good');
+            dungeonState._warcryRoundsLeft = 5;
+            dngLog('📣 Cri de guerre ! Seuil de toucher des ennemis +'+warcryBonus+' pendant 5 rounds.', 'dlog-good');
             if (!isFree) finishRound(true);
             break;
         }
@@ -8624,13 +8691,15 @@ function dungeonUseClassSkill(skillId) {
         case 'curse': {
             const curseDmg = Math.max(1, 1 + skLvl);
             allE.forEach(function(e){ e._curse = (e._curse||0) + curseDmg; });
-            dngLog('💀 Malédiction ! -'+curseDmg+' ATK sur tous (niv.'+skLvl+').', 'dlog-good');
+            dungeonState._curseRoundsLeft = 3 + skLvl;
+            dngLog('💀 Malédiction ! -'+curseDmg+' ATK sur tous pendant '+(3+skLvl)+' rounds.', 'dlog-good');
             if (!isFree) finishRound(true);
             break;
         }
         case 'mirror': {
             dungeonState._mirrorShield = Math.max(2, atk + skLvl * 2);
-            dngLog('🪞 Images miroir ! -'+dungeonState._mirrorShield+' dégâts reçus ce round.', 'dlog-good');
+            dungeonState._mirrorRoundsLeft = 3 + skLvl;
+            dngLog('🪞 Images miroir ! -'+dungeonState._mirrorShield+' dégâts reçus pendant '+(3+skLvl)+' rounds.', 'dlog-good');
             if (!isFree) finishRound(true);
             break;
         }
@@ -8766,6 +8835,7 @@ body.clarity-on .tile-slots { font-size: 10px !important; top: 4px !important; r
 #clarity-banner .cb-threat .ct-num.ok    { color: #28b080; }
 #clarity-banner .cb-threat .ct-num.warn  { color: #e8b840; }
 #clarity-banner .cb-threat .ct-num.bad   { color: #e07070; }
+#clarity-banner .cb-threat .ct-num.hidden { color: #c060ff; }
 #clarity-banner .cb-threat.imminent {
     border-color: #c23030;
     box-shadow: 0 0 14px rgba(194,48,48,0.35);
@@ -10092,17 +10162,21 @@ body.clarity-on #clarity-resbar {
         const cityPow = readNum('city-power-total') || 0;
         const hordeTxt = document.getElementById('horde-power-total')?.textContent.trim();
         const hordePow = hordeTxt && hordeTxt !== '?' ? parseInt(hordeTxt, 10) : null;
-        const fort = readNum('fortifications') || 0;
-        const totalDef = cityPow + fort;
+        const hasHidden = (window.hordeHiddenUnits && window.hordeHiddenUnits.length > 0) || (window.hordeHiddenCount && window.hordeHiddenCount > 0);
+        const totalDef = cityPow;
         const turnsLeft = Math.max(0, 10 - turn);
         let outcome = 'unknown';
         if (hordePow !== null && hordePow > 0) {
-            const ratio = totalDef / hordePow;
-            if (ratio >= 1.2) outcome = 'win';
-            else if (ratio >= 0.85) outcome = 'doubt';
-            else outcome = 'lose';
+            if (hasHidden) {
+                outcome = 'hidden'; // unités non identifiées → violet
+            } else {
+                const ratio = totalDef / hordePow;
+                if (ratio >= 1.2) outcome = 'win';
+                else if (ratio >= 0.85) outcome = 'doubt';
+                else outcome = 'lose';
+            }
         }
-        return { turn, turnsLeft, totalDef, hordePow, outcome };
+        return { turn, turnsLeft, totalDef, hordePow, outcome, hasHidden };
     }
     function renderThreat() {
         const el = document.getElementById('cb-threat');
@@ -10113,11 +10187,11 @@ body.clarity-on #clarity-resbar {
 
         let html = '<span>⚔ Horde dans</span> <span class="ct-countdown">' + t.turnsLeft + '</span><span>tour' + (t.turnsLeft===1?'':'s') + '</span>';
         if (t.hordePow !== null) {
-            const cls = t.outcome === 'win' ? 'ok' : (t.outcome === 'doubt' ? 'warn' : 'bad');
+            const cls = t.outcome === 'win' ? 'ok' : t.outcome === 'hidden' ? 'hidden' : (t.outcome === 'doubt' ? 'warn' : 'bad');
             html += '<span class="ct-vs">·</span>'
                   + '<span>Toi <b class="ct-num ' + cls + '">' + t.totalDef + '</b></span>'
                   + '<span class="ct-vs">vs</span>'
-                  + '<span>Horde <b class="ct-num bad">' + t.hordePow + '</b></span>';
+                  + '<span>Horde <b class="ct-num bad">' + t.hordePow + (t.hasHidden ? '+???' : '') + '</b></span>';
         } else if (t.turn >= 1) {
             html += '<span class="ct-vs">· révélée au tour 5</span>';
         }
