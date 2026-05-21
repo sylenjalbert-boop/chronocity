@@ -2725,8 +2725,8 @@ function dngSetupZones() {
     // Miss = 4 zones : 2 extrêmes + 2 séparateurs entre ×1 et ×1.2
     const mExt  = missPct * 0.35;  // miss extrême (×2)
     const mSep  = missPct * 0.15;  // miss séparateur entre ×1 et ×1.2 (×2)
-    // Hit = 5 zones : ×0.5(15%) ×1(20%) ×1.2(10%) de chaque côté (symétrique autour de ×1.2 central)
-    const halfW = hitPct * 0.15;
+    // Hit = 5 zones : ×0.5(25%) ×1(20%) ×1.2(10%) de chaque côté (symétrique autour de ×1.2 central)
+    const halfW = hitPct * 0.25;
     const normW = hitPct * 0.20;
     const perfW = hitPct * 0.10 / 2; // ×1.2 central partagé en 2
     const arcBonus = window._arcElfique ? 0.5 : 0;
@@ -2801,40 +2801,48 @@ function dngStartAnim() {
     cancelAnimationFrame(dngTiming.animId);
     dngTiming.pos = 0;
     dngTiming.dir = 1;
-    dngTiming.phase = 'timing';
+    dngTiming.phase = 'waiting'; // gris pendant le délai
     dngTiming.trips = 0;
-    // Activer l'overlay de clic (avec délai pour éviter l'auto-clic du bouton Attaquer)
+
+    // Griser la jauge pendant le délai
+    const bar = document.getElementById('dng-bar');
+    const ov  = document.getElementById('dng-click-overlay');
+    const cur = document.getElementById('dng-cursor');
+    if (bar) { bar.style.opacity = '0.35'; bar.style.cursor = 'default'; }
+    if (ov)  ov.style.display = 'none';
+    if (cur) cur.style.left = '0%';
+
     setTimeout(() => {
-        const ov = document.getElementById('dng-click-overlay');
+        // Démarrer vraiment l'animation
+        dngTiming.phase = 'timing';
+        if (bar) { bar.style.opacity = '1'; bar.style.borderColor='#5a5a8a'; bar.style.cursor='crosshair'; }
+        const screen = document.getElementById('dungeon-screen');
+        if (screen) screen.style.cursor = 'crosshair';
         if (ov) ov.style.display = 'block';
+        const barLbl = document.getElementById('dng-bar-label');
+        if (barLbl) barLbl.style.display = 'block';
+
+        const speedMultiplier = 0.7;
+        let last = null;
+        function frame(ts) {
+            if (dngTiming.phase !== 'timing') return;
+            if (!last) last = ts;
+            const dt = Math.min((ts - last) / 1000, 0.05); last = ts;
+            dngTiming.pos += dngTiming.dir * dngTiming.speed * speedMultiplier * 100 * dt;
+            if (dngTiming.pos >= 100) {
+                dngTiming.pos = 100; dngTiming.dir = -1; dngTiming.trips++;
+                if (dngTiming.trips >= 2) { dngStopAnim(); dngAutoMiss(); return; }
+            }
+            if (dngTiming.pos <= 0) {
+                dngTiming.pos = 0; dngTiming.dir = 1; dngTiming.trips++;
+                if (dngTiming.trips >= 2) { dngStopAnim(); dngAutoMiss(); return; }
+            }
+            const curEl = document.getElementById('dng-cursor');
+            if (curEl) curEl.style.left = dngTiming.pos + '%';
+            dngTiming.animId = requestAnimationFrame(frame);
+        }
+        dngTiming.animId = requestAnimationFrame(frame);
     }, 150);
-    const speedMultiplier = 0.7;
-    const lbl=document.getElementById('dng-timing-label');
-    if(lbl){lbl.textContent='';}
-    const barLbl=document.getElementById('dng-bar-label');if(barLbl){barLbl.style.display='block';}
-    const bar=document.getElementById('dng-bar');
-    if(bar){bar.style.borderColor='#5a5a8a';bar.style.cursor='crosshair';}
-    const scr=document.getElementById('dungeon-screen');
-    if(scr) scr.style.cursor='crosshair';
-    let last=null;
-    function frame(ts){
-        if(dngTiming.phase !== 'timing') return;
-        if(!last)last=ts;
-        const dt=Math.min((ts-last)/1000,0.05);last=ts;
-        dngTiming.pos+=dngTiming.dir*dngTiming.speed*speedMultiplier*100*dt;
-        if(dngTiming.pos>=100){
-            dngTiming.pos=100; dngTiming.dir=-1; dngTiming.trips++;
-            if(dngTiming.trips>=2){ dngStopAnim(); dngAutoMiss(); return; }
-        }
-        if(dngTiming.pos<=0){
-            dngTiming.pos=0; dngTiming.dir=1; dngTiming.trips++;
-            if(dngTiming.trips>=2){ dngStopAnim(); dngAutoMiss(); return; }
-        }
-        const cur=document.getElementById('dng-cursor');
-        if(cur) cur.style.left=dngTiming.pos+'%';
-        dngTiming.animId=requestAnimationFrame(frame);
-    }
-    dngTiming.animId=requestAnimationFrame(frame);
 }
 
 function dngAutoMiss() {
@@ -2859,7 +2867,10 @@ function dngAutoMiss() {
 
 function dngStopAnim() {
     dngTiming.phase='resolving';
+    dngTiming._resolveStart = Date.now();
     cancelAnimationFrame(dngTiming.animId);
+    const bar = document.getElementById('dng-bar');
+    if (bar) bar.style.opacity = '1';
     // Retirer le listener de clic global
     const ov = document.getElementById('dng-click-overlay');
     if (ov) ov.style.display = 'none';
@@ -4006,11 +4017,23 @@ function dngShowAttackBtn(show) {
     const tw  = document.getElementById('dng-timing-wrap');
     const lbl = document.getElementById('dng-timing-label');
     if (show) {
-        if (btn) { btn.disabled = false; btn.style.display = ''; btn.style.opacity = '1'; }
-        if (tw)  tw.style.display = 'none';
-        document.getElementById('dungeon-screen')?.classList.remove('attack-active');
+        // Délai minimum de "respiration" — correspond au temps de résolution perçu
+        const delay = dngTiming._resolveStart ? Math.max(0, 700 - (Date.now() - dngTiming._resolveStart)) : 0;
+        setTimeout(function() {
+            dngTiming.phase = 'idle';
+            cancelAnimationFrame(dngTiming.animId);
+            if (btn) {
+                btn.disabled = false;
+                btn.style.display = '';
+                btn.style.opacity = '0';
+                btn.style.transition = 'opacity 0.3s ease';
+                setTimeout(function() { btn.style.opacity = '1'; }, 20);
+            }
+            if (tw) tw.style.display = 'none';
+            document.getElementById('dungeon-screen')?.classList.remove('attack-active');
+        }, delay);
     } else {
-        if (btn) { btn.disabled = true; btn.style.display = 'none'; }
+        if (btn) { btn.disabled = true; btn.style.display = 'none'; btn.style.transition = ''; }
         if (tw)  tw.style.display = '';
     }
     if (lbl) { lbl.textContent = ''; }
@@ -4019,6 +4042,7 @@ function dngShowAttackBtn(show) {
 
 function dungeonStartAttack(e) {
     if (e) e.stopPropagation();
+    if (dngTiming.phase !== 'idle') return; // bloquer les clics rapides (waiting/timing/resolving)
     const btn = document.getElementById('dng-btn-attack');
     if (btn) { btn.disabled = true; btn.style.display = 'none'; }
     const tw = document.getElementById('dng-timing-wrap');
@@ -7833,7 +7857,7 @@ function dungeonUsePotion(type) {
 function dungeonUseGlyph(type) {
     if (document.getElementById('dungeon-reward')?.classList.contains('visible')) return;
     if (!dungeonState.active) return;
-    if (dngTiming.phase === 'timing') return;
+    if (dngTiming.phase === 'timing' || dngTiming.phase === 'resolving') return;
     if (type === 'fireball') {
         if (glyphFireball <= 0) return;
         glyphFireball--;
