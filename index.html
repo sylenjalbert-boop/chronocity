@@ -558,10 +558,10 @@
         <div style="font-family:Cinzel,serif;font-size:15px;color:#c0a060">📖 Glossaire</div>
     </div>
     <div style="display:flex;gap:4px;padding:8px 12px 0;flex-wrap:wrap;border-bottom:1px solid #1a1228;background:#0a0812;flex-shrink:0">
-        <div class="glo-tab active" onclick="gloTab('terrains')">🗺 Terrains</div>
-        <div class="glo-tab" onclick="gloTab('batiments')">🏗 Bâtiments</div>
-        <div class="glo-tab" onclick="gloTab('traits')">⚔ Traits</div>
-        <div class="glo-tab" onclick="gloTab('monstres')">👹 Monstres</div>
+        <div class="glo-tab active" onclick="gloTab('terrains')">❖ Terrains</div>
+        <div class="glo-tab" onclick="gloTab('batiments')">⌂ Bâtiments</div>
+        <div class="glo-tab" onclick="gloTab('traits')">⚜ Traits</div>
+        <div class="glo-tab" onclick="gloTab('monstres')">⛧ Monstres</div>
         <div class="glo-tab" onclick="gloTab('combat')">🎯 Combat</div>
     </div>
     <div id="glossary-content" style="flex:1;overflow-y:auto;padding:16px 20px"></div>
@@ -1075,7 +1075,7 @@
         <div style="display:flex;background:#060610;border-bottom:1px solid #1a1a2e">
             <button class="meta-tab active" id="mtab-hero"  onclick="metaTab('hero')">⚔ Avatar</button>
             <button class="meta-tab"        id="mtab-city"  onclick="metaTab('city')">🏰 Ville</button>
-            <button class="meta-tab"        id="mtab-level"     onclick="metaTab('level')">📈 Niveau</button>
+            <button class="meta-tab"        id="mtab-level"     onclick="metaTab('level')">△ Niveau</button>
             <button class="meta-tab"        id="mtab-legendary" onclick="metaTab('legendary')">🥚 Légendaire</button>
         </div>
 
@@ -1118,7 +1118,7 @@
 
             <!-- Section TUILE -->
             <div class="action-section" id="sec-tile" style="display:flex;flex-direction:column;">
-                <div class="action-section-title">🗺 Tuile</div>
+                <div class="action-section-title">❖ Tuile</div>
                 <div id="tile-preview-card"></div>
                 <button class="action-main-btn" id="btn-reveal-tile" onclick="doRevealTile()">Révéler</button>
                 <div id="tile-action-hint" class="action-hint" style="flex:1"></div>
@@ -1126,13 +1126,13 @@
 
             <!-- Section CONSTRUIRE -->
             <div class="action-section" id="sec-build" style="flex:2;min-width:0">
-                <div class="action-section-title">🏗 Construire</div>
+                <div class="action-section-title">⚒︎ Construire</div>
                 <div id="build-list"></div>
             </div>
 
             <!-- Section IMPÔTS -->
             <div class="action-section" id="sec-tax">
-                <div class="action-section-title">🐴 Caravane</div>
+                <div class="action-section-title"><svg viewBox="0 0 64 48" width="1.4em" height="1em" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-0.15em"><path d="M8 32Q8 6 32 6T56 32"/><line x1="18" y1="9" x2="18" y2="32"/><line x1="32" y1="6" x2="32" y2="32"/><line x1="46" y1="9" x2="46" y2="32"/><line x1="6" y1="32" x2="58" y2="32"/><circle cx="16" cy="40" r="5"/><circle cx="48" cy="40" r="5"/></svg> Caravane</div>
                 <div id="tax-resources"></div>
                 <button class="action-main-btn" id="btn-tax" onclick="doTaxAndClose()">Envoyer</button>
             </div>
@@ -1145,7 +1145,7 @@
         <!-- Grille des tuiles -->
         <div id="game-area">
             <div id="tile-place-banner">
-                🏗 <span id="tile-place-name"></span> — Cliquez une tuile verte pour placer
+                ⚒︎ <span id="tile-place-name"></span> — Cliquez une tuile verte pour placer
                 <button onclick="cancelTilePlacement()" style="margin-left:10px;padding:2px 8px;border:none;border-radius:4px;background:#1a1a2a;color:#9a8a6a;cursor:pointer;font-size:10px">✕ Annuler</button>
             </div>
             <div id="tile-grid"></div>
@@ -1170,9 +1170,9 @@
             <div class="res-row"><span class="res-label">👥 Pop</span><span class="res-val" id="res-pop">—</span></div>
             <div class="res-sub" id="res-pop-sub"></div>
             <div style="border-top:1px solid #1a1a2e;margin:8px 0"></div>
-            <div class="res-row"><span class="res-label">🏰 Fort.</span><span class="res-val" id="res-fort">—</span></div>
+            <div class="res-row"><span class="res-label">♜ Fort.</span><span class="res-val" id="res-fort">—</span></div>
             <div class="res-row"><span class="res-label">⚔ Conscr.</span><span class="res-val" id="res-conscrit">—</span></div>
-            <div class="res-row"><span class="res-label">🏗 Espace</span><span class="res-val" id="res-space">—</span></div>
+            <div class="res-row"><span class="res-label">▦ Espace</span><span class="res-val" id="res-space">—</span></div>
             <div style="border-top:1px solid #1a1a2e;margin:8px 0"></div>
             <div style="display:flex;justify-content:space-between;align-items:center">
                 <div class="res-title" style="font-size:10px;color:#5a5a8a">Avatar</div>
@@ -1524,15 +1524,15 @@ function addLog(message) {
 // Animation changement de tour
 const turnEvents = [
     null,
-    { icon: '🗺', name: 'Exploration', desc: 'Révélez une tuile ce tour. Votre avatar pourra partir en donjon — pensez à l\'équiper avant !', color: '#1a3a5a', border: '#4a90d9' },
+    { icon: '❖', name: 'Exploration', desc: 'Révélez une tuile ce tour. Votre avatar pourra partir en donjon — pensez à l\'équiper avant !', color: '#1a3a5a', border: '#4a90d9' },
     { icon: '⭐', name: 'Conjonction',  desc: 'Les caravanes n\'osent traverser les steppes qu\'au temps des Conjonctions, lorsque les anciennes routes reviennent dans le cours du monde. Envoyez une caravane ce tour pour récolter ×2 ressources !', color: '#3a2a00', border: '#e0a020' },
-    { icon: '🗺', name: 'Exploration', desc: 'Révélez une tuile ce tour. Votre avatar pourra partir en donjon — pensez à l\'équiper avant !', color: '#1a3a5a', border: '#4a90d9' },
+    { icon: '❖', name: 'Exploration', desc: 'Révélez une tuile ce tour. Votre avatar pourra partir en donjon — pensez à l\'équiper avant !', color: '#1a3a5a', border: '#4a90d9' },
     { icon: '⭐', name: 'Conjonction',  desc: 'Les caravanes n\'osent traverser les steppes qu\'au temps des Conjonctions, lorsque les anciennes routes reviennent dans le cours du monde. Envoyez une caravane ce tour pour récolter ×2 ressources !', color: '#3a2a00', border: '#e0a020' },
     { icon: '🔭', name: 'Rapport des éclaireurs', desc: 'Consultez la composition de la horde dans le panneau Horde — elle vient d\'être mise à jour.', color: '#3a1a3a', border: '#c060c0' },
     { icon: '⭐', name: 'Conjonction',  desc: 'Les caravanes n\'osent traverser les steppes qu\'au temps des Conjonctions, lorsque les anciennes routes reviennent dans le cours du monde. Envoyez une caravane ce tour pour récolter ×2 ressources !', color: '#3a2a00', border: '#e0a020' },
-    { icon: '🗺', name: 'Exploration', desc: 'Révélez une tuile ce tour. Votre avatar pourra partir en donjon — pensez à l\'équiper avant !', color: '#1a3a5a', border: '#4a90d9' },
+    { icon: '❖', name: 'Exploration', desc: 'Révélez une tuile ce tour. Votre avatar pourra partir en donjon — pensez à l\'équiper avant !', color: '#1a3a5a', border: '#4a90d9' },
     { icon: '⭐', name: 'Conjonction',  desc: 'Les caravanes n\'osent traverser les steppes qu\'au temps des Conjonctions, lorsque les anciennes routes reviennent dans le cours du monde. Envoyez une caravane ce tour pour récolter ×2 ressources !', color: '#3a2a00', border: '#e0a020' },
-    { icon: '🗺', name: 'Exploration', desc: 'Révélez une tuile ce tour. Votre avatar pourra partir en donjon — pensez à l\'équiper avant !', color: '#1a3a5a', border: '#4a90d9' },
+    { icon: '❖', name: 'Exploration', desc: 'Révélez une tuile ce tour. Votre avatar pourra partir en donjon — pensez à l\'équiper avant !', color: '#1a3a5a', border: '#4a90d9' },
     { icon: '⚔',  name: 'La Horde attaque !', desc: 'Recrutez vos dernières unités, équipez votre avatar, puis cliquez ⚔ dans la frise pour lancer le combat.', color: '#3a0a0a', border: '#e05050', isBattleTurn: true },
 ];
 const seasonNames = ['Printemps', 'Été', 'Automne', 'Hiver'];
@@ -3177,7 +3177,7 @@ function dungeonBarClick() {
                         dungeonState.poisonActive = true;
                         dungeonState.poisonRoundsLeft = 3;
                         dngLog("🕷 Venin ! Poison actif (3 rounds)", 'dlog-bad');
-                        dungeonShowStatus('☠ Empoisonné');
+                        dungeonShowStatus('☠︎ Empoisonné');
                     }
                     if (room.special === 'lifesteal') {
                         room.hp = Math.min(room.maxHp, room.hp + ed);
@@ -3236,9 +3236,9 @@ function dungeonBarClick() {
 // ===== ANIMATIONS COMBAT =====
 
 const SPECIAL_DESCS = {
-    poison:       '☠ Venin : empoisonne au contact (-1 HP/round, persiste)',
-    stun:         '💫 Assommeur : sur un 6, stun + attaque supplémentaire',
-    lifesteal:    '🩸 Drain vital : se régénère des dégâts infligés',
+    poison:       '☠︎ Venin : empoisonne au contact (-1 HP/round, persiste)',
+    stun:         '⊛ Assommeur : sur un 6, stun + attaque supplémentaire',
+    lifesteal:    '⥁ Drain vital : se régénère des dégâts infligés',
     breath:       '🔥 Souffle : dégâts automatiques tous les 4 rounds',
     atkreduction: '⚡ Malédiction : réduit votre ATK à chaque frappe',
 };
@@ -3711,7 +3711,7 @@ function enemyAttack(room) {
             dungeonState.poisonActive=true;
             dungeonState.poisonRoundsLeft=3;
             dngLog("Venin d\'araignée ! Poison actif (3 rounds)","dlog-bad");
-            dungeonShowStatus('☠ Empoisonné');
+            dungeonShowStatus('☠︎ Empoisonné');
         }
         if(room.special==='lifesteal'){
             room.hp=Math.min(room.maxHp,room.hp+ed);
@@ -3935,7 +3935,7 @@ function dngUpdateCombatUI() {
     // ── Glyphes équipés avec charges > 0 ──
     const glyphMap = {
         'Fireball':    { icon:'⏳', label:'Distortion', charges:function(){return glyphFireball;}, fn:"dungeonUseGlyph('fireball')", style:'background:#0a0418;color:#a060ff;border-color:#502080' },
-        'Rage':        { icon:'💢', label:'Rage',   charges:function(){return glyphRage;},    fn:"dungeonUseGlyph('rage')",     style:'background:#120400;color:#ffb080;border-color:#601800' },
+        'Rage':        { icon:'⚡︎', label:'Rage',   charges:function(){return glyphRage;},    fn:"dungeonUseGlyph('rage')",     style:'background:#120400;color:#ffb080;border-color:#601800' },
         'Bless':       { icon:'🌟', label:'Béné',   charges:function(){return glyphBless;},   fn:"dungeonUseGlyph('bless')",    style:'background:#0e0a02;color:#ffd060;border-color:#604000' },
     };
     const gN = typeof getGlyphSlots === 'function' ? getGlyphSlots() : 1;
@@ -3995,21 +3995,21 @@ function dngUpdateCombatUI() {
     statusRow.innerHTML = '';
     const markers = [];
     if (dungeonState.poisonActive)
-        markers.push({ icon:'☠', label:'Poison', rounds: dungeonState.poisonRoundsLeft, color:'#60ff60', bg:'#0a1a0a', border:'#206020' });
+        markers.push({ icon:'☠︎', label:'Poison', rounds: dungeonState.poisonRoundsLeft, color:'#60ff60', bg:'#0a1a0a', border:'#206020' });
     if (dungeonState._warcryRoundsLeft > 0)
-        markers.push({ icon:'📣', label:'Cri de guerre', rounds: dungeonState._warcryRoundsLeft, color:'#ff9060', bg:'#1a0a04', border:'#602010' });
+        markers.push({ icon:'❢', label:'Cri de guerre', rounds: dungeonState._warcryRoundsLeft, color:'#ff9060', bg:'#1a0a04', border:'#602010' });
     if (dungeonState._curseRoundsLeft > 0)
-        markers.push({ icon:'💀', label:'Malédiction', rounds: dungeonState._curseRoundsLeft, color:'#c060ff', bg:'#100a1a', border:'#502080' });
+        markers.push({ icon:'☋', label:'Malédiction', rounds: dungeonState._curseRoundsLeft, color:'#c060ff', bg:'#100a1a', border:'#502080' });
     if (dungeonState._mirrorRoundsLeft > 0)
-        markers.push({ icon:'🪞', label:'Images miroir', rounds: dungeonState._mirrorRoundsLeft, color:'#80c0ff', bg:'#041020', border:'#204060' });
+        markers.push({ icon:'‖', label:'Images miroir', rounds: dungeonState._mirrorRoundsLeft, color:'#80c0ff', bg:'#041020', border:'#204060' });
     if (dungeonState._freezeActive)
-        markers.push({ icon:'❄', label:'Freeze', rounds: dungeonState._freezeTurns, color:'#80e8ff', bg:'#04101a', border:'#206080' });
+        markers.push({ icon:'❄︎', label:'Freeze', rounds: dungeonState._freezeTurns, color:'#80e8ff', bg:'#04101a', border:'#206080' });
     if (dungeonState._blessRoundsLeft > 0)
         markers.push({ icon:'🌟', label:'Bénédiction', rounds: dungeonState._blessRoundsLeft, color:'#ffd060', bg:'#1a1200', border:'#604000' });
     if (dungeonState._manaArmor > 0)
-        markers.push({ icon:'🔷', label:'Armure mana', rounds: dungeonState._manaArmor+' pts', color:'#60b0ff', bg:'#040c1a', border:'#203060' });
+        markers.push({ icon:'◈', label:'Armure mana', rounds: dungeonState._manaArmor+' pts', color:'#60b0ff', bg:'#040c1a', border:'#203060' });
     if (rageActive)
-        markers.push({ icon:'💢', label:'Rage', rounds: null, color:'#ff6030', bg:'#120400', border:'#601800' });
+        markers.push({ icon:'⚡︎', label:'Rage', rounds: null, color:'#ff6030', bg:'#120400', border:'#601800' });
 
     markers.forEach(function(m) {
         const pill = document.createElement('span');
@@ -5387,7 +5387,7 @@ const buildingDefs = {
 };
 let buildTimer = null;
 function showBuildPopup(name) {
-    const def = buildingDefs[name] || { icon: '🏗', bonus: '', desc: '' };
+    const def = buildingDefs[name] || { icon: '⚒︎', bonus: '', desc: '' };
     document.getElementById('bp-icon').textContent  = def.icon;
     document.getElementById('bp-name').textContent  = name;
     document.getElementById('bp-bonus').textContent = def.bonus;
@@ -5660,7 +5660,7 @@ function renderBuildPanelList() {
         // Mode placement actif : montrer un message + bouton annuler
         el.innerHTML =
             '<div style="background:#0a2a1a;border-radius:8px;padding:10px;text-align:center;color:#4cffaa;font-size:12px">'+
-            '🏗 Placement de <b>'+actionBuildingSelected+'</b><br>'+
+            '⚒︎ Placement de <b>'+actionBuildingSelected+'</b><br>'+
             '<span style="color:#9a8a6a;font-size:10px">Cliquez une tuile verte sur la carte</span>'+
             '</div>'+
             '<button onclick="cancelTilePlacement()" style="width:100%;margin-top:8px;padding:6px;border:none;border-radius:6px;background:#2a1a1a;color:#ff8080;cursor:pointer;font-size:11px">✕ Annuler le placement</button>';
@@ -6461,7 +6461,7 @@ function buyBuilding(name, tileIdx) {
         space -= 1;
     }
 
-    addLog('🏗 ' + name + ' construit !');
+    addLog('⚒︎ ' + name + ' construit !');
     updateStats();
     renderTileGrid();
     renderBuildPanelList();
@@ -6712,7 +6712,7 @@ function renderMetaCity() {
         { key:'fortif',   tier:1, label:'🏰 Fortification +1', desc:'Commence avec +1 fortification', val: m.city.fortif   },
         { key:'power',    tier:1, label:'⚔ Puissance +1',      desc:'+1 puissance de ville fixe',     val: m.city.power    },
         { key:'conscrit', tier:2, label:'⚔ Conscrit +1',       desc:'Capacité de recrutement +1',     val: m.city.conscrit },
-        { key:'space',    tier:2, label:'🏗 Espace +1',         desc:'Commence avec +1 espace',        val: m.city.space    },
+        { key:'space',    tier:2, label:'▦ Espace +1',         desc:'Commence avec +1 espace',        val: m.city.space    },
     ];
 
     let html = '<div class="meta-cat-title">Améliorations permanentes de la ville</div>';
@@ -7615,7 +7615,7 @@ function gloTab(tab) {
 
 
 const GLO_DATA = {
-                terrains:`<div class="glo-section"><div class="glo-title">🗺 Terrains — Révélation et bonus</div>
+                terrains:`<div class="glo-section"><div class="glo-title">❖ Terrains — Révélation et bonus</div>
 <div class="glo-entry"><div class="glo-entry-name">🌾 Prairie — 2 emplacements</div><div class="glo-entry-desc">Révélation : +2 emplacements uniquement.</div></div>
 <div class="glo-entry"><div class="glo-entry-name">⛰ Collines — 1 emplacement</div><div class="glo-entry-desc">Révélation : +10 Or/tour. Bonus Mine : +10 Or/tour supplémentaire.</div></div>
 <div class="glo-entry"><div class="glo-entry-name">🏔 Montagne — 0 emplacement</div><div class="glo-entry-desc">Révélation : +30 Mana, +5 Mana/tour, +5 Or/tour. Pas de construction possible.</div></div>
@@ -7629,7 +7629,7 @@ const GLO_DATA = {
 
 
 
-    batiments:`<div class="glo-section"><div class="glo-title">🏗 Bâtiments</div>
+    batiments:`<div class="glo-section"><div class="glo-title">⌂ Bâtiments</div>
 <div class="glo-entry"><div class="glo-entry-name">🌾 Ferme — 20 Or</div><div class="glo-entry-desc">+5 Pop/tour.</div></div>
 <div class="glo-entry"><div class="glo-entry-name">⛏ Mine — 20 Pop</div><div class="glo-entry-desc">+10 Or/tour.</div></div>
 <div class="glo-entry"><div class="glo-entry-name">⚔ Caserne — 100 Or, 10 Pop</div><div class="glo-entry-desc">+2 Conscriptions. Débloque : Soldat, Lancier.</div></div>
@@ -7650,7 +7650,7 @@ const GLO_DATA = {
 <div class="glo-entry"><div class="glo-entry-name">✝ Prêtre (25 Or, 5 Pop, 15 Mana) — Église</div><div class="glo-entry-desc">ATK 1, ATKMag 3 | Anti-Démon</div></div>
 <div class="glo-entry"><div class="glo-entry-name">⚜ Paladin (55 Or, 10 Pop, 10 Mana) — Académie + Temple</div><div class="glo-entry-desc">ATK 4, ATKMag 2 | Anti-Cavalerie | Anti-Mort-Vivant</div></div>
 </div>`,
-    traits:`<div class="glo-section"><div class="glo-title">⚔ Traits de la Horde</div>
+    traits:`<div class="glo-section"><div class="glo-title">⚜ Traits de la Horde</div>
 <p style="font-size:11px;color:#7a6a8a;margin-bottom:10px">Somme poids horde − poids anti-traits ville. Net ≤ 0 = contré. Net > 0 = unités les plus fortes passent.</p>
 <div class="glo-entry"><div class="glo-entry-name">🐴 Cavalerie — contré : anti-cavalerie</div><div class="glo-entry-desc">Si non contré : ATK ×2. Chevaucheur de Loup : Cavalerie II.</div></div>
 <div class="glo-entry"><div class="glo-entry-name">🏹 Distance — contré : anti-distance</div><div class="glo-entry-desc">Si non contré : ATK ×2.</div></div>
@@ -8470,7 +8470,7 @@ const CLASS_DATA = {
         ]
     },
     adventurer: {
-        name: 'Aventurier', icon: '🗺',
+        name: 'Aventurier', icon: '❖',
         desc: 'Scout horde, immunité pièges. Robe ou légère.',
         color: '#ffd060',
         bonuses: { scoutHorde:true, trapImmune:true },
@@ -9976,13 +9976,13 @@ body.clarity-on #clarity-resbar {
         d.id = 'clarity-action-dock';
         d.innerHTML = `
             <button class="cad-btn" data-action="tile">
-                <span class="cad-ico">🗺</span><span class="cad-label">Révéler une tuile</span>
+                <span class="cad-ico">❖</span><span class="cad-label">Révéler une tuile</span>
             </button>
             <button class="cad-btn" data-action="build">
-                <span class="cad-ico">🏗</span><span class="cad-label">Construire</span>
+                <span class="cad-ico">⚒︎</span><span class="cad-label">Construire</span>
             </button>
             <button class="cad-btn" data-action="tax">
-                <span class="cad-ico">💰</span><span class="cad-label">Envoyer une caravane</span>
+                <span class="cad-ico"><svg viewBox="0 0 64 48" width="1.4em" height="1em" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-0.15em"><path d="M8 32Q8 6 32 6T56 32"/><line x1="18" y1="9" x2="18" y2="32"/><line x1="32" y1="6" x2="32" y2="32"/><line x1="46" y1="9" x2="46" y2="32"/><line x1="6" y1="32" x2="58" y2="32"/><circle cx="16" cy="40" r="5"/><circle cx="48" cy="40" r="5"/></svg></span><span class="cad-label">Envoyer une caravane</span>
             </button>
         `;
         return d;
@@ -10004,9 +10004,9 @@ body.clarity-on #clarity-resbar {
     let currentAction = null;
     const SECTION_IDS  = { tile: 'sec-tile',  build: 'sec-build', tax: 'sec-tax' };
     const ACTION_TITLES = {
-        tile:  '🗺 Révéler une tuile',
-        build: '🏗 Construire un bâtiment',
-        tax:   '💰 Envoyer une caravane',
+        tile:  '❖ Révéler une tuile',
+        build: '⚒︎ Construire un bâtiment',
+        tax:   '<svg viewBox="0 0 64 48" width="1.4em" height="1em" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-0.15em"><path d="M8 32Q8 6 32 6T56 32"/><line x1="18" y1="9" x2="18" y2="32"/><line x1="32" y1="6" x2="32" y2="32"/><line x1="46" y1="9" x2="46" y2="32"/><line x1="6" y1="32" x2="58" y2="32"/><circle cx="16" cy="40" r="5"/><circle cx="48" cy="40" r="5"/></svg> Envoyer une caravane',
     };
 
     function openActionPanel(action) {
@@ -10099,13 +10099,13 @@ body.clarity-on #clarity-resbar {
                 <span class="cfr-ico">🛡</span> Équiper
             </button>
             <button class="cfr-btn" data-target="army">
-                <span class="cfr-ico">🏰</span> Mon armée
+                <span class="cfr-ico" style="color:#a0c8e8;font-variant-emoji:text">👥</span> Mon armée
             </button>
             <button class="cfr-btn" data-target="horde">
-                <span class="cfr-ico">👹</span> La horde
+                <span class="cfr-ico" style="color:#a0c8e8;font-variant-emoji:text">⛧</span> La horde
             </button>
             <button class="cfr-btn cfr-dungeon" data-target="dungeon" id="cfr-dungeon" style="display:none">
-                <span class="cfr-ico">🐉</span> Explorer le donjon
+                <span class="cfr-ico" style="color:#a0c8e8;font-variant-emoji:text">🗝</span> Explorer le donjon
             </button>
             <span class="cfr-spacer"></span>
             <button class="cfr-toggle" id="cfr-toggle">
@@ -10138,7 +10138,7 @@ body.clarity-on #clarity-resbar {
         r.id = 'clarity-resbar';
         r.innerHTML = `
             <div class="crb-group crb-eco">
-                <div class="crb-grp-label">💰 Économie</div>
+                <div class="crb-grp-label">Économie</div>
                 <div class="crb-row" title="Or — gagné par les Caravanes. Sert à construire et recruter.">
                     <span class="crb-ico">🪙</span>
                     <span class="crb-name">Or</span>
@@ -10159,9 +10159,9 @@ body.clarity-on #clarity-resbar {
                 </div>
             </div>
             <div class="crb-group crb-city">
-                <div class="crb-grp-label">🏰 Cité</div>
+                <div class="crb-grp-label">Cité</div>
                 <div class="crb-row crb-stat" title="Fortifications — ajoutées à la défense lors de l'assaut de la horde.">
-                    <span class="crb-ico">🏰</span>
+                    <span class="crb-ico">♜</span>
                     <span class="crb-name">Fortifications</span>
                     <span class="crb-val" id="crb-fort">—</span>
                 </div>
@@ -10171,13 +10171,13 @@ body.clarity-on #clarity-resbar {
                     <span class="crb-val" id="crb-cons">—</span>
                 </div>
                 <div class="crb-row crb-stat" title="Slots libres — emplacements disponibles pour construire.">
-                    <span class="crb-ico">🏗</span>
+                    <span class="crb-ico">▦</span>
                     <span class="crb-name">Slots libres</span>
                     <span class="crb-val" id="crb-space">—</span>
                 </div>
             </div>
             <div class="crb-group crb-avatar">
-                <div class="crb-grp-label">🧙 Avatar</div>
+                <div class="crb-grp-label">Avatar</div>
                 <div class="crb-row crb-stat" title="Points de vie de ton avatar.">
                     <span class="crb-ico">❤</span>
                     <span class="crb-name">PV</span>
@@ -10512,7 +10512,7 @@ body.clarity-on #clarity-resbar {
                 <div class="ct-rule r-action">
                     <span class="ct-rule-ic">🟡</span>
                     <div>Chaque tour, choisis <b>1 action principale</b> parmi 3 :
-                    <br>· <b>🗺 Révéler</b> une tuile · <b>🏗 Construire</b> un bâtiment · <b>🐴 Caravane</b> (envoyer une caravane)</div>
+                    <br>· <b>❖ Révéler</b> une tuile · <b>⚒︎ Construire</b> un bâtiment · <b><svg viewBox="0 0 64 48" width="1.4em" height="1em" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-0.15em"><path d="M8 32Q8 6 32 6T56 32"/><line x1="18" y1="9" x2="18" y2="32"/><line x1="32" y1="6" x2="32" y2="32"/><line x1="46" y1="9" x2="46" y2="32"/><line x1="6" y1="32" x2="58" y2="32"/><circle cx="16" cy="40" r="5"/><circle cx="48" cy="40" r="5"/></svg> Caravane</b> (envoyer une caravane)</div>
                 </div>
                 <div class="ct-rule r-free">
                     <span class="ct-rule-ic">🔵</span>
