@@ -3886,6 +3886,15 @@ function triggerRoundEffects() {
         }
     }
 
+    // ── Bénédiction : expiration ──
+    if (dungeonState._blessRoundsLeft > 0) {
+        dungeonState._blessRoundsLeft--;
+        if (dungeonState._blessRoundsLeft <= 0) {
+            timingNormalBonus = false;
+            dngLog('🌟 Bénédiction expirée.', 'dlog-info');
+        }
+    }
+
     // Gobelins : appel à l'aide au round 5
     if (dungeonState.roundCounter === 5 && goblins.length > 0) {
         const gobPool = pool.filter(function(m){ return m.name && m.name.toLowerCase().indexOf('gobelin') !== -1; });
@@ -3925,7 +3934,7 @@ function dngUpdateCombatUI() {
 
     // ── Glyphes équipés avec charges > 0 ──
     const glyphMap = {
-        'Fireball':    { icon:'🔥', label:'BdF',    charges:function(){return glyphFireball;}, fn:"dungeonUseGlyph('fireball')", style:'background:#1a0a04;color:#ff9060;border-color:#602010' },
+        'Fireball':    { icon:'⏳', label:'Distortion', charges:function(){return glyphFireball;}, fn:"dungeonUseGlyph('fireball')", style:'background:#0a0418;color:#a060ff;border-color:#502080' },
         'Rage':        { icon:'💢', label:'Rage',   charges:function(){return glyphRage;},    fn:"dungeonUseGlyph('rage')",     style:'background:#120400;color:#ffb080;border-color:#601800' },
         'Bless':       { icon:'🌟', label:'Béné',   charges:function(){return glyphBless;},   fn:"dungeonUseGlyph('bless')",    style:'background:#0e0a02;color:#ffd060;border-color:#604000' },
     };
@@ -3995,6 +4004,8 @@ function dngUpdateCombatUI() {
         markers.push({ icon:'🪞', label:'Images miroir', rounds: dungeonState._mirrorRoundsLeft, color:'#80c0ff', bg:'#041020', border:'#204060' });
     if (dungeonState._freezeActive)
         markers.push({ icon:'❄', label:'Freeze', rounds: dungeonState._freezeTurns, color:'#80e8ff', bg:'#04101a', border:'#206080' });
+    if (dungeonState._blessRoundsLeft > 0)
+        markers.push({ icon:'🌟', label:'Bénédiction', rounds: dungeonState._blessRoundsLeft, color:'#ffd060', bg:'#1a1200', border:'#604000' });
     if (dungeonState._manaArmor > 0)
         markers.push({ icon:'🔷', label:'Armure mana', rounds: dungeonState._manaArmor+' pts', color:'#60b0ff', bg:'#040c1a', border:'#203060' });
     if (rageActive)
@@ -4229,21 +4240,22 @@ function dungeonUseSkill(type) {
 
     if (type === 'fireball') {
         const fireLvl = getSkillLevel('Fireball') || 1;
-        const dmg = (3 + fireLvl) + Math.floor(currentSeason / 2);
-        // Touche TOUTES les unités (front + back)
+        const clsLvl = avatarClass === 'adventurer' ? (getClassSkillLevel('distortion') || 0) : 0;
+        const dmg = 3 + fireLvl + clsLvl;
         const allE = getAllLivingEnemies();
         allE.forEach(function(e){ e.hp -= dmg; });
-        dngPushHist(dngTiming.histPlayer,'🔥',null); dngRenderHist();
-        dngLog('🔥 Boule de Feu ! -'+dmg+' HP à tous les ennemis !', 'dlog-good');
-        allE.forEach(function(e){ dungeonShowDmg('enemy', dmg, '#ff9040'); });
+        dngPushHist(dngTiming.histPlayer,'⏳',null); dngRenderHist();
+        dngLog('⏳ Distortion Temporelle ! -'+dmg+' HP à tous les ennemis !', 'dlog-good');
+        allE.forEach(function(e){ dungeonShowDmg('enemy', dmg, '#a060ff'); });
         renderEnemyPanel();
         const stillAlive = allE.some(function(e){ return e.hp > 0; });
         if (!stillAlive) { setTimeout(function(){ checkAllEnemiesDead(); }, 300); return; }
-        checkAllEnemiesDead(); // rééquilibrer si besoin
+        checkAllEnemiesDead();
     } else if (type === 'bless') {
+        const blessLvl = getSkillLevel('Benediction') || 1;
         timingNormalBonus = true;
-        dngSetupZones();
-        dngLog('🌟 Bénédiction ! Zone ×1 → ×1.5 ce round.', 'dlog-good');
+        dungeonState._blessRoundsLeft = 1 + blessLvl;
+        dngLog('🌟 Bénédiction (Niv.'+blessLvl+') ! Zone ×1 → ×1.2 pendant '+(1+blessLvl)+' rounds.', 'dlog-good');
     } else if (type === 'rage') {
         if (rageActive) return;
         const rageLvl = getSkillLevel('Rage') || 1;
@@ -4278,7 +4290,6 @@ function dungeonUseSkill(type) {
             }
             applyHpUpdate();
             if (dungeonState.avatarHp <= 0) { setTimeout(dungeonAvatarDied, 300); return; }
-            if (type === 'bless') timingNormalBonus = false;
             finishRound();
         });
     }, 400);
@@ -6517,7 +6528,7 @@ function renderMetaHero() {
         { id:'Soin',        tier:1, icon:'💊', label:'Soin mineur',
           desc: function(lvl){ return '+' + (2+lvl) + ' HP par combat (Niv.'+lvl+')'; },
           baseCost:4, upgCost:3 },
-        { id:'Fireball',    tier:1, icon:'🔥', label:'Boule de Feu',
+        { id:'Fireball',    tier:1, icon:'⏳', label:'Distortion Temporelle',
           desc: function(lvl){ return (3+lvl) + ' dégâts directs, ignore armure (Niv.'+lvl+')'; },
           baseCost:8, upgCost:4 },
         { id:'Rage',        tier:2, icon:'💢', label:'Rage de bataille',
@@ -8557,7 +8568,7 @@ function renderClassSkills() {
         // Skills méta : seulement ceux achetés
         btnRow.innerHTML = '';
         const skillMap = [
-            { id:'fireball', metaId:'Fireball',    icon:'🔥', label:'Boule de Feu',   fn:"dungeonUseSkill('fireball')", color:'#ff9060', bg:'#3a1000' },
+            { id:'fireball', metaId:'Fireball',    icon:'⏳', label:'Distortion Temporelle', fn:"dungeonUseSkill('fireball')", color:'#a060ff', bg:'#0a0418' },
             { id:'bless',    metaId:'Benediction', icon:'🌟', label:'Bénédiction',    fn:"dungeonUseSkill('bless')",    color:'#ffd060', bg:'#1a1000' },
             { id:'rage',     metaId:'Rage',        icon:'💢', label:'Rage',           fn:"dungeonUseSkill('rage')",     color:'#ffb080', bg:'#2a0800' },
             { id:'heal',     metaId:'Soin',        icon:'💊', label:'Soin',           fn:"dungeonUseSkill('heal')",     color:'#80ffb0', bg:'#041a0a' },
