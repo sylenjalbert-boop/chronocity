@@ -539,7 +539,7 @@
 <div id="home-screen" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:#06040a;z-index:20000;flex-direction:column;align-items:center;justify-content:center;gap:20px">
     <div style="text-align:center;margin-bottom:10px">
         <div style="font-family:Cinzel,serif;font-size:28px;color:#c0a060;letter-spacing:3px;text-shadow:0 0 20px rgba(180,140,60,0.4)">⚔ Chronocity — A Rogue City Builder</div>
-        <div style="font-size:11px;color:#4a3a5a;margin-top:6px;letter-spacing:2px">VERSION 0.13</div>
+        <div style="font-size:11px;color:#4a3a5a;margin-top:6px;letter-spacing:2px">VERSION 0.14</div>
     </div>
     <div id="home-menu" style="display:flex;flex-direction:column;gap:10px;width:min(340px,90vw)">
         <button onclick="homeLoad()" style="width:100%;padding:16px 0;font-family:Cinzel,serif;font-size:14px;cursor:pointer;border-radius:8px;background:linear-gradient(135deg,#1a1030,#2a1a40);color:#c080ff;border:1px solid #5040a0">📂 Charger une partie</button>
@@ -976,7 +976,7 @@
 <!-- Frise de progression -->
 <div id="timeline">
     <div id="timeline-season">Saison 1</div>
-    <div style="font-family:Cinzel,serif;font-size:9px;color:#3a3050;margin-left:auto;padding-left:8px;white-space:nowrap">v0.13</div>
+    <div style="font-family:Cinzel,serif;font-size:9px;color:#3a3050;margin-left:auto;padding-left:8px;white-space:nowrap">v0.14</div>
     <div id="timeline-steps"></div>
     <button onclick="toggleSaveMenu()" style="background:linear-gradient(135deg,#1a1030,#2a1a40);border:1px solid #4a3060;color:#c0a060;font-size:14px;cursor:pointer;padding:2px 8px;border-radius:5px;white-space:nowrap;flex-shrink:0" title="Sauvegardes">💾 Save</button>
     <button onclick="toggleMetaSummary()" style="background:linear-gradient(135deg,#101a10,#1a2a1a);border:1px solid #2a5a2a;color:#4cffaa;font-size:14px;cursor:pointer;padding:2px 8px;border-radius:5px;white-space:nowrap;flex-shrink:0" title="Résumé méta">✦ Méta</button>
@@ -1497,26 +1497,29 @@ function addLog(message) {
 	function collect() {
         const conjonctionTurns = [2, 4, 6, 8];
         const isConjonction = conjonctionTurns.includes(currentTurn);
-        const mult = isConjonction ? 2 : 1;
-        gold += goldperturn * mult;
-		mana += manaperturn * mult;
-		population += populationperturn * mult;
+        // Bonus caravane des bâtiments
+        const marketBonus    = (buildingCounts['Place du Marché']  || 0) > 0 ? 0.20 : 0;
+        const caravanBonus   = (buildingCounts['Caravansérail']    || 0) > 0 ? 0.50 : 0;
+        const caravanMult    = 1 + marketBonus + caravanBonus;
+        const mult = (isConjonction ? 2 : 1) * caravanMult;
+        gold += Math.floor(goldperturn * mult);
+		mana += Math.floor(manaperturn * mult);
+		population += Math.floor(populationperturn * mult);
 		// Bénédiction (Sanctuaire) : +5 Or +5 Pop sur Prairies/Collines/Lacs
 		const opts2 = (getMeta().legendaryOptions || {});
 		if (opts2.sa_benediction) {
 			const blessedTiles = tileState.filter(function(t){ return t.revealed && (t.type === 'Prairie' || t.type === 'Collines' || t.type === 'Lac'); });
 			if (blessedTiles.length > 0) {
-				const bonus = blessedTiles.length * 5 * mult;
+				const bonus = Math.floor(blessedTiles.length * 5 * mult);
 				gold += bonus; population += bonus;
 				addLog('✨ Bénédiction : +'+bonus+' Or +'+bonus+' Pop ('+blessedTiles.length+' tuiles bénie(s))');
 			}
 		}
+        const bonusLabel = caravanMult > 1 ? ' (×'+caravanMult.toFixed(1)+' caravane)' : '';
         if (isConjonction) {
-            addLog('🌟 Conjonction ! Caravane ×2 — Vous avez gagné ' + (goldperturn*2) + ' Or, ' + (manaperturn*2) + ' Mana, ' + (populationperturn*2) + ' Population !');
+            addLog('🌟 Conjonction ! Caravane ×2'+bonusLabel+' — +' + Math.floor(goldperturn*mult) + ' Or, +' + Math.floor(manaperturn*mult) + ' Mana, +' + Math.floor(populationperturn*mult) + ' Population !');
         } else {
-            addLog("Vous avez gagné " + goldperturn + " Or !");
-            addLog("Vous avez gagné " + manaperturn + " Mana !");
-            addLog("Vous avez gagné " + populationperturn + " Population !");
+            addLog('Caravane'+bonusLabel+' — +'+Math.floor(goldperturn*mult)+' Or, +'+Math.floor(manaperturn*mult)+' Mana, +'+Math.floor(populationperturn*mult)+' Population.');
         }
 	}
 
@@ -1685,6 +1688,18 @@ function showTurnAnimation(turnNum, season, callback) {
         tileRevealedThisTurn = false;
         window.dungeonUsedThisTurn  = false;
         window.actionsDisponibles = actionsParTour;
+        // Reset achat conscrit par tour (Autel de Guerre)
+        window._conscritBuyCount = 0;
+        // Expirer les wards de la saison précédente
+        if (currentTurn === 1 && window._wards) {
+            const prevSeason = currentSeason - 1;
+            const expired = (window._wards || []).filter(w => w.season < currentSeason);
+            if (expired.length > 0) {
+                cityArmy = cityArmy.filter(u => !(u.id === 'Ward' && u._wardSeason < currentSeason));
+                window._wards = (window._wards || []).filter(w => w.season >= currentSeason);
+                addLog('⛩ '+expired.length+' Ward(s) expirée(s) (fin de saison '+prevSeason+').');
+            }
+        }
         setTurnProcessing(false); // déverrouiller : le tour est résolu
     });
 }
@@ -4691,55 +4706,70 @@ function buyEquipment(name, costGold, costMana=0, costPop=0) {
 
 // Catalogue des unités défensives
 const UNIT_CATALOG = [
-    // === Caserne ===
-    { id:'Soldat',        name:'Soldat',          icon:'🗡', atk:3, atkMag:0, traits:['infanterie'],
-      gold:30, pop:5,  mana:0,  req:'caserne',
-      desc:'Infanterie de base solide.' },
+    // === Sans prérequis ===
     { id:'Milicien',      name:'Milicien',         icon:'🪚', atk:1, atkMag:0, traits:['anti-pillard'],
       gold:15, pop:3,  mana:0,  req:null,
-      desc:'Protège la ville des pillards.' },
-    { id:'Lancier',       name:'Lancier',           icon:'⚔', atk:2, atkMag:0, traits:['anti-cavalerie'],
+      desc:'Protège la ville des pillards. Aucun prérequis.' },
+    // === Caserne (T1) ===
+    { id:'Soldat',        name:'Soldat',            icon:'🗡', atk:3, atkMag:0, traits:['infanterie'],
+      gold:30, pop:5,  mana:0,  req:'caserne',
+      desc:'Infanterie de base solide.' },
+    { id:'Lancier',       name:'Lancier',            icon:'⚔', atk:2, atkMag:0, traits:['anti-cavalerie'],
       gold:30, pop:5,  mana:0,  req:'caserne',
       desc:'Brise les charges de cavalerie.' },
-    // === Archerie ===
-    { id:'Archer',        name:'Archer',            icon:'🏹', atk:2, atkMag:0, traits:['anti-vol','distance'],
-      gold:25, pop:5,  mana:0,  req:'archerie',
-      desc:'Abat les créatures volantes. Peut cibler rang arrière.' },
-    { id:'Hallebardier',  name:'Hallebardier',      icon:'🪖', atk:4, atkMag:0, traits:['infanterie','anti-cavalerie','anti-cavalerie'], antiWeight:{'anti-cavalerie':2},
-      gold:40, pop:8,  mana:0,  req:'academie',
-      desc:'ATK 4 | Infanterie | Anti-Cavalerie II. Nécessite Académie.' },
-    { id:'Arbaletrier',   name:'Arbalétrier',       icon:'🏹', atk:3, atkMag:0, traits:['anti-vol','anti-vol','distance'], antiWeight:{'anti-vol':2},
-      gold:40, pop:6,  mana:0,  req:'academie',
-      desc:'Puissant, anti-vol II. Nécessite Académie.et anti-distance. Perce les rangs.' },
-    // === Académie ===
-    { id:'SoldatPavois',  name:'Soldat Pavois',     icon:'🛡', atk:2, atkMag:0, traits:['anti-distance'],
-      gold:35, pop:8,  mana:0,  req:'academie',
-      desc:'Neutralise les attaques à distance.' },
-    // === Église ===
-    { id:'Pretre',        name:'Prêtre',            icon:'✝', atk:1, atkMag:3, traits:['anti-demon'],
-      gold:25, pop:5,  mana:15, req:'eglise',
-      desc:'Repousse les forces démoniaques. Requiert une Église.' },
-    // === Temple ===
-    { id:'Paladin',       name:'Paladin',           icon:'⚜', atk:4, atkMag:2, traits:['anti-cavalerie','anti-mort-vivant'],
-      gold:55, pop:10, mana:10, req:'academie_temple',
-      desc:'Élite : anti-cavalerie et anti-mort-vivant. Requiert Académie + Temple.' },
-    // ── Unités Légendaires ──
-    { id:'Dryade',       name:'Dryade',         icon:'🌿', atk:6, atkMag:0, traits:['infanterie','elite','invocation'], elite:true,
-      gold:0, pop:30, mana:80, req:'ae_druidique',
-      desc:'Elite elfique. Invocation. Mana+Pop uniquement, pas de conscription. Requiert Cercle Druidique.' },
-    { id:'Ingenieur',    name:'Ingénieur',       icon:'⚙',  atk:4, atkMag:0, traits:['anti-sapeur','anti-sapeur','anti-distance','anti-distance'], elite:true,
-      gold:80, pop:20, mana:30, req:'fn_ingenieurs',
-      desc:'Anti-Sapeur II, Anti-Distance II. Requiert Ingénieurs.' },
-    { id:'Inquisiteur',  name:'Inquisiteur',     icon:'⚜',  atk:6, atkMag:0, traits:['anti-demon','anti-demon','anti-demon'], elite:true,
-      gold:120, pop:25, mana:60, req:'sa_inquisiteurs',
-      desc:'ATK 6, Anti-Démon III. Renforce +1 anti-démon aux autres unités. Requiert Inquisiteurs.' },
-    { id:'Garde',        name:'Garde',           icon:'🛡',  atk:4, atkMag:0, traits:['infanterie','anti-pillard'],
+    // === Tour de Garde (T2) ===
+    { id:'Garde',         name:'Garde',              icon:'🛡', atk:4, atkMag:0, traits:['infanterie','anti-pillard'],
       gold:15, pop:3,  mana:0,  req:'tourdeGarde',
       desc:'ATK 4 | Infanterie | Anti-Pillard. Requiert Tour de Garde.' },
-    { id:'Elementaire',  name:'Élémentaire',     icon:'✨',  atk:2, atkMag:0, traits:['infanterie','invocation'],
-      gold:0,  pop:10, mana:40, req:'tourMagie',
-      desc:'Invoqué depuis la Tour de Magie. ATK 2 | Infanterie. Requiert Tour de Magie.' },
-
+    // === Archerie (T2) ===
+    { id:'Archer',        name:'Archer',             icon:'🏹', atk:2, atkMag:0, traits:['anti-vol','distance'],
+      gold:25, pop:5,  mana:0,  req:'archerie',
+      desc:'Abat les créatures volantes. Peut cibler rang arrière.' },
+    // === École de Magie (T2) ===
+    { id:'Elementaire',   name:'Élémentaire',        icon:'✨', atk:2, atkMag:0, traits:['infanterie','invocation'],
+      gold:0,  pop:10, mana:40, req:'ecoleMagie',
+      desc:'Invoqué. ATK 2 | Infanterie. Requiert École de Magie.' },
+    // === Académie militaire (T3) ===
+    { id:'Hallebardier',  name:'Hallebardier',       icon:'🪖', atk:4, atkMag:0, traits:['infanterie','anti-cavalerie','anti-cavalerie'], antiWeight:{'anti-cavalerie':2},
+      gold:40, pop:8,  mana:0,  req:'academie',
+      desc:'ATK 4 | Infanterie | Anti-Cavalerie II.' },
+    { id:'Arbaletrier',   name:'Arbalétrier',        icon:'🏹', atk:3, atkMag:0, traits:['anti-vol','anti-vol','distance'], antiWeight:{'anti-vol':2},
+      gold:40, pop:6,  mana:0,  req:'academie',
+      desc:'ATK 3 | Anti-Vol II | Distance.' },
+    { id:'SoldatPavois',  name:'Soldat Pavois',      icon:'🛡', atk:2, atkMag:0, traits:['anti-distance'],
+      gold:35, pop:8,  mana:0,  req:'academie',
+      desc:'Neutralise les attaques à distance.' },
+    // === Église (T1) ===
+    { id:'Pretre',        name:'Prêtre',             icon:'✝', atk:1, atkMag:3, traits:['anti-demon'],
+      gold:25, pop:5,  mana:15, req:'temple',
+      desc:'Repousse les forces démoniaques. Requiert Temple.' },
+    // === Tour de Magie (T3) ===
+    { id:'ElementaireAir',  name:'Élémentaire d\'Air',  icon:'💨', atk:3, atkMag:0, traits:['anti-vol','invocation'],
+      gold:0, pop:15, mana:50, req:'tourMagie',
+      desc:'ATK 3 | Anti-Vol | Invocation. Requiert Tour de Magie.' },
+    { id:'ElementaireTerre', name:'Élémentaire de Terre', icon:'🪨', atk:3, atkMag:0, traits:['anti-distance','invocation'],
+      gold:0, pop:15, mana:50, req:'tourMagie',
+      desc:'ATK 3 | Anti-Distance | Invocation. Requiert Tour de Magie.' },
+    { id:'ElementaireEau',  name:'Élémentaire d\'Eau',  icon:'💧', atk:3, atkMag:0, traits:['anti-pillard','invocation'],
+      gold:0, pop:15, mana:50, req:'tourMagie',
+      desc:'ATK 3 | Anti-Pillard | Invocation. Requiert Tour de Magie.' },
+    { id:'ElementaireFeu',  name:'Élémentaire de Feu',  icon:'🔥', atk:3, atkMag:0, traits:['anti-cavalerie','invocation'],
+      gold:0, pop:15, mana:50, req:'tourMagie',
+      desc:'ATK 3 | Anti-Cavalerie | Invocation. Requiert Tour de Magie.' },
+    // === Cathédrale (T4) ===
+    { id:'Paladin',       name:'Paladin',            icon:'⚜', atk:4, atkMag:2, traits:['anti-cavalerie','anti-mort-vivant'],
+      gold:55, pop:10, mana:10, req:'cathedrale',
+      desc:'Élite : anti-cavalerie et anti-mort-vivant. Requiert Cathédrale.' },
+    // ── Unités Légendaires ──
+    { id:'Dryade',        name:'Dryade',             icon:'🌿', atk:6, atkMag:0, traits:['infanterie','elite','invocation'], elite:true,
+      gold:0, pop:30, mana:80, req:'ae_druidique',
+      desc:'Elite elfique. Invocation. Requiert Cercle Druidique.' },
+    { id:'Ingenieur',     name:'Ingénieur',          icon:'⚙',  atk:4, atkMag:0, traits:['anti-sapeur','anti-sapeur','anti-distance','anti-distance'], elite:true,
+      gold:80, pop:20, mana:30, req:'fn_ingenieurs',
+      desc:'Anti-Sapeur II, Anti-Distance II. Requiert Ingénieurs.' },
+    { id:'Inquisiteur',   name:'Inquisiteur',        icon:'⚜',  atk:6, atkMag:0, traits:['anti-demon','anti-demon','anti-demon'], elite:true,
+      gold:120, pop:25, mana:60, req:'sa_inquisiteurs',
+      desc:'ATK 6, Anti-Démon III. Requiert Inquisiteurs.' },
 ];
 
 // Catalogue de la horde par saison
@@ -5667,61 +5697,85 @@ function renderBuildPanelList() {
         return;
     }
     const buildings = [
-        { name:'Ferme',               gold:30,  pop:0,  mana:0,  icon:'🌾', bonus:'+10 Pop | +5/Conjonction' },
-        { name:'Mine',                gold:0,   pop:20, mana:0,  icon:'⛏',  bonus:'+20 Or | +10/Conjonction' },
-        { name:'Caserne',             gold:110, pop:10, mana:0,  icon:'⚔',  bonus:'+2 Conscription' },
-        { name:'Tour de Garde',       gold:90,  pop:10, mana:0,  icon:'🗼', bonus:'+1 Conscr. | +1 Fort.' },
-        { name:'Tour de Magie',       gold:40,  pop:5,  mana:20, icon:'🔮', bonus:'+1 Conscr. | +20 Mana | +10/Conjonction' },
-        { name:'Académie militaire',  gold:160, pop:30, mana:40, icon:'🏛', bonus:'Soldat Pavois', req:'2 Casernes + Tour Magie' },
-        { name:'Archerie',            gold:90,  pop:10, mana:0,  icon:'🏹', bonus:'Archers + armes distance', req:'1 Caserne' },
-        { name:'Église',              gold:70,  pop:5,  mana:20, icon:'⛪', bonus:'Prêtres + Soin mineur' },
-        { name:'Temple',              gold:130, pop:20, mana:40, icon:'🛕', bonus:'Paladins', req:'1 Église' },
+        // TIER I
+        { name:'Ferme',             tab:'eco',  tier:1, gold:30,  pop:0,  mana:0,   icon:'🌾', bonus:'+10 Pop | +5/Conj' },
+        { name:'Mine',              tab:'eco',  tier:1, gold:0,   pop:20, mana:0,   icon:'⛏',  bonus:'+20 Or | +10/Conj' },
+        { name:'Tour de Mana',      tab:'eco',  tier:1, gold:40,  pop:5,  mana:20,  icon:'💧', bonus:'+10 Mana/Conj' },
+        { name:'Caserne',           tab:'mil',  tier:1, gold:110, pop:10, mana:0,   icon:'⚔',  bonus:'+2 Conscription' },
+        { name:'Église',            tab:'mag',  tier:1, gold:70,  pop:5,  mana:20,  icon:'⛪', bonus:'Soin héro (30 Or + 20 Mana)' },
+        // TIER II
+        { name:'Tour de Garde',     tab:'mil',  tier:2, gold:90,  pop:10, mana:0,   icon:'🗼', bonus:'+2 Conscr. | +2 Fort. | Gardes', req:'1 Caserne',    prereq:()=>(buildingCounts['Caserne']||0)>=1 },
+        { name:'Archerie',          tab:'mil',  tier:2, gold:90,  pop:10, mana:0,   icon:'🏹', bonus:'+2 Conscr. | Archers', req:'1 Caserne',    prereq:()=>(buildingCounts['Caserne']||0)>=1 },
+        { name:'École de Magie',    tab:'mag',  tier:2, gold:80,  pop:10, mana:30,  icon:'🔮', bonus:'+2 Conscr. | Élémentaires', req:'1 Tour de Mana', prereq:()=>(buildingCounts['Tour de Mana']||0)>=1 },
+        { name:'Place du Marché',   tab:'eco',  tier:2, gold:60,  pop:10, mana:0,   icon:'🏪', bonus:'Caravane +20%', req:'1 Mine + 1 Ferme + 1 Tour de Mana', prereq:()=>(buildingCounts['Mine']||0)>=1 && (buildingCounts['Ferme']||0)>=1 && (buildingCounts['Tour de Mana']||0)>=1 },
+        // TIER III
+        { name:'Académie militaire',tab:'mil',  tier:3, gold:160, pop:30, mana:40,  icon:'🏛', bonus:'+4 Conscr. | Hallebardier, Arbalétrier, Pavois', req:'1 Caserne + 1 Tour de Garde + 1 Archerie', prereq:()=>(buildingCounts['Caserne']||0)>=1 && (buildingCounts['Tour de Garde']||0)>=1 && (buildingCounts['Archerie']||0)>=1 },
+        { name:'Temple',            tab:'mag',  tier:3, gold:130, pop:20, mana:40,  icon:'🛕', bonus:'Prêtres', req:'1 Église', prereq:()=>(buildingCounts['Église']||0)>=1 },
+        { name:'Tour de Magie',     tab:'mag',  tier:3, gold:120, pop:20, mana:60,  icon:'✨', bonus:'+10 Mana/Conj | Élémentaires Majeurs', req:'1 École de Magie', prereq:()=>(buildingCounts['École de Magie']||0)>=1 },
+        { name:'Caravansérail',     tab:'eco',  tier:3, gold:100, pop:20, mana:0,   icon:'🏕', bonus:'Caravane +50%', req:'1 Place du Marché', prereq:()=>(buildingCounts['Place du Marché']||0)>=1 },
+        // TIER IV — Unique
+        { name:'Cathédrale',        tab:'mag',  tier:4, gold:200, pop:30, mana:80,  icon:'⛩', bonus:'Wards (40 Or + 30 Mana) | Paladin', req:'1 Temple', unique:true, prereq:()=>(buildingCounts['Temple']||0)>=1 && !(buildingCounts['Cathédrale']||0) },
+        { name:'Autel de Guerre',   tab:'mil',  tier:4, gold:180, pop:30, mana:0,   icon:'⚔', bonus:'+6 Conscr. | Achat Conscrit | Hallebardier', req:'1 Académie militaire', unique:true, prereq:()=>(buildingCounts['Académie militaire']||0)>=1 && !(buildingCounts['Autel de Guerre']||0) },
+        { name:'Monolithe de Vigie',tab:'mag',  tier:4, gold:250, pop:50, mana:100, icon:'🔭', bonus:'Révèle horde (150 Or + 100 Mana)', req:'1 Archerie + 1 Caravansérail + 1 Tour de Magie', unique:true, prereq:()=>(buildingCounts['Archerie']||0)>=1 && (buildingCounts['Caravansérail']||0)>=1 && (buildingCounts['Tour de Magie']||0)>=1 && !(buildingCounts['Monolithe de Vigie']||0) },
     ];
 
-    // Évaluer chaque bâtiment (dispo / pas les moyens / prérequis manquants)
-    const prereqMap = {
-        'Académie militaire': ()=>(buildingCounts['Caserne']||0)>=2 && (buildingCounts['Tour de Magie']||0)>=1,
-        'Archerie':           ()=>(buildingCounts['Caserne']||0)>=1,
-        'Temple':             ()=>(buildingCounts['Église']||0)>=1,
-    };
+    // Tabs
+    if (!window._activeBuildTab) window._activeBuildTab = 'eco';
+    const tabDefs = [
+        { id:'eco', label:'🌾 Éco.' },
+        { id:'mil', label:'⚔ Mil.' },
+        { id:'mag', label:'✨ Magie' },
+    ];
+
     const evaluated = buildings.map(b => {
-        const prereqOk = !prereqMap[b.name] || prereqMap[b.name]();
+        const prereqOk = !b.prereq || b.prereq();
         const canAfford = gold>=b.gold && population>=b.pop && mana>=b.mana && space>0;
         const ok = canAfford && prereqOk;
         return { ...b, ok, prereqOk, canAfford };
     });
-    // Trier : disponibles en premier, puis pas les moyens, puis prérequis manquants
-    evaluated.sort((a,b) => {
-        const score = x => x.ok ? 0 : (!x.prereqOk ? 2 : 1);
-        return score(a) - score(b);
-    });
 
-    // Conteneur scrollable (max ~4 cards visibles)
-    el.innerHTML = '<div id="bld-inner" style="display:flex;flex-direction:column;gap:3px;max-height:260px;overflow-y:auto;padding-right:2px"></div>';
+    const currentTab = window._activeBuildTab;
+    const tabHtml = tabDefs.map(t =>
+        `<button onclick="window._activeBuildTab='${t.id}';renderBuildPanelList()" `+
+        `style="flex:1;padding:4px 2px;font-family:Cinzel,serif;font-size:9px;cursor:pointer;border:none;border-radius:4px;`+
+        (currentTab===t.id ? 'background:#1a3a1a;color:#4cffaa;border:1px solid #2a6a4a;' : 'background:#0a1a0a;color:#4a6a4a;border:1px solid #1a2a1a;')+
+        `">${t.label}</button>`
+    ).join('');
+
+    el.innerHTML = `<div style="display:flex;gap:3px;margin-bottom:5px">${tabHtml}</div>`+
+                   `<div id="bld-inner" style="display:flex;flex-direction:column;gap:3px;max-height:240px;overflow-y:auto;padding-right:2px"></div>`;
     const container = el.querySelector('#bld-inner');
 
-    evaluated.forEach(b => {
+    const filtered = evaluated.filter(b => b.tab === currentTab);
+    filtered.sort((a,b) => { const s=x=>x.ok?0:(!x.prereqOk?2:1); return s(a)-s(b); });
+
+    filtered.forEach(b => {
         const card = document.createElement('div');
         card.className = 'bld-card' + (b.ok ? '' : ' bld-disabled');
         card.style.cssText = 'padding:5px 8px;flex-shrink:0';
         if (!b.prereqOk) card.style.opacity = '0.4';
         const costs = (b.gold?'🪙'+b.gold+' ':'')+(b.pop?'👥'+b.pop+' ':'')+(b.mana?'✨'+b.mana:'');
+        const tierLabel = b.tier === 4 ? ' <span style="color:#ffd060;font-size:8px">★</span>' : '';
         card.innerHTML =
             '<div class="bld-header" style="gap:6px">'+
                 '<span style="font-size:16px">'+b.icon+'</span>'+
-                '<span class="bld-name" style="font-size:11px;color:'+(b.ok?'#ede0c0':b.prereqOk?'#9a8a6a':'#6a5a48')+'">'+b.name+'</span>'+
+                '<span class="bld-name" style="font-size:11px;color:'+(b.ok?'#ede0c0':b.prereqOk?'#9a8a6a':'#6a5a48')+'">'+b.name+tierLabel+'</span>'+
                 '<span style="font-size:9px;color:#9a8a6a;margin-left:auto">'+costs+'</span>'+
             '</div>'+
             '<div style="font-size:9px;color:#7a6a50;margin-top:1px">'+b.bonus+
             (b.req&&!b.prereqOk?' <span style="color:#a04010"> — ⚠ '+b.req+'</span>':'')+
             (!b.canAfford&&b.prereqOk?' <span style="color:#884400"> — ressources insuffisantes</span>':'')+
             '</div>';
-        if (b.ok) card.onclick = () => selectBuildingForPlacement(b.name);
+        if (b.ok) { card.onclick = () => selectBuildingForPlacement(b.name); card.style.cursor='pointer'; }
         container.appendChild(card);
     });
 
+    if (filtered.length === 0) {
+        container.innerHTML = '<div style="color:#6a5a4a;font-size:10px;text-align:center;padding:10px">Aucun bâtiment dans cet onglet.</div>';
+    }
+
     // ── Section Bâtiments Légendaires ──
-    renderLegendaryBuildingPanel(container);
+    if (currentTab === 'mag') renderLegendaryBuildingPanel(container);
 }
 
 function renderBuildTilePicker(el, buildingName) {
@@ -5832,9 +5886,10 @@ function renderTaxPanel() {
 
     // Bâtiments de base (gains fixes)
     const bldGains = {
-        'Ferme':       { pop:5  },
-        'Mine':        { gold:10 },
-        'Tour de Magie':{ mana:10 },
+        'Ferme':         { pop:5   },
+        'Mine':          { gold:10 },
+        'Tour de Mana':  { mana:10 },
+        'Tour de Magie': { mana:10 },
     };
     Object.entries(buildingCounts).forEach(([bName, n]) => {
         if (n <= 0 || !bldGains[bName]) return;
@@ -5852,22 +5907,99 @@ function renderTaxPanel() {
         empty.style.cssText = 'font-size:10px;color:#7a6a50;font-style:italic';
         empty.textContent = 'Aucune source de revenus encore.';
         el.appendChild(empty);
-        return;
+    } else {
+        const list = document.createElement('div');
+        list.style.cssText = 'max-height:100px;overflow-y:auto';
+        sources.forEach(s => {
+            const row = document.createElement('div');
+            row.style.cssText = 'display:flex;justify-content:space-between;font-size:10px;padding:1px 0;color:#888';
+            const gains = [];
+            if (s.gold) gains.push('<span style="color:#ffd060">+'+s.gold+'🪙</span>');
+            if (s.mana) gains.push('<span style="color:#a080ff">+'+s.mana+'✨</span>');
+            if (s.pop)  gains.push('<span style="color:#80c0ff">+'+s.pop+'👥</span>');
+            row.innerHTML = '<span>'+s.label+'</span><span>'+gains.join(' ')+'</span>';
+            list.appendChild(row);
+        });
+        el.appendChild(list);
     }
 
-    const list = document.createElement('div');
-    list.style.cssText = 'max-height:100px;overflow-y:auto';
-    sources.forEach(s => {
-        const row = document.createElement('div');
-        row.style.cssText = 'display:flex;justify-content:space-between;font-size:10px;padding:1px 0;color:#888';
-        const gains = [];
-        if (s.gold) gains.push('<span style="color:#ffd060">+'+s.gold+'🪙</span>');
-        if (s.mana) gains.push('<span style="color:#a080ff">+'+s.mana+'✨</span>');
-        if (s.pop)  gains.push('<span style="color:#80c0ff">+'+s.pop+'👥</span>');
-        row.innerHTML = '<span>'+s.label+'</span><span>'+gains.join(' ')+'</span>';
-        list.appendChild(row);
-    });
-    el.appendChild(list);
+    // ── Boutons actions spéciales bâtiments ──
+    const specialWrap = document.createElement('div');
+    specialWrap.style.cssText = 'display:flex;flex-direction:column;gap:4px;margin-top:8px';
+
+    // Soin Église
+    if ((buildingCounts['Église']||0) >= 1) {
+        const canHeal = gold >= 30 && mana >= 20 && avatarHp < avatarMaxHp;
+        const btn = document.createElement('button');
+        btn.style.cssText = 'padding:5px 8px;border-radius:6px;font-size:10px;font-family:Cinzel,serif;cursor:'+(canHeal?'pointer':'not-allowed')+';'+(canHeal?'background:#0a2a0a;color:#4cffaa;border:1px solid #2a5a2a;':'background:#0a0a0a;color:#3a3a3a;border:1px solid #1a1a1a;');
+        btn.textContent = '⛪ Soin héro — 30🪙 + 20✨ (HP: '+avatarHp+'/'+avatarMaxHp+')';
+        if (canHeal) btn.onclick = () => {
+            gold -= 30; mana -= 20;
+            const healed = Math.min(3, avatarMaxHp - avatarHp);
+            avatarHp = Math.min(avatarMaxHp, avatarHp + 3);
+            addLog('⛪ Soin de l\'Église ! +'+healed+' HP ('+avatarHp+'/'+avatarMaxHp+')');
+            updateStats(); renderTaxPanel();
+        };
+        specialWrap.appendChild(btn);
+    }
+
+    // Wards Cathédrale
+    if ((buildingCounts['Cathédrale']||0) >= 1) {
+        ['anti-demon','anti-mort-vivant'].forEach(wardType => {
+            const label = wardType === 'anti-demon' ? 'Ward Anti-Démon' : 'Ward Anti-Mort-Vivant';
+            const canBuy = gold >= 40 && mana >= 30;
+            const btn = document.createElement('button');
+            btn.style.cssText = 'padding:5px 8px;border-radius:6px;font-size:10px;font-family:Cinzel,serif;cursor:'+(canBuy?'pointer':'not-allowed')+';'+(canBuy?'background:#1a0a2a;color:#c080ff;border:1px solid #5020a0;':'background:#0a0a0a;color:#3a3a3a;border:1px solid #1a1a1a;');
+            btn.textContent = '⛩ '+label+' — 40🪙 + 30✨';
+            if (canBuy) btn.onclick = () => {
+                gold -= 40; mana -= 30;
+                if (!window._wards) window._wards = [];
+                window._wards.push({ type: wardType, season: currentSeason });
+                // Ajouter comme unité temporaire à l'armée
+                cityArmy.push({ id:'Ward', name:label, icon:'⛩', atk:0, atkMag:0, traits:[wardType], _wardSeason: currentSeason });
+                addLog('⛩ '+label+' activée pour cette saison !');
+                updateStats(); renderTaxPanel();
+            };
+            specialWrap.appendChild(btn);
+        });
+    }
+
+    // Achat Conscrit — Autel de Guerre
+    if ((buildingCounts['Autel de Guerre']||0) >= 1) {
+        if (!window._conscritBuyCount) window._conscritBuyCount = 0;
+        const conscritCost = 25 * Math.pow(2, window._conscritBuyCount);
+        const canBuy = gold >= conscritCost;
+        const btn = document.createElement('button');
+        btn.style.cssText = 'padding:5px 8px;border-radius:6px;font-size:10px;font-family:Cinzel,serif;cursor:'+(canBuy?'pointer':'not-allowed')+';'+(canBuy?'background:#1a0a0a;color:#ff9060;border:1px solid #6a2010;':'background:#0a0a0a;color:#3a3a3a;border:1px solid #1a1a1a;');
+        btn.textContent = '⚔ Achat Conscrit — '+conscritCost+'🪙 (achat n°'+(window._conscritBuyCount+1)+')';
+        if (canBuy) btn.onclick = () => {
+            gold -= conscritCost;
+            conscrit += 1;
+            window._conscritBuyCount++;
+            addLog('⚔ Conscrit acheté ! Conscription : '+conscrit+' (prochain : '+(conscritCost*2)+'🪙)');
+            updateStats(); renderTaxPanel();
+        };
+        specialWrap.appendChild(btn);
+    }
+
+    // Révélation Horde — Monolithe de Vigie
+    if ((buildingCounts['Monolithe de Vigie']||0) >= 1 && !hordeRevealed) {
+        const canReveal = gold >= 150 && mana >= 100;
+        const btn = document.createElement('button');
+        btn.style.cssText = 'padding:5px 8px;border-radius:6px;font-size:10px;font-family:Cinzel,serif;cursor:'+(canReveal?'pointer':'not-allowed')+';'+(canReveal?'background:#001a2a;color:#80c0ff;border:1px solid #204060;':'background:#0a0a0a;color:#3a3a3a;border:1px solid #1a1a1a;');
+        btn.textContent = '🔭 Révéler composition horde — 150🪙 + 100✨';
+        if (canReveal) btn.onclick = () => {
+            gold -= 150; mana -= 100;
+            hordeRevealed = true;
+            hordeHiddenUnits.forEach(u => hordeArmy.push(u));
+            hordeHiddenUnits = []; hordeHiddenCount = 0;
+            addLog('🔭 Monolithe de Vigie : composition complète de la horde révélée !');
+            updateStats(); renderTaxPanel(); updateArmyPanels();
+        };
+        specialWrap.appendChild(btn);
+    }
+
+    if (specialWrap.children.length > 0) el.appendChild(specialWrap);
 }
 
 // ---- Panneau équipement/armée ----
@@ -5923,17 +6055,19 @@ function checkEqReq(req) {
     const opts = (getMeta().legendaryOptions || {});
     switch(req) {
         case 'caserne':          return (bc['Caserne']||0)>=1;
-        case 'tourmagie':        return (bc['Tour de Magie']||0)>=1;
-        case 'tourMagie':        return (bc['Tour de Magie']||0)>=1;
         case 'tourdeGarde':      return (bc['Tour de Garde']||0)>=1;
+        case 'tourMagie':        return (bc['Tour de Magie']||0)>=1;
+        case 'tourmagie':        return (bc['Tour de Magie']||0)>=1;
+        case 'ecoleMagie':       return (bc['École de Magie']||0)>=1;
         case 'archerie':         return (bc['Archerie']||0)>=1;
         case 'eglise':           return (bc['Église']||0)>=1;
         case 'temple':           return (bc['Temple']||0)>=1;
+        case 'cathedrale':       return (bc['Cathédrale']||0)>=1;
         case 'academie':         return (bc['Académie militaire']||0)>=1;
+        case 'autelGuerre':      return (bc['Autel de Guerre']||0)>=1;
         case 'caserne_mine':     return (bc['Caserne']||0)>=1 && (bc['Mine']||0)>=1;
         case 'tourmagie_eglise': return (bc['Tour de Magie']||0)>=1 && (bc['Église']||0)>=1;
         case 'academie_temple':  return (bc['Académie militaire']||0)>=1 && (bc['Temple']||0)>=1;
-        // Options légendaires
         case 'ae_druidique':     return !!opts.ae_druidique;
         case 'fn_ingenieurs':    return !!opts.fn_ingenieurs;
         case 'sa_inquisiteurs':  return !!opts.sa_inquisiteurs;
@@ -6418,17 +6552,27 @@ function runCombatHorde() {
 
 function buyBuilding(name, tileIdx) {
     if (turnProcessing) return;
-    // Trouver le coût dans renderBuildPanelList buildings array
     const buildings = [
-        { name:'Ferme',              gold:30,  pop:0,  mana:0  },
-        { name:'Mine',               gold:0,   pop:20, mana:0  },
-        { name:'Caserne',            gold:110, pop:10, mana:0  },
-        { name:'Tour de Garde',      gold:90,  pop:10, mana:0  },
-        { name:'Tour de Magie',      gold:40,  pop:5,  mana:20 },
-        { name:'Académie militaire', gold:160, pop:30, mana:40 },
-        { name:'Archerie',           gold:90,  pop:10, mana:0  },
-        { name:'Église',             gold:70,  pop:5,  mana:20 },
-        { name:'Temple',             gold:130, pop:20, mana:40 },
+        // T1
+        { name:'Ferme',              gold:30,  pop:0,  mana:0   },
+        { name:'Mine',               gold:0,   pop:20, mana:0   },
+        { name:'Tour de Mana',       gold:40,  pop:5,  mana:20  },
+        { name:'Caserne',            gold:110, pop:10, mana:0   },
+        { name:'Église',             gold:70,  pop:5,  mana:20  },
+        // T2
+        { name:'Tour de Garde',      gold:90,  pop:10, mana:0   },
+        { name:'Archerie',           gold:90,  pop:10, mana:0   },
+        { name:'École de Magie',     gold:80,  pop:10, mana:30  },
+        { name:'Place du Marché',    gold:60,  pop:10, mana:0   },
+        // T3
+        { name:'Académie militaire', gold:160, pop:30, mana:40  },
+        { name:'Temple',             gold:130, pop:20, mana:40  },
+        { name:'Tour de Magie',      gold:120, pop:20, mana:60  },
+        { name:'Caravansérail',      gold:100, pop:20, mana:0   },
+        // T4
+        { name:'Cathédrale',         gold:200, pop:30, mana:80  },
+        { name:'Autel de Guerre',    gold:180, pop:30, mana:0   },
+        { name:'Monolithe de Vigie', gold:250, pop:50, mana:100 },
     ];
     const b = buildings.find(x => x.name === name);
     if (!b) { addLog('Bâtiment inconnu : ' + name); setTurnProcessing(false); return; }
@@ -6440,17 +6584,23 @@ function buyBuilding(name, tileIdx) {
 
     gold -= b.gold; population -= b.pop; mana -= b.mana;
 
-    // Effets par bâtiment
     switch(name) {
-        case 'Ferme':              population += 10; populationperturn += 5; conscrit += 0; break;
-        case 'Mine':               gold += 20;       goldperturn += 10;                     break;
-        case 'Caserne':            conscrit += 2;                                            break;
-        case 'Tour de Garde':      conscrit += 1;    fortifications += 1;                   break;
-        case 'Tour de Magie':      conscrit += 1;    mana += 20; manaperturn += 10;         break;
-        case 'Académie militaire': break;
-        case 'Archerie':           break;
-        case 'Église':             break;
+        case 'Ferme':              population += 10; populationperturn += 5;  break;
+        case 'Mine':               gold += 20;       goldperturn += 10;       break;
+        case 'Tour de Mana':       mana += 20;       manaperturn += 10;       break;
+        case 'Caserne':            conscrit += 2;                             break;
+        case 'Église':             break; // soin via bouton dédié
+        case 'Tour de Garde':      conscrit += 2;    fortifications += 2;    break;
+        case 'Archerie':           conscrit += 2;                             break;
+        case 'École de Magie':     conscrit += 2;                             break;
+        case 'Place du Marché':    break; // bonus via collect()
+        case 'Académie militaire': conscrit += 4;                             break;
         case 'Temple':             break;
+        case 'Tour de Magie':      manaperturn += 10;                         break;
+        case 'Caravansérail':      break; // bonus via collect()
+        case 'Cathédrale':         break;
+        case 'Autel de Guerre':    conscrit += 6;                             break;
+        case 'Monolithe de Vigie': break;
     }
     buildingCounts[name] = (buildingCounts[name] || 0) + 1;
 
@@ -7202,7 +7352,7 @@ function cleanForSave(obj) {
 
 function getGameState() {
     return {
-        version: '0.13',
+        version: '0.14',
         date: new Date().toISOString(),
         currentTurn, currentSeason,
         gold, mana, population, dust,
@@ -7816,6 +7966,8 @@ function initNewRun() {
     tileRevealedThisTurn = false;
     window.dungeonUsedThisTurn  = false;
     window.actionsDisponibles = actionsParTour;
+    window._conscritBuyCount = 0;
+    window._wards = [];
     tileState.forEach(function(t, i) {
         t.type = i === 12 ? 'Ville' : null;
         t.buildings = [];
