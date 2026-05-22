@@ -4962,11 +4962,13 @@ function resolveBattle() {
     cityArmy.forEach(u => u.traits.forEach(t => {
         if (t.startsWith('anti')) antiCounts[t] = (antiCounts[t]||0)+1;
     }));
-    // Passif Inquisiteur : amplifie les anti-démons existants (+1 par Inquisiteur par unité anti-démon)
+    // Passif Inquisiteur : chaque unité anti-démon (hors Inquisiteurs) gagne +1 anti-démon par Inquisiteur
     const inquisitorCount = cityArmy.filter(u => u.id === 'Inquisiteur').length;
     if (inquisitorCount > 0) {
-        const existingAntiDemon = antiCounts['anti-demon'] || 0;
-        antiCounts['anti-demon'] = existingAntiDemon + inquisitorCount * existingAntiDemon;
+        const nonInqAntiDemon = cityArmy
+            .filter(u => u.id !== 'Inquisiteur')
+            .reduce((s, u) => s + u.traits.filter(t => t === 'anti-demon').length, 0);
+        antiCounts['anti-demon'] = (antiCounts['anti-demon'] || 0) + inquisitorCount * nonInqAntiDemon;
     }
 
     // Compter les unités de horde par trait offensif
@@ -6511,11 +6513,13 @@ function runCombatHorde() {
             antiCounts[t] = (antiCounts[t] || 0) + w;
         });
     });
-    // Passif Inquisiteur : amplifie les anti-démons existants (+1 par Inquisiteur par unité anti-démon)
+    // Passif Inquisiteur : chaque unité anti-démon (hors Inquisiteurs) gagne +1 anti-démon par Inquisiteur
     const inquisitorCount2 = cityArmy.filter(function(u){ return u.id === 'Inquisiteur'; }).length;
     if (inquisitorCount2 > 0) {
-        const existingAntiDemon2 = antiCounts['anti-demon'] || 0;
-        antiCounts['anti-demon'] = existingAntiDemon2 + inquisitorCount2 * existingAntiDemon2;
+        const nonInqAntiDemon2 = cityArmy
+            .filter(function(u){ return u.id !== 'Inquisiteur'; })
+            .reduce(function(s, u){ return s + u.traits.filter(function(t){ return t === 'anti-demon'; }).length; }, 0);
+        antiCounts['anti-demon'] = (antiCounts['anti-demon'] || 0) + inquisitorCount2 * nonInqAntiDemon2;
     }
 
     // Calculer la somme nette par trait horde
