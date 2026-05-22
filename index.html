@@ -4777,9 +4777,9 @@ const UNIT_CATALOG = [
       gold:0,  pop:10, mana:40, req:'ecoleMagie',
       desc:'Invoqué. ATK 2 | Infanterie. Requiert École de Magie.' },
     // === Académie militaire (T3) ===
-    { id:'Hallebardier',  name:'Hallebardier',       icon:'🪖', atk:4, atkMag:0, traits:['infanterie','anti-cavalerie','anti-cavalerie'], antiWeight:{'anti-cavalerie':2},
+    { id:'Hallebardier',  name:'Hallebardier',       icon:'🪖', atk:4, atkMag:0, traits:['infanterie','anti-cavalerie','anti-cavalerie'], antiWeight:{'anti-cavalerie':2}, elite:true,
       gold:40, pop:8,  mana:0,  req:'academie',
-      desc:'ATK 4 | Infanterie | Anti-Cavalerie II.' },
+      desc:'ATK 4 | Infanterie | Anti-Cavalerie II. Élite.' },
     { id:'Arbaletrier',   name:'Arbalétrier',        icon:'🏹', atk:3, atkMag:0, traits:['anti-vol','anti-vol','distance'], antiWeight:{'anti-vol':2},
       gold:40, pop:6,  mana:0,  req:'academie',
       desc:'ATK 3 | Anti-Vol II | Distance.' },
@@ -4804,7 +4804,7 @@ const UNIT_CATALOG = [
       gold:0, pop:15, mana:50, req:'tourMagie',
       desc:'ATK 3 | Anti-Cavalerie | Invocation. Requiert Tour de Magie.' },
     // === Cathédrale (T4) ===
-    { id:'Paladin',       name:'Paladin',            icon:'⚜', atk:4, atkMag:2, traits:['anti-cavalerie','anti-mort-vivant'],
+    { id:'Paladin',       name:'Paladin',            icon:'⚜', atk:4, atkMag:2, traits:['anti-cavalerie','anti-mort-vivant'], elite:true,
       gold:55, pop:10, mana:10, req:'cathedrale',
       desc:'Élite : anti-cavalerie et anti-mort-vivant. Requiert Cathédrale.' },
     // ── Unités Légendaires ──
@@ -5381,6 +5381,10 @@ function recruitUnit(unitDef) {
     if (!isInvocation) conscrit -= 1;
     const newUnit = {...unitDef, traits: [...(unitDef.traits||[])]};
     cityArmy.push(newUnit);
+    // Aura de Pureté : appliquer anti-mort-vivant aux élites si option active
+    if (unitDef.elite === true && (getMeta().legendaryOptions || {}).sa_aura) {
+        if (!newUnit.traits.includes('anti-mort-vivant')) newUnit.traits.push('anti-mort-vivant');
+    }
     addLog('Recruté : '+unitDef.icon+' '+unitDef.name+' (ATK '+unitDef.atk+', Mag '+unitDef.atkMag+')');
 
     // Inquisiteur : renforce anti-démon +1 sur les autres unités
@@ -8605,7 +8609,7 @@ function applyLegendaryOption(key, opts) {
     }
     else if (key === 'sa_aura') {
         cityArmy.forEach(function(u){
-            if (u.elite || u.req) { // unités élites
+            if (u.elite === true) {
                 if (!u.traits.includes('anti-mort-vivant')) u.traits.push('anti-mort-vivant');
             }
         });
