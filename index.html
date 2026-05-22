@@ -4962,6 +4962,12 @@ function resolveBattle() {
     cityArmy.forEach(u => u.traits.forEach(t => {
         if (t.startsWith('anti')) antiCounts[t] = (antiCounts[t]||0)+1;
     }));
+    // Passif Inquisiteur : amplifie les anti-démons existants (+1 par Inquisiteur par unité anti-démon)
+    const inquisitorCount = cityArmy.filter(u => u.id === 'Inquisiteur').length;
+    if (inquisitorCount > 0) {
+        const existingAntiDemon = antiCounts['anti-demon'] || 0;
+        antiCounts['anti-demon'] = existingAntiDemon + inquisitorCount * existingAntiDemon;
+    }
 
     // Compter les unités de horde par trait offensif
     const hordeTraitCounts = {};
@@ -6505,6 +6511,12 @@ function runCombatHorde() {
             antiCounts[t] = (antiCounts[t] || 0) + w;
         });
     });
+    // Passif Inquisiteur : amplifie les anti-démons existants (+1 par Inquisiteur par unité anti-démon)
+    const inquisitorCount2 = cityArmy.filter(function(u){ return u.id === 'Inquisiteur'; }).length;
+    if (inquisitorCount2 > 0) {
+        const existingAntiDemon2 = antiCounts['anti-demon'] || 0;
+        antiCounts['anti-demon'] = existingAntiDemon2 + inquisitorCount2 * existingAntiDemon2;
+    }
 
     // Calculer la somme nette par trait horde
     const allHorde = [...hordeArmy, ...(hordeHiddenUnits||[])];
