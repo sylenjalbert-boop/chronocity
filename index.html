@@ -1131,10 +1131,10 @@
             </div>
 
             <!-- Section IMPÔTS -->
-            <div class="action-section" id="sec-tax">
+            <div class="action-section" id="sec-tax" style="display:flex;flex-direction:column;gap:4px">
                 <div class="action-section-title"><svg viewBox="0 0 64 48" width="1.4em" height="1em" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-0.15em"><path d="M8 32Q8 6 32 6T56 32"/><line x1="18" y1="9" x2="18" y2="32"/><line x1="32" y1="6" x2="32" y2="32"/><line x1="46" y1="9" x2="46" y2="32"/><line x1="6" y1="32" x2="58" y2="32"/><circle cx="16" cy="40" r="5"/><circle cx="48" cy="40" r="5"/></svg> Caravane</div>
-                <div id="tax-resources"></div>
-                <button class="action-main-btn" id="btn-tax" onclick="doTaxAndClose()">Envoyer</button>
+                <div id="tax-resources" style="flex:1;overflow-y:auto"></div>
+                <button id="btn-tax" onclick="doTaxAndClose()" style="margin-top:4px;padding:5px 10px;font-family:Cinzel,serif;font-size:10px;font-weight:600;letter-spacing:0.5px;border-radius:6px;border:1px solid #4a7a2a;background:#0a1a06;color:#80c060;cursor:pointer;width:100%;transition:all 0.15s">↝ Envoyer la caravane</button>
             </div>
 
         </div>
@@ -5839,127 +5839,106 @@ function renderTaxPanel() {
     if (!el) return;
     el.innerHTML = '';
 
-    // Bandeau Conjonction
     const conjonctionTurns = [2, 4, 6, 8];
-    if (conjonctionTurns.includes(currentTurn)) {
+    const isConjonction = conjonctionTurns.includes(currentTurn);
+    const marketBonus   = (buildingCounts['Place du Marché']  || 0) > 0 ? 0.20 : 0;
+    const caravanBonus  = (buildingCounts['Caravansérail']    || 0) > 0 ? 0.50 : 0;
+    const conjMult      = isConjonction ? 2 : 1;
+    const buildMult     = 1 + marketBonus + caravanBonus;
+    const totalMult     = conjMult * buildMult;
+
+    // ── Bandeau Conjonction ──
+    if (isConjonction) {
         const banner = document.createElement('div');
-        banner.style.cssText = 'background:linear-gradient(135deg,#3a2a00,#5a4000);border:1px solid #e0a020;border-radius:6px;padding:6px 8px;margin-bottom:8px;text-align:center;animation:ctRingPulse 1.5s ease-in-out infinite';
-        banner.innerHTML = '<div style="font-size:13px;color:#ffd060;font-weight:bold">⭐ Conjonction active !</div>' +
-            '<div style="font-size:10px;color:#c0a060;margin-top:2px">Caravane ×2 ressources ce tour</div>';
+        banner.style.cssText = 'background:linear-gradient(135deg,#3a2a00,#5a4000);border:1px solid #e0a020;border-radius:6px;padding:5px 8px;margin-bottom:6px;text-align:center';
+        let bonusLabel = '×2';
+        if (buildMult > 1) bonusLabel += ' · ×'+buildMult.toFixed(1)+' bât.';
+        banner.innerHTML = '<div style="font-size:11px;color:#ffd060;font-weight:bold">⭐ Conjonction — '+bonusLabel+'</div>';
+        el.appendChild(banner);
+    } else if (buildMult > 1) {
+        const banner = document.createElement('div');
+        banner.style.cssText = 'background:#0a1a06;border:1px solid #2a4a1a;border-radius:6px;padding:4px 8px;margin-bottom:6px;text-align:center';
+        banner.innerHTML = '<div style="font-size:10px;color:#80c060">Bonus bâtiments ×'+buildMult.toFixed(1)+'</div>';
         el.appendChild(banner);
     }
 
-    // Totaux
-    const totals = document.createElement('div');
-    totals.style.cssText = 'display:flex;gap:10px;padding:4px 0 6px;border-bottom:1px solid #1a1a2e;margin-bottom:6px';
-    totals.innerHTML =
-        '<span style="font-size:12px">🪙 <b style="color:#ffd060">+'+goldperturn+'</b></span>'+
-        '<span style="font-size:12px">✨ <b style="color:#a080ff">+'+manaperturn+'</b></span>'+
-        '<span style="font-size:12px">👥 <b style="color:#80c0ff">+'+populationperturn+'</b></span>';
-    el.appendChild(totals);
+    // ── Résumé total récolte ──
+    const totalGold = Math.floor(goldperturn * totalMult);
+    const totalMana = Math.floor(manaperturn * totalMult);
+    const totalPop  = Math.floor(populationperturn * totalMult);
+    const summary = document.createElement('div');
+    summary.style.cssText = 'display:flex;gap:8px;justify-content:center;padding:6px 0 5px;border-bottom:1px solid #1a1a2e;margin-bottom:6px';
+    summary.innerHTML =
+        '<span style="font-size:13px;font-weight:bold">🪙<b style="color:#ffd060"> +'+totalGold+'</b></span>'+
+        '<span style="font-size:13px;font-weight:bold">✨<b style="color:#a080ff"> +'+totalMana+'</b></span>'+
+        '<span style="font-size:13px;font-weight:bold">👥<b style="color:#80c0ff"> +'+totalPop+'</b></span>';
+    el.appendChild(summary);
 
-    // Détail par source
+    // ── Détail par source ──
     const sources = [];
 
-    // Tuiles révélées
+    // Tuiles
     tileState.forEach((t, i) => {
-        if (i === 12 || !t.revealed) return;
-        const tt = TILE_TYPES[t.type];
-        if (!tt) return;
-        let gold_s = 0, mana_s = 0, pop_s = 0;
-        // Gain de base de la tuile (goldperturn/populationperturn/manaperturn de découverte)
-        // On reconstitue les bonus tuile depuis les bâtiments posés
+        if (i === 12 || !t.revealed || !t.type) return;
+        let g = 0, m = 0, p = 0;
         t.buildings.forEach(bName => {
             const bonus = getTileBonus(t.type, bName);
             if (!bonus) return;
-            if (bonus.includes('Or'))  gold_s += parseInt(bonus);
-            if (bonus.includes('Mana')) mana_s += parseInt(bonus);
-            if (bonus.includes('Pop'))  pop_s  += parseInt(bonus);
+            if (bonus.includes('Or'))   g += parseInt(bonus);
+            if (bonus.includes('Mana')) m += parseInt(bonus);
+            if (bonus.includes('Pop'))  p += parseInt(bonus);
         });
-        if (gold_s || mana_s || pop_s) {
-            sources.push({
-                label: tt.emoji + ' ' + t.type + (t.buildings.length ? ' ('+t.buildings.map(b=>b.slice(0,6)).join(', ')+')' : ''),
-                gold: gold_s, mana: mana_s, pop: pop_s
-            });
-        }
+        if (g || m || p) sources.push({ label: TILE_TYPES[t.type]?.emoji+' '+t.type, gold:Math.floor(g*totalMult), mana:Math.floor(m*totalMult), pop:Math.floor(p*totalMult), baseGold:g, baseMana:m, basePop:p });
     });
 
-    // Bâtiments de base (gains fixes)
-    const bldGains = {
-        'Ferme':         { pop:5   },
-        'Mine':          { gold:10 },
-        'Tour de Mana':  { mana:10 },
-        'Tour de Magie': { mana:10 },
-    };
+    // Bâtiments fixes
+    const bldBase = { 'Ferme':{pop:5}, 'Mine':{gold:10}, 'Tour de Mana':{mana:10}, 'Tour de Magie':{mana:10} };
     Object.entries(buildingCounts).forEach(([bName, n]) => {
-        if (n <= 0 || !bldGains[bName]) return;
-        const g = bldGains[bName];
-        sources.push({
-            label: bName + ' ×' + n,
-            gold:  (g.gold  || 0) * n,
-            mana:  (g.mana  || 0) * n,
-            pop:   (g.pop   || 0) * n,
-        });
+        if (!n || !bldBase[bName]) return;
+        const g = bldBase[bName];
+        const bg = (g.gold||0)*n, bm = (g.mana||0)*n, bp = (g.pop||0)*n;
+        sources.push({ label: bName+'×'+n, gold:Math.floor(bg*totalMult), mana:Math.floor(bm*totalMult), pop:Math.floor(bp*totalMult), baseGold:bg, baseMana:bm, basePop:bp });
     });
 
-    if (sources.length === 0) {
-        const empty = document.createElement('div');
-        empty.style.cssText = 'font-size:10px;color:#7a6a50;font-style:italic';
-        empty.textContent = 'Aucune source de revenus encore.';
-        el.appendChild(empty);
-    } else {
+    if (sources.length > 0) {
         const list = document.createElement('div');
-        list.style.cssText = 'max-height:100px;overflow-y:auto';
+        list.style.cssText = 'display:flex;flex-direction:column;gap:2px;max-height:90px;overflow-y:auto;margin-bottom:6px';
         sources.forEach(s => {
             const row = document.createElement('div');
-            row.style.cssText = 'display:flex;justify-content:space-between;font-size:10px;padding:1px 0;color:#888';
+            row.style.cssText = 'display:flex;justify-content:space-between;font-size:9px;padding:1px 2px;color:#6a6a7a';
             const gains = [];
-            if (s.gold) gains.push('<span style="color:#ffd060">+'+s.gold+'🪙</span>');
-            if (s.mana) gains.push('<span style="color:#a080ff">+'+s.mana+'✨</span>');
-            if (s.pop)  gains.push('<span style="color:#80c0ff">+'+s.pop+'👥</span>');
+            if (s.gold) gains.push('<span style="color:#c0a030">+'+s.gold+'🪙</span>');
+            if (s.mana) gains.push('<span style="color:#8060c0">+'+s.mana+'✨</span>');
+            if (s.pop)  gains.push('<span style="color:#6090b0">+'+s.pop+'👥</span>');
             row.innerHTML = '<span>'+s.label+'</span><span>'+gains.join(' ')+'</span>';
             list.appendChild(row);
         });
         el.appendChild(list);
     }
 
-    // ── Boutons actions spéciales bâtiments ──
+    // ── Actions spéciales bâtiments ──
     const specialWrap = document.createElement('div');
-    specialWrap.style.cssText = 'display:flex;flex-direction:column;gap:4px;margin-top:8px';
+    specialWrap.style.cssText = 'display:flex;flex-direction:column;gap:3px;border-top:1px solid #1a1a2e;padding-top:5px';
 
     // Soin Église
     if ((buildingCounts['Église']||0) >= 1) {
         const canHeal = gold >= 30 && mana >= 20 && avatarHp < avatarMaxHp;
         const btn = document.createElement('button');
-        btn.style.cssText = 'padding:5px 8px;border-radius:6px;font-size:10px;font-family:Cinzel,serif;cursor:'+(canHeal?'pointer':'not-allowed')+';'+(canHeal?'background:#0a2a0a;color:#4cffaa;border:1px solid #2a5a2a;':'background:#0a0a0a;color:#3a3a3a;border:1px solid #1a1a1a;');
-        btn.textContent = '⛪ Soin héro — 30🪙 + 20✨ (HP: '+avatarHp+'/'+avatarMaxHp+')';
-        if (canHeal) btn.onclick = () => {
-            gold -= 30; mana -= 20;
-            const healed = Math.min(3, avatarMaxHp - avatarHp);
-            avatarHp = Math.min(avatarMaxHp, avatarHp + 3);
-            addLog('⛪ Soin de l\'Église ! +'+healed+' HP ('+avatarHp+'/'+avatarMaxHp+')');
-            updateStats(); renderTaxPanel();
-        };
+        btn.style.cssText = 'padding:4px 8px;border-radius:5px;font-size:9px;font-family:Cinzel,serif;text-align:left;cursor:'+(canHeal?'pointer':'not-allowed')+';'+(canHeal?'background:#0a2a0a;color:#4cffaa;border:1px solid #2a5a2a;':'background:#0a0a0a;color:#3a3a3a;border:1px solid #1a1a1a;');
+        btn.innerHTML = '⛪ Soin héro <span style="float:right">30🪙 20✨ · HP '+avatarHp+'/'+avatarMaxHp+'</span>';
+        if (canHeal) btn.onclick = () => { gold -= 30; mana -= 20; const h = Math.min(3, avatarMaxHp-avatarHp); avatarHp += h; addLog('⛪ Soin +'+h+' HP ('+avatarHp+'/'+avatarMaxHp+')'); updateStats(); renderTaxPanel(); };
         specialWrap.appendChild(btn);
     }
 
     // Wards Cathédrale
     if ((buildingCounts['Cathédrale']||0) >= 1) {
         ['anti-demon','anti-mort-vivant'].forEach(wardType => {
-            const label = wardType === 'anti-demon' ? 'Ward Anti-Démon' : 'Ward Anti-Mort-Vivant';
+            const label = wardType==='anti-demon' ? 'Ward Anti-Démon' : 'Ward Anti-MV';
             const canBuy = gold >= 40 && mana >= 30;
             const btn = document.createElement('button');
-            btn.style.cssText = 'padding:5px 8px;border-radius:6px;font-size:10px;font-family:Cinzel,serif;cursor:'+(canBuy?'pointer':'not-allowed')+';'+(canBuy?'background:#1a0a2a;color:#c080ff;border:1px solid #5020a0;':'background:#0a0a0a;color:#3a3a3a;border:1px solid #1a1a1a;');
-            btn.textContent = '⛩ '+label+' — 40🪙 + 30✨';
-            if (canBuy) btn.onclick = () => {
-                gold -= 40; mana -= 30;
-                if (!window._wards) window._wards = [];
-                window._wards.push({ type: wardType, season: currentSeason });
-                // Ajouter comme unité temporaire à l'armée
-                cityArmy.push({ id:'Ward', name:label, icon:'⛩', atk:0, atkMag:0, traits:[wardType], _wardSeason: currentSeason });
-                addLog('⛩ '+label+' activée pour cette saison !');
-                updateStats(); renderTaxPanel();
-            };
+            btn.style.cssText = 'padding:4px 8px;border-radius:5px;font-size:9px;font-family:Cinzel,serif;text-align:left;cursor:'+(canBuy?'pointer':'not-allowed')+';'+(canBuy?'background:#1a0a2a;color:#c080ff;border:1px solid #5020a0;':'background:#0a0a0a;color:#3a3a3a;border:1px solid #1a1a1a;');
+            btn.innerHTML = '⛩ '+label+' <span style="float:right">40🪙 30✨</span>';
+            if (canBuy) btn.onclick = () => { gold -= 40; mana -= 30; if (!window._wards) window._wards=[]; window._wards.push({type:wardType,season:currentSeason}); cityArmy.push({id:'Ward',name:label,icon:'⛩',atk:0,atkMag:0,traits:[wardType],_wardSeason:currentSeason}); addLog('⛩ '+label+' activée !'); updateStats(); renderTaxPanel(); };
             specialWrap.appendChild(btn);
         });
     }
@@ -5967,18 +5946,12 @@ function renderTaxPanel() {
     // Achat Conscrit — Autel de Guerre
     if ((buildingCounts['Autel de Guerre']||0) >= 1) {
         if (!window._conscritBuyCount) window._conscritBuyCount = 0;
-        const conscritCost = 25 * Math.pow(2, window._conscritBuyCount);
-        const canBuy = gold >= conscritCost;
+        const cost = 25 * Math.pow(2, window._conscritBuyCount);
+        const canBuy = gold >= cost;
         const btn = document.createElement('button');
-        btn.style.cssText = 'padding:5px 8px;border-radius:6px;font-size:10px;font-family:Cinzel,serif;cursor:'+(canBuy?'pointer':'not-allowed')+';'+(canBuy?'background:#1a0a0a;color:#ff9060;border:1px solid #6a2010;':'background:#0a0a0a;color:#3a3a3a;border:1px solid #1a1a1a;');
-        btn.textContent = '⚔ Achat Conscrit — '+conscritCost+'🪙 (achat n°'+(window._conscritBuyCount+1)+')';
-        if (canBuy) btn.onclick = () => {
-            gold -= conscritCost;
-            conscrit += 1;
-            window._conscritBuyCount++;
-            addLog('⚔ Conscrit acheté ! Conscription : '+conscrit+' (prochain : '+(conscritCost*2)+'🪙)');
-            updateStats(); renderTaxPanel();
-        };
+        btn.style.cssText = 'padding:4px 8px;border-radius:5px;font-size:9px;font-family:Cinzel,serif;text-align:left;cursor:'+(canBuy?'pointer':'not-allowed')+';'+(canBuy?'background:#1a0a0a;color:#ff9060;border:1px solid #6a2010;':'background:#0a0a0a;color:#3a3a3a;border:1px solid #1a1a1a;');
+        btn.innerHTML = '⚔ +1 Conscrit (#'+(window._conscritBuyCount+1)+') <span style="float:right">'+cost+'🪙</span>';
+        if (canBuy) btn.onclick = () => { gold -= cost; conscrit++; window._conscritBuyCount++; addLog('⚔ Conscrit acheté ! ('+conscrit+' total)'); updateStats(); renderTaxPanel(); };
         specialWrap.appendChild(btn);
     }
 
@@ -5986,21 +5959,15 @@ function renderTaxPanel() {
     if ((buildingCounts['Monolithe de Vigie']||0) >= 1 && !hordeRevealed) {
         const canReveal = gold >= 150 && mana >= 100;
         const btn = document.createElement('button');
-        btn.style.cssText = 'padding:5px 8px;border-radius:6px;font-size:10px;font-family:Cinzel,serif;cursor:'+(canReveal?'pointer':'not-allowed')+';'+(canReveal?'background:#001a2a;color:#80c0ff;border:1px solid #204060;':'background:#0a0a0a;color:#3a3a3a;border:1px solid #1a1a1a;');
-        btn.textContent = '🔭 Révéler composition horde — 150🪙 + 100✨';
-        if (canReveal) btn.onclick = () => {
-            gold -= 150; mana -= 100;
-            hordeRevealed = true;
-            hordeHiddenUnits.forEach(u => hordeArmy.push(u));
-            hordeHiddenUnits = []; hordeHiddenCount = 0;
-            addLog('🔭 Monolithe de Vigie : composition complète de la horde révélée !');
-            updateStats(); renderTaxPanel(); updateArmyPanels();
-        };
+        btn.style.cssText = 'padding:4px 8px;border-radius:5px;font-size:9px;font-family:Cinzel,serif;text-align:left;cursor:'+(canReveal?'pointer':'not-allowed')+';'+(canReveal?'background:#001a2a;color:#80c0ff;border:1px solid #204060;':'background:#0a0a0a;color:#3a3a3a;border:1px solid #1a1a1a;');
+        btn.innerHTML = '🔭 Révéler horde <span style="float:right">150🪙 100✨</span>';
+        if (canReveal) btn.onclick = () => { gold -= 150; mana -= 100; hordeRevealed=true; hordeHiddenUnits.forEach(u=>hordeArmy.push(u)); hordeHiddenUnits=[]; hordeHiddenCount=0; addLog('🔭 Composition horde révélée !'); updateStats(); renderTaxPanel(); updateArmyPanels(); };
         specialWrap.appendChild(btn);
     }
 
     if (specialWrap.children.length > 0) el.appendChild(specialWrap);
 }
+
 
 // ---- Panneau équipement/armée ----
 function equipTab(tab) {
@@ -10173,7 +10140,7 @@ body.clarity-on #clarity-resbar {
         body.appendChild(sec);
         sec.style.display = 'flex';
         pop.classList.add('open');
-        if (title) title.textContent = ACTION_TITLES[action] || '';
+        if (title) title.innerHTML = ACTION_TITLES[action] || '';
         currentAction = action;
         document.querySelectorAll('#clarity-action-dock .cad-btn').forEach(b => {
             b.classList.toggle('active', b.dataset.action === action);
