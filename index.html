@@ -4356,37 +4356,6 @@ function dungeonUseSkill(type) {
     }, 400);
 }
 
-function dungeonUseGlyph(type) {
-    // Glyphe — hors action (pas de riposte ennemie)
-    if (!dungeonState.active) return;
-    if (document.getElementById('dungeon-reward').classList.contains('visible')) return;
-    const glyphMap = { fireball:glyphFireball, bless:glyphBless, rage:glyphRage };
-    if (glyphMap[type] <= 0) return;
-
-    if (type === 'fireball') {
-        glyphFireball--;
-        const dmg = 4;
-        const allEG = getAllLivingEnemies();
-        allEG.forEach(function(e){ e.hp -= dmg; });
-        dngLog('🔥 Glyphe Boule de Feu ! -'+dmg+' HP à tous les ennemis !', 'dlog-good');
-        renderEnemyPanel();
-        checkAllEnemiesDead();
-    } else if (type === 'bless') {
-        glyphBless--;
-        timingNormalBonus = true;
-        dngSetupZones();
-        dngLog('🌟 Glyphe Bénédiction ! Zone ×1 → ×1.5 (prochain coup).', 'dlog-good');
-    } else if (type === 'rage') {
-        if (rageActive) return;
-        glyphRage--;
-        rageActive = true; rageRounds = 2;
-        dngLog('💢 Glyphe Rage ! Dégâts ×2 pendant 2 rounds.', 'dlog-good');
-    }
-
-    updateStats();
-    updateGlyphButtons();
-}
-
 // Aliases legacy
 function dungeonSkill() { dungeonUseSkill('fireball'); }
 function dungeonBless() { dungeonUseSkill('bless'); }
@@ -5392,6 +5361,24 @@ function recruitUnit(unitDef) {
     // Aura de Pureté : appliquer anti-mort-vivant aux élites si option active
     if (unitDef.elite === true && (getMeta().legendaryOptions || {}).sa_aura) {
         if (!newUnit.traits.includes('anti-mort-vivant')) newUnit.traits.push('anti-mort-vivant');
+    }
+    // gt_boostAtk : +1 ATK à toutes les unités
+    if ((getMeta().legendaryOptions || {}).gt_boostAtk) {
+        newUnit.atk += 1;
+    }
+    // gt_boostTraits : doublement de tous les anti-traits
+    if ((getMeta().legendaryOptions || {}).gt_boostTraits) {
+        const antiTraits = newUnit.traits.filter(t => t.startsWith('anti'));
+        antiTraits.forEach(t => newUnit.traits.push(t));
+    }
+    // ae_fabricant : Archers +1 ATK +1 anti-vol
+    if ((getMeta().legendaryOptions || {}).ae_fabricant && (newUnit.id === 'Archer')) {
+        newUnit.atk += 1;
+        newUnit.traits.push('anti-vol');
+    }
+    // fn_forgeron : Infanterie +1 ATK
+    if ((getMeta().legendaryOptions || {}).fn_forgeron && newUnit.traits.includes('infanterie')) {
+        newUnit.atk += 1;
     }
     addLog('Recruté : '+unitDef.icon+' '+unitDef.name+' (ATK '+unitDef.atk+', Mag '+unitDef.atkMag+')');
 
@@ -8206,14 +8193,6 @@ function dungeonUseGlyph(type) {
         glyphRage--;
         dungeonState.rageTurns = (dungeonState.rageTurns||0) + 3;
         dngLog('💢 Glyphe de Rage : +ATK pendant 3 rounds', 'dlog-good');
-    } else if (type === 'bless') {
-        if (glyphBless <= 0) return;
-        glyphBless--;
-        const healAmt = Math.floor(avatarMaxHp * 0.25);
-        dungeonState.avatarHp = Math.min(avatarMaxHp, dungeonState.avatarHp + healAmt);
-        avatarHp = dungeonState.avatarHp;
-        applyHpUpdate();
-        dngLog('🌟 Bénédiction : +'+healAmt+' HP', 'dlog-good');
     }
     updateStats();
     dngUpdateCombatUI();
@@ -8576,8 +8555,7 @@ function applyLegendaryOption(key, opts) {
         cityArmy.forEach(function(u){
             if (u.id === 'Archer' || u.name === 'Archer') {
                 u.atk += 1;
-                if (!u.traits.includes('anti-vol')) u.traits.push('anti-vol');
-                else u.traits.push('anti-vol'); // +1 anti-vol
+                u.traits.push('anti-vol'); // toujours +1 anti-vol
             }
         });
         addLog('🌳 Arbre Elfique : Archers +1 ATK +1 anti-vol');
