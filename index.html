@@ -1456,6 +1456,20 @@ function showCityPanel() {
             '</div>'+
             '</div>'+
 
+            // Section achat conscrit (Autel de Guerre)
+            + ((buildingCounts['Autel de Guerre']||0) >= 1 ? (function(){
+                if (!window._conscritBuyCount) window._conscritBuyCount = 0;
+                const cost = 25 * Math.pow(2, window._conscritBuyCount);
+                const canBuy2 = gold >= cost;
+                return '<div style="background:#12121e;border-radius:8px;padding:10px;margin-bottom:10px">'+
+                    '<div style="font-size:12px;color:#9a8a6a;margin-bottom:6px">Autel de Guerre</div>'+
+                    '<div style="display:flex;align-items:center;gap:10px">'+
+                    '<div style="font-size:13px;color:#ffb060">Conscription : '+conscrit+'</div>'+
+                    '<button onclick="buyConcrit()" style="padding:5px 12px;border:none;border-radius:6px;cursor:'+(canBuy2?'pointer':'not-allowed')+';background:'+(canBuy2?'#2a1a0a':'#1a1a1a')+';color:'+(canBuy2?'#ff9060':'#444')+';font-size:11px"'+(canBuy2?'':' disabled')+'>'+
+                    '+1 Conscrit ('+cost+'🪙)</button>'+
+                    '</div></div>';
+            })() : '')
+            +
             '<button onclick="closeCityPanel()" '+
             'style="width:100%;padding:7px;border:none;border-radius:8px;background:#222;color:#9a8a6a;cursor:pointer;font-size:12px">'+
             '✕ Fermer</button>'+
@@ -1469,7 +1483,18 @@ function showCityPanel() {
         fortifications++;
         addLog('🔨 Fortification reconstruite ! ('+REBUILD_COST+' Or) — Fort. : '+fortifications);
         updateStats();
-        renderPanel(); // rafraîchir le panneau
+        renderPanel();
+    };
+    window.buyConcrit = function() {
+        if (!window._conscritBuyCount) window._conscritBuyCount = 0;
+        const cost = 25 * Math.pow(2, window._conscritBuyCount);
+        if (gold < cost) return;
+        gold -= cost;
+        conscrit++;
+        window._conscritBuyCount++;
+        addLog('⚔ Conscrit acheté ! ('+conscrit+' total, prochain : '+(cost*2)+'🪙)');
+        updateStats();
+        renderPanel();
     };
 
     renderPanel();
@@ -5569,6 +5594,9 @@ function updateStats() {
     if (fortifications > mf) fortifications = mf;
     // Tracker le max de fortifications atteint ce run
     if (fortifications > maxFortReached) maxFortReached = fortifications;
+    // Exposer les valeurs clés pour le clarity overlay
+    window.gold = gold; window.mana = mana;
+    window.avatarHp = avatarHp; window.avatarMaxHp = avatarMaxHp;
     document.getElementById('gold').textContent = gold;
     document.getElementById('mana').textContent = mana;
     document.getElementById('population').textContent = population;
@@ -5967,16 +5995,6 @@ function renderTaxPanel() {
     const specialWrap = document.createElement('div');
     specialWrap.style.cssText = 'display:flex;flex-direction:column;gap:3px;border-top:1px solid #1a1a2e;padding-top:5px';
 
-    // Soin Église
-    if ((buildingCounts['Église']||0) >= 1) {
-        const canHeal = gold >= 30 && mana >= 20 && avatarHp < avatarMaxHp;
-        const btn = document.createElement('button');
-        btn.style.cssText = 'padding:4px 8px;border-radius:5px;font-size:9px;font-family:Cinzel,serif;text-align:left;cursor:'+(canHeal?'pointer':'not-allowed')+';'+(canHeal?'background:#0a2a0a;color:#4cffaa;border:1px solid #2a5a2a;':'background:#0a0a0a;color:#3a3a3a;border:1px solid #1a1a1a;');
-        btn.innerHTML = '⛪ Soin héro <span style="float:right">30🪙 20✨ · HP '+avatarHp+'/'+avatarMaxHp+'</span>';
-        if (canHeal) btn.onclick = () => { gold -= 30; mana -= 20; const h = Math.min(3, avatarMaxHp-avatarHp); avatarHp += h; addLog('⛪ Soin +'+h+' HP ('+avatarHp+'/'+avatarMaxHp+')'); updateStats(); renderTaxPanel(); };
-        specialWrap.appendChild(btn);
-    }
-
     // Wards Cathédrale
     if ((buildingCounts['Cathédrale']||0) >= 1) {
         ['anti-demon','anti-mort-vivant'].forEach(wardType => {
@@ -5988,18 +6006,6 @@ function renderTaxPanel() {
             if (canBuy) btn.onclick = () => { gold -= 40; mana -= 30; if (!window._wards) window._wards=[]; window._wards.push({type:wardType,season:currentSeason}); cityArmy.push({id:'Ward',name:label,icon:'⛩',atk:0,atkMag:0,traits:[wardType],_wardSeason:currentSeason}); addLog('⛩ '+label+' activée !'); updateStats(); renderTaxPanel(); };
             specialWrap.appendChild(btn);
         });
-    }
-
-    // Achat Conscrit — Autel de Guerre
-    if ((buildingCounts['Autel de Guerre']||0) >= 1) {
-        if (!window._conscritBuyCount) window._conscritBuyCount = 0;
-        const cost = 25 * Math.pow(2, window._conscritBuyCount);
-        const canBuy = gold >= cost;
-        const btn = document.createElement('button');
-        btn.style.cssText = 'padding:4px 8px;border-radius:5px;font-size:9px;font-family:Cinzel,serif;text-align:left;cursor:'+(canBuy?'pointer':'not-allowed')+';'+(canBuy?'background:#1a0a0a;color:#ff9060;border:1px solid #6a2010;':'background:#0a0a0a;color:#3a3a3a;border:1px solid #1a1a1a;');
-        btn.innerHTML = '⚔ +1 Conscrit (#'+(window._conscritBuyCount+1)+') <span style="float:right">'+cost+'🪙</span>';
-        if (canBuy) btn.onclick = () => { gold -= cost; conscrit++; window._conscritBuyCount++; addLog('⚔ Conscrit acheté ! ('+conscrit+' total)'); updateStats(); renderTaxPanel(); };
-        specialWrap.appendChild(btn);
     }
 
     if (specialWrap.children.length > 0) el.appendChild(specialWrap);
@@ -6154,6 +6160,18 @@ function calcMonolitheCost() {
     const { vis } = calcScoutVisibility();
     // vis 3 → 200 Mana, +100 par point manquant sous 3
     return 200 + Math.max(0, 3 - vis) * 100;
+}
+
+function doCityHeal() {
+    if (gold < 30 || mana < 20 || avatarHp >= avatarMaxHp) {
+        addLog('⛪ Soin impossible — ressources insuffisantes ou HP au maximum.');
+        return;
+    }
+    gold -= 30; mana -= 20;
+    const h = Math.min(3, avatarMaxHp - avatarHp);
+    avatarHp += h;
+    addLog('⛪ Soin de l\'Église ! +'+h+' HP ('+avatarHp+'/'+avatarMaxHp+')');
+    updateStats();
 }
 
 function doMonolithScout() {
@@ -8826,7 +8844,9 @@ function confirmClassChoice(key) {
     if (!m.legendaryOptions) m.legendaryOptions = {};
 
     // Rembourser les poussières dépensées dans les compétences
-    const skillLevels = (m.hero && m.hero.skillLevels) || {};
+    if (!m.hero) m.hero = {};
+    if (!m.hero.skillLevels) m.hero.skillLevels = {};
+    const skillLevels = m.hero.skillLevels;
     let refund = 0;
     const SKILL_DEFS_REF = [
         { id:'Soin',        baseCost:4, upgCost:3 },
@@ -8842,8 +8862,8 @@ function confirmClassChoice(key) {
             skillLevels[sk.id] = 0;
         }
     });
-    if (m.hero) m.hero.skillLevels = skillLevels;
     if (refund > 0) { m.dust = (m.dust || 0) + refund; }
+    addLog('✦ Remboursement : +'+refund+' Poussière du Temps');
 
     m.legendaryOptions.classeAvatar = key;
     saveMeta(m); window._meta = m;
@@ -10451,6 +10471,9 @@ body.clarity-on #clarity-resbar {
             <button class="cfr-btn" id="cfr-monolith" style="display:none" onclick="doMonolithScout()">
                 <span class="cfr-ico" style="color:#a0c8e8;font-variant-emoji:text">👁</span> <span id="cfr-monolith-label">Scouter</span>
             </button>
+            <button class="cfr-btn" id="cfr-heal" style="display:none" onclick="doCityHeal()">
+                <span class="cfr-ico" style="color:#a0c8e8;font-size:16px;font-weight:bold">+</span> <span id="cfr-heal-label">Soin héro</span>
+            </button>
             <span class="cfr-spacer"></span>
             <button class="cfr-toggle" id="cfr-toggle">
                 <span id="cfr-toggle-text">Clarté : ON</span>
@@ -10723,7 +10746,22 @@ body.clarity-on #clarity-resbar {
             btn.style.display = available ? '' : 'none';
         }
 
-        // Bouton Monolithe de Vigie
+        // Bouton Soin Église
+        const hbtn = document.getElementById('cfr-heal');
+        if (hbtn) {
+            const hasEglise = window.buildingCounts && (window.buildingCounts['Église']||0) >= 1;
+            if (hasEglise) {
+                hbtn.style.display = '';
+                const lbl = document.getElementById('cfr-heal-label');
+                const hp = window.avatarHp || 0;
+                const maxHp = window.avatarMaxHp || 9;
+                const canHeal = (window.gold||0) >= 30 && (window.mana||0) >= 20 && hp < maxHp;
+                if (lbl) lbl.textContent = 'Soin héro — 30🪙 20✨ ('+hp+'/'+maxHp+')';
+                hbtn.style.opacity = canHeal ? '1' : '0.5';
+            } else {
+                hbtn.style.display = 'none';
+            }
+        }
         const mbtn = document.getElementById('cfr-monolith');
         if (mbtn) {
             const hasMonolith = window.buildingCounts && (window.buildingCounts['Monolithe de Vigie']||0) >= 1;
