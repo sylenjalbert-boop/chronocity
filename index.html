@@ -4815,15 +4815,31 @@ const UNIT_CATALOG = [
 
 // Catalogue de la horde par saison
 const HORDE_UNITS = {
-    gobelin:   { name:'Gobelin',        icon:'👺', atk:2, atkMag:0, traits:['infanterie'],  tier:1 },
-    orc:       { name:'Orc',            icon:'👊', atk:3, atkMag:0, traits:['infanterie'],  tier:1 },
-    archerGob: { name:'Archer Gobelin', icon:'🏹', atk:3, atkMag:0, traits:['distance'],    tier:3 },
-    cavalier:  { name:'Cavalier Orc',   icon:'🐴', atk:4, atkMag:0, traits:['cavalerie'],   tier:2 },
-    vouivre:   { name:'Vouivre',        icon:'🐲', atk:4, atkMag:0, traits:['vol'],          tier:3 },
-    pillard:   { name:'Pillard',        icon:'🔥', atk:2, atkMag:0, traits:['pillard'],      tier:2 },
-    sapeur:    { name:'Sapeur Gobelin', icon:'⛏', atk:2, atkMag:0, traits:['sapeur'],       tier:3 },
-    squelette: { name:'Squelette',      icon:'💀', atk:2, atkMag:0, traits:['mort-vivant'],  tier:4 },
-    demon:     { name:'Démon',          icon:'😈', atk:3, atkMag:4, traits:['demon'],        tier:4 },
+    // ── Tier 1 ──
+    gobelin:   { name:'Gobelin',           icon:'👺', atk:2, atkMag:0, traits:['infanterie'],                      tier:1 },
+    orc:       { name:'Orc',               icon:'👊', atk:3, atkMag:0, traits:['infanterie'],                      tier:1 },
+    // ── Tier 2 ──
+    pillard:   { name:'Pillard',           icon:'🔥', atk:2, atkMag:0, traits:['pillard'],                         tier:2 },
+    cavalier:  { name:'Cavalier Orc',      icon:'🐴', atk:4, atkMag:0, traits:['cavalerie'],                       tier:2 },
+    // ── Tier 3 ──
+    archerGob: { name:'Archer Gobelin',    icon:'🏹', atk:3, atkMag:0, traits:['distance'],                        tier:3 },
+    vouivre:   { name:'Vouivre',           icon:'🐲', atk:4, atkMag:0, traits:['vol'],                             tier:3 },
+    sapeur:    { name:'Sapeur Gobelin',    icon:'⛏', atk:2, atkMag:0, traits:['sapeur'],                          tier:3 },
+    // ── Tier 4 ──
+    squelette: { name:'Squelette',         icon:'💀', atk:2, atkMag:0, traits:['mort-vivant'],                     tier:4 },
+    demon:     { name:'Démon',             icon:'😈', atk:3, atkMag:4, traits:['demon'],                           tier:4 },
+    // ── Tier 5 (S6+) ──
+    cavVet:    { name:'Cavaliers Vétérans',icon:'🐴', atk:6, atkMag:0, traits:['cavalerie','cavalerie'],           tier:5 },
+    vouivreEss:{ name:'Vouivres en Essaim',icon:'🐲', atk:6, atkMag:0, traits:['vol','vol'],                       tier:5 },
+    legionSq:  { name:'Légion Squelette',  icon:'💀', atk:5, atkMag:0, traits:['mort-vivant','mort-vivant','distance'], tier:5 },
+    // ── Tier 6 (S8+) ──
+    hordeAby:  { name:'Horde des Abysses', icon:'😈', atk:7, atkMag:2, traits:['demon','demon','pillard'],         tier:6 },
+    cavalcInf: { name:'Cavalcade Infernale',icon:'🐴',atk:8, atkMag:0, traits:['cavalerie','cavalerie','vol'],     tier:6 },
+    corpsSiege:{ name:'Corps de Siège Maudit',icon:'⛏',atk:6,atkMag:0,traits:['mort-vivant','mort-vivant','sapeur','sapeur'], tier:6 },
+    // ── Tier 7 (S10+) ──
+    gardeAby:  { name:'Garde des Abysses', icon:'😈', atk:10,atkMag:0, traits:['demon','demon','demon','cavalerie'],tier:7 },
+    nueeNecro: { name:'Nuée Nécromantique',icon:'💀', atk:8, atkMag:3, traits:['mort-vivant','mort-vivant','mort-vivant','vol','vol'], tier:7 },
+    vagueSiege:{ name:'Vague de Siège',    icon:'⛏', atk:9, atkMag:0, traits:['pillard','pillard','sapeur','sapeur','cavalerie'], tier:7 },
 };
 
 // Règles de contre (trait défensif → trait offensif contré)
@@ -4839,12 +4855,14 @@ const COUNTER_RULES = {
 
 // Bonus offensifs si non contré
 const HORDE_BONUS = {
-    'cavalerie':   (u) => u.atk,       // ATK ×2 (bonus = +1× ATK en plus de la base)
-    'vol':         (u) => 0,            // effet spécial
-    'distance':    (u) => u.atk,       // ATK ×2
-    'pillard':     (u) => 0,
-    'mort-vivant': (u) => 0,
-    'demon':       (u) => 0,
+    'cavalerie':   (u) => u.atk,        // ATK ×2 (bonus = +1× ATK en plus de la base)
+    'vol':         (u) => 0,             // effet spécial : détruit unité ville avant combat
+    'distance':    (u) => u.atk,         // ATK ×2
+    'pillard':     (u) => 0,             // effet spécial : détruit bâtiment
+    'mort-vivant': (u) => 0,             // effet spécial : détruit unité ville
+    'demon':       (u) => 0,             // effet spécial : neutralise infanterie
+    'sapeur':      (u) => 0,             // effet spécial : réduit fortifications
+    'infanterie':  (u) => 0,             // pas de bonus offensif
 };
 
 function generateHordeForSeason(season) {
@@ -4853,7 +4871,9 @@ function generateHordeForSeason(season) {
     const tier2 = [HORDE_UNITS.pillard, HORDE_UNITS.cavalier, HORDE_UNITS.gobelin];
     const tier3 = [HORDE_UNITS.vouivre, HORDE_UNITS.archerGob, HORDE_UNITS.cavalier, HORDE_UNITS.sapeur];
     const tier4 = [HORDE_UNITS.squelette, HORDE_UNITS.demon, HORDE_UNITS.vouivre, HORDE_UNITS.cavalier];
-    const allTiers = [...tier1, ...tier2, ...tier3, ...tier4];
+    const tier5 = [HORDE_UNITS.cavVet, HORDE_UNITS.vouivreEss, HORDE_UNITS.legionSq];
+    const tier6 = [HORDE_UNITS.hordeAby, HORDE_UNITS.cavalcInf, HORDE_UNITS.corpsSiege];
+    const tier7 = [HORDE_UNITS.gardeAby, HORDE_UNITS.nueeNecro, HORDE_UNITS.vagueSiege];
 
     const rand = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
     const pick = (pool) => ({...pool[Math.floor(Math.random() * pool.length)]});
@@ -4878,19 +4898,44 @@ function generateHordeForSeason(season) {
         const n3 = rand(2,3), n4 = rand(2,4);
         for(let i=0;i<n3;i++) additions.push(pick(tier3));
         for(let i=0;i<n4;i++) additions.push(pick(tier4));
+    } else if (season === 5) {
+        // 1-2 tier3 + 2-4 tier4
+        const n3 = rand(1,2), n4 = rand(2,4);
+        for(let i=0;i<n3;i++) additions.push(pick(tier3));
+        for(let i=0;i<n4;i++) additions.push(pick(tier4));
+    } else if (season === 6) {
+        // Entrée tier5 : 1-2 tier4 + 2-3 tier5
+        const n4 = rand(1,2), n5 = rand(2,3);
+        for(let i=0;i<n4;i++) additions.push(pick(tier4));
+        for(let i=0;i<n5;i++) additions.push(pick(tier5));
+    } else if (season === 7) {
+        // 1-2 tier4 + 2-3 tier5
+        const n4 = rand(1,2), n5 = rand(2,3);
+        for(let i=0;i<n4;i++) additions.push(pick(tier4));
+        for(let i=0;i<n5;i++) additions.push(pick(tier5));
+    } else if (season === 8) {
+        // Entrée tier6 : 1-2 tier5 + 2-3 tier6
+        const n5 = rand(1,2), n6 = rand(2,3);
+        for(let i=0;i<n5;i++) additions.push(pick(tier5));
+        for(let i=0;i<n6;i++) additions.push(pick(tier6));
+    } else if (season === 9) {
+        // 1-2 tier5 + 2-4 tier6
+        const n5 = rand(1,2), n6 = rand(2,4);
+        for(let i=0;i<n5;i++) additions.push(pick(tier5));
+        for(let i=0;i<n6;i++) additions.push(pick(tier6));
     } else {
-        // S5+ : nombre = 3+S à 6+S, répartition progressive vers tiers élevés
-        const n = rand(3 + season, 6 + season);
-        const t1p = Math.max(0,    0.20 - (season - 5) * 0.02);
-        const t2p = Math.max(0.05, 0.30 - (season - 5) * 0.015);
-        const t4p = Math.min(0.70, 0.20 + (season - 5) * 0.04);
-        const t3p = Math.max(0.05, 1 - t1p - t2p - t4p);
+        // S10+ : entrée tier7, progression continue
+        const n = rand(3 + Math.floor(season/2), 5 + Math.floor(season/2));
+        const t5p = Math.max(0,    0.20 - (season - 10) * 0.02);
+        const t6p = Math.max(0.10, 0.40 - (season - 10) * 0.02);
+        const t7p = Math.min(0.80, 0.40 + (season - 10) * 0.04);
+        const t4p = Math.max(0, 1 - t5p - t6p - t7p);
         for (let i = 0; i < n; i++) {
             const r2 = Math.random();
-            if      (r2 < t1p)              additions.push(pick(tier1));
-            else if (r2 < t1p + t2p)        additions.push(pick(tier2));
-            else if (r2 < t1p + t2p + t3p)  additions.push(pick(tier3));
-            else                             additions.push(pick(tier4));
+            if      (r2 < t4p)                     additions.push(pick(tier4));
+            else if (r2 < t4p + t5p)               additions.push(pick(tier5));
+            else if (r2 < t4p + t5p + t6p)         additions.push(pick(tier6));
+            else                                    additions.push(pick(tier7));
         }
     }
     return additions;
@@ -5693,7 +5738,13 @@ function doRevealTile() {
         return;
     }
     const unrevealedIdxs = tileState.map((_,i)=>i).filter(i=>i!==12&&!tileState[i].revealed);
-    if (unrevealedIdxs.length === 0) return;
+    if (unrevealedIdxs.length === 0) {
+        addLog("🗺 Toutes les tuiles ont déjà été révélées.");
+        // Désactiver le bouton proprement
+        const btn = document.getElementById('btn-reveal-tile');
+        if (btn) btn.disabled = true;
+        return;
+    }
     setTurnProcessing(true);
     // Choisir une tuile aléatoire non révélée
     const idx = unrevealedIdxs[Math.floor(Math.random()*unrevealedIdxs.length)];
@@ -7519,7 +7570,7 @@ function cleanForSave(obj) {
 
 function getGameState() {
     return {
-        version: '0.14',
+        version: '0.15',
         date: new Date().toISOString(),
         currentTurn, currentSeason,
         gold, mana, population, dust,
