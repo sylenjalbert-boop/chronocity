@@ -159,8 +159,8 @@
         .dng-hp-text{font-size:11px;color:var(--text-m);}
         .dng-emoji{font-size:60px;line-height:1;}
         .dng-stats{font-size:12px;color:#c8e0ff;text-align:center;font-family:'Cinzel',serif;letter-spacing:0.3px;}
-        .dng-dmg{position:absolute;font-family:'Cinzel',serif;font-size:28px;font-weight:900;pointer-events:none;z-index:99;animation:floatDmg 1.0s cubic-bezier(.2,.8,.4,1) forwards;text-shadow:-2px -2px 0 #000,2px -2px 0 #000,-2px 2px 0 #000,2px 2px 0 #000,0 0 12px currentColor;letter-spacing:1px;}
-        @keyframes floatDmg{0%{opacity:1;transform:translateY(0) scale(1.3)}40%{opacity:1;transform:translateY(-20px) scale(1.0)}100%{opacity:0;transform:translateY(-55px) scale(0.8)}}
+        .dng-dmg{position:absolute;font-family:'Cinzel',serif;font-size:52px;font-weight:900;pointer-events:none;z-index:99;animation:floatDmg 1.4s cubic-bezier(.2,.8,.4,1) forwards;text-shadow:-2px -2px 0 #000,2px -2px 0 #000,-2px 2px 0 #000,2px 2px 0 #000,0 0 12px currentColor;letter-spacing:1px;}
+        @keyframes floatDmg{0%{opacity:1;transform:translateY(0) scale(1.5)}30%{opacity:1;transform:translateY(-28px) scale(1.1)}70%{opacity:1;transform:translateY(-50px) scale(1.0)}100%{opacity:0;transform:translateY(-90px) scale(0.7)}}
         @keyframes recoilRight{0%{transform:translateX(0)}20%{transform:translateX(18px)}60%{transform:translateX(-6px)}100%{transform:translateX(0)}}
         @keyframes recoilLeft{0%{transform:translateX(0)}20%{transform:translateX(-18px)}60%{transform:translateX(6px)}100%{transform:translateX(0)}}
         .recoil-right{animation:recoilRight 0.35s ease !important;}
@@ -172,6 +172,29 @@
         .dng-btn-attack{background:linear-gradient(135deg,#5a0e0e,#3a0808);color:#ffd0d0;border:1px solid var(--red-l);}
         .dng-btn-skill{background:linear-gradient(135deg,#0e1e50,#182870);color:#a0c8ff;border:1px solid #3a5aaa;}
         .dng-btn-flee{background:var(--bg-card);color:var(--text-m);border:1px solid var(--border);}
+        
+        /* ── Effets spéciaux donjon ── */
+        #dng-effect-overlay {
+            position:fixed; top:0; left:0; width:100%; height:100%;
+            display:flex; flex-direction:column; align-items:center; justify-content:center;
+            pointer-events:none; z-index:99999;
+            opacity:0;
+        }
+        #dng-effect-overlay.active { animation: dngEffectAnim 0.9s cubic-bezier(.2,.8,.4,1) forwards; }
+        @keyframes dngEffectAnim {
+            0%   { opacity:0; transform:scale(0.4); }
+            20%  { opacity:1; transform:scale(1.15); }
+            50%  { opacity:1; transform:scale(1.0); }
+            80%  { opacity:1; transform:scale(1.0); }
+            100% { opacity:0; transform:scale(1.4); }
+        }
+        #dng-effect-icon  { font-size:90px; line-height:1; filter:drop-shadow(0 0 30px currentColor); }
+        #dng-effect-label {
+            font-family:'Cinzel',serif; font-weight:900; font-size:32px; letter-spacing:3px;
+            text-shadow: 0 0 20px currentColor, -2px -2px 0 #000, 2px 2px 0 #000;
+            margin-top:8px;
+        }
+
         #dungeon-log{background:var(--bg-card);border-top:1px solid var(--border);padding:7px 14px;height:86px;overflow-y:auto;font-size:11px;line-height:1.7;}
         .dlog-good{color:var(--teal-l);}.dlog-bad{color:var(--red-l);}.dlog-info{color:#8888cc;}.dlog-loot{color:var(--gold-l);}
         #door-screen{display:none;position:absolute;top:0;left:0;width:100%;height:100%;background:#06040a;z-index:10;flex-direction:column;align-items:center;justify-content:center;gap:18px;padding:18px;}
@@ -539,7 +562,7 @@
 <div id="home-screen" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:#06040a;z-index:20000;flex-direction:column;align-items:center;justify-content:center;gap:20px">
     <div style="text-align:center;margin-bottom:10px">
         <div style="font-family:Cinzel,serif;font-size:28px;color:#c0a060;letter-spacing:3px;text-shadow:0 0 20px rgba(180,140,60,0.4)">⚔ Chronocity — A Rogue City Builder</div>
-        <div style="font-size:11px;color:#4a3a5a;margin-top:6px;letter-spacing:2px">VERSION 0.15</div>
+        <div style="font-size:11px;color:#4a3a5a;margin-top:6px;letter-spacing:2px">VERSION 0.29</div>
     </div>
     <div id="home-menu" style="display:flex;flex-direction:column;gap:10px;width:min(340px,90vw)">
         <button onclick="homeLoad()" style="width:100%;padding:16px 0;font-family:Cinzel,serif;font-size:14px;cursor:pointer;border-radius:8px;background:linear-gradient(135deg,#1a1030,#2a1a40);color:#c080ff;border:1px solid #5040a0">📂 Charger une partie</button>
@@ -810,6 +833,7 @@
 
 <!-- ===== ÉCRAN DONJON ===== -->
 <div id="dungeon-screen">
+<div id="dng-effect-overlay"><div id="dng-effect-icon"></div><div id="dng-effect-label"></div></div>
     <div id="dungeon-header">
         <div id="dungeon-title">🏰 Donjon</div>
         <div class="dungeon-progress" id="dungeon-progress"></div>
@@ -976,7 +1000,7 @@
 <!-- Frise de progression -->
 <div id="timeline">
     <div id="timeline-season">Saison 1</div>
-    <div style="font-family:Cinzel,serif;font-size:9px;color:#3a3050;margin-left:auto;padding-left:8px;white-space:nowrap">v0.15</div>
+    <div style="font-family:Cinzel,serif;font-size:9px;color:#3a3050;margin-left:auto;padding-left:8px;white-space:nowrap">v0.29</div>
     <div id="timeline-steps"></div>
     <button onclick="toggleSaveMenu()" style="background:linear-gradient(135deg,#1a1030,#2a1a40);border:1px solid #4a3060;color:#c0a060;font-size:14px;cursor:pointer;padding:2px 8px;border-radius:5px;white-space:nowrap;flex-shrink:0" title="Sauvegardes">💾 Save</button>
     <button onclick="toggleMetaSummary()" style="background:linear-gradient(135deg,#101a10,#1a2a1a);border:1px solid #2a5a2a;color:#4cffaa;font-size:14px;cursor:pointer;padding:2px 8px;border-radius:5px;white-space:nowrap;flex-shrink:0" title="Résumé méta">✦ Méta</button>
@@ -1776,7 +1800,7 @@ function openGoblinFight() {
     dungeonState._isGoblinFight = true;
 
     dungeonState.curseActive = false;
-    dungeonState.poisonActive = false;
+    dungeonState.poisonStacks = [];
     dungeonState.chosenDoorLabel = 'A'; // défaut
     dungeonState.noFleeNext = false;
     dungeonState.collectedLoot = [];
@@ -2001,19 +2025,19 @@ const META_DEFAULTS = {
     // Achats ville
     city: {
         power: 0, fortif: 0,  // Tier I
+        gold: 0, mana: 0, pop: 0, // Tier I : ressources de départ
         conscrit: 0,           // Tier II
         garrison: [],          // Tier III : unités de départ
         space: 0               // Tier IV
     }
 };
 
-// Coût n-ième achat pour un tier (suite : base, base+3, base+7, base+12, base+18...)
-// Différences : +3, +4, +5, +6... (triangulaire)
+// Suite de Fibonacci (termes impairs) : 2, 5, 13, 34, 89, 233, 610...
+// Coût du n-ième achat (0-indexé) = FIB_SEQ[n] + (tier - 1)
+const FIB_SEQ = [2, 5, 13, 34, 89, 233, 610, 1597, 4181, 10946];
 function metaCost(tier, n) {
-    const base = [0, 2, 4, 7, 10][tier]; // tier 1..4
-    let cost = base;
-    for (let i = 0; i < n; i++) cost += 3 + i;
-    return cost;
+    const fib = FIB_SEQ[Math.min(n, FIB_SEQ.length - 1)];
+    return fib + (tier - 1);
 }
 
 // Coût du niveau héros : 10, 25, 50, 90, 150, 240...
@@ -2384,7 +2408,7 @@ const TRAP_ROOMS = [
       resolve: () => { atk=Math.max(1,atk-1); dungeonState.curseActive=true; return 'ATK -1 (donjon)'; } },
     { type:'piege_poison', emoji:'🌫', name:'Piège — Brume empoisonnée',
       desc:'Un nuage verdâtre vous envahit les poumons.',
-      resolve: () => { dungeonState.poisonActive=true; dungeonState.poisonRoundsLeft=3; return '-1 HP/round pendant 3 rounds'; } },
+      resolve: () => { dungeonState.poisonStacks.push({roundsLeft:3}); return '-1 HP/round pendant 3 rounds'; } },
     { type:'piege_effondrement', emoji:'🪨', name:'Piège — Effondrement',
       desc:'Des pierres bloquent la sortie derrière vous !',
       resolve: () => { dungeonState.noFleeNext=true; return 'Fuite bloquée (prochaine salle)'; } },
@@ -2438,12 +2462,12 @@ let dungeonState = {
     pendingAfterDungeon: null,
     collectedLoot: [],
     buttonsLocked: false,
-    poisonActive: false,
-    poisonRoundsLeft: 0,
+    poisonStacks: [],  // [{roundsLeft:3}, ...] un stack par touche empoisonnée
     stunNext: false,
     dragonBreathCounter: 0,
     licheAtkReduction: 0,
     roundCounter: 0,       // compte les rounds dans la salle courante
+    playerActionsLeft: 1,  // actions restantes au joueur ce round
 };
 
 function dngLog(msg, cls='') {
@@ -2467,7 +2491,7 @@ function openDungeon(afterCallback) {
     dungeonState.visitedRooms = new Array(pool.length).fill(false);
     dungeonState.remainingRooms = pool.length;
     dungeonState.curseActive = false;
-    dungeonState.poisonActive = false;
+    dungeonState.poisonStacks = [];
     dungeonState.chosenDoorLabel = 'A';
     dungeonState.noFleeNext = false;
     dungeonState.collectedLoot = [];
@@ -2505,7 +2529,7 @@ function showDoorChoice() {
         ? `Donjon — ${pool.length} salles vous attendent`
         : `Salle ${done+1}/${pool.length} — Choisissez votre porte`;
     document.getElementById('door-subtitle').textContent =
-        dungeonState.poisonActive ? '☠ Poison actif : -1 HP/round' :
+        dungeonState.poisonStacks && dungeonState.poisonStacks.length > 0 ? '☠ Poison x'+dungeonState.poisonStacks.length+' : -'+dungeonState.poisonStacks.length+' HP/round' :
         dungeonState.curseActive  ? '🔮 Malédiction : ATK -1' : '';
 
     if (remaining.length === 0) {
@@ -2902,22 +2926,19 @@ function dngStartAnim() {
 }
 
 function dngAutoMiss() {
-    // Timeout : le joueur n'a pas cliqué → raté + riposte
+    // Timeout : le joueur n'a pas cliqué → raté
     const rb=document.getElementById('dng-result');
     if(rb){rb.className='dng-r-miss';rb.textContent='⏱ Trop lent — raté !';}
     dngPushHist(dngTiming.histPlayer,'—',null);
     dngRenderHist();
     dngFlashBar('#400000');
     dngLog('Vous hésitez trop — attaque ratée !','dlog-info');
-    // Riposte ennemie après auto-miss
     setTimeout(()=>{
-        if(dungeonState.enemies && dungeonState.enemies.front) {
-            const allE = [...dungeonState.enemies.front,...dungeonState.enemies.back].filter(e=>e.hp>0);
-            allE.forEach(e=>{ enemyAttack(e); });
+        dungeonState.playerActionsLeft = Math.max(0, (dungeonState.playerActionsLeft || 1) - 1);
+        if (dungeonState.playerActionsLeft > 0) {
+            dngShowAttackBtn(true); updateGlyphButtons(); return;
         }
-        applyHpUpdate();
-        if(dungeonState.avatarHp<=0){setTimeout(dungeonAvatarDied,300);return;}
-        finishRound();
+        startEnemyPhase();
     },400);
 }
 
@@ -3042,7 +3063,8 @@ function dungeonBarClick() {
             const healAmt = 1 + healLvl;
             dungeonState.avatarHp = Math.min(dungeonState.avatarMaxHp, dungeonState.avatarHp + healAmt);
             avatarHp = dungeonState.avatarHp;
-            dngLog('⚔ Coup parfait ! +'+healAmt+' HP', 'dlog-good');
+            dngLog('⚔ Second Souffle ! +'+healAmt+' HP', 'dlog-good');
+            dngShowEffect('💚', '+'+healAmt+' HP', '#4cffaa');
         }
     }
     dngPushHist(dngTiming.histPlayer,zlabel,null);
@@ -3054,7 +3076,9 @@ function dungeonBarClick() {
     // Bloquer rang arrière seulement si le rang avant n'est pas vide ET pas de distance
     if (_targetIsBack && _front.length > 0 && !avatarRanged) {
         dngLog('⚠ Cible au rang arrière — arme à distance requise !', 'dlog-bad');
-        finishRound(); return;
+        dungeonState.playerActionsLeft = Math.max(0, (dungeonState.playerActionsLeft||1) - 1);
+        if (dungeonState.playerActionsLeft > 0) { dngShowAttackBtn(true); updateGlyphButtons(); return; }
+        startEnemyPhase(); return;
     }
     if(dmg>0){
         dungeonState.enemy.hp-=dmg;
@@ -3081,12 +3105,11 @@ function dungeonBarClick() {
             const prev = dungeonState.enemy._crushingDef || 0;
             dungeonState.enemy._crushingDef  = prev + defRed;
             dungeonState.enemy._crushingProt = (dungeonState.enemy._crushingProt||0) + protRed;
-            if (prev === 0) {
-                let msg = '🔨 Crushing Blow ! -'+defRed+' DEF';
-                if (protRed) msg += ' -'+protRed+' Prot';
-                msg += ' par touche (niv.'+crushLvl+').';
-                dngLog(msg, 'dlog-good');
-            }
+            const _ce = dungeonState.enemy;
+            let crushMsg = '🔨 Crushing Blow ! DEF '+_ce.name+' : '+Math.max(0,(_ce.def||3)-(_ce._crushingDef||0));
+            if (protRed) crushMsg += ' | Prot : '+Math.max(0,(_ce.protection||0)-(_ce._crushingProt||0));
+            dngLog(crushMsg, 'dlog-good');
+            dngShowEffect('🔨', 'CRUSH !', '#ff6060');
             setTimeout(function(){ dngSetupZones(); }, 50);
         }
 
@@ -3112,7 +3135,7 @@ function dungeonBarClick() {
                 var splashCount = 0;
                 allE.forEach(function(e) {
                     if (e === target) return;
-                    dealDamageToEnemy(e, splashDmg);
+                    dealDamageToEnemy(e, splashDmg, '#ff6040');
                     splashCount++;
                 });
                 if (splashCount > 0) dngLog('💥 Flèche explosive : -'+splashDmg+' HP aux '+splashCount+' ennemi(s) adjacents !', 'dlog-good');
@@ -3123,7 +3146,7 @@ function dungeonBarClick() {
         if (avatarScythe) {
             dungeonState.enemies.front.forEach(function(e) {
                 if (e === dungeonState.enemy || e.hp <= 0) return;
-                dealDamageToEnemy(e, dmg);
+                dealDamageToEnemy(e, dmg, '#ff8040');
                 dngLog('⚰ Faux : ' + e.name + ' -' + dmg + ' HP', 'dlog-good');
             });
         }
@@ -3169,122 +3192,37 @@ function dungeonBarClick() {
         // Re-render complet après l'animation recoil
         setTimeout(function(){ renderEnemyPanel(); }, 400);
     }
-    // Riposte : tous les ennemis vivants attaquent séquentiellement
+    // Gestion actions joueur
     setTimeout(function() {
         if(rageActive){ rageRounds--; if(rageRounds<=0){ rageActive=false; dngLog('Rage épuisée.','dlog-info'); } }
         if(dungeonState.licheAtkReduction > 0) dngSetupZones();
 
+        // Si tous les ennemis sont morts, pas de phase ennemis
         const living = getAllLivingEnemies();
-        if (living.length === 0) { finishRound(); return; }
+        if (living.length === 0) { endRound(); return; }
 
+        // Consommer 1 action joueur
+        dungeonState.playerActionsLeft = Math.max(0, (dungeonState.playerActionsLeft || 1) - 1);
+
+        if (dungeonState.playerActionsLeft > 0) {
+            // Il reste des actions : réafficher le bouton d'attaque
+            dngShowAttackBtn(true);
+            updateGlyphButtons();
+            return;
+        }
+
+        // Plus d'actions joueur → phase ennemis
         // Freeze : si l'attaque est un miss et qu'il y a des ennemis gelés, pas de riposte
         const anyFrozen = living.some(function(e){ return e._frozen; });
         const wasMiss = zone === 'miss';
         if (wasMiss && anyFrozen) {
             dngLog('❄ Attaque ratée — les ennemis gelés ne ripostent pas !', 'dlog-good');
-            finishRound();
+            endRound();
             return;
         }
 
-        // Fonction récursive : chaque ennemi attaque à son tour (les gelés sont bloqués dans enemyAttack)
-        function attackNext(idx) {
-            if (idx >= living.length) {
-                applyHpUpdate();
-                if (dungeonState.avatarHp <= 0) { setTimeout(dungeonAvatarDied, 300); return; }
-                finishRound();
-                return;
-            }
-            if (dungeonState.avatarHp <= 0) { setTimeout(dungeonAvatarDied, 300); return; }
+        startEnemyPhase();
 
-            const room = living[idx];
-
-            // Stun : ennemi bloqué, ne riposte pas
-            if (room._stunBlock) {
-                dngLog('💫 '+room.name+' est stun et ne riposte pas !', 'dlog-good');
-                setTimeout(function(){ attackNext(idx+1); }, 200);
-                return;
-            }
-            if (room.special === 'breath') {
-                dungeonState.dragonBreathCounter++;
-                if (dungeonState.dragonBreathCounter % 4 === 0) {
-                    const breathDmg = Math.max(1, room.dmg - protection);
-                    avatarTakeDamage(breathDmg, 'dragon');
-                    dngLog('🔥 '+room.name+' souffle ! -'+breathDmg+' HP', 'dlog-bad');
-                    applyHpUpdate();
-                    if (dungeonState.avatarHp <= 0) { setTimeout(dungeonAvatarDied, 300); return; }
-                    setTimeout(function(){ attackNext(idx+1); }, 200);
-                    return;
-                }
-            }
-
-            const et  = hitThresholdForEnemy(room, def);
-            const er  = rollDie(6);
-            const ehit = er >= et;
-            dngPushHist(dngTiming.histEnemy, er, et+'+');
-            dngRenderHist();
-
-            animEnemyDie(er, et, function() {
-                if (ehit) {
-                    const ed = calcDamage(room.dmg, protection);
-                    avatarTakeDamage(ed, 'bar_enemy');
-                    dngLog(room.emoji+' '+room.name+' : dé '+er+' ('+et+'+) ✓ → -'+ed+' HP', 'dlog-bad');
-
-                    if (room.special === 'poison' && !dungeonState.poisonActive) {
-                        dungeonState.poisonActive = true;
-                        dungeonState.poisonRoundsLeft = 3;
-                        dngLog("🕷 Venin ! Poison actif (3 rounds)", 'dlog-bad');
-                        dungeonShowStatus('☠︎ Empoisonné');
-                    }
-                    if (room.special === 'lifesteal') {
-                        room.hp = Math.min(room.maxHp, room.hp + ed);
-                        dngLog('🧛 Vampire se régénère : +'+ed+' HP', 'dlog-bad');
-                        renderEnemyPanel();
-                    }
-                    if (room.special === 'atkreduction') {
-                        dungeonState.licheAtkReduction++;
-                        dngLog('💀 Malédiction Liche ! ATK -'+dungeonState.licheAtkReduction, 'dlog-bad');
-                    }
-                    if (room.special === 'stun' && er === 6 && !avatarImmuneStun) {
-                        dngLog('💫 STUN ! '+room.name+' immobilise l\'avatar — tous les ennemis attaquent !', 'dlog-bad');
-                        dungeonShowStatus('💫 Stun !');
-                        // Tous les autres monstres vivants attaquent immédiatement
-                        const stunLiving = getAllLivingEnemies().filter(function(e){ return e !== room; });
-                        stunLiving.forEach(function(e2) {
-                            const et2 = hitThresholdForEnemy(e2, def);
-                            const er2 = rollDie(6);
-                            if (er2 >= et2) {
-                                const ed2 = calcDamage(e2.dmg, protection);
-                                avatarTakeDamage(ed2, 'stun_multi');
-                                dngLog(e2.emoji+' '+e2.name+' profite du stun : -'+ed2+' HP', 'dlog-bad');
-                                // Effets spéciaux des autres monstres pendant le stun
-                                if (e2.special === 'lifesteal') {
-                                    e2.hp = Math.min(e2.maxHp, e2.hp + ed2);
-                                    dngLog('🧛 '+e2.name+' se régénère pendant le stun : +'+ed2+' HP', 'dlog-bad');
-                                }
-                                if (e2.special === 'poison' && !dungeonState.poisonActive) {
-                                    dungeonState.poisonActive = true;
-                                    dungeonState.poisonRoundsLeft = 3;
-                                    dngLog('🕷 Venin pendant le stun ! (3 rounds)', 'dlog-bad');
-                                }
-                            } else {
-                                dngLog(e2.emoji+' '+e2.name+' rate pendant le stun', 'dlog-info');
-                            }
-                        });
-                        applyHpUpdate();
-                    } else if (room.special === 'stun' && er === 6 && avatarImmuneStun) {
-                        dngLog('💫 Stun résisté ! (Ceinture anti-stun)', 'dlog-good');
-                    }
-                } else {
-                    dngLog(room.emoji+' '+room.name+' : dé '+er+' ('+et+'+) ✗ raté', 'dlog-info');
-                }
-
-                if (dungeonState.avatarHp <= 0) { applyHpUpdate(); setTimeout(dungeonAvatarDied, 300); return; }
-                // Petit délai entre chaque attaque ennemie
-                setTimeout(function(){ attackNext(idx+1); }, living.length > 1 ? 400 : 0);
-            });
-        }
-
-        attackNext(0);
     }, 300);
 }
 
@@ -3775,6 +3713,39 @@ function enemyAttack(room) {
         }
         return;
     }
+    // ── Souffle dragon : attaque automatique tous les 4 rounds ──
+    if (room.special === 'breath') {
+        dungeonState.dragonBreathCounter = (dungeonState.dragonBreathCounter || 0) + 1;
+        const roundsToNext = 4 - (dungeonState.dragonBreathCounter % 4);
+        if (dungeonState.dragonBreathCounter % 4 === 0) {
+            const breathDmg = Math.max(1, room.dmg); // ignore protection
+            avatarTakeDamage(breathDmg, 'dragon');
+            dngLog('🔥 '+room.name+' souffle ! -'+breathDmg+' HP (ignore protection)', 'dlog-bad');
+            dngShowEffect('🔥', 'SOUFFLE !', '#ff6020');
+            if (dungeonState.avatarHp <= 0) { setTimeout(dungeonAvatarDied, 300); return; }
+            return; // le souffle remplace l'attaque normale ce round
+        } else {
+            dngLog('🔥 Souffle dans '+roundsToNext+' round(s)...', 'dlog-info');
+            return; // pas d'attaque normale les autres rounds
+        }
+    }
+
+        // ── Souffle dragon : attaque automatique tous les 4 rounds ──
+    if (room.special === 'breath') {
+        dungeonState.dragonBreathCounter = (dungeonState.dragonBreathCounter || 0) + 1;
+        const roundsToNext = 4 - (dungeonState.dragonBreathCounter % 4);
+        if (dungeonState.dragonBreathCounter % 4 === 0) {
+            const breathDmg = Math.max(1, room.dmg);
+            avatarTakeDamage(breathDmg, 'dragon');
+            dngLog('🔥 '+room.name+' souffle ! -'+breathDmg+' HP (ignore protection)', 'dlog-bad');
+            dngShowEffect('🔥', 'SOUFFLE !', '#ff6020');
+            if (dungeonState.avatarHp <= 0) { setTimeout(dungeonAvatarDied, 300); }
+        } else {
+            dngLog('🔥 Souffle dans '+roundsToNext+' round(s)...', 'dlog-info');
+        }
+        return;
+    }
+
     const curseReduction = room._curse || 0;
     const effectiveAtk = Math.max(1, room.atk - curseReduction);
     if (curseReduction > 0) dngLog('☋ Malédiction : ATK '+room.name+' -'+curseReduction+' ('+effectiveAtk+' effectif)', 'dlog-good');
@@ -3788,24 +3759,29 @@ function enemyAttack(room) {
         avatarTakeDamage(ed, 'enemy');
         dngLog(room.name+' : dé '+er+' ('+et+'+) ✓ → -'+ed+' dégâts','dlog-bad');
         // Effets spéciaux
-        if(room.special==='poison'&&!dungeonState.poisonActive){
-            dungeonState.poisonActive=true;
-            dungeonState.poisonRoundsLeft=3;
-            dngLog("Venin d\'araignée ! Poison actif (3 rounds)","dlog-bad");
-            dungeonShowStatus('☠︎ Empoisonné');
+        if(room.special==='poison'){
+            dungeonState.poisonStacks.push({roundsLeft:3});
+            dngLog('🕷 Venin ! +1 stack poison ('+dungeonState.poisonStacks.length+' dégât(s)/round)','dlog-bad');
+            dngShowEffect('☠', 'VENIN x'+dungeonState.poisonStacks.length, '#40ff80');
+            dungeonShowStatus('☠︎ Poison x'+dungeonState.poisonStacks.length);
         }
         if(room.special==='lifesteal'){
             room.hp=Math.min(room.maxHp,room.hp+ed);
             dngLog('🧛 Vampire se régénère : +'+ed+' HP','dlog-bad');
+            dngShowEffect('🧛', 'DRAIN +'+ed, '#c060ff');
             document.getElementById('dng-enemy-hp-text').textContent='HP: '+room.hp+'/'+room.maxHp;
             dungeonUpdateHpBar('enemy',room.hp,room.maxHp);
         }
         if(room.special==='atkreduction'){
             dungeonState.licheAtkReduction++;
-            dngLog('💀 Malédiction : ATK -'+dungeonState.licheAtkReduction,'dlog-bad');
+            atk = Math.max(1, atk - 1);
+            dngLog('💀 Malédiction Liche ! ATK héro : '+atk,'dlog-bad');
+            dngShowEffect('💀', 'ATK -1', '#8060ff');
+            dngSetupZones();
         }
         if(room.special==='stun'&&er===6){
             dngLog('👹 STUN ! Troll attaque à nouveau !','dlog-bad');
+            dngShowEffect('💫', 'STUN !', '#ffe060');
             dungeonShowStatus('💫 Stun !');
             applyHpUpdate();
             if(dungeonState.avatarHp<=0) return;
@@ -3824,16 +3800,14 @@ function enemyAttack(room) {
 
 function applyHpUpdate(){
     // Poison
-    if(dungeonState.poisonActive){
-        dungeonState.avatarHp=Math.max(1,dungeonState.avatarHp-1);
-        avatarHp=dungeonState.avatarHp;
-        dungeonState.poisonRoundsLeft = (dungeonState.poisonRoundsLeft || 1) - 1;
-        dngLog('☠ Poison : -1 HP (' + dungeonState.poisonRoundsLeft + ' round(s) restant)','dlog-bad');
-        if (dungeonState.poisonRoundsLeft <= 0) {
-            dungeonState.poisonActive = false;
-            dungeonState.poisonRoundsLeft = 0;
-            dngLog('☠ Poison dissipé.', 'dlog-info');
-        }
+    if(dungeonState.poisonStacks && dungeonState.poisonStacks.length > 0){
+        const _dmg = dungeonState.poisonStacks.length;
+        dungeonState.avatarHp = Math.max(0, dungeonState.avatarHp - _dmg);
+        avatarHp = dungeonState.avatarHp;
+        dungeonState.poisonStacks.forEach(s => s.roundsLeft--);
+        dungeonState.poisonStacks = dungeonState.poisonStacks.filter(s => s.roundsLeft > 0);
+        dngLog('☠ Poison : -'+_dmg+' HP ('+dungeonState.poisonStacks.length+' stack(s) restant)','dlog-bad');
+        if (dungeonState.poisonStacks.length <= 0) dngLog('☠ Poison dissipé.', 'dlog-info');
     }
     document.getElementById('dng-avatar-hp-text').textContent='HP: '+Math.max(0,dungeonState.avatarHp)+'/'+dungeonState.avatarMaxHp + (dungeonState._manaArmor ? ' 🔷'+dungeonState._manaArmor : '');
     dungeonUpdateHpBar('avatar',dungeonState.avatarHp,dungeonState.avatarMaxHp);
@@ -3843,9 +3817,19 @@ function applyHpUpdate(){
 
 // Helper : inflige des dégâts à l'avatar en passant par l'armure de mana
 // Helper : inflige des dégâts à un ennemi et brise le freeze si actif
-function dealDamageToEnemy(e, dmg) {
+function dealDamageToEnemy(e, dmg, color) {
     if (!e || dmg <= 0) return;
     e.hp = Math.max(0, e.hp - dmg);
+    // Afficher dégâts visuellement
+    const _col = color || '#4cff8a';
+    const _fi = dungeonState.enemies ? dungeonState.enemies.front.indexOf(e) : -1;
+    const _bi = dungeonState.enemies ? dungeonState.enemies.back.indexOf(e) : -1;
+    if (_fi !== -1 || _bi !== -1) {
+        const _prev = dungeonState.enemy;
+        dungeonState.enemy = e;
+        dungeonShowDmg('enemy', dmg, _col);
+        dungeonState.enemy = _prev;
+    }
     // Brise le freeze
     if (e._frozen) {
         e._frozen = false;
@@ -3880,9 +3864,11 @@ function avatarTakeDamage(dmg, source) {
         if (absorbed > 0) dngLog('🔷 Armure de mana absorbe '+absorbed+' dégâts !', 'dlog-good');
         if (dungeonState._manaArmor <= 0) { dungeonState._manaArmor = 0; dngLog('🔷 Armure de mana brisée !', 'dlog-bad'); }
         if (remaining > 0) { dungeonState.avatarHp -= remaining; dungeonShowDmg('avatar', remaining, '#ff6060'); flashDmgAvatar(); }
+        if (absorbed > 0) { dungeonShowDmg('avatar', absorbed, '#4080ff'); } // mana armor
     } else {
         dungeonState.avatarHp -= dmg;
-        dungeonShowDmg('avatar', dmg, '#ff6060');
+        const _dmgColor = (source==='poison')?'#40ff80':(source==='dragon')?'#ff6020':(source==='stun'||source==='stun_multi')?'#ffe060':'#ff6060';
+        dungeonShowDmg('avatar', dmg, _dmgColor);
         flashDmgAvatar();
     }
     document.getElementById('dng-avatar-hp-text').textContent='HP: '+Math.max(0,dungeonState.avatarHp)+'/'+dungeonState.avatarMaxHp+(dungeonState._manaArmor?' 🔷'+dungeonState._manaArmor:'');
@@ -3893,6 +3879,39 @@ function avatarTakeDamage(dmg, source) {
         dungeonState.avatarHp = 0;
         setTimeout(function(){ if (typeof dungeonAvatarDied === 'function') dungeonAvatarDied(); }, 300);
     }
+}
+
+function startEnemyPhase() {
+    // Phase ennemis : chaque ennemi vivant attaque séquentiellement
+    const living = getAllLivingEnemies();
+    if (living.length === 0) { endRound(); return; }
+
+    function attackSeq(idx) {
+        if (!dungeonState.active) return;
+        if (idx >= living.length) {
+            applyHpUpdate();
+            if (dungeonState.avatarHp <= 0) { setTimeout(dungeonAvatarDied, 300); return; }
+            endRound();
+            return;
+        }
+        if (dungeonState.avatarHp <= 0) { setTimeout(dungeonAvatarDied, 300); return; }
+        const e = living[idx];
+        enemyAttack(e);
+        setTimeout(function(){ attackSeq(idx + 1); }, living.length > 1 ? 350 : 0);
+    }
+    attackSeq(0);
+}
+
+function endRound() {
+    // Fin de round : effets durée, puis reset actions joueur
+    const rb2 = document.getElementById('dng-result'); if (rb2) rb2.textContent = '';
+    dungeonState.roundCounter++;
+    triggerRoundEffects();
+    if (dungeonState.avatarHp <= 0) { setTimeout(dungeonAvatarDied, 300); return; }
+    // Reset actions joueur
+    dungeonState.playerActionsLeft = 1; // 1 par défaut — extensible plus tard
+    dngShowAttackBtn(true);
+    updateGlyphButtons();
 }
 
 function finishRound(triggerRetaliation){
@@ -3935,7 +3954,7 @@ function triggerRoundEffects() {
     if (dungeonState._poisonCloud && dungeonState._poisonCloud > 0) {
         const living = getAllLivingEnemies();
         living.forEach(function(e) {
-            dealDamageToEnemy(e, dungeonState._poisonCloud);
+            dealDamageToEnemy(e, dungeonState._poisonCloud, '#40ff80');
         });
         dngLog('☁ Nuage de poison : -'+dungeonState._poisonCloud+' HP sur tous les ennemis !', 'dlog-good');
         // Retirer _poisoned des ennemis morts
@@ -3981,6 +4000,23 @@ function triggerRoundEffects() {
         }
     }
 
+    // ── Poison cumulatif : -1 HP par stack actif ──
+    if (dungeonState.poisonStacks && dungeonState.poisonStacks.length > 0) {
+        const dmg = dungeonState.poisonStacks.length;
+        avatarTakeDamage(dmg, 'poison');
+        dungeonState.poisonStacks.forEach(s => s.roundsLeft--);
+        dungeonState.poisonStacks = dungeonState.poisonStacks.filter(s => s.roundsLeft > 0);
+        const remaining = dungeonState.poisonStacks.length;
+        dngLog('☠ Poison : -'+dmg+' HP ('+remaining+' stack(s) restant)', 'dlog-bad');
+        dngShowEffect('☠', '-'+dmg+' HP', '#40ff80');
+        if (remaining === 0) {
+            dngLog('☠ Poison dissipé.', 'dlog-info');
+            dungeonShowStatus('');
+        } else {
+            dungeonShowStatus('☠︎ Poison x'+remaining);
+        }
+    }
+
     // Gobelins : appel à l'aide au round 5
     if (dungeonState.roundCounter === 5 && goblins.length > 0) {
         const gobPool = pool.filter(function(m){ return m.name && m.name.toLowerCase().indexOf('gobelin') !== -1; });
@@ -3989,6 +4025,7 @@ function triggerRoundEffects() {
             summon.hp = summon.maxHp;
             if (addEnemyToFight(summon)) {
                 dngLog('🔔 Les Gobelins appellent des renforts ! '+summon.emoji+' '+summon.name+' arrive !', 'dlog-bad');
+                dngShowEffect('🔔', 'RENFORTS !', '#ff4040');
             }
         }
     }
@@ -4003,6 +4040,7 @@ function triggerRoundEffects() {
                     const s = {...skel}; s.hp = s.maxHp; s.special = 'necro_summon';
                     if (addEnemyToFight(s)) {
                         dngLog('💀 Le Nécromancien invoque un Squelette !', 'dlog-bad');
+                        dngShowEffect('💀', 'INVOCATION !', '#8060ff');
                     }
                 }
             }
@@ -4080,8 +4118,8 @@ function dngUpdateCombatUI() {
     }
     statusRow.innerHTML = '';
     const markers = [];
-    if (dungeonState.poisonActive)
-        markers.push({ icon:'☠︎', label:'Poison', rounds: dungeonState.poisonRoundsLeft, color:'#60ff60', bg:'#0a1a0a', border:'#206020' });
+    if (dungeonState.poisonStacks && dungeonState.poisonStacks.length > 0)
+        markers.push({ icon:'☠︎', label:'Poison x'+dungeonState.poisonStacks.length, rounds: Math.max(...dungeonState.poisonStacks.map(s=>s.roundsLeft)), color:'#60ff60', bg:'#0a1a0a', border:'#206020' });
     if (dungeonState._warcryRoundsLeft > 0)
         markers.push({ icon:'❢', label:'Cri de guerre', rounds: dungeonState._warcryRoundsLeft, color:'#ff9060', bg:'#1a0a04', border:'#602010' });
     if (dungeonState._curseRoundsLeft > 0)
@@ -4198,6 +4236,39 @@ function updateGlyphButtons() {
     });
 }
 
+
+// File d'attente pour les effets spéciaux
+const _dngEffectQueue = [];
+let _dngEffectBusy = false;
+
+function dngShowEffect(icon, label, color) {
+    _dngEffectQueue.push({icon, label, color});
+    if (!_dngEffectBusy) _dngPlayNextEffect();
+}
+
+function _dngPlayNextEffect() {
+    if (_dngEffectQueue.length === 0) { _dngEffectBusy = false; return; }
+    _dngEffectBusy = true;
+    const {icon, label, color} = _dngEffectQueue.shift();
+    const ov  = document.getElementById('dng-effect-overlay');
+    const ico = document.getElementById('dng-effect-icon');
+    const lbl = document.getElementById('dng-effect-label');
+    if (!ov || !ico || !lbl) { _dngEffectBusy = false; return; }
+    ico.textContent = icon;
+    lbl.textContent = label;
+    ico.style.color = color;
+    lbl.style.color = color;
+    ov.classList.remove('active');
+    void ov.offsetWidth;
+    ov.classList.add('active');
+    clearTimeout(ov._t);
+    ov._t = setTimeout(function(){
+        ov.classList.remove('active');
+        _dngEffectBusy = false;
+        _dngPlayNextEffect();
+    }, 700);
+}
+
 function dungeonShowStatus(msg){
     const rb=document.getElementById('dng-result');
     if(rb){ rb.className='dng-r-miss'; rb.textContent=msg; }
@@ -4271,7 +4342,7 @@ function dungeonShowDmg(who, amount, color) {
         el.style.left = (20 + Math.random()*40) + '%';
         el.style.top  = '10%';
         cell.appendChild(el);
-        setTimeout(function(){ el.remove(); }, 1100);
+        setTimeout(function(){ el.remove(); }, 1500);
 
         // Recoil sur l'image uniquement
         const imgId = fi !== -1 ? 'dng-monster-img-f'+fi : 'dng-monster-img-b'+bi;
@@ -4292,7 +4363,7 @@ function dungeonShowDmg(who, amount, color) {
         el.style.left = (20 + Math.random()*40) + '%';
         el.style.top  = '10%';
         side.appendChild(el);
-        setTimeout(function(){ el.remove(); }, 1100);
+        setTimeout(function(){ el.remove(); }, 1500);
         const img = side.querySelector('img') || side.querySelector('.dng-emoji');
         if (img) {
             img.classList.remove('recoil-right','recoil-left');
@@ -4329,9 +4400,10 @@ function dungeonUseSkill(type) {
         const clsLvl = avatarClass === 'adventurer' ? (getClassSkillLevel('distortion') || 0) : 0;
         const dmg = 3 + fireLvl + clsLvl;
         const allE = getAllLivingEnemies();
-        allE.forEach(function(e){ e.hp -= dmg; });
+        allE.forEach(function(e){ dealDamageToEnemy(e, dmg, '#a060ff'); });
         dngPushHist(dngTiming.histPlayer,'⏳',null); dngRenderHist();
         dngLog('⏳ Distortion Temporelle ! -'+dmg+' HP à tous les ennemis !', 'dlog-good');
+        dngShowEffect('⏳', 'DISTORTION !', '#a060ff');
         allE.forEach(function(e){ dungeonShowDmg('enemy', dmg, '#a060ff'); });
         renderEnemyPanel();
         const stillAlive = allE.some(function(e){ return e.hp > 0; });
@@ -4342,11 +4414,13 @@ function dungeonUseSkill(type) {
         timingNormalBonus = true;
         dungeonState._blessRoundsLeft = 1 + blessLvl;
         dngLog('🌟 Bénédiction (Niv.'+blessLvl+') ! Zone ×1 → ×1.2 pendant '+(1+blessLvl)+' rounds.', 'dlog-good');
+        dngShowEffect('🌟', 'BÉNÉ !', '#ffd060');
     } else if (type === 'rage') {
         if (rageActive) return;
         const rageLvl = getSkillLevel('Rage') || 1;
         rageActive = true; rageRounds = 1 + rageLvl;
         dngLog('💢 Rage (Niv.'+rageLvl+') ! Dégâts ×2 pendant '+rageRounds+' rounds.', 'dlog-good');
+        dngShowEffect('💢', 'RAGE !', '#ff8040');
     } else if (type === 'heal') {
         const soinLvl = getSkillLevel('Soin') || 1;
         const healAmt = 2 + soinLvl;
@@ -4356,28 +4430,20 @@ function dungeonUseSkill(type) {
         document.getElementById('dng-avatar-hp-text').textContent = 'HP: '+Math.max(0,dungeonState.avatarHp)+'/'+dungeonState.avatarMaxHp+(dungeonState._manaArmor?' 🔷'+dungeonState._manaArmor:'');
         dungeonUpdateHpBar('avatar', dungeonState.avatarHp, dungeonState.avatarMaxHp);
         dngLog('💊 Soin (Niv.'+soinLvl+') ! +'+healed+' HP.', 'dlog-good');
+        dngShowEffect('💊', '+'+healed+' HP', '#4cffaa');
     }
 
     updateGlyphButtons();
 
-    // Riposte ennemie après la compétence
+    // Consommer l'action et lancer la phase ennemis
     setTimeout(function() {
-        const room = dungeonState.enemy;
-        if (!room || room.hp <= 0) { finishRound(); return; }
-        const et = hitThreshold(room.atk, def);
-        const er = rollDie(6);
-        animEnemyDie(er, et, function() {
-            if (er >= et) {
-                const ed = calcDamage(room.dmg, protection);
-                avatarTakeDamage(ed, 'multi');
-                dngLog(room.name+' riposte : dé '+er+' ('+et+'+) ✓ → -'+ed+' HP', 'dlog-bad');
-            } else {
-                dngLog(room.name+' riposte : dé '+er+' ('+et+'+) ✗ raté', 'dlog-info');
-            }
-            applyHpUpdate();
-            if (dungeonState.avatarHp <= 0) { setTimeout(dungeonAvatarDied, 300); return; }
-            finishRound();
-        });
+        const living = getAllLivingEnemies();
+        if (living.length === 0) { endRound(); return; }
+        dungeonState.playerActionsLeft = Math.max(0, (dungeonState.playerActionsLeft || 1) - 1);
+        if (dungeonState.playerActionsLeft > 0) {
+            dngShowAttackBtn(true); updateGlyphButtons(); return;
+        }
+        startEnemyPhase();
     }, 400);
 }
 
@@ -5124,6 +5190,20 @@ function resolveBattle() {
             const idx = Math.floor(Math.random()*cityArmy.length);
             const lost = cityArmy.splice(idx,1)[0];
             addLog('☠ Mort-vivants détruisent : '+lost.icon+' '+lost.name+' !');
+        }
+    }
+
+    // ── Effet SAPEUR : -1 fortification par trait sapeur non contré (min 1) ──
+    const sapeurTraits = hordeArmy.reduce((sum, u) => sum + u.traits.filter(t => t === 'sapeur').length, 0);
+    const antiSapeurCount = antiCounts['anti-sapeur'] || 0;
+    const sapeurNet = Math.max(0, sapeurTraits - antiSapeurCount);
+    if (sapeurNet > 0) {
+        const fortLost = Math.min(sapeurNet, fortifications - 1);
+        if (fortLost > 0) {
+            fortifications -= fortLost;
+            addLog('⛏ Sapeurs détruisent ' + fortLost + ' fortification(s) ! (reste : ' + fortifications + ')');
+        } else {
+            addLog('⛏ Sapeurs : fortifications déjà au minimum (1), aucun effet.');
         }
     }
 
@@ -6953,7 +7033,7 @@ function renderMetaHero() {
         const tierOk = sk.tier <= maxTier;
         const slotOk = owned || unlockedCount < maxSkills;
         const atMax  = lvl >= maxLevel;
-        const cost   = owned ? sk.upgCost + (lvl-1)*2 : sk.baseCost;
+        const cost   = metaCost(1, lvl); // lvl=0 → premier achat, lvl=1 → upgrade...
         const canBuy = tierOk && slotOk && !atMax && dustTotal >= cost;
         const locked = !owned && (!tierOk || !slotOk);
         const btnLabel = owned ? (atMax ? 'Max Niv.'+lvl : '↑ Niv.'+(lvl+1)+' ✨'+cost) : ('Débloquer ✨'+cost);
@@ -6989,7 +7069,7 @@ function renderMetaHero() {
         clsData.skills.forEach(function(sk) {
             const skId = 'cls_' + sk.id;
             const lvl = skillLvls[skId] || 0;
-            const cost = 2 + lvl * 3 + Math.floor(lvl / 2); // coût croissant
+            const cost = metaCost(1, lvl);
             const canBuy = dustTotal >= cost && lvl < maxSkillLvl;
             const isPassive = !!sk.passive;
             const isFree = !!sk.free;
@@ -7040,6 +7120,7 @@ function metaBuySkill(id, cost) {
     if (currentLevel >= maxLevel) return;
     if (m.dust < cost) return;
     m.dust -= cost;
+    runDustSpent += cost;
     m.hero.skillLevels[id] = currentLevel + 1;
     saveMeta(m);
     window._meta = m;
@@ -7059,6 +7140,7 @@ function metaBuyHero(key) {
     const cost = metaCost(tier, val);
     if (m.dust < cost) return;
     m.dust -= cost;
+    runDustSpent += cost;
     m.hero[key] = val + 1;
     saveMeta(m);
     window._meta = m;
@@ -7079,6 +7161,9 @@ function renderMetaCity() {
     const upgrades = [
         { key:'fortif',   tier:1, label:'🏰 Fortification +1', desc:'Commence avec +1 fortification', val: m.city.fortif   },
         { key:'power',    tier:1, label:'⚔ Puissance +1',      desc:'+1 puissance de ville fixe',     val: m.city.power    },
+        { key:'gold',     tier:1, label:'🪙 Or de départ +25',    desc:'Commence avec +25 Or',           val: m.city.gold||0  },
+        { key:'mana',     tier:1, label:'✨ Mana de départ +25',  desc:'Commence avec +25 Mana',         val: m.city.mana||0  },
+        { key:'pop',      tier:1, label:'👥 Pop de départ +25',   desc:'Commence avec +25 Population',   val: m.city.pop||0   },
         { key:'conscrit', tier:2, label:'⚔ Conscrit +1',       desc:'Capacité de recrutement +1',     val: m.city.conscrit },
         { key:'space',    tier:2, label:'▦ Espace +1',         desc:'Commence avec +1 espace',        val: m.city.space    },
     ];
@@ -7108,10 +7193,11 @@ function renderMetaCity() {
 function metaBuyCity(key) {
     const m = getMeta();
     const val = m.city[key] || 0;
-    const tier = {fortif:1,power:1,conscrit:2,space:2}[key] || 1;
+    const tier = {fortif:1,power:1,gold:1,mana:1,pop:1,conscrit:2,space:2}[key] || 1;
     const cost = metaCost(tier, val);
     if (m.dust < cost) return;
     m.dust -= cost;
+    runDustSpent += cost;
     m.city[key] = val + 1;
     saveMeta(m);
     window._meta = m;
@@ -7177,6 +7263,7 @@ function metaBuyHeroLevel() {
     const cost = HERO_LEVEL_COSTS[lvl];
     if (!cost || m.dust < cost) return;
     m.dust -= cost;
+    runDustSpent += cost;
     m.heroLevel = lvl + 1;
     saveMeta(m);
     window._meta = m;
@@ -7193,6 +7280,7 @@ function metaBuyCityLevel() {
     const cost = CITY_LEVEL_COSTS[lvl];
     if (!cost || m.dust < cost) return;
     m.dust -= cost;
+    runDustSpent += cost;
     m.cityLevel = lvl + 1;
     saveMeta(m);
     window._meta = m;
@@ -7570,11 +7658,11 @@ function cleanForSave(obj) {
 
 function getGameState() {
     return {
-        version: '0.15',
+        version: '0.29',
         date: new Date().toISOString(),
         currentTurn, currentSeason,
         gold, mana, population, dust,
-        fortifications, conscrit,
+        fortifications, conscrit, space,
         atk, def, avatarHp, avatarMaxHp, avatarDmg,
         avatarRanged, avatarPiercing, protection,
         glyphFireball, glyphHeal, glyphRage, glyphBless,
@@ -7645,6 +7733,7 @@ function restoreGameState(s) {
         // Pas d'apply pour glyphes/potions au chargement (charges gérées séparément)
     }
 
+    space = (s.space !== undefined) ? s.space : 0;
     if (s.cityArmy) cityArmy.splice(0, cityArmy.length, ...s.cityArmy);
     if (s.hordeArmy) hordeArmy.splice(0, hordeArmy.length, ...s.hordeArmy);
     if (s.hordePrevSeason) hordePrevSeason.splice(0, hordePrevSeason.length, ...s.hordePrevSeason);
@@ -8089,7 +8178,7 @@ function recalcBuildingEffects() {
     const m = getMeta();
     conscrit       = 3 + (m.city ? m.city.conscrit || 0 : 0);
     fortifications = 1 + (m.city ? m.city.fortif   || 0 : 0);
-    space          = m.city ? m.city.space || 0 : 0;
+    // space est restauré depuis la sauvegarde dans restoreGameState
     tileState.forEach(function(tile) {
         if (tile && tile.revealed && tile.type === 'Forêt') fortifications += 1;
     });
@@ -8238,7 +8327,7 @@ function dungeonUsePotion(type) {
     } else if (type === 'antipoison') {
         if (potionAntiPoison <= 0) return;
         potionAntiPoison--;
-        dungeonState.poisonActive = false;
+        dungeonState.poisonStacks = [];
         dngLog('🟢 Antidote : poison neutralisé !', 'dlog-good');
     }
     updateStats();
@@ -8899,18 +8988,12 @@ function confirmClassChoice(key) {
     if (!m.hero.skillLevels) m.hero.skillLevels = {};
     const skillLevels = m.hero.skillLevels;
     let refund = 0;
-    const SKILL_DEFS_REF = [
-        { id:'Soin',        baseCost:4, upgCost:3 },
-        { id:'Fireball',    baseCost:8, upgCost:4 },
-        { id:'Rage',        baseCost:7, upgCost:4 },
-        { id:'Benediction', baseCost:10, upgCost:5 },
-    ];
-    SKILL_DEFS_REF.forEach(function(sk) {
-        const lvl = skillLevels[sk.id] || 0;
+    const SKILL_DEFS_REF = ['Soin','Fireball','Rage','Benediction'];
+    SKILL_DEFS_REF.forEach(function(id) {
+        const lvl = skillLevels[id] || 0;
         if (lvl > 0) {
-            refund += sk.baseCost;
-            for (let i = 1; i < lvl; i++) refund += sk.upgCost + (i-1)*2;
-            skillLevels[sk.id] = 0;
+            for (let i = 0; i < lvl; i++) refund += metaCost(1, i);
+            skillLevels[id] = 0;
         }
     });
     if (refund > 0) { m.dust = (m.dust || 0) + refund; }
@@ -9083,10 +9166,15 @@ function dungeonUseClassSkill(skillId) {
             const maxTargets = 1 + skLvl;
             const colSlice = col.slice(0, maxTargets);
             const dmg = Math.max(1, atk);
-            colSlice.forEach(function(e){ dealDamageToEnemy(e, dmg); });
+            colSlice.forEach(function(e){ dealDamageToEnemy(e, dmg, '#40c080'); });
             dngLog('🏹 Volée ! -'+dmg+' HP à '+colSlice.length+' cible(s) (niv.'+skLvl+')', 'dlog-good');
+            dngShowEffect('🏹', 'VOLÉE !', '#80ffb0');
             setTimeout(function(){ renderEnemyPanel(); checkAllEnemiesDead(); }, 100);
-            if (!isFree) finishRound(true);
+            if (!isFree) {
+            dungeonState.playerActionsLeft = Math.max(0, (dungeonState.playerActionsLeft||1) - 1);
+            if (dungeonState.playerActionsLeft > 0) { dngShowAttackBtn(true); updateGlyphButtons(); }
+            else { setTimeout(startEnemyPhase, 200); }
+        }
             break;
         }
         case 'piercing': {
@@ -9106,13 +9194,23 @@ function dungeonUseClassSkill(skillId) {
             allE.forEach(function(e){ e._warcryThreshold = (e._warcryThreshold||0) + warcryBonus; });
             dungeonState._warcryRoundsLeft = 5;
             dngLog('📣 Cri de guerre ! Seuil de toucher des ennemis +'+warcryBonus+' pendant 5 rounds.', 'dlog-good');
-            if (!isFree) finishRound(true);
+            dngShowEffect('📣', 'CRI DE GUERRE !', '#ffb040');
+            if (!isFree) {
+            dungeonState.playerActionsLeft = Math.max(0, (dungeonState.playerActionsLeft||1) - 1);
+            if (dungeonState.playerActionsLeft > 0) { dngShowAttackBtn(true); updateGlyphButtons(); }
+            else { setTimeout(startEnemyPhase, 200); }
+        }
             break;
         }
         case 'stun': {
             if (target) { target._stunTurns = 2; target._stunBlock = true; }
             dngLog('💫 Stun ! '+( target?target.name:'cible')+' bloqué 2 tours.', 'dlog-good');
-            if (!isFree) finishRound(true);
+            dngShowEffect('💫', 'STUN !', '#ffe060');
+            if (!isFree) {
+            dungeonState.playerActionsLeft = Math.max(0, (dungeonState.playerActionsLeft||1) - 1);
+            if (dungeonState.playerActionsLeft > 0) { dngShowAttackBtn(true); updateGlyphButtons(); }
+            else { setTimeout(startEnemyPhase, 200); }
+        }
             break;
         }
         // ─ MAGE ─
@@ -9123,15 +9221,20 @@ function dungeonUseClassSkill(skillId) {
             dngLog('🔷 Armure de mana : +'+armorAmt+' PV temporaires !', 'dlog-good');
             if (typeof applyHpUpdate === 'function') applyHpUpdate();
             renderClassSkills();
-            finishRound(true);
+            dungeonState.playerActionsLeft = Math.max(0, (dungeonState.playerActionsLeft||1) - 1);
+            if (dungeonState.playerActionsLeft > 0) { dngShowAttackBtn(true); updateGlyphButtons(); }
+            else { setTimeout(startEnemyPhase, 200); }
             break;
         }
         case 'zap': {
             const magDmg = Math.max(2, (avatarMagicDmg||2) * 2 + skLvl * 3);
-            if (target) { dealDamageToEnemy(target, magDmg); }
+            if (target) { dealDamageToEnemy(target, magDmg, '#ffff60'); }
             dngLog('⚡ Zap ! -'+magDmg+' dégâts magiques.', 'dlog-good');
+            dngShowEffect('⚡', 'ZAP !', '#ffff60');
             setTimeout(function(){ renderEnemyPanel(); checkAllEnemiesDead(); }, 100);
-            finishRound(true); // action → riposte
+            dungeonState.playerActionsLeft = Math.max(0, (dungeonState.playerActionsLeft||1) - 1);
+            if (dungeonState.playerActionsLeft > 0) { dngShowAttackBtn(true); updateGlyphButtons(); }
+            else { setTimeout(startEnemyPhase, 200); } // action → riposte
             break;
         }
         case 'freeze': {
@@ -9139,7 +9242,12 @@ function dungeonUseClassSkill(skillId) {
             dungeonState._freezeActive = true;
             dungeonState._freezeTurns = 3 + skLvl;
             dngLog('❄ Freeze ! Ennemis bloqués '+(3+skLvl)+' rounds.', 'dlog-good');
-            if (!isFree) finishRound(true);
+            dngShowEffect('❄', 'FREEZE !', '#80c0ff');
+            if (!isFree) {
+            dungeonState.playerActionsLeft = Math.max(0, (dungeonState.playerActionsLeft||1) - 1);
+            if (dungeonState.playerActionsLeft > 0) { dngShowAttackBtn(true); updateGlyphButtons(); }
+            else { setTimeout(startEnemyPhase, 200); }
+        }
             break;
         }
         case 'rewind': {
@@ -9155,9 +9263,12 @@ function dungeonUseClassSkill(skillId) {
             if (rewindUses !== undefined) dungeonState['skill_rewind_uses'] = rewindUses;
             skillUsed = { Fireball:false, Benediction:false, Rage:false, Soin:false };
             dngLog('⏪ Rewind ! Compétences rechargées (-'+hpCost+' HP directs).', 'dlog-good');
+            dngShowEffect('⏪', 'REWIND !', '#c080ff');
             if (typeof applyHpUpdate === 'function') applyHpUpdate();
             renderClassSkills();
-            finishRound(true);
+            dungeonState.playerActionsLeft = Math.max(0, (dungeonState.playerActionsLeft||1) - 1);
+            if (dungeonState.playerActionsLeft > 0) { dngShowAttackBtn(true); updateGlyphButtons(); }
+            else { setTimeout(startEnemyPhase, 200); }
             break;
         }
         // ─ AVENTURIER ─
@@ -9167,7 +9278,12 @@ function dungeonUseClassSkill(skillId) {
             // Poser l'état _poisoned sur tous les ennemis vivants
             getAllLivingEnemies().forEach(function(e){ e._poisoned = true; });
             dngLog('☁ Nuage de poison ! -'+pcDmg+' HP/tour sur tous (niv.'+skLvl+').', 'dlog-good');
-            if (!isFree) finishRound(true);
+            dngShowEffect('☁', 'NUAGE !', '#40ff80');
+            if (!isFree) {
+            dungeonState.playerActionsLeft = Math.max(0, (dungeonState.playerActionsLeft||1) - 1);
+            if (dungeonState.playerActionsLeft > 0) { dngShowAttackBtn(true); updateGlyphButtons(); }
+            else { setTimeout(startEnemyPhase, 200); }
+        }
             break;
         }
         case 'blade_trap': {
@@ -9175,11 +9291,15 @@ function dungeonUseClassSkill(skillId) {
             const tdmg = Math.max(2, atk + skLvl);
             col2.forEach(function(e){
                 const reduced = Math.max(0, tdmg - (e.protection||0));
-                dealDamageToEnemy(e, reduced);
+                dealDamageToEnemy(e, reduced, '#ffd060');
             });
             dngLog('⚙ Pièges de lames ! -'+tdmg+' dégâts sur la colonne (prot. appliquée).', 'dlog-good');
             setTimeout(function(){ renderEnemyPanel(); checkAllEnemiesDead(); }, 100);
-            if (!isFree) finishRound(true);
+            if (!isFree) {
+            dungeonState.playerActionsLeft = Math.max(0, (dungeonState.playerActionsLeft||1) - 1);
+            if (dungeonState.playerActionsLeft > 0) { dngShowAttackBtn(true); updateGlyphButtons(); }
+            else { setTimeout(startEnemyPhase, 200); }
+        }
             break;
         }
         case 'curse': {
@@ -9187,14 +9307,24 @@ function dungeonUseClassSkill(skillId) {
             allE.forEach(function(e){ e._curse = (e._curse||0) + curseDmg; });
             dungeonState._curseRoundsLeft = 3 + skLvl;
             dngLog('💀 Malédiction ! -'+curseDmg+' ATK sur tous pendant '+(3+skLvl)+' rounds.', 'dlog-good');
-            if (!isFree) finishRound(true);
+            dngShowEffect('💀', 'MALÉDICTION !', '#8060ff');
+            if (!isFree) {
+            dungeonState.playerActionsLeft = Math.max(0, (dungeonState.playerActionsLeft||1) - 1);
+            if (dungeonState.playerActionsLeft > 0) { dngShowAttackBtn(true); updateGlyphButtons(); }
+            else { setTimeout(startEnemyPhase, 200); }
+        }
             break;
         }
         case 'mirror': {
             dungeonState._mirrorShield = Math.max(2, atk + skLvl * 2);
             dungeonState._mirrorRoundsLeft = 3 + skLvl;
             dngLog('🪞 Images miroir ! -'+dungeonState._mirrorShield+' dégâts reçus pendant '+(3+skLvl)+' rounds.', 'dlog-good');
-            if (!isFree) finishRound(true);
+            dngShowEffect('🪞', 'MIROIR !', '#c0e0ff');
+            if (!isFree) {
+            dungeonState.playerActionsLeft = Math.max(0, (dungeonState.playerActionsLeft||1) - 1);
+            if (dungeonState.playerActionsLeft > 0) { dngShowAttackBtn(true); updateGlyphButtons(); }
+            else { setTimeout(startEnemyPhase, 200); }
+        }
             break;
         }
     }
@@ -9208,9 +9338,10 @@ function buyClassSkill(skId) {
     const lvl = m.hero.skillLevels[skId] || 0;
     const maxLvl = 1 + (m.heroLevel || 0);
     if (lvl >= maxLvl) { addLog('Niveau maximum atteint.'); return; }
-    const cost = 2 + lvl * 3 + Math.floor(lvl / 2);
+    const cost = metaCost(1, lvl);
     if ((m.dust || 0) < cost) { addLog('Poussière insuffisante.'); return; }
     m.dust -= cost;
+    runDustSpent += cost;
     m.hero.skillLevels[skId] = lvl + 1;
     saveMeta(m); window._meta = m;
     addLog('✦ ' + skId + ' niveau ' + (lvl+1) + ' !');
