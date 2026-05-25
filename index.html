@@ -562,7 +562,7 @@
 <div id="home-screen" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:#06040a;z-index:20000;flex-direction:column;align-items:center;justify-content:center;gap:20px">
     <div style="text-align:center;margin-bottom:10px">
         <div style="font-family:Cinzel,serif;font-size:28px;color:#c0a060;letter-spacing:3px;text-shadow:0 0 20px rgba(180,140,60,0.4)">⚔ Chronocity — A Rogue City Builder</div>
-        <div style="font-size:11px;color:#4a3a5a;margin-top:6px;letter-spacing:2px">VERSION 0.30</div>
+        <div style="font-size:11px;color:#4a3a5a;margin-top:6px;letter-spacing:2px">VERSION 0.31</div>
     </div>
     <div id="home-menu" style="display:flex;flex-direction:column;gap:10px;width:min(340px,90vw)">
         <button onclick="homeLoad()" style="width:100%;padding:16px 0;font-family:Cinzel,serif;font-size:14px;cursor:pointer;border-radius:8px;background:linear-gradient(135deg,#1a1030,#2a1a40);color:#c080ff;border:1px solid #5040a0">📂 Charger une partie</button>
@@ -1000,7 +1000,7 @@
 <!-- Frise de progression -->
 <div id="timeline">
     <div id="timeline-season">Saison 1</div>
-    <div style="font-family:Cinzel,serif;font-size:9px;color:#3a3050;margin-left:auto;padding-left:8px;white-space:nowrap">v0.30</div>
+    <div style="font-family:Cinzel,serif;font-size:9px;color:#3a3050;margin-left:auto;padding-left:8px;white-space:nowrap">v0.31</div>
     <div id="timeline-steps"></div>
     <button onclick="toggleSaveMenu()" style="background:linear-gradient(135deg,#1a1030,#2a1a40);border:1px solid #4a3060;color:#c0a060;font-size:14px;cursor:pointer;padding:2px 8px;border-radius:5px;white-space:nowrap;flex-shrink:0" title="Sauvegardes">💾 Save</button>
     <button onclick="toggleMetaSummary()" style="background:linear-gradient(135deg,#101a10,#1a2a1a);border:1px solid #2a5a2a;color:#4cffaa;font-size:14px;cursor:pointer;padding:2px 8px;border-radius:5px;white-space:nowrap;flex-shrink:0" title="Résumé méta">✦ Méta</button>
@@ -2266,11 +2266,27 @@ const MONSTER_POOL = [
       loot:()=>{ gold+=18; dust += 1; return '+18 Or, +1 Poussière'; }, lootDesc:'Couronne de chef.' },
     { name:'Nécromancien',    tier:4, emoji:'🧙', atk:3, dmg:2, def:4, protection:1, hp:12, maxHp:12, rank:'back', isRanged:true, special:'necromancer',
       loot:()=>{ mana+=30; dust += 1; return '+30 Mana, +1 Poussière'; }, lootDesc:'Grimoire nécromantique.' },
+    // ===== TIER 5 (S5+) =====
+    { name:'Orc Briseur',      tier:5, emoji:'👊', atk:5, dmg:4, def:4, protection:2, hp:16, maxHp:16, rank:'front', special:'crush_passive',
+      loot:()=>{ gold+=22; dust+=2; return '+22 Or, +2 Poussière'; }, lootDesc:'Épaulière brisée.' },
+    { name:'Gobelin Boss',     tier:5, emoji:'👺', atk:4, dmg:3, def:3, protection:2, hp:15, maxHp:15, rank:'front', special:'goblincall',
+      loot:()=>{ gold+=20; dust+=2; return '+20 Or, +2 Poussière'; }, lootDesc:'Sceptre de chef gobelin.' },
+    { name:'Araignée Géante',  tier:5, emoji:'🕷', atk:4, dmg:2, def:2, protection:1, hp:14, maxHp:14, rank:'front', special:'poison',
+      loot:()=>{ mana+=25; dust+=2; return '+25 Mana, +2 Poussière'; }, lootDesc:'Glande venimeuse géante.' },
+    { name:'Liche Mineure',    tier:5, emoji:'💀', atk:4, dmg:3, def:4, protection:2, hp:13, maxHp:13, rank:'back', isRanged:true, special:'atkreduction',
+      loot:()=>{ mana+=28; dust+=2; return '+28 Mana, +2 Poussière'; }, lootDesc:'Fragment de phylactère.' },
+    // ===== TIER 6 (S7+) =====
+    { name:'Démon Arcaniste',  tier:6, emoji:'😈', atk:5, dmg:4, def:4, protection:3, hp:18, maxHp:18, rank:'back', isRanged:true, special:'zap_passive',
+      loot:()=>{ gold+=28; mana+=14; dust+=3; return '+28 Or, +14 Mana, +3 Poussière'; }, lootDesc:'Cristal démoniaque.' },
+    { name:'Squelette Ancien', tier:6, emoji:'💀', atk:5, dmg:4, def:5, protection:2, hp:17, maxHp:17, rank:'front', special:'atkreduction',
+      loot:()=>{ mana+=30; dust+=3; return '+30 Mana, +3 Poussière'; }, lootDesc:'Os millénaire.' },
+    { name:'Troll des Abysses',tier:6, emoji:'👹', atk:5, dmg:4, def:4, protection:2, hp:20, maxHp:20, rank:'front', special:'stun',
+      loot:()=>{ gold+=30; dust+=3; return '+30 Or, +3 Poussière'; }, lootDesc:'Pierre trollesque.' },
 ];
 
 // Retourne le pool de monstres disponibles selon la saison
 function getMonsterPoolForSeason(season) {
-    const maxTier = season <= 1 ? 1 : season <= 2 ? 2 : season <= 3 ? 3 : 4;
+    const maxTier = season <= 1 ? 1 : season <= 2 ? 2 : season <= 3 ? 3 : season <= 5 ? 4 : season <= 6 ? 5 : 6;
     return MONSTER_POOL.filter(m => m.tier <= maxTier);
 }
 
@@ -2438,7 +2454,20 @@ function generateDungeonRooms(totalTurns) {
             pool.push({ kind:'trap', data: TRAP_ROOMS[Math.floor(Math.random()*TRAP_ROOMS.length)] });
         }
     }
-    pool.push({ kind:'boss', data: boss });
+    // Boss S2+ : alliés selon saison et saison
+    let bossAllies = [];
+    if (currentSeason >= 2) {
+        const seasonNum = currentSeason;
+        // Nombre d'alliés : été=1, automne=2, hiver=3 selon la saison dans l'année (simplification : saison mod)
+        const allyCount = seasonNum <= 3 ? 1 : seasonNum <= 6 ? 2 : 3;
+        const allyPool = getMonsterPoolForSeason(currentSeason);
+        for (let i = 0; i < allyCount; i++) {
+            const ally = {...allyPool[Math.floor(Math.random()*allyPool.length)]};
+            ally.hp = ally.maxHp;
+            bossAllies.push(ally);
+        }
+    }
+    pool.push({ kind:'boss', data: boss, bossAllies: bossAllies });
     addLog('Donjon généré : '+numRooms+' salles ('+nonBossCount+' + 1 boss)');
     return pool;
 }
@@ -2636,11 +2665,19 @@ function enterRoom(roomEntry) {
                 back:  room.group.back.map(m=>({...m, hp:m.maxHp}))
             };
             dungeonState.targetIdx = 0;
-            dungeonState.enemy = dungeonState.enemies.front[0];
+        dungeonState.enemy = dungeonState.enemies.front[0];
         } else {
             const enemy = {...(room.data||room.group.front[0])}; enemy.hp = enemy.maxHp;
             dungeonState.enemy = enemy;
             dungeonState.enemies = { front:[enemy], back:[] };
+            // Alliés du boss S2+
+            if (roomEntry.r.bossAllies && roomEntry.r.bossAllies.length > 0) {
+                roomEntry.r.bossAllies.forEach(function(ally) {
+                    const a = {...ally}; a.hp = a.maxHp;
+                    dungeonState.enemies.back.push(a);
+                });
+                dungeonState.isMulti = true;
+            }
             dungeonState.targetIdx = 0;
         }
         dngTiming.histPlayer=[];dngTiming.histEnemy=[];
@@ -2676,6 +2713,7 @@ function enterRoom(roomEntry) {
         updateGlyphButtons();
         document.getElementById('dungeon-reward').classList.remove('visible');
         document.getElementById('dng-result').textContent = '';
+        dungeonState.pendingLootEnemies = []; // reset loot par salle
         renderEnemyPanel();
         dngLog('— Combat : '+getAllEnemyNames()+' —', dungeonState.enemy.isBoss?'dlog-loot':'dlog-info');
         document.getElementById('dungeon-body').style.visibility = 'hidden';
@@ -3721,37 +3759,20 @@ function enemyAttack(room) {
         }
         return;
     }
-    // ── Souffle dragon : attaque automatique tous les 4 rounds ──
+    // ── Souffle dragon : tous les 4 rounds souffle (remplace l'attaque), sinon attaque normale ──
     if (room.special === 'breath') {
         dungeonState.dragonBreathCounter = (dungeonState.dragonBreathCounter || 0) + 1;
-        const roundsToNext = 4 - (dungeonState.dragonBreathCounter % 4);
-        if (dungeonState.dragonBreathCounter % 4 === 0) {
-            const breathDmg = Math.max(1, room.dmg); // ignore protection
-            avatarTakeDamage(breathDmg, 'dragon');
-            dngLog('🔥 '+room.name+' souffle ! -'+breathDmg+' HP (ignore protection)', 'dlog-bad');
-            dngShowEffect('🔥', 'SOUFFLE !', '#ff6020');
-            if (dungeonState.avatarHp <= 0) { setTimeout(dungeonAvatarDied, 300); return; }
-            return; // le souffle remplace l'attaque normale ce round
-        } else {
-            dngLog('🔥 Souffle dans '+roundsToNext+' round(s)...', 'dlog-info');
-            return; // pas d'attaque normale les autres rounds
-        }
-    }
-
-        // ── Souffle dragon : attaque automatique tous les 4 rounds ──
-    if (room.special === 'breath') {
-        dungeonState.dragonBreathCounter = (dungeonState.dragonBreathCounter || 0) + 1;
-        const roundsToNext = 4 - (dungeonState.dragonBreathCounter % 4);
         if (dungeonState.dragonBreathCounter % 4 === 0) {
             const breathDmg = Math.max(1, room.dmg);
             avatarTakeDamage(breathDmg, 'dragon');
             dngLog('🔥 '+room.name+' souffle ! -'+breathDmg+' HP (ignore protection)', 'dlog-bad');
             dngShowEffect('🔥', 'SOUFFLE !', '#ff6020');
             if (dungeonState.avatarHp <= 0) { setTimeout(dungeonAvatarDied, 300); }
-        } else {
-            dngLog('🔥 Souffle dans '+roundsToNext+' round(s)...', 'dlog-info');
+            return; // le souffle remplace l'attaque ce round
         }
-        return;
+        // sinon : attaque normale (ne pas return, continuer le code)
+        const roundsToNext = 4 - (dungeonState.dragonBreathCounter % 4);
+        dngLog('🔥 Souffle dans '+roundsToNext+' round(s)...', 'dlog-info');
     }
 
     const curseReduction = room._curse || 0;
@@ -4025,8 +4046,8 @@ function triggerRoundEffects() {
         }
     }
 
-    // Gobelins : appel à l'aide au round 5
-    if (dungeonState.roundCounter === 5 && goblins.length > 0) {
+    // Gobelins : appel à l'aide tous les 3 rounds
+    if (dungeonState.roundCounter % 3 === 0 && goblins.length > 0) {
         const gobPool = pool.filter(function(m){ return m.name && m.name.toLowerCase().indexOf('gobelin') !== -1; });
         if (gobPool.length > 0) {
             const summon = {...gobPool[Math.floor(Math.random()*gobPool.length)]};
@@ -7667,7 +7688,7 @@ function cleanForSave(obj) {
 
 function getGameState() {
     return {
-        version: '0.30',
+        version: '0.31',
         date: new Date().toISOString(),
         currentTurn, currentSeason,
         gold, mana, population, dust,
