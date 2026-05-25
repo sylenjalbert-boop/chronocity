@@ -562,7 +562,7 @@
 <div id="home-screen" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:#06040a;z-index:20000;flex-direction:column;align-items:center;justify-content:center;gap:20px">
     <div style="text-align:center;margin-bottom:10px">
         <div style="font-family:Cinzel,serif;font-size:28px;color:#c0a060;letter-spacing:3px;text-shadow:0 0 20px rgba(180,140,60,0.4)">⚔ Chronocity — A Rogue City Builder</div>
-        <div style="font-size:11px;color:#4a3a5a;margin-top:6px;letter-spacing:2px">VERSION 0.33</div>
+        <div style="font-size:11px;color:#4a3a5a;margin-top:6px;letter-spacing:2px">VERSION 0.351</div>
     </div>
     <div id="home-menu" style="display:flex;flex-direction:column;gap:10px;width:min(340px,90vw)">
         <button onclick="homeLoad()" style="width:100%;padding:16px 0;font-family:Cinzel,serif;font-size:14px;cursor:pointer;border-radius:8px;background:linear-gradient(135deg,#1a1030,#2a1a40);color:#c080ff;border:1px solid #5040a0">📂 Charger une partie</button>
@@ -1000,7 +1000,7 @@
 <!-- Frise de progression -->
 <div id="timeline">
     <div id="timeline-season">Saison 1</div>
-    <div style="font-family:Cinzel,serif;font-size:9px;color:#3a3050;margin-left:auto;padding-left:8px;white-space:nowrap">v0.33</div>
+    <div style="font-family:Cinzel,serif;font-size:9px;color:#3a3050;margin-left:auto;padding-left:8px;white-space:nowrap">v0.351</div>
     <div id="timeline-steps"></div>
     <button onclick="toggleSaveMenu()" style="background:linear-gradient(135deg,#1a1030,#2a1a40);border:1px solid #4a3060;color:#c0a060;font-size:14px;cursor:pointer;padding:2px 8px;border-radius:5px;white-space:nowrap;flex-shrink:0" title="Sauvegardes">💾 Save</button>
     <button onclick="toggleMetaSummary()" style="background:linear-gradient(135deg,#101a10,#1a2a1a);border:1px solid #2a5a2a;color:#4cffaa;font-size:14px;cursor:pointer;padding:2px 8px;border-radius:5px;white-space:nowrap;flex-shrink:0" title="Résumé méta">✦ Méta</button>
@@ -3822,6 +3822,35 @@ function enemyAttack(room) {
                 dngLog('👹 Deuxième frappe : -'+ed2+' HP','dlog-bad');
             }
         }
+
+        // ── Orc Crush Passif : sur un 6, réduit DEF (tier monte avec saison) ──
+        if (room.special === 'crush_passive' && er === 6) {
+            const crushLvl = Math.min(3, Math.max(1, Math.floor((currentSeason||1) / 2)));
+            room._crushDef = (room._crushDef || 0) + crushLvl;
+            def = Math.max(1, def - crushLvl);
+            dungeonTempDef = (dungeonTempDef || 0) + crushLvl;
+            dngLog('🔨 '+room.name+' brise l\'armure ! DEF -'+crushLvl+' (héro DEF : '+def+')', 'dlog-bad');
+            dngShowEffect('🔨', 'ARMOR CRUSH !', '#ff8040');
+            dngSetupZones();
+        }
+
+        // ── Squelette/Liche : sur un 6, réduit ATK de -1 ──
+        if ((room.name.includes('quelette') || room.name.includes('Liche')) && er === 6) {
+            atk = Math.max(1, atk - 1);
+            dngLog('💀 '+room.name+' draine l\'ATK ! ATK héro : '+atk, 'dlog-bad');
+            dngShowEffect('💀', 'ATK -1', '#8060ff');
+            dngSetupZones();
+        }
+
+        // ── Démon Zap Passif : sur un 6, zap magique ──
+        if (room.special === 'zap_passive' && er === 6) {
+            const zapTier = Math.min(4, 1 + Math.floor((currentSeason||1) / 2));
+            const zapDmg = zapTier * 2;
+            avatarTakeDamage(zapDmg, 'dragon');
+            dngLog('⚡ '+room.name+' Zap démoniaque ! -'+zapDmg+' HP (magie)', 'dlog-bad');
+            dngShowEffect('⚡', 'ZAP DÉMONIAQUE !', '#ffff60');
+        }
+
     } else {
         dngLog(room.name+' : dé '+er+' ('+et+'+) ✗ raté','dlog-info');
     }
@@ -4433,7 +4462,6 @@ function dungeonUseSkill(type) {
         dngPushHist(dngTiming.histPlayer,'⏳',null); dngRenderHist();
         dngLog('⏳ Distortion Temporelle ! -'+dmg+' HP à tous les ennemis !', 'dlog-good');
         dngShowEffect('⏳', 'DISTORTION !', '#a060ff');
-        allE.forEach(function(e){ dungeonShowDmg('enemy', dmg, '#a060ff'); });
         renderEnemyPanel();
         const stillAlive = allE.some(function(e){ return e.hp > 0; });
         if (!stillAlive) { setTimeout(function(){ checkAllEnemiesDead(); }, 300); return; }
@@ -7688,7 +7716,7 @@ function cleanForSave(obj) {
 
 function getGameState() {
     return {
-        version: '0.33',
+        version: '0.351',
         date: new Date().toISOString(),
         currentTurn, currentSeason,
         gold, mana, population, dust,
@@ -8373,7 +8401,7 @@ function dungeonUseGlyph(type) {
         glyphFireball--;
         const allE = getAllLivingEnemies();
         const dmg = Math.max(3, Math.floor(atk * 1.5));
-        allE.forEach(function(e){ e.hp = Math.max(0, e.hp - dmg); });
+        allE.forEach(function(e){ dealDamageToEnemy(e, dmg, '#ff8040'); });
         dngLog('🔥 Boule de Feu ! -'+dmg+' HP à tous les ennemis', 'dlog-good');
         setTimeout(function(){ renderEnemyPanel(); checkAllEnemiesDead(); }, 100);
     } else if (type === 'rage') {
