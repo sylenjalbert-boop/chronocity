@@ -562,7 +562,7 @@
 <div id="home-screen" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:#06040a;z-index:20000;flex-direction:column;align-items:center;justify-content:center;gap:20px">
     <div style="text-align:center;margin-bottom:10px">
         <div style="font-family:Cinzel,serif;font-size:28px;color:#c0a060;letter-spacing:3px;text-shadow:0 0 20px rgba(180,140,60,0.4)">⚔ Chronocity — A Rogue City Builder</div>
-        <div style="font-size:11px;color:#4a3a5a;margin-top:6px;letter-spacing:2px">VERSION 0.36</div>
+        <div style="font-size:11px;color:#4a3a5a;margin-top:6px;letter-spacing:2px">VERSION 0.37</div>
     </div>
     <div id="home-menu" style="display:flex;flex-direction:column;gap:10px;width:min(340px,90vw)">
         <button onclick="homeLoad()" style="width:100%;padding:16px 0;font-family:Cinzel,serif;font-size:14px;cursor:pointer;border-radius:8px;background:linear-gradient(135deg,#1a1030,#2a1a40);color:#c080ff;border:1px solid #5040a0">📂 Charger une partie</button>
@@ -1000,7 +1000,7 @@
 <!-- Frise de progression -->
 <div id="timeline">
     <div id="timeline-season">Saison 1</div>
-    <div style="font-family:Cinzel,serif;font-size:9px;color:#3a3050;margin-left:auto;padding-left:8px;white-space:nowrap">v0.36</div>
+    <div style="font-family:Cinzel,serif;font-size:9px;color:#3a3050;margin-left:auto;padding-left:8px;white-space:nowrap">v0.37</div>
     <div id="timeline-steps"></div>
     <button onclick="toggleSaveMenu()" style="background:linear-gradient(135deg,#1a1030,#2a1a40);border:1px solid #4a3060;color:#c0a060;font-size:14px;cursor:pointer;padding:2px 8px;border-radius:5px;white-space:nowrap;flex-shrink:0" title="Sauvegardes">💾 Save</button>
     <button onclick="toggleMetaSummary()" style="background:linear-gradient(135deg,#101a10,#1a2a1a);border:1px solid #2a5a2a;color:#4cffaa;font-size:14px;cursor:pointer;padding:2px 8px;border-radius:5px;white-space:nowrap;flex-shrink:0" title="Résumé méta">✦ Méta</button>
@@ -7725,7 +7725,7 @@ function cleanForSave(obj) {
 
 function getGameState() {
     return {
-        version: '0.36',
+        version: '0.37',
         date: new Date().toISOString(),
         currentTurn, currentSeason,
         gold, mana, population, dust,
@@ -8149,92 +8149,140 @@ function gloTab(tab) {
 
 
 const GLO_DATA = {
-                terrains:`<div class="glo-section"><div class="glo-title">❖ Terrains — Révélation et bonus</div>
-<div class="glo-entry"><div class="glo-entry-name">🌾 Prairie — 2 emplacements</div><div class="glo-entry-desc">Révélation : +2 emplacements uniquement.</div></div>
+    terrains:`<div class="glo-section"><div class="glo-title">❖ Terrains — Révélation et bonus</div>
+<div class="glo-entry"><div class="glo-entry-name">🌾 Prairie — 2 emplacements</div><div class="glo-entry-desc">Révélation : +2 emplacements de construction.</div></div>
 <div class="glo-entry"><div class="glo-entry-name">⛰ Collines — 1 emplacement</div><div class="glo-entry-desc">Révélation : +10 Or/tour. Bonus Mine : +10 Or/tour supplémentaire.</div></div>
 <div class="glo-entry"><div class="glo-entry-name">🏔 Montagne — 0 emplacement</div><div class="glo-entry-desc">Révélation : +30 Mana, +5 Mana/tour, +5 Or/tour. Pas de construction possible.</div></div>
 <div class="glo-entry"><div class="glo-entry-name">💧 Lac — 1 emplacement</div><div class="glo-entry-desc">Révélation : +10 Pop, +5 Pop/tour. Bonus Ferme : +5 Pop/tour.</div></div>
 <div class="glo-entry"><div class="glo-entry-name">🌲 Forêt — 1 emplacement</div><div class="glo-entry-desc">Révélation : +1 Fortification. Bonus Caserne : +1 Fortification.</div></div>
-<div class="glo-entry"><div class="glo-entry-name">🏙 Ville</div><div class="glo-entry-desc">Emplacements via méta-progression.</div></div>
+<div class="glo-entry"><div class="glo-entry-name">🏙 Ville — emplacements méta</div><div class="glo-entry-desc">Emplacements débloqués via méta-progression (onglet Ville → Espace +1).</div></div>
 </div>`,
 
-
-
-
-
-
-    batiments:`<div class="glo-section"><div class="glo-title">⌂ Bâtiments</div>
-<div class="glo-entry"><div class="glo-entry-name">🌾 Ferme — 20 Or</div><div class="glo-entry-desc">+5 Pop/tour.</div></div>
-<div class="glo-entry"><div class="glo-entry-name">⛏ Mine — 20 Pop</div><div class="glo-entry-desc">+10 Or/tour.</div></div>
-<div class="glo-entry"><div class="glo-entry-name">⚔ Caserne — 100 Or, 10 Pop</div><div class="glo-entry-desc">+2 Conscriptions. Débloque : Soldat, Lancier.</div></div>
-<div class="glo-entry"><div class="glo-entry-name">🗼 Tour de Garde — 90 Or, 10 Pop</div><div class="glo-entry-desc">+1 Conscription, +1 Fortification.</div></div>
-<div class="glo-entry"><div class="glo-entry-name">🔮 Tour de Magie — 30 Or, 5 Pop, 20 Mana</div><div class="glo-entry-desc">+1 Conscription, +10 Mana/tour.</div></div>
-<div class="glo-entry"><div class="glo-entry-name">🎓 Académie militaire — 150 Or, 30 Pop, 40 Mana</div><div class="glo-entry-desc">Débloque : Hallebardier, Soldat Pavois, Paladin. Prérequis : 2 Casernes + 1 Tour de Magie.</div></div>
-<div class="glo-entry"><div class="glo-entry-name">🏹 Archerie — 80 Or, 20 Pop</div><div class="glo-entry-desc">Débloque : Archer, Arbalétrier. Prérequis : 1 Caserne.</div></div>
-<div class="glo-entry"><div class="glo-entry-name">⛪ Église — 60 Or, 10 Pop, 20 Mana</div><div class="glo-entry-desc">Débloque : Prêtre.</div></div>
-<div class="glo-entry"><div class="glo-entry-name">🛕 Temple — 120 Or, 20 Pop, 40 Mana</div><div class="glo-entry-desc">Débloque : Paladin (avec Académie). Prérequis : 1 Église.</div></div>
+    batiments:`<div class="glo-section"><div class="glo-title">⌂ Bâtiments — Tier I</div>
+<div class="glo-entry"><div class="glo-entry-name">🌾 Ferme — 30 Or</div><div class="glo-entry-desc">+10 Pop immédiat, +5 Pop/tour. Bonus Lac : +5 Pop/tour supplémentaire.</div></div>
+<div class="glo-entry"><div class="glo-entry-name">⛏ Mine — 20 Pop</div><div class="glo-entry-desc">+20 Or immédiat, +10 Or/tour. Bonus Collines : +10 Or/tour supplémentaire.</div></div>
+<div class="glo-entry"><div class="glo-entry-name">💧 Tour de Mana — 40 Or, 5 Pop, 20 Mana</div><div class="glo-entry-desc">+20 Mana immédiat, +10 Mana/tour. Bonus Montagne : +10 Mana/tour supplémentaire.</div></div>
+<div class="glo-entry"><div class="glo-entry-name">⚔ Caserne — 110 Or, 10 Pop</div><div class="glo-entry-desc">+2 Conscriptions. Bonus Forêt : +1 Fortification. Débloque : Soldat, Lancier.</div></div>
+<div class="glo-entry"><div class="glo-entry-name">⛪ Église — 70 Or, 5 Pop, 20 Mana</div><div class="glo-entry-desc">Soin héro (30 Or + 20 Mana). Débloque : Prêtre.</div></div>
+</div>
+<div class="glo-section"><div class="glo-title">⌂ Bâtiments — Tier II</div>
+<div class="glo-entry"><div class="glo-entry-name">🗼 Tour de Garde — 90 Or, 10 Pop</div><div class="glo-entry-desc">+2 Conscr., +2 Fortifications. Prérequis : 1 Caserne. Débloque : Gardes.</div></div>
+<div class="glo-entry"><div class="glo-entry-name">🏹 Archerie — 90 Or, 10 Pop</div><div class="glo-entry-desc">+2 Conscr. Prérequis : 1 Caserne. Débloque : Archers.</div></div>
+<div class="glo-entry"><div class="glo-entry-name">🔮 École de Magie — 80 Or, 10 Pop, 30 Mana</div><div class="glo-entry-desc">+2 Conscr. Prérequis : 1 Tour de Mana. Débloque : Élémentaires.</div></div>
+<div class="glo-entry"><div class="glo-entry-name">🏪 Place du Marché — 60 Or, 10 Pop</div><div class="glo-entry-desc">Caravane +20%. Prérequis : 1 Mine + 1 Ferme + 1 Tour de Mana.</div></div>
+</div>
+<div class="glo-section"><div class="glo-title">⌂ Bâtiments — Tier III</div>
+<div class="glo-entry"><div class="glo-entry-name">🏛 Académie militaire — 160 Or, 30 Pop, 40 Mana</div><div class="glo-entry-desc">+4 Conscr. Prérequis : 1 Caserne + 1 Tour de Garde + 1 Archerie. Débloque : Hallebardier, Arbalétrier, Pavois.</div></div>
+<div class="glo-entry"><div class="glo-entry-name">🛕 Temple — 130 Or, 20 Pop, 40 Mana</div><div class="glo-entry-desc">Prérequis : 1 Église. Débloque : Prêtres renforcés.</div></div>
+<div class="glo-entry"><div class="glo-entry-name">✨ Tour de Magie — 120 Or, 20 Pop, 60 Mana</div><div class="glo-entry-desc">+10 Mana/tour supplémentaire. Prérequis : 1 École de Magie. Débloque : Élémentaires Majeurs.</div></div>
+<div class="glo-entry"><div class="glo-entry-name">🏕 Caravansérail — 100 Or, 20 Pop</div><div class="glo-entry-desc">Caravane +50%. Prérequis : 1 Place du Marché.</div></div>
+</div>
+<div class="glo-section"><div class="glo-title">⌂ Bâtiments — Tier IV (Uniques)</div>
+<div class="glo-entry"><div class="glo-entry-name">⛩ Cathédrale — 200 Or, 30 Pop, 80 Mana</div><div class="glo-entry-desc">Wards (40 Or + 30 Mana), Paladin. Prérequis : 1 Temple.</div></div>
+<div class="glo-entry"><div class="glo-entry-name">⚔ Autel de Guerre — 180 Or, 30 Pop</div><div class="glo-entry-desc">+6 Conscr., achat Conscrit, Hallebardier. Prérequis : 1 Académie.</div></div>
+<div class="glo-entry"><div class="glo-entry-name">🔭 Monolithe de Vigie — 250 Or, 50 Pop, 100 Mana</div><div class="glo-entry-desc">Révèle la horde (150 Or + 100 Mana). Prérequis : 1 Archerie + 1 Caravansérail + 1 Tour de Magie.</div></div>
 </div>
 <div class="glo-section"><div class="glo-title">⚔ Unités défensives</div>
-<div class="glo-entry"><div class="glo-entry-name">🪚 Milicien (15 Or, 3 Pop) — Aucun prérequis</div><div class="glo-entry-desc">ATK 1 | Anti-Pillard</div></div>
-<div class="glo-entry"><div class="glo-entry-name">🗡 Soldat (30 Or, 5 Pop) — Caserne</div><div class="glo-entry-desc">ATK 3 | Infanterie</div></div>
-<div class="glo-entry"><div class="glo-entry-name">⚔ Lancier (30 Or, 5 Pop) — Caserne</div><div class="glo-entry-desc">ATK 2 | Anti-Cavalerie</div></div>
-<div class="glo-entry"><div class="glo-entry-name">🪖 Hallebardier (40 Or, 8 Pop) — Académie</div><div class="glo-entry-desc">ATK 4 | Infanterie | Anti-Cavalerie II</div></div>
-<div class="glo-entry"><div class="glo-entry-name">🏹 Archer (25 Or, 5 Pop) — Archerie</div><div class="glo-entry-desc">ATK 2 | Anti-Vol | Distance</div></div>
-<div class="glo-entry"><div class="glo-entry-name">🏹 Arbalétrier (40 Or, 6 Pop) — Archerie</div><div class="glo-entry-desc">ATK 3 | Anti-Vol | Anti-Distance</div></div>
-<div class="glo-entry"><div class="glo-entry-name">✝ Prêtre (25 Or, 5 Pop, 15 Mana) — Église</div><div class="glo-entry-desc">ATK 1, ATKMag 3 | Anti-Démon</div></div>
-<div class="glo-entry"><div class="glo-entry-name">⚜ Paladin (55 Or, 10 Pop, 10 Mana) — Académie + Temple</div><div class="glo-entry-desc">ATK 4, ATKMag 2 | Anti-Cavalerie | Anti-Mort-Vivant</div></div>
+<div class="glo-entry"><div class="glo-entry-name">🪚 Milicien (15 Or, 3 Pop)</div><div class="glo-entry-desc">ATK 1 | Trait : Anti-Pillard. Aucun prérequis.</div></div>
+<div class="glo-entry"><div class="glo-entry-name">🗡 Soldat (30 Or, 5 Pop) — Caserne</div><div class="glo-entry-desc">ATK 3 | Trait : Infanterie.</div></div>
+<div class="glo-entry"><div class="glo-entry-name">⚔ Lancier (30 Or, 5 Pop) — Caserne</div><div class="glo-entry-desc">ATK 2 | Trait : Anti-Cavalerie.</div></div>
+<div class="glo-entry"><div class="glo-entry-name">🪖 Hallebardier (40 Or, 8 Pop) — Académie</div><div class="glo-entry-desc">ATK 4 | Traits : Infanterie, Anti-Cavalerie II.</div></div>
+<div class="glo-entry"><div class="glo-entry-name">🏹 Archer (25 Or, 5 Pop) — Archerie</div><div class="glo-entry-desc">ATK 2 | Traits : Anti-Vol, Distance.</div></div>
+<div class="glo-entry"><div class="glo-entry-name">🏹 Arbalétrier (40 Or, 6 Pop) — Archerie</div><div class="glo-entry-desc">ATK 3 | Traits : Anti-Vol, Anti-Distance.</div></div>
+<div class="glo-entry"><div class="glo-entry-name">✝ Prêtre (25 Or, 5 Pop, 15 Mana) — Église</div><div class="glo-entry-desc">ATK 1, ATKMag 3 | Trait : Anti-Démon.</div></div>
+<div class="glo-entry"><div class="glo-entry-name">⚜ Paladin (55 Or, 10 Pop, 10 Mana) — Académie + Temple</div><div class="glo-entry-desc">ATK 4, ATKMag 2 | Traits : Anti-Cavalerie, Anti-Mort-Vivant.</div></div>
 </div>`,
-    traits:`<div class="glo-section"><div class="glo-title">⚜ Traits de la Horde</div>
-<p style="font-size:11px;color:#7a6a8a;margin-bottom:10px">Somme poids horde − poids anti-traits ville. Net ≤ 0 = contré. Net > 0 = unités les plus fortes passent.</p>
-<div class="glo-entry"><div class="glo-entry-name">🐴 Cavalerie — contré : anti-cavalerie</div><div class="glo-entry-desc">Si non contré : ATK ×2. Chevaucheur de Loup : Cavalerie II.</div></div>
+
+    traits:`<div class="glo-section"><div class="glo-title">⚜ Traits de la Horde — Système de contrage</div>
+<p style="font-size:11px;color:#7a6a8a;margin-bottom:10px">Chaque trait de la horde est contré par le trait correspondant de tes unités. Si le net (traits horde − anti-traits ville) est ≤ 0 : effet neutralisé. Si > 0 : l'effet passe avec les unités les plus puissantes.</p>
+<p style="font-size:11px;color:#7a6a8a;margin-bottom:10px">Les traits doubles (Cavalerie II, Vol II, etc.) comptent pour 2 poids — il faut plus d'anti-traits pour les neutraliser.</p>
+<div class="glo-entry"><div class="glo-entry-name">🐴 Cavalerie — contré : anti-cavalerie</div><div class="glo-entry-desc">Si non contré : ATK ×2.</div></div>
 <div class="glo-entry"><div class="glo-entry-name">🏹 Distance — contré : anti-distance</div><div class="glo-entry-desc">Si non contré : ATK ×2.</div></div>
-<div class="glo-entry"><div class="glo-entry-name">🐲 Vol — contré : anti-vol</div><div class="glo-entry-desc">Si non contré : détruit l&#39;unité ville la plus forte.</div></div>
-<div class="glo-entry"><div class="glo-entry-name">🔥 Pillard — contré : anti-pillard</div><div class="glo-entry-desc">Si non contré : détruit 1 bâtiment même si repoussé.</div></div>
-<div class="glo-entry"><div class="glo-entry-name">⛏ Sapeur — contré : anti-sapeur</div><div class="glo-entry-desc">Si non contré : détruit 1 fortification (min. 1).</div></div>
+<div class="glo-entry"><div class="glo-entry-name">🐲 Vol — contré : anti-vol</div><div class="glo-entry-desc">Si non contré : détruit l&#39;unité ville la plus forte avant le combat.</div></div>
+<div class="glo-entry"><div class="glo-entry-name">🔥 Pillard — contré : anti-pillard</div><div class="glo-entry-desc">Si non contré : détruit 1 bâtiment même si la horde est repoussée.</div></div>
+<div class="glo-entry"><div class="glo-entry-name">⛏ Sapeur — contré : anti-sapeur</div><div class="glo-entry-desc">Si non contré : -1 fortification par trait sapeur (minimum 1 fortification).</div></div>
 <div class="glo-entry"><div class="glo-entry-name">💀 Mort-Vivant — contré : anti-mort-vivant</div><div class="glo-entry-desc">Si au moins 1 passe : détruit une unité aléatoire de ton armée.</div></div>
-<div class="glo-entry"><div class="glo-entry-name">😈 Démon — contré : anti-démon</div><div class="glo-entry-desc">Si au moins 1 passe : toute ton infanterie ne compte pas.</div></div>
+<div class="glo-entry"><div class="glo-entry-name">😈 Démon — contré : anti-démon</div><div class="glo-entry-desc">Si au moins 1 passe : toute ton infanterie ne compte pas pour ce combat.</div></div>
 </div>`,
-    monstres:`<div class="glo-section"><div class="glo-title">⚔ Unités de la Horde</div>
-<div style="font-size:10px;color:#4a3a5a;margin:4px 0">— T1 (S1+) —</div>
-<div class="glo-entry"><div class="glo-entry-name">👺 Gobelin ATK 2 | 👊 Orc ATK 3 | 🔥 Pillards ATK 2</div></div>
-<div style="font-size:10px;color:#4a3a5a;margin:4px 0">— T2 (S3+) —</div>
-<div class="glo-entry"><div class="glo-entry-name">🐴 Cavalier Orc ATK 4 (Cavalerie) | 🦅 Harpie ATK 2 (Vol) | 🐗 Homme-bête ATK 4</div></div>
-<div style="font-size:10px;color:#4a3a5a;margin:4px 0">— T3 (S4+) —</div>
-<div class="glo-entry"><div class="glo-entry-name">🏹 Archer Gobelin ATK 3 (Distance) | 🐲 Vouivre ATK 6 (Vol) | ⛏ Sapeur ATK 2 | 🐺 Chevaucheur ATK 6 (Cavalerie II)</div></div>
-<div style="font-size:10px;color:#4a3a5a;margin:4px 0">— T4 (S5+) —</div>
-<div class="glo-entry"><div class="glo-entry-name">💀 Squelette ATK 2 (Mort-Vivant) | 😈 Démon ATK 3+4Mag (Démon)</div></div>
+
+    monstres:`<div class="glo-section"><div class="glo-title">⚔ Horde — Unités par saison</div>
+<div style="font-size:10px;color:#4a3a5a;margin:4px 0">— Tier 1 (S1+) —</div>
+<div class="glo-entry"><div class="glo-entry-name">👺 Gobelin ATK 2 | 👊 Orc ATK 3</div><div class="glo-entry-desc">Infanterie de base.</div></div>
+<div style="font-size:10px;color:#4a3a5a;margin:4px 0">— Tier 2 (S2+) —</div>
+<div class="glo-entry"><div class="glo-entry-name">🔥 Pillard ATK 2 (Pillard) | 🐴 Cavalier Orc ATK 4 (Cavalerie)</div></div>
+<div style="font-size:10px;color:#4a3a5a;margin:4px 0">— Tier 3 (S3+) —</div>
+<div class="glo-entry"><div class="glo-entry-name">🏹 Archer Gobelin ATK 3 (Distance) | 🐲 Vouivre ATK 4 (Vol) | ⛏ Sapeur ATK 2 (Sapeur)</div></div>
+<div style="font-size:10px;color:#4a3a5a;margin:4px 0">— Tier 4 (S4+) —</div>
+<div class="glo-entry"><div class="glo-entry-name">💀 Squelette ATK 2 (Mort-Vivant) | 😈 Démon ATK 3 + 4 Mag (Démon)</div></div>
+<div style="font-size:10px;color:#4a3a5a;margin:4px 0">— Tier 5 (S6+) —</div>
+<div class="glo-entry"><div class="glo-entry-name">🐴 Cavaliers Vétérans ATK 6 (Cavalerie II) | 🐲 Vouivres en Essaim ATK 6 (Vol II) | 💀 Légion Squelette ATK 5 (Mort-Vivant II + Distance)</div></div>
+<div style="font-size:10px;color:#4a3a5a;margin:4px 0">— Tier 6 (S8+) —</div>
+<div class="glo-entry"><div class="glo-entry-name">😈 Horde des Abysses ATK 7+2Mag (Démon II + Pillard) | 🐴 Cavalcade Infernale ATK 8 (Cavalerie II + Vol) | ⛏ Corps de Siège Maudit ATK 6 (Mort-Vivant II + Sapeur II)</div></div>
+<div style="font-size:10px;color:#4a3a5a;margin:4px 0">— Tier 7 (S10+) —</div>
+<div class="glo-entry"><div class="glo-entry-name">😈 Garde des Abysses ATK 10 (Démon III + Cavalerie) | 💀 Nuée Nécromantique ATK 8+3Mag (Mort-Vivant III + Vol II) | ⛏ Vague de Siège ATK 9 (Pillard II + Sapeur II + Cavalerie)</div></div>
 </div>
 <div class="glo-section"><div class="glo-title">👹 Donjon — Monstres normaux</div>
-<div class="glo-entry"><div class="glo-entry-name">👺 Gobelin — ATK 2, Dmg 1, DEF 2, HP 6</div><div class="glo-entry-desc">Loot : +5 Or, +1 Poussière.</div></div>
-<div class="glo-entry"><div class="glo-entry-name">👊 Orc — ATK 3, Dmg 2, DEF 2, HP 8</div><div class="glo-entry-desc">Loot : +8 Or, +1 Poussière.</div></div>
-<div class="glo-entry"><div class="glo-entry-name">💀 Squelette — ATK 2, Dmg 1, DEF 2, HP 6</div><div class="glo-entry-desc">Loot : +6 Or, +1 Poussière.</div></div>
-<div class="glo-entry"><div class="glo-entry-name">👺 Gobelin Soldat — ATK 3, Dmg 2, DEF 3, Prot 1, HP 9</div><div class="glo-entry-desc">Loot : +12 Or, +1 Poussière.</div></div>
-<div class="glo-entry"><div class="glo-entry-name">👊 Orc Élite — ATK 4, Dmg 3, DEF 3, Prot 1, HP 12</div><div class="glo-entry-desc">Loot : +15 Or, +1 Poussière.</div></div>
-<div class="glo-entry"><div class="glo-entry-name">💀 Squelette Armé — ATK 3, Dmg 2, DEF 3, Prot 1, HP 9</div><div class="glo-entry-desc">Loot : +10 Or, +5 Mana, +1 Poussière.</div></div>
-<div class="glo-entry"><div class="glo-entry-name">🕷 Araignée — ATK 3, Dmg 1, DEF 1, HP 8</div><div class="glo-entry-desc">Poison par round. Loot : +15 Mana, +1 Poussière.</div></div>
-<div class="glo-entry"><div class="glo-entry-name">👹 Troll — ATK 3, Dmg 2, DEF 3, Prot 1, HP 12</div><div class="glo-entry-desc">Stun sur 6. Loot : +15 Or, +15 Mana, +1 Poussière.</div></div>
-<div class="glo-entry"><div class="glo-entry-name">🏹 Archer Gobelin — ATK 4, Dmg 2, DEF 1, HP 7 (rang arrière)</div><div class="glo-entry-desc">Loot : +12 Or, +1 Poussière.</div></div>
-<div class="glo-entry"><div class="glo-entry-name">🧛 Vampire — ATK 4, Dmg 2, DEF 3, Prot 1, HP 10</div><div class="glo-entry-desc">Lifesteal. Loot : +3 HP, +1 Poussière.</div></div>
-<div class="glo-entry"><div class="glo-entry-name">😈 Démon — ATK 4, Dmg 3, DEF 3, Prot 2, HP 14</div><div class="glo-entry-desc">Loot : +20 Or, +1 Poussière.</div></div>
-<div class="glo-entry"><div class="glo-entry-name">👺 Seigneur Gobelin — ATK 4, Dmg 3, DEF 3, Prot 2, HP 14</div><div class="glo-entry-desc">Loot : +18 Or, +1 Poussière.</div></div>
-<div class="glo-entry"><div class="glo-entry-name">🧙 Nécromancien — ATK 3, Dmg 2, DEF 4, Prot 1, HP 12 (rang arrière)</div><div class="glo-entry-desc">Invoque squelettes. Loot : +30 Mana, +1 Poussière.</div></div>
+<div class="glo-entry"><div class="glo-entry-name">👺 Gobelin — ATK 2, DEF 2, HP 6</div><div class="glo-entry-desc">Appelle des renforts tous les 5 rounds. Loot : +5 Or, +1 ✦.</div></div>
+<div class="glo-entry"><div class="glo-entry-name">👊 Orc — ATK 3, DEF 2, HP 8</div><div class="glo-entry-desc">Sur un 6 : Crush Armor passif (réduit DEF héro, cumulatif). Loot : +8 Or, +1 ✦.</div></div>
+<div class="glo-entry"><div class="glo-entry-name">💀 Squelette — ATK 2, DEF 2, HP 6</div><div class="glo-entry-desc">Sur un 6 : réduit ATK héro de -1 (cumulatif). Loot : +6 Or, +1 ✦.</div></div>
+<div class="glo-entry"><div class="glo-entry-name">👺 Gobelin Soldat — ATK 3, DEF 3, Prot 1, HP 9</div><div class="glo-entry-desc">Appelle des renforts tous les 5 rounds. Loot : +12 Or, +1 ✦.</div></div>
+<div class="glo-entry"><div class="glo-entry-name">👊 Orc Élite — ATK 4, DEF 3, Prot 1, HP 12</div><div class="glo-entry-desc">Sur un 6 : Crush Armor. Loot : +15 Or, +1 ✦.</div></div>
+<div class="glo-entry"><div class="glo-entry-name">💀 Squelette Armé — ATK 3, DEF 3, Prot 1, HP 9</div><div class="glo-entry-desc">Sur un 6 : réduit ATK héro. Loot : +10 Or, +5 Mana, +1 ✦.</div></div>
+<div class="glo-entry"><div class="glo-entry-name">🕷 Araignée — ATK 3, DEF 1, HP 8</div><div class="glo-entry-desc">Poison cumulatif : chaque touche ajoute 1 stack (-1 HP/round pendant 3 rounds). Loot : +15 Mana, +1 ✦.</div></div>
+<div class="glo-entry"><div class="glo-entry-name">👹 Troll — ATK 3, DEF 3, Prot 1, HP 12</div><div class="glo-entry-desc">Sur un 6 : Stun (attaque à nouveau). Loot : +15 Or, +15 Mana, +1 ✦.</div></div>
+<div class="glo-entry"><div class="glo-entry-name">🏹 Archer Gobelin — ATK 4, DEF 1, HP 7 (rang arrière)</div><div class="glo-entry-desc">Appelle des renforts. Loot : +12 Or, +1 ✦.</div></div>
+<div class="glo-entry"><div class="glo-entry-name">🧛 Vampire — ATK 4, DEF 3, Prot 1, HP 10</div><div class="glo-entry-desc">Drain vital : se régénère des dégâts infligés. Loot : +3 HP, +1 ✦.</div></div>
+<div class="glo-entry"><div class="glo-entry-name">😈 Démon — ATK 4, DEF 3, Prot 2, HP 14</div><div class="glo-entry-desc">Sur un 6 : Zap démoniaque (dégâts magiques ignore protection). Loot : +20 Or, +1 ✦.</div></div>
+<div class="glo-entry"><div class="glo-entry-name">👺 Seigneur Gobelin — ATK 4, DEF 3, Prot 2, HP 14</div><div class="glo-entry-desc">Appelle des renforts tous les 5 rounds. Loot : +18 Or, +1 ✦.</div></div>
+<div class="glo-entry"><div class="glo-entry-name">🧙 Nécromancien — ATK 3, DEF 4, Prot 1, HP 12 (rang arrière)</div><div class="glo-entry-desc">Invoque des squelettes périodiquement. Loot : +30 Mana, +1 ✦.</div></div>
+</div>
+<div class="glo-section"><div class="glo-title">👹 Donjon — Monstres Tier 5-6</div>
+<div class="glo-entry"><div class="glo-entry-name">👊 Orc Briseur — ATK 5, DEF 4, Prot 2, HP 16</div><div class="glo-entry-desc">Crush Armor renforcé (tier monte avec saison). Loot : +22 Or, +2 ✦.</div></div>
+<div class="glo-entry"><div class="glo-entry-name">👺 Gobelin Boss — ATK 4, DEF 3, Prot 2, HP 15</div><div class="glo-entry-desc">Appelle des renforts tous les 5 rounds. Loot : +20 Or, +2 ✦.</div></div>
+<div class="glo-entry"><div class="glo-entry-name">🕷 Araignée Géante — ATK 4, DEF 2, Prot 1, HP 14</div><div class="glo-entry-desc">Poison cumulatif renforcé. Loot : +25 Mana, +2 ✦.</div></div>
+<div class="glo-entry"><div class="glo-entry-name">💀 Liche Mineure — ATK 4, DEF 4, Prot 2, HP 13 (rang arrière)</div><div class="glo-entry-desc">Réduit ATK héro. Loot : +28 Mana, +2 ✦.</div></div>
+<div class="glo-entry"><div class="glo-entry-name">😈 Démon Arcaniste — ATK 5, DEF 4, Prot 3, HP 18 (rang arrière)</div><div class="glo-entry-desc">Sur un 6 : Zap démoniaque puissant (tier monte avec saison). Loot : +28 Or, +14 Mana, +3 ✦.</div></div>
+<div class="glo-entry"><div class="glo-entry-name">💀 Squelette Ancien — ATK 5, DEF 5, Prot 2, HP 17</div><div class="glo-entry-desc">Réduit ATK héro sur 6. Loot : +30 Mana, +3 ✦.</div></div>
+<div class="glo-entry"><div class="glo-entry-name">👹 Troll des Abysses — ATK 5, DEF 4, Prot 2, HP 20</div><div class="glo-entry-desc">Stun renforcé. Loot : +30 Or, +3 ✦.</div></div>
 </div>
 <div class="glo-section"><div class="glo-title">💀 Boss de Donjon</div>
-<div class="glo-entry"><div class="glo-entry-name">👊 Orc Capitaine (S1) — ATK 3, HP 14</div><div class="glo-entry-desc">Loot : +20 Or, +4+S Poussières.</div></div>
-<div class="glo-entry"><div class="glo-entry-name">💀 Squelette Royal (S1) — ATK 3, HP 12</div><div class="glo-entry-desc">Loot : +20 Mana, +4+S Poussières.</div></div>
-<div class="glo-entry"><div class="glo-entry-name">👾 Orc Boss (S2-3) — ATK 4, HP 18</div><div class="glo-entry-desc">Loot : +25 Or, +4+S Poussières.</div></div>
-<div class="glo-entry"><div class="glo-entry-name">💀 Liche (S2-3) — ATK 4, HP 16</div><div class="glo-entry-desc">Réduit ATK avatar. Contré par Collier béni. Loot : +50 Mana, +4+S Poussières.</div></div>
-<div class="glo-entry"><div class="glo-entry-name">🐉 Dragon Noir (S4+) — ATK 5, HP 22</div><div class="glo-entry-desc">Loot : +35 Or, +4+S Poussières.</div></div>
-<div class="glo-entry"><div class="glo-entry-name">💀 Liche Ancienne (S4+) — ATK 5, HP 20</div><div class="glo-entry-desc">Réduction ATK amplifiée. Loot : +60 Mana, +4+S Poussières.</div></div>
-<div class="glo-entry"><div class="glo-entry-name">😈 Démon Majeur (S4+) — ATK 5, HP 24</div><div class="glo-entry-desc">Loot : +40 Or, +4+S Poussières.</div></div>
+<p style="font-size:11px;color:#7a6a8a;margin-bottom:8px">À partir de S2, les boss sont accompagnés d'alliés (1 en S2-3, 2 en S4-6, 3 en S7+).</p>
+<div class="glo-entry"><div class="glo-entry-name">👊 Orc Capitaine (S1) — ATK 3, HP 14</div><div class="glo-entry-desc">Loot : +20 Or, +4+S ✦.</div></div>
+<div class="glo-entry"><div class="glo-entry-name">💀 Squelette Royal (S1) — ATK 3, HP 12</div><div class="glo-entry-desc">Réduit ATK héro. Loot : +20 Mana, +4+S ✦.</div></div>
+<div class="glo-entry"><div class="glo-entry-name">👾 Orc Boss (S2-3) — ATK 4, HP 18</div><div class="glo-entry-desc">Loot : +25 Or, +4+S ✦.</div></div>
+<div class="glo-entry"><div class="glo-entry-name">💀 Liche (S2-3) — ATK 4, HP 16</div><div class="glo-entry-desc">Réduit ATK héro à chaque touche (cumulatif). Contré par Collier béni. Loot : +50 Mana, +4+S ✦.</div></div>
+<div class="glo-entry"><div class="glo-entry-name">🐉 Dragon Noir (S4+) — ATK 5, HP 22</div><div class="glo-entry-desc">Souffle tous les 4 rounds (ignore protection). Attaque normalement les autres rounds. Loot : +35 Or, +4+S ✦.</div></div>
+<div class="glo-entry"><div class="glo-entry-name">💀 Liche Ancienne (S4+) — ATK 5, HP 20</div><div class="glo-entry-desc">Réduction ATK amplifiée. Loot : +60 Mana, +4+S ✦.</div></div>
+<div class="glo-entry"><div class="glo-entry-name">😈 Démon Majeur (S4+) — ATK 5, HP 24</div><div class="glo-entry-desc">Zap démoniaque sur 6. Loot : +40 Or, +4+S ✦.</div></div>
 </div>`,
-    combat:`<div class="glo-section"><div class="glo-title">🎯 Combat</div>
-<div class="glo-entry"><div class="glo-entry-name">Jauge d&#39;attaque</div><div class="glo-entry-desc">×0 Raté | ×0.5 Faible | ×1 Touché | ×1.2 Parfait</div></div>
-<div class="glo-entry"><div class="glo-entry-name">Rang avant / arrière</div><div class="glo-entry-desc">Arrière ciblable seulement avec arme à distance.</div></div>
-<div class="glo-entry"><div class="glo-entry-name">Compétences</div><div class="glo-entry-desc">Utilisent l&#39;action → riposte suit. 1× par combat.</div></div>
-<div class="glo-entry"><div class="glo-entry-name">Glyphes & Potions</div><div class="glo-entry-desc">Hors action, pas de riposte. Bloqués après victoire.</div></div>
-<div class="glo-entry"><div class="glo-entry-name">⚰ Faux</div><div class="glo-entry-desc">Frappe toutes les unités du rang avant.</div></div>
-<div class="glo-entry"><div class="glo-entry-name">🏹 Arbalète perçante</div><div class="glo-entry-desc">50% dégâts à l&#39;unité derrière la cible.</div></div>
+
+    combat:`<div class="glo-section"><div class="glo-title">🎯 Système de Combat — Donjon</div>
+<div class="glo-entry"><div class="glo-entry-name">Jauge d&#39;attaque</div><div class="glo-entry-desc">Cliquez au bon moment : ×0 Raté | ×0.5 Faible | ×1 Touché | ×1.2 Parfait. La zone change selon ATK et DEF des ennemis.</div></div>
+<div class="glo-entry"><div class="glo-entry-name">Actions par round</div><div class="glo-entry-desc">Le joueur effectue ses actions (attaques ou compétences actives). Puis chaque ennemi vivant attaque à son tour. Fin du round : effets de durée (poison, rage…) sont appliqués.</div></div>
+<div class="glo-entry"><div class="glo-entry-name">Rang avant / arrière</div><div class="glo-entry-desc">Les ennemis au rang arrière ne peuvent être ciblés qu&#39;avec une arme à distance ou la compétence Volée.</div></div>
+<div class="glo-entry"><div class="glo-entry-name">Compétences actives</div><div class="glo-entry-desc">Utilisent l&#39;action du round (1× par combat sauf Soin). Déclenchent la phase ennemie après usage.</div></div>
+<div class="glo-entry"><div class="glo-entry-name">Glyphes</div><div class="glo-entry-desc">Distorsion (tous ennemis), Rage (×2 dégâts), Bénédiction (agrandit la zone parfait). Obtenus via Parchemin — tier du donjon influence lequel est proposé.</div></div>
+<div class="glo-entry"><div class="glo-entry-name">Potions</div><div class="glo-entry-desc">Soin (+3 HP), Anti-Poison (retire tous les stacks de poison). Utilisables hors action.</div></div>
+</div>
+<div class="glo-section"><div class="glo-title">☠ Effets Spéciaux Ennemis</div>
+<div class="glo-entry"><div class="glo-entry-name">☠ Poison (Araignée)</div><div class="glo-entry-desc">Chaque touche ajoute 1 stack : -1 HP/round pendant 3 rounds. Plusieurs araignées ou plusieurs touches = stacks cumulatifs. Contré par Potion Anti-Poison.</div></div>
+<div class="glo-entry"><div class="glo-entry-name">💫 Stun (Troll)</div><div class="glo-entry-desc">Sur un 6 : attaque une deuxième fois dans le même round.</div></div>
+<div class="glo-entry"><div class="glo-entry-name">🧛 Drain Vital (Vampire)</div><div class="glo-entry-desc">Se régénère des dégâts infligés (récupère les HP perdus).</div></div>
+<div class="glo-entry"><div class="glo-entry-name">🔥 Souffle (Dragon)</div><div class="glo-entry-desc">Tous les 4 rounds : attaque automatique qui ignore la protection. Les autres rounds : attaque normale.</div></div>
+<div class="glo-entry"><div class="glo-entry-name">💀 Malédiction ATK (Liche)</div><div class="glo-entry-desc">Chaque touche réduit l&#39;ATK du héro de -1 (cumulatif). Contré par Collier béni.</div></div>
+<div class="glo-entry"><div class="glo-entry-name">⚡ Zap Passif (Démon)</div><div class="glo-entry-desc">Sur un 6 : frappe magique qui ignore la protection. Dégâts augmentent avec la saison.</div></div>
+<div class="glo-entry"><div class="glo-entry-name">🔨 Crush Armor (Orc)</div><div class="glo-entry-desc">Sur un 6 : réduit la DEF du héro (cumulatif). Intensité augmente avec la saison.</div></div>
+<div class="glo-entry"><div class="glo-entry-name">🔔 Appel à l&#39;aide (Gobelin)</div><div class="glo-entry-desc">Tous les 5 rounds : invoque un renfort aléatoire dans le combat en cours.</div></div>
+<div class="glo-entry"><div class="glo-entry-name">💀 Invocation (Nécromancien)</div><div class="glo-entry-desc">Invoque périodiquement un squelette au rang avant.</div></div>
+</div>
+<div class="glo-section"><div class="glo-title">⚔ Compétences de Classe</div>
+<div class="glo-entry"><div class="glo-entry-name">🔨 Crushing Blow (Guerrier)</div><div class="glo-entry-desc">Passif : réduit la DEF ennemie à chaque touche (cumulatif). Niveau augmente en méta.</div></div>
+<div class="glo-entry"><div class="glo-entry-name">💚 Second Souffle (Guerrier)</div><div class="glo-entry-desc">Passif : soin sur coup parfait (×1.2). Quantité augmente en méta.</div></div>
+<div class="glo-entry"><div class="glo-entry-name">🏹 Volée (Archer)</div><div class="glo-entry-desc">Frappe plusieurs ennemis d&#39;un rang. Utilise l&#39;action du round.</div></div>
+<div class="glo-entry"><div class="glo-entry-name">⚡ Zap (Mage)</div><div class="glo-entry-desc">Dégâts magiques sur une cible. Ignore la protection.</div></div>
+<div class="glo-entry"><div class="glo-entry-name">❄ Freeze (Mage)</div><div class="glo-entry-desc">Bloque tous les ennemis pendant X rounds (ne peuvent pas attaquer).</div></div>
+<div class="glo-entry"><div class="glo-entry-name">💀 Malédiction (Aventurier)</div><div class="glo-entry-desc">Réduit l&#39;ATK de tous les ennemis pendant X rounds.</div></div>
+<div class="glo-entry"><div class="glo-entry-name">⏳ Distorsion Temporelle</div><div class="glo-entry-desc">Compétence méta : frappe tous les ennemis pour (3 + niveau) dégâts. Utilise l&#39;action du round.</div></div>
 </div>`
 };
 
