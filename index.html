@@ -249,7 +249,7 @@
         #dungeon-reward .reward-desc{font-size:12px;color:var(--text-m);margin-bottom:14px;}
         .bld-card{background:var(--bg-card);border:1px solid var(--border);border-radius:6px;padding:7px 9px;margin-bottom:6px;cursor:pointer;transition:all .18s;}
         .bld-card:hover:not(.bld-disabled){border-color:var(--border-g);background:var(--bg-hover);}
-        .bld-card.bld-disabled{opacity:.4;filter:grayscale(40%);cursor:not-allowed;border-color:var(--border);}
+        .bld-card.bld-disabled{filter:grayscale(30%);cursor:not-allowed;border-color:var(--border);}
         .bld-header{display:flex;align-items:center;gap:5px;margin-bottom:3px;}
         .bld-icon{font-size:17px;}.bld-name{font-family:'Cinzel',serif;font-weight:bold;font-size:12px;flex:1;}
         .bld-bonus{font-size:10px;color:var(--teal-l);font-weight:bold;margin-bottom:4px;padding:1px 5px;background:#041c0a;border-radius:3px;display:inline-block;}
@@ -562,7 +562,7 @@
 <div id="home-screen" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:#06040a;z-index:20000;flex-direction:column;align-items:center;justify-content:center;gap:20px">
     <div style="text-align:center;margin-bottom:10px">
         <div style="font-family:Cinzel,serif;font-size:28px;color:#c0a060;letter-spacing:3px;text-shadow:0 0 20px rgba(180,140,60,0.4)">⚔ Chronocity — A Rogue City Builder</div>
-        <div style="font-size:11px;color:#4a3a5a;margin-top:6px;letter-spacing:2px">VERSION 0.377</div>
+        <div style="font-size:11px;color:#4a3a5a;margin-top:6px;letter-spacing:2px">VERSION 0.385</div>
     </div>
     <div id="home-menu" style="display:flex;flex-direction:column;gap:10px;width:min(340px,90vw)">
         <button onclick="homeLoad()" style="width:100%;padding:16px 0;font-family:Cinzel,serif;font-size:14px;cursor:pointer;border-radius:8px;background:linear-gradient(135deg,#1a1030,#2a1a40);color:#c080ff;border:1px solid #5040a0">📂 Charger une partie</button>
@@ -1000,7 +1000,7 @@
 <!-- Frise de progression -->
 <div id="timeline">
     <div id="timeline-season">Saison 1</div>
-    <div style="font-family:Cinzel,serif;font-size:9px;color:#3a3050;margin-left:auto;padding-left:8px;white-space:nowrap">v0.377</div>
+    <div style="font-family:Cinzel,serif;font-size:9px;color:#3a3050;margin-left:auto;padding-left:8px;white-space:nowrap">v0.385</div>
     <div id="timeline-steps"></div>
     <button onclick="toggleSaveMenu()" style="background:linear-gradient(135deg,#1a1030,#2a1a40);border:1px solid #4a3060;color:#c0a060;font-size:14px;cursor:pointer;padding:2px 8px;border-radius:5px;white-space:nowrap;flex-shrink:0" title="Sauvegardes">💾 Save</button>
     <button onclick="toggleMetaSummary()" style="background:linear-gradient(135deg,#101a10,#1a2a1a);border:1px solid #2a5a2a;color:#4cffaa;font-size:14px;cursor:pointer;padding:2px 8px;border-radius:5px;white-space:nowrap;flex-shrink:0" title="Résumé méta">✦ Méta</button>
@@ -1414,6 +1414,7 @@ function applyTileBonus(tileType, buildingName) {
 }
 // ===== FIN SYSTÈME TUILES =====
 let hordeHiddenUnits = []; // unités non identifiées (brouillard de guerre)
+let hordeScoutedThisSeason = false; // scout Monolithe déjà utilisé cette saison
 let hordeHiddenCount = 0;  // nombre de troupes cachées connu ou non selon saison
 let currentTurn = 1;
 let currentSeason = 1;
@@ -1744,7 +1745,7 @@ function showTurnAnimation(turnNum, season, callback) {
             const prevSeason = currentSeason - 1;
             const expired = (window._wards || []).filter(w => w.season < currentSeason);
             if (expired.length > 0) {
-                cityArmy = cityArmy.filter(u => !(u.id === 'Ward' && u._wardSeason < currentSeason));
+                cityArmy = cityArmy.filter(u => !(( u.id === 'Ward' || u.id === 'WardMV') && u._wardSeason < currentSeason));
                 window._wards = (window._wards || []).filter(w => w.season >= currentSeason);
                 addLog('⛩ '+expired.length+' Ward(s) expirée(s) (fin de saison '+prevSeason+').');
             }
@@ -5002,6 +5003,11 @@ const UNIT_CATALOG = [
     { id:'Inquisiteur',   name:'Inquisiteur',        icon:'⚜',  atk:6, atkMag:0, traits:['anti-demon','anti-demon','anti-demon'], elite:true,
       gold:120, pop:25, mana:60, req:'sa_inquisiteurs',
       desc:'ATK 6, Anti-Démon III. Requiert Inquisiteurs.' },
+    // ── Wards (unités spéciales Cathédrale, non recrutables) ──
+    { id:'Ward',           name:'Ward Anti-Démon',    icon:'⛩', atk:0, atkMag:0, traits:['anti-demon'], special:true,
+      desc:'Protection divine anti-démon (dure 1 saison).' },
+    { id:'WardMV',         name:'Ward Anti-Mort-Vivant', icon:'⛩', atk:0, atkMag:0, traits:['anti-mort-vivant'], special:true,
+      desc:'Protection divine anti-mort-vivant (dure 1 saison).' },
 ];
 
 // Catalogue de la horde par saison
@@ -5545,6 +5551,7 @@ function updateArmyPanels() {
             cityArmy.forEach(u => { counts[u.id] = (counts[u.id]||0)+1; });
             cp.innerHTML = Object.entries(counts).map(([id,n]) => {
                 const u = UNIT_CATALOG.find(x=>x.id===id);
+                if (!u) return '';
                 return '<div style="display:flex;align-items:center;gap:6px;padding:2px 0">'+
                     '<span>'+u.icon+'</span><span>'+u.name+'</span>'+
                     '<span style="color:#4cffaa;font-weight:bold;margin-left:auto">×'+n+'</span></div>';
@@ -6085,19 +6092,18 @@ function renderBuildPanelList() {
         const card = document.createElement('div');
         card.className = 'bld-card' + (b.ok ? '' : ' bld-disabled');
         card.style.cssText = 'padding:5px 8px;flex-shrink:0';
-        if (!b.prereqOk) card.style.opacity = '0.4';
         const costs = (b.gold?'🪙'+b.gold+' ':'')+(b.pop?'👥'+b.pop+' ':'')+(b.mana?'✨'+b.mana:'');
         const tierLabel = b.tier === 4 ? ' <span style="color:#ffd060;font-size:8px">★</span>' : '';
+        const dimStyle = !b.prereqOk ? 'opacity:0.6' : '';
         card.innerHTML =
-            '<div class="bld-header" style="gap:6px">'+
+            '<div class="bld-header" style="gap:6px;'+dimStyle+'">'+
                 '<span style="font-size:16px">'+b.icon+'</span>'+
                 '<span class="bld-name" style="font-size:11px;color:'+(b.ok?'#ede0c0':b.prereqOk?'#9a8a6a':'#6a5a48')+'">'+b.name+tierLabel+(buildingCounts[b.name]>0?' <span style="color:#4cffaa;font-size:12px;font-weight:bold">×'+buildingCounts[b.name]+'</span>':'')+  '</span>'+
                 '<span style="font-size:9px;color:#9a8a6a;margin-left:auto">'+costs+'</span>'+
             '</div>'+
-            '<div style="font-size:9px;color:#7a6a50;margin-top:1px">'+b.bonus+
-            (b.req&&!b.prereqOk?' <span style="color:#a04010"> — ⚠ '+b.req+'</span>':'')+
-            (!b.canAfford&&b.prereqOk?' <span style="color:#884400"> — ressources insuffisantes</span>':'')+
-            '</div>';
+            '<div style="font-size:9px;color:#7a6a50;margin-top:1px">'+b.bonus+'</div>'+
+            (b.req&&!b.prereqOk?'<div style="font-size:10px;color:#ff8040;margin-top:2px">🔒 '+b.req+'</div>':'')+
+            (!b.canAfford&&b.prereqOk?'<div style="font-size:9px;color:#884400;'+dimStyle+'"> — ressources insuffisantes</div>':'');
         if (b.ok) { card.onclick = () => selectBuildingForPlacement(b.name); card.style.cursor='pointer'; }
         container.appendChild(card);
     });
@@ -6261,7 +6267,8 @@ function renderTaxPanel() {
             const btn = document.createElement('button');
             btn.style.cssText = 'padding:4px 8px;border-radius:5px;font-size:9px;font-family:Cinzel,serif;text-align:left;cursor:'+(canBuy?'pointer':'not-allowed')+';'+(canBuy?'background:#1a0a2a;color:#c080ff;border:1px solid #5020a0;':'background:#0a0a0a;color:#3a3a3a;border:1px solid #1a1a1a;');
             btn.innerHTML = '⛩ '+label+' <span style="float:right">40🪙 30✨</span>';
-            if (canBuy) btn.onclick = () => { gold -= 40; mana -= 30; if (!window._wards) window._wards=[]; window._wards.push({type:wardType,season:currentSeason}); cityArmy.push({id:'Ward',name:label,icon:'⛩',atk:0,atkMag:0,traits:[wardType],_wardSeason:currentSeason}); addLog('⛩ '+label+' activée !'); updateStats(); renderTaxPanel(); };
+            if (canBuy) btn.onclick = () => { gold -= 40; mana -= 30; if (!window._wards) window._wards=[]; window._wards.push({type:wardType,season:currentSeason}); const _wardId = wardType==='anti-demon' ? 'Ward' : 'WardMV';
+                cityArmy.push({id:_wardId,name:label,icon:'⛩',atk:0,atkMag:0,traits:[wardType],_wardSeason:currentSeason}); addLog('⛩ '+label+' activée !'); updateStats(); renderTaxPanel(); };
             specialWrap.appendChild(btn);
         });
     }
@@ -6435,47 +6442,24 @@ function doCityHeal() {
 function doMonolithScout() {
     const cost = calcMonolitheCost();
     if (mana < cost) { addLog('🔭 Mana insuffisant pour le Monolithe ('+cost+' requis).'); return; }
-
-    // Si rien à révéler
+    if (hordeScoutedThisSeason) { addLog('🔭 Monolithe déjà utilisé cette saison.'); return; }
     if (hordeHiddenUnits.length === 0 && hordeHiddenCount === 0) {
-        addLog('🔭 Monolithe : la composition de la Horde est déjà entièrement connue. Action annulée.');
+        addLog('🔭 Monolithe : la composition de la Horde est déjà entièrement connue.');
         return;
     }
 
     mana -= cost;
-    const { vis, seasonName } = calcScoutVisibility();
+    hordeScoutedThisSeason = true;
 
-    if (vis >= 4) {
-        // Tout visible
-        const revealed = [...hordeHiddenUnits];
-        revealed.forEach(u => hordeArmy.push(u));
-        hordeHiddenUnits = []; hordeHiddenCount = 0;
-        hordeRevealed = true;
-        const names = revealed.map(u => u.icon+' '+u.name).join(', ');
-        addLog('🔭 Monolithe : composition complète révélée ! '+
-            (revealed.length > 0 ? '— '+names : '(aucune unité cachée)'));
-    } else if (vis === 3) {
-        // Moitié visible
-        const half = Math.ceil(hordeHiddenUnits.length / 2);
-        const revealed = hordeHiddenUnits.splice(0, half);
-        revealed.forEach(u => hordeArmy.push(u));
-        hordeHiddenCount = hordeHiddenUnits.length;
-        hordeRevealed = true;
-        const names = revealed.map(u => u.icon+' '+u.name).join(', ');
-        addLog('🔭 Monolithe : '+revealed.length+' unité(s) révélée(s) — '+names+
-            (hordeHiddenCount > 0 ? ' ('+hordeHiddenCount+' encore cachée(s))' : ' — tout révélé !'));
-    } else if (vis === 2) {
-        // Seulement le nombre
-        hordeRevealed = true;
-        addLog('🔭 Monolithe : '+hordeHiddenCount+' unité(s) cachée(s) détectée(s), identités inconnues. (Visibilité insuffisante)');
-    } else {
-        addLog('🔭 Monolithe : interférences trop fortes (Hiver — Visibilité '+vis+'). Aucune information.');
-    }
+    // Révéler toutes les unités cachées
+    const revealed = [...hordeHiddenUnits];
+    revealed.forEach(u => hordeArmy.push(u));
+    hordeHiddenUnits = []; hordeHiddenCount = 0;
+    hordeRevealed = true;
+
+    const names = revealed.length > 0 ? revealed.map(u => u.icon+' '+u.name).join(', ') : '(aucune)';
+    addLog('🔭 Monolithe : '+revealed.length+' unité(s) révélée(s) — '+names);
     updateStats(); updateArmyPanels(); renderTaxPanel();
-    // Ouvrir le panel armée pour que le joueur voit les changements
-    const armyBtn = document.querySelector('[onclick*="showArmyPanel"], [onclick*="army-modal"]');
-    const armyModal = document.getElementById('army-modal');
-    if (armyModal) armyModal.style.display = '';
 }
 
 function checkEqReq(req) {
@@ -7811,7 +7795,7 @@ function cleanForSave(obj) {
 
 function getGameState() {
     return {
-        version: '0.377',
+        version: '0.385',
         date: new Date().toISOString(),
         currentTurn, currentSeason,
         gold, mana, population, dust,
@@ -7827,7 +7811,9 @@ function getGameState() {
         hordeArmy: cleanForSave(hordeArmy||[]),
         hordePrevSeason: cleanForSave(hordePrevSeason||[]),
         hordeCurrentAdditions: cleanForSave(hordeCurrentAdditions||[]),
-        hordeCurrentSeason, hordeRevealed,
+        hordeCurrentSeason, hordeRevealed, hordeScoutedThisSeason,
+        hordeHiddenUnits: cleanForSave(hordeHiddenUnits||[]),
+        hordeHiddenCount: hordeHiddenCount||0,
         tileState: cleanForSave(tileState||[]),
         meta: cleanForSave(getMeta()),
     };
@@ -7891,7 +7877,9 @@ function restoreGameState(s) {
     if (s.hordeArmy) hordeArmy.splice(0, hordeArmy.length, ...s.hordeArmy);
     if (s.hordePrevSeason) hordePrevSeason.splice(0, hordePrevSeason.length, ...s.hordePrevSeason);
     if (s.hordeCurrentAdditions) hordeCurrentAdditions.splice(0, hordeCurrentAdditions.length, ...s.hordeCurrentAdditions);
-    hordeCurrentSeason = s.hordeCurrentSeason||0; hordeRevealed = s.hordeRevealed||false;
+    hordeCurrentSeason = s.hordeCurrentSeason||0; hordeRevealed = s.hordeRevealed||false; hordeScoutedThisSeason = s.hordeScoutedThisSeason||false;
+    if (s.hordeHiddenUnits) hordeHiddenUnits.splice(0, hordeHiddenUnits.length, ...s.hordeHiddenUnits);
+    hordeHiddenCount = s.hordeHiddenCount||0;
     if (s.tileState) tileState.splice(0, tileState.length, ...s.tileState);
 
     // Recalculer les effets des bâtiments (remet fortifications au max)
@@ -11181,7 +11169,10 @@ body.clarity-on #clarity-resbar {
                 mbtn.style.display = '';
                 const lbl = document.getElementById('cfr-monolith-label');
                 if (lbl) lbl.textContent = 'Scouter — '+cost+'✨ (vis.'+vis+')';
-                mbtn.style.opacity = (window.mana >= cost) ? '1' : '0.5';
+                const _alreadyScouted = window.hordeScoutedThisSeason || false;
+                mbtn.style.opacity = (!_alreadyScouted && window.mana >= cost) ? '1' : '0.5';
+                mbtn.disabled = _alreadyScouted;
+                if (_alreadyScouted) { const lbl2 = document.getElementById('cfr-monolith-label'); if(lbl2) lbl2.textContent = 'Déjà utilisé cette saison'; }
             } else {
                 mbtn.style.display = 'none';
             }
