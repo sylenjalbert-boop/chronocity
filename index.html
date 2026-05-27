@@ -562,7 +562,7 @@
 <div id="home-screen" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:#06040a;z-index:20000;flex-direction:column;align-items:center;justify-content:center;gap:20px">
     <div style="text-align:center;margin-bottom:10px">
         <div style="font-family:Cinzel,serif;font-size:28px;color:#c0a060;letter-spacing:3px;text-shadow:0 0 20px rgba(180,140,60,0.4)">⚔ Chronocity — A Rogue City Builder</div>
-        <div style="font-size:11px;color:#4a3a5a;margin-top:6px;letter-spacing:2px">VERSION 0.376</div>
+        <div style="font-size:11px;color:#4a3a5a;margin-top:6px;letter-spacing:2px">VERSION 0.377</div>
     </div>
     <div id="home-menu" style="display:flex;flex-direction:column;gap:10px;width:min(340px,90vw)">
         <button onclick="homeLoad()" style="width:100%;padding:16px 0;font-family:Cinzel,serif;font-size:14px;cursor:pointer;border-radius:8px;background:linear-gradient(135deg,#1a1030,#2a1a40);color:#c080ff;border:1px solid #5040a0">📂 Charger une partie</button>
@@ -1000,7 +1000,7 @@
 <!-- Frise de progression -->
 <div id="timeline">
     <div id="timeline-season">Saison 1</div>
-    <div style="font-family:Cinzel,serif;font-size:9px;color:#3a3050;margin-left:auto;padding-left:8px;white-space:nowrap">v0.376</div>
+    <div style="font-family:Cinzel,serif;font-size:9px;color:#3a3050;margin-left:auto;padding-left:8px;white-space:nowrap">v0.377</div>
     <div id="timeline-steps"></div>
     <button onclick="toggleSaveMenu()" style="background:linear-gradient(135deg,#1a1030,#2a1a40);border:1px solid #4a3060;color:#c0a060;font-size:14px;cursor:pointer;padding:2px 8px;border-radius:5px;white-space:nowrap;flex-shrink:0" title="Sauvegardes">💾 Save</button>
     <button onclick="toggleMetaSummary()" style="background:linear-gradient(135deg,#101a10,#1a2a1a);border:1px solid #2a5a2a;color:#4cffaa;font-size:14px;cursor:pointer;padding:2px 8px;border-radius:5px;white-space:nowrap;flex-shrink:0" title="Résumé méta">✦ Méta</button>
@@ -6435,15 +6435,25 @@ function doCityHeal() {
 function doMonolithScout() {
     const cost = calcMonolitheCost();
     if (mana < cost) { addLog('🔭 Mana insuffisant pour le Monolithe ('+cost+' requis).'); return; }
+
+    // Si rien à révéler
+    if (hordeHiddenUnits.length === 0 && hordeHiddenCount === 0) {
+        addLog('🔭 Monolithe : la composition de la Horde est déjà entièrement connue. Action annulée.');
+        return;
+    }
+
     mana -= cost;
     const { vis, seasonName } = calcScoutVisibility();
 
     if (vis >= 4) {
         // Tout visible
-        hordeHiddenUnits.forEach(u => hordeArmy.push(u));
+        const revealed = [...hordeHiddenUnits];
+        revealed.forEach(u => hordeArmy.push(u));
         hordeHiddenUnits = []; hordeHiddenCount = 0;
         hordeRevealed = true;
-        addLog('🔭 Monolithe : composition complète révélée ! (Visibilité '+vis+' — '+seasonName+')');
+        const names = revealed.map(u => u.icon+' '+u.name).join(', ');
+        addLog('🔭 Monolithe : composition complète révélée ! '+
+            (revealed.length > 0 ? '— '+names : '(aucune unité cachée)'));
     } else if (vis === 3) {
         // Moitié visible
         const half = Math.ceil(hordeHiddenUnits.length / 2);
@@ -6451,15 +6461,21 @@ function doMonolithScout() {
         revealed.forEach(u => hordeArmy.push(u));
         hordeHiddenCount = hordeHiddenUnits.length;
         hordeRevealed = true;
-        addLog('🔭 Monolithe : '+revealed.length+' unité(s) cachée(s) révélée(s) ('+hordeHiddenCount+' encore cachées). (Visibilité '+vis+')');
+        const names = revealed.map(u => u.icon+' '+u.name).join(', ');
+        addLog('🔭 Monolithe : '+revealed.length+' unité(s) révélée(s) — '+names+
+            (hordeHiddenCount > 0 ? ' ('+hordeHiddenCount+' encore cachée(s))' : ' — tout révélé !'));
     } else if (vis === 2) {
         // Seulement le nombre
         hordeRevealed = true;
-        addLog('🔭 Monolithe : '+hordeHiddenCount+' unité(s) cachée(s) détectée(s), identités inconnues. (Visibilité '+vis+')');
+        addLog('🔭 Monolithe : '+hordeHiddenCount+' unité(s) cachée(s) détectée(s), identités inconnues. (Visibilité insuffisante)');
     } else {
-        addLog('🔭 Monolithe : interférences trop fortes, aucune information. (Visibilité '+vis+' — '+seasonName+')');
+        addLog('🔭 Monolithe : interférences trop fortes (Hiver — Visibilité '+vis+'). Aucune information.');
     }
     updateStats(); updateArmyPanels(); renderTaxPanel();
+    // Ouvrir le panel armée pour que le joueur voit les changements
+    const armyBtn = document.querySelector('[onclick*="showArmyPanel"], [onclick*="army-modal"]');
+    const armyModal = document.getElementById('army-modal');
+    if (armyModal) armyModal.style.display = '';
 }
 
 function checkEqReq(req) {
@@ -7795,7 +7811,7 @@ function cleanForSave(obj) {
 
 function getGameState() {
     return {
-        version: '0.376',
+        version: '0.377',
         date: new Date().toISOString(),
         currentTurn, currentSeason,
         gold, mana, population, dust,
