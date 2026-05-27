@@ -562,7 +562,7 @@
 <div id="home-screen" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:#06040a;z-index:20000;flex-direction:column;align-items:center;justify-content:center;gap:20px">
     <div style="text-align:center;margin-bottom:10px">
         <div style="font-family:Cinzel,serif;font-size:28px;color:#c0a060;letter-spacing:3px;text-shadow:0 0 20px rgba(180,140,60,0.4)">⚔ Chronocity — A Rogue City Builder</div>
-        <div style="font-size:11px;color:#4a3a5a;margin-top:6px;letter-spacing:2px">VERSION 0.393</div>
+        <div style="font-size:11px;color:#4a3a5a;margin-top:6px;letter-spacing:2px">VERSION 0.394</div>
     </div>
     <div id="home-menu" style="display:flex;flex-direction:column;gap:10px;width:min(340px,90vw)">
         <button onclick="homeLoad()" style="width:100%;padding:16px 0;font-family:Cinzel,serif;font-size:14px;cursor:pointer;border-radius:8px;background:linear-gradient(135deg,#1a1030,#2a1a40);color:#c080ff;border:1px solid #5040a0">📂 Charger une partie</button>
@@ -1000,7 +1000,7 @@
 <!-- Frise de progression -->
 <div id="timeline">
     <div id="timeline-season">Saison 1</div>
-    <div style="font-family:Cinzel,serif;font-size:9px;color:#3a3050;margin-left:auto;padding-left:8px;white-space:nowrap">v0.393</div>
+    <div style="font-family:Cinzel,serif;font-size:9px;color:#3a3050;margin-left:auto;padding-left:8px;white-space:nowrap">v0.394</div>
     <div id="timeline-steps"></div>
     <button onclick="toggleSaveMenu()" style="background:linear-gradient(135deg,#1a1030,#2a1a40);border:1px solid #4a3060;color:#c0a060;font-size:14px;cursor:pointer;padding:2px 8px;border-radius:5px;white-space:nowrap;flex-shrink:0" title="Sauvegardes">💾 Save</button>
     <button onclick="toggleMetaSummary()" style="background:linear-gradient(135deg,#101a10,#1a2a1a);border:1px solid #2a5a2a;color:#4cffaa;font-size:14px;cursor:pointer;padding:2px 8px;border-radius:5px;white-space:nowrap;flex-shrink:0" title="Résumé méta">✦ Méta</button>
@@ -1474,12 +1474,35 @@ function showCityPanel() {
             '<div style="font-size:10px;color:#7a6a50;margin-top:4px"Perdues lors d\'une défaite. Coût : '+REBUILD_COST+' Or / fort.</div>'+
             '</div>'+
 
-            '<div style="background:#12121e;border-radius:8px;padding:10px;margin-bottom:14px">'+
-            '<div style="font-size:12px;color:#9a8a6a;margin-bottom-4px">Bâtiments construits</div>'+
-            '<div style="font-size:11px;color:#aaa;margin-top:4px">'+
-            (Object.entries(buildingCounts).filter(([,v])=>v>0).map(([k,v])=>'• '+k+(v>1?' ×'+v:'')).join('<br>') || '<span style="color:#7a6a50">Aucun</span>')+
-            '</div>'+
-            '</div>'+
+            (function(){
+                const cats = [
+                    { label:'🗡 Militaire', tab:'mil', color:'#ffb040' },
+                    { label:'💰 Économie',  tab:'eco', color:'#ffd060' },
+                    { label:'✨ Magie',     tab:'mag', color:'#c080ff' },
+                ];
+                const tiers = [1,2,3,4];
+                const tierLabels = {1:'I',2:'II',3:'III',4:'IV'};
+                let html = '<div style="background:#12121e;border-radius:8px;padding:10px;margin-bottom:14px">';
+                html += '<div style="font-size:12px;color:#9a8a6a;margin-bottom:8px">Bâtiments construits</div>';
+                const BDEFS = window.BUILDING_DEFS || [];
+                let hasAny = false;
+                cats.forEach(function(cat) {
+                    let catHtml = '';
+                    tiers.forEach(function(tier) {
+                        const bInTier = BDEFS.filter(function(b){ return b.tab===cat.tab && b.tier===tier && (buildingCounts[b.name]||0)>0; });
+                        if (bInTier.length === 0) return;
+                        const items = bInTier.map(function(b){ const n=buildingCounts[b.name]; return b.icon+' '+b.name+(n>1?' <span style="color:#4cffaa">×'+n+'</span>':''); }).join(' &nbsp; ');
+                        catHtml += '<div style="margin:2px 0;font-size:10px"><span style="color:#7a6a50;min-width:18px;display:inline-block">'+tierLabels[tier]+'</span> '+items+'</div>';
+                    });
+                    if (catHtml) {
+                        hasAny = true;
+                        html += '<div style="margin-bottom:6px"><div style="font-size:10px;font-weight:bold;color:'+cat.color+';margin-bottom:2px">'+cat.label+'</div>'+catHtml+'</div>';
+                    }
+                });
+                if (!hasAny) html += '<div style="font-size:11px;color:#7a6a50">Aucun bâtiment construit.</div>';
+                html += '</div>';
+                return html;
+            })()+
 
             // Section achat conscrit (Autel de Guerre)
             + ((buildingCounts['Autel de Guerre']||0) >= 1 ? (function(){
@@ -6071,7 +6094,7 @@ function renderBuildPanelList() {
             '<button onclick="cancelTilePlacement()" style="width:100%;margin-top:8px;padding:6px;border:none;border-radius:6px;background:#2a1a1a;color:#ff8080;cursor:pointer;font-size:11px">✕ Annuler le placement</button>';
         return;
     }
-    const buildings = [
+    const buildings = window.BUILDING_DEFS = [
         // TIER I
         { name:'Ferme',             tab:'eco',  tier:1, gold:30,  pop:0,  mana:0,   icon:'🌾', bonus:'+10 Pop | +5/Conj' },
         { name:'Mine',              tab:'eco',  tier:1, gold:0,   pop:20, mana:0,   icon:'⛏',  bonus:'+20 Or | +10/Conj' },
@@ -6089,9 +6112,9 @@ function renderBuildPanelList() {
         { name:'Tour de Magie',     tab:'mag',  tier:3, gold:120, pop:20, mana:60,  icon:'✨', bonus:'+10 Mana/Conj | Élémentaires Majeurs', req:'1 École de Magie', prereq:()=>(buildingCounts['École de Magie']||0)>=1 },
         { name:'Caravansérail',     tab:'eco',  tier:3, gold:100, pop:20, mana:0,   icon:'🏕', bonus:'Caravane +50%', req:'1 Place du Marché', prereq:()=>(buildingCounts['Place du Marché']||0)>=1 },
         // TIER IV — Unique
-        { name:'Cathédrale',        tab:'mag',  tier:4, gold:200, pop:30, mana:80,  icon:'⛩', bonus:'Wards (40 Or + 30 Mana) | Paladin', req:'1 Temple', unique:true, prereq:()=>(buildingCounts['Temple']||0)>=1 && !(buildingCounts['Cathédrale']||0) },
-        { name:'Autel de Guerre',   tab:'mil',  tier:4, gold:180, pop:30, mana:0,   icon:'⚔', bonus:'+6 Conscr. | Achat Conscrit | Hallebardier', req:'1 Académie militaire', unique:true, prereq:()=>(buildingCounts['Académie militaire']||0)>=1 && !(buildingCounts['Autel de Guerre']||0) },
-        { name:'Monolithe de Vigie',tab:'mag',  tier:4, gold:250, pop:50, mana:100, icon:'🔭', bonus:'Révèle horde (150 Or + 100 Mana)', req:'1 Archerie + 1 Caravansérail + 1 Tour de Magie', unique:true, prereq:()=>(buildingCounts['Archerie']||0)>=1 && (buildingCounts['Caravansérail']||0)>=1 && (buildingCounts['Tour de Magie']||0)>=1 && !(buildingCounts['Monolithe de Vigie']||0) },
+        { name:'Cathédrale',        tab:'mag',  tier:4, slotsRequired:2, gold:200, pop:30, mana:80,  icon:'⛩', bonus:'Wards (40 Or + 30 Mana) | Paladin', req:'1 Temple', unique:true, prereq:()=>(buildingCounts['Temple']||0)>=1 && !(buildingCounts['Cathédrale']||0) },
+        { name:'Autel de Guerre',   tab:'mil',  tier:4, slotsRequired:2, gold:180, pop:30, mana:0,   icon:'⚔', bonus:'+6 Conscr. | Achat Conscrit | Hallebardier', req:'1 Académie militaire', unique:true, prereq:()=>(buildingCounts['Académie militaire']||0)>=1 && !(buildingCounts['Autel de Guerre']||0) },
+        { name:'Monolithe de Vigie',tab:'mag',  tier:4, slotsRequired:2, gold:250, pop:50, mana:100, icon:'🔭', bonus:'Révèle horde (150 Or + 100 Mana)', req:'1 Archerie + 1 Caravansérail + 1 Tour de Magie', unique:true, prereq:()=>(buildingCounts['Archerie']||0)>=1 && (buildingCounts['Caravansérail']||0)>=1 && (buildingCounts['Tour de Magie']||0)>=1 && !(buildingCounts['Monolithe de Vigie']||0) },
     ];
 
     // Tabs
@@ -6139,7 +6162,7 @@ function renderBuildPanelList() {
                 '<span style="font-size:9px;color:#9a8a6a;margin-left:auto">'+costs+'</span>'+
             '</div>'+
             '<div style="font-size:9px;color:#7a6a50;margin-top:1px">'+b.bonus+'</div>'+
-            (b.req&&!b.prereqOk?'<div style="font-size:10px;color:#ff8040;margin-top:2px">🔒 '+b.req+'</div>':'')+
+            (b.req&&!b.prereqOk?'<div style="font-size:10px;color:#ff8040;margin-top:2px">🔒 '+b.req+'</div>':'')+(b.slotsRequired>=2?'<div style="font-size:10px;color:#a0c0ff;margin-top:2px">🔲🔲 Nécessite 2 emplacements</div>':'')+
             (!b.canAfford&&b.prereqOk?'<div style="font-size:9px;color:#884400;'+dimStyle+'"> — ressources insuffisantes</div>':'');
         if (b.ok) { card.onclick = () => selectBuildingForPlacement(b.name); card.style.cursor='pointer'; }
         container.appendChild(card);
@@ -6179,7 +6202,8 @@ function renderBuildTilePicker(el, buildingName) {
             const tt = isCity ? null : TILE_TYPES[t.type];
             const free = getTileFreeSlots(i);
             const bonus = isCity ? null : getTileBonus(t.type, buildingName);
-            const ok = free > 0;
+            const _reqSlots = buildingDef && buildingDef.slotsRequired || 1;
+            const ok = free >= _reqSlots;
             div.className = 'mini-tile' + (ok ? '' : ' mini-locked');
             div.style.background = isCity ? 'linear-gradient(160deg,#3a2a1a,#5a4a2a)' : (TILE_GRADS[t.type] || '#222');
             div.title = (isCity ? 'Ville' : t.type) + (bonus?' ★'+bonus:'') + ' ('+free+' libre)';
@@ -6638,15 +6662,26 @@ function renderTileGrid() {
                 cell.innerHTML = '<div style="font-size:22px">🏰</div><div style="font-size:8px;color:#ffd060;font-weight:bold">Ville</div>';
             };
             cell.appendChild(cityImg);
+            // Afficher slots libres sur la ville
+            const _cf = getTileFreeSlots(12);
+            const _ct = getTileSlots(12);
+            if (_ct > 0) {
+                const _slotDiv = document.createElement('div');
+                _slotDiv.style.cssText = 'position:absolute;bottom:2px;right:3px;font-size:9px;font-weight:bold;color:'+(_cf>0?'#4cffaa':'#ff6060')+';text-shadow:0 0 4px #000';
+                _slotDiv.textContent = _cf+'/'+_ct;
+                cell.appendChild(_slotDiv);
+            }
             if (placingMode) {
-                const freeSlots = getTileFreeSlots(i);
-                if (freeSlots > 0) {
+                const _bDef = (window.BUILDING_DEFS||[]).find(function(x){return x.name===actionBuildingSelected;});
+                const _need = _bDef ? (_bDef.slotsRequired||1) : 1;
+                const freeSlots = getTileFreeSlots(12);
+                if (freeSlots >= _need) {
                     cell.classList.add('tile-placeable');
                     cell.title = 'Ville (' + freeSlots + ' emplacement libre)';
                     cell.onclick = (function(bName, idx){ return () => confirmTilePlacement(bName, idx); })(actionBuildingSelected, i);
                 } else {
                     cell.classList.add('tile-locked-build');
-                    cell.title = 'Aucun emplacement libre';
+                    cell.title = freeSlots < _need ? (_need+' emplacements requis, '+freeSlots+' disponible(s)') : 'Aucun emplacement libre';
                 }
             } else {
                 cell.onclick = () => showCitySummary();
@@ -7045,7 +7080,8 @@ function buyBuilding(name, tileIdx) {
         showErrorPopup(name, b.gold, b.pop, b.mana);
         setTurnProcessing(false); return;
     }
-    if (tileIdx !== undefined && getTileFreeSlots(tileIdx) <= 0) { showErrorPopup(name, b.gold, b.pop, b.mana); setTurnProcessing(false); return; }
+    const _slotsReq = b.slotsRequired || 1;
+    if (tileIdx !== undefined && getTileFreeSlots(tileIdx) < _slotsReq) { showErrorPopup(name, b.gold, b.pop, b.mana); setTurnProcessing(false); return; }
 
     gold -= b.gold; population -= b.pop; mana -= b.mana;
 
@@ -7072,6 +7108,7 @@ function buyBuilding(name, tileIdx) {
     // Placer sur la tuile choisie
     if (tileIdx !== undefined && tileState[tileIdx]) {
         tileState[tileIdx].buildings.push(name);
+        if (_slotsReq >= 2) tileState[tileIdx].buildings.push('__slot__'+name); // slot réservé
         applyTileBonus(tileState[tileIdx].type, name);
         space -= 1;
     }
@@ -7832,7 +7869,7 @@ function cleanForSave(obj) {
 
 function getGameState() {
     return {
-        version: '0.393',
+        version: '0.394',
         date: new Date().toISOString(),
         currentTurn, currentSeason,
         gold, mana, population, dust,
