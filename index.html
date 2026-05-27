@@ -83,7 +83,7 @@
         .tile-cell{width:76px;height:76px;border-radius:5px;position:relative;overflow:hidden;border:2px solid transparent;transition:border-color .15s,transform .12s;display:flex;flex-direction:column;align-items:center;justify-content:center;}
         .tile-emoji{font-size:22px;line-height:1;}
         .tile-name{font-family:'Cinzel',serif;font-size:7px;font-weight:bold;color:#ffffffcc;margin-top:1px;letter-spacing:.5px;}
-        .tile-bld{font-size:7px;color:var(--gold-l);text-align:center;}
+        .tile-bld{font-size:7px;color:var(--gold-l);text-align:center;text-shadow:-1px -1px 0 #000,1px -1px 0 #000,-1px 1px 0 #000,1px 1px 0 #000;}
         .tile-slots{position:absolute;top:2px;right:3px;font-size:7px;color:#ffffff44;}
         .tile-city{border:2px solid var(--border-g) !important;box-shadow:0 0 10px rgba(196,146,32,.2);}
         .tile-unrevealed{background:#06060e;border-color:#14142a;}
@@ -562,7 +562,7 @@
 <div id="home-screen" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:#06040a;z-index:20000;flex-direction:column;align-items:center;justify-content:center;gap:20px">
     <div style="text-align:center;margin-bottom:10px">
         <div style="font-family:Cinzel,serif;font-size:28px;color:#c0a060;letter-spacing:3px;text-shadow:0 0 20px rgba(180,140,60,0.4)">⚔ Chronocity — A Rogue City Builder</div>
-        <div style="font-size:11px;color:#4a3a5a;margin-top:6px;letter-spacing:2px">VERSION 0.397</div>
+        <div style="font-size:11px;color:#4a3a5a;margin-top:6px;letter-spacing:2px">VERSION 0.401</div>
     </div>
     <div id="home-menu" style="display:flex;flex-direction:column;gap:10px;width:min(340px,90vw)">
         <button onclick="homeLoad()" style="width:100%;padding:16px 0;font-family:Cinzel,serif;font-size:14px;cursor:pointer;border-radius:8px;background:linear-gradient(135deg,#1a1030,#2a1a40);color:#c080ff;border:1px solid #5040a0">📂 Charger une partie</button>
@@ -1000,7 +1000,7 @@
 <!-- Frise de progression -->
 <div id="timeline">
     <div id="timeline-season">Saison 1</div>
-    <div style="font-family:Cinzel,serif;font-size:9px;color:#3a3050;margin-left:auto;padding-left:8px;white-space:nowrap">v0.397</div>
+    <div style="font-family:Cinzel,serif;font-size:9px;color:#3a3050;margin-left:auto;padding-left:8px;white-space:nowrap">v0.401</div>
     <div id="timeline-steps"></div>
     <button onclick="toggleSaveMenu()" style="background:linear-gradient(135deg,#1a1030,#2a1a40);border:1px solid #4a3060;color:#c0a060;font-size:14px;cursor:pointer;padding:2px 8px;border-radius:5px;white-space:nowrap;flex-shrink:0" title="Sauvegardes">💾 Save</button>
     <button onclick="toggleMetaSummary()" style="background:linear-gradient(135deg,#101a10,#1a2a1a);border:1px solid #2a5a2a;color:#4cffaa;font-size:14px;cursor:pointer;padding:2px 8px;border-radius:5px;white-space:nowrap;flex-shrink:0" title="Résumé méta">✦ Méta</button>
@@ -1503,10 +1503,10 @@ function showCityPanel() {
                 if (!hasAny) html += '<div style="font-size:11px;color:#7a6a50">Aucun bâtiment construit.</div>';
                 html += '</div>';
                 return html;
-            })()+
-
+            })()
+            +
             // Section achat conscrit (Autel de Guerre)
-            + ((buildingCounts['Autel de Guerre']||0) >= 1 ? (function(){
+            ((buildingCounts['Autel de Guerre']||0) >= 1 ? (function(){
                 if (!window._conscritBuyCount) window._conscritBuyCount = 0;
                 const cost = 25 * Math.pow(2, window._conscritBuyCount);
                 const canBuy2 = gold >= cost;
@@ -6654,7 +6654,7 @@ function renderTileGrid() {
 
         if (i === 12) {
             cell.classList.add('tile-city');
-            cell.style.cssText = 'background:linear-gradient(160deg,#3a2a1a,#5a4a2a);border-color:#c0902a;overflow:hidden;padding:0';
+            cell.style.cssText = 'background:linear-gradient(160deg,#3a2a1a,#5a4a2a);border-color:#c0902a;overflow:hidden;padding:0;position:relative';
             const cityImg = document.createElement('img');
             cityImg.src = 'img/city_image.jpg'; cityImg.alt = 'Ville';
             cityImg.style.cssText = 'width:100%;height:100%;object-fit:cover';
@@ -6715,7 +6715,7 @@ function renderTileGrid() {
                     '<div class="tile-name" style="position:relative;z-index:2;text-shadow:0 1px 3px #000">' + t.type + '</div>' +
                     bldHtml +
                     (placingMode && bonus ? '<div style="position:relative;z-index:2;font-size:8px;color:#ffd060;font-weight:bold">★'+bonus+'</div>' : '') +
-                    '<div class="tile-slots" style="position:relative;z-index:2;text-shadow:0 1px 3px #000">' + freeSlots + '/' + (tt?tt.slots:0) + '</div>';
+                    '<div style="position:absolute;bottom:2px;right:3px;font-size:9px;font-weight:bold;color:'+(freeSlots>0?'#4cffaa':'#ff6060')+';text-shadow:0 0 4px #000;background:rgba(0,0,0,0.6);border-radius:3px;padding:0 2px;z-index:3">' + freeSlots + '/' + (tt?tt.slots:0) + '</div>';
             } else {
                 cell.style.background = TILE_GRADS_FULL[t.type] || '#222';
                 cell.innerHTML =
@@ -7869,7 +7869,7 @@ function cleanForSave(obj) {
 
 function getGameState() {
     return {
-        version: '0.397',
+        version: '0.401',
         date: new Date().toISOString(),
         currentTurn, currentSeason,
         gold, mana, population, dust,
