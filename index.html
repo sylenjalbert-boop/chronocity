@@ -154,11 +154,11 @@
         #dungeon-body{flex:0 0 auto;display:flex;align-items:flex-start;justify-content:space-around;padding:8px 18px;gap:18px;}
         .dng-fighter{display:flex;flex-direction:column;align-items:center;gap:8px;min-width:150px;}
         .dng-name{font-family:'Cinzel',serif;font-size:14px;font-weight:bold;}
-        .dng-hp-bar-wrap{width:130px;height:18px;background:var(--bg-card);border-radius:6px;overflow:hidden;border:1px solid var(--border);}
+        .dng-hp-bar-wrap{width:130px;height:14px;background:#1a1a2a;border-radius:6px;overflow:hidden;border:1px solid #3a2a4a;}
         .dng-hp-bar{height:100%;border-radius:5px;transition:width .5s ease;}
-        .dng-hp-text{font-size:16px;font-weight:bold;color:var(--text-m);text-align:center;font-family:'Cinzel',serif;letter-spacing:1px;}
+        .dng-hp-text{font-size:15px;font-weight:bold;color:#e8d8a0;text-align:center;font-family:sans-serif;letter-spacing:0;}
         .dng-emoji{font-size:60px;line-height:1;}
-        .dng-stats{font-size:12px;color:#c8e0ff;text-align:center;font-family:'Cinzel',serif;letter-spacing:0.3px;}
+        .dng-stats{font-size:11px;color:#c8e0ff;text-align:center;font-family:sans-serif;}
         .dng-dmg{position:absolute;font-family:'Cinzel',serif;font-size:52px;font-weight:900;pointer-events:none;z-index:99;animation:floatDmg 1.4s cubic-bezier(.2,.8,.4,1) forwards;text-shadow:-2px -2px 0 #000,2px -2px 0 #000,-2px 2px 0 #000,2px 2px 0 #000,0 0 12px currentColor;letter-spacing:1px;}
         @keyframes floatDmg{0%{opacity:1;transform:translateY(0) scale(1.5)}30%{opacity:1;transform:translateY(-28px) scale(1.1)}70%{opacity:1;transform:translateY(-50px) scale(1.0)}100%{opacity:0;transform:translateY(-90px) scale(0.7)}}
         @keyframes recoilRight{0%{transform:translateX(0)}20%{transform:translateX(18px)}60%{transform:translateX(-6px)}100%{transform:translateX(0)}}
@@ -562,7 +562,7 @@
 <div id="home-screen" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:#06040a;z-index:20000;flex-direction:column;align-items:center;justify-content:center;gap:20px">
     <div style="text-align:center;margin-bottom:10px">
         <div style="font-family:Cinzel,serif;font-size:28px;color:#c0a060;letter-spacing:3px;text-shadow:0 0 20px rgba(180,140,60,0.4)">⚔ Chronocity — A Rogue City Builder</div>
-        <div style="font-size:11px;color:#4a3a5a;margin-top:6px;letter-spacing:2px">VERSION 0.389</div>
+        <div style="font-size:11px;color:#4a3a5a;margin-top:6px;letter-spacing:2px">VERSION 0.391</div>
     </div>
     <div id="home-menu" style="display:flex;flex-direction:column;gap:10px;width:min(340px,90vw)">
         <button onclick="homeLoad()" style="width:100%;padding:16px 0;font-family:Cinzel,serif;font-size:14px;cursor:pointer;border-radius:8px;background:linear-gradient(135deg,#1a1030,#2a1a40);color:#c080ff;border:1px solid #5040a0">📂 Charger une partie</button>
@@ -1000,7 +1000,7 @@
 <!-- Frise de progression -->
 <div id="timeline">
     <div id="timeline-season">Saison 1</div>
-    <div style="font-family:Cinzel,serif;font-size:9px;color:#3a3050;margin-left:auto;padding-left:8px;white-space:nowrap">v0.389</div>
+    <div style="font-family:Cinzel,serif;font-size:9px;color:#3a3050;margin-left:auto;padding-left:8px;white-space:nowrap">v0.391</div>
     <div id="timeline-steps"></div>
     <button onclick="toggleSaveMenu()" style="background:linear-gradient(135deg,#1a1030,#2a1a40);border:1px solid #4a3060;color:#c0a060;font-size:14px;cursor:pointer;padding:2px 8px;border-radius:5px;white-space:nowrap;flex-shrink:0" title="Sauvegardes">💾 Save</button>
     <button onclick="toggleMetaSummary()" style="background:linear-gradient(135deg,#101a10,#1a2a1a);border:1px solid #2a5a2a;color:#4cffaa;font-size:14px;cursor:pointer;padding:2px 8px;border-radius:5px;white-space:nowrap;flex-shrink:0" title="Résumé méta">✦ Méta</button>
@@ -2715,11 +2715,11 @@ function enterRoom(roomEntry) {
         document.getElementById('dungeon-floor-label').textContent = `Salle ${done}/${dungeonState.generatedRooms.length}`;
         document.getElementById('dng-avatar-hp-text').textContent = 'HP: '+Math.max(0,dungeonState.avatarHp)+'/'+dungeonState.avatarMaxHp+(dungeonState._manaArmor?' 🔷'+dungeonState._manaArmor:'');
         document.getElementById('dng-avatar-stats').innerHTML =
-            '<div style="display:flex;gap:6px;justify-content:center;flex-wrap:wrap;font-size:9px">' +
-            '<span style="color:#ffcc44">⚔ '+atk+'</span>' +
-            '<span style="color:#ff8040">💥 '+avatarDmg+'</span>' +
-            '<span style="color:#4cffaa">🛡 '+def+'</span>' +
-            (protection>0?'<span style="color:#80c0ff">🔰 '+protection+'</span>':'') +
+            '<div style="display:flex;flex-wrap:wrap;gap:4px;justify-content:center">' +
+            '<span style="background:rgba(0,0,0,0.55);border-radius:4px;padding:2px 5px;color:#ffcc44;font-size:11px">⚔ '+atk+'</span>' +
+            '<span style="background:rgba(0,0,0,0.55);border-radius:4px;padding:2px 5px;color:#ff9060;font-size:11px">💥 '+avatarDmg+'</span>' +
+            '<span style="background:rgba(0,0,0,0.55);border-radius:4px;padding:2px 5px;color:#4cffaa;font-size:11px">🛡 '+def+'</span>' +
+            (protection>0?'<span style="background:rgba(0,0,0,0.55);border-radius:4px;padding:2px 5px;color:#80c0ff;font-size:11px">🔰 '+protection+'</span>':'') +
             '</div>';
         // Fond teinté selon la classe
         const avatarSide = document.getElementById('dng-avatar-side');
@@ -7820,7 +7820,7 @@ function cleanForSave(obj) {
 
 function getGameState() {
     return {
-        version: '0.389',
+        version: '0.391',
         date: new Date().toISOString(),
         currentTurn, currentSeason,
         gold, mana, population, dust,
