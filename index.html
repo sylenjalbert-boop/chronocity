@@ -559,7 +559,7 @@
 <div id="home-screen" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:#06040a;z-index:20000;flex-direction:column;align-items:center;justify-content:center;gap:20px">
     <div style="text-align:center;margin-bottom:10px">
         <div style="font-family:Cinzel,serif;font-size:28px;color:#c0a060;letter-spacing:3px;text-shadow:0 0 20px rgba(180,140,60,0.4)">⚔ Chronocity — A Rogue City Builder</div>
-        <div style="font-size:11px;color:#4a3a5a;margin-top:6px;letter-spacing:2px">VERSION 0.423</div>
+        <div style="font-size:11px;color:#4a3a5a;margin-top:6px;letter-spacing:2px">VERSION 0.426</div>
     </div>
     <div id="home-menu" style="display:flex;flex-direction:column;gap:10px;width:min(340px,90vw)">
         <button onclick="homeLoad()" style="width:100%;padding:16px 0;font-family:Cinzel,serif;font-size:14px;cursor:pointer;border-radius:8px;background:linear-gradient(135deg,#1a1030,#2a1a40);color:#c080ff;border:1px solid #5040a0">📂 Charger une partie</button>
@@ -998,7 +998,7 @@
 <!-- Frise de progression -->
 <div id="timeline">
     <div id="timeline-season">Saison 1</div>
-    <div style="font-family:Cinzel,serif;font-size:9px;color:#3a3050;margin-left:auto;padding-left:8px;white-space:nowrap">v0.423</div>
+    <div style="font-family:Cinzel,serif;font-size:9px;color:#3a3050;margin-left:auto;padding-left:8px;white-space:nowrap">v0.426</div>
     <div id="timeline-steps"></div>
     <button onclick="toggleSaveMenu()" style="background:linear-gradient(135deg,#1a1030,#2a1a40);border:1px solid #4a3060;color:#c0a060;font-size:14px;cursor:pointer;padding:2px 8px;border-radius:5px;white-space:nowrap;flex-shrink:0" title="Sauvegardes">💾 Save</button>
     <button onclick="toggleMetaSummary()" style="background:linear-gradient(135deg,#101a10,#1a2a1a);border:1px solid #2a5a2a;color:#4cffaa;font-size:14px;cursor:pointer;padding:2px 8px;border-radius:5px;white-space:nowrap;flex-shrink:0" title="Résumé méta">✦ Méta</button>
@@ -5265,6 +5265,7 @@ function generateHordeForSeason(season) {
 // Retourne {visible: [], hidden: [], hiddenCount: n, countKnown: bool}
 function applyFogOfWar(newUnits, season) {
     const seasonIdx = (season - 1) % 4; // 0=Printemps, 1=Été, 2=Automne, 3=Hiver
+    const elfBonus = (getMeta().legendaryOptions && getMeta().legendaryOptions.ae_eclaireurs_level) || 0;
     const total = newUnits.length;
     let visibleRatio, countKnown;
 
@@ -5272,14 +5273,21 @@ function applyFogOfWar(newUnits, season) {
         // Printemps : tout visible
         return { visible: newUnits, hidden: [], hiddenCount: 0, countKnown: true };
     } else if (seasonIdx === 1) {
-        // Été : 66% visible, 34% caché, nombre total connu
-        visibleRatio = 0.66; countKnown = true;
+        // Été : 66% + bonus éclaireurs
+        visibleRatio = Math.min(1, 0.66 + elfBonus * 0.17);
+        countKnown = true;
     } else if (seasonIdx === 2) {
-        // Automne : 33% visible, nombre total connu
-        visibleRatio = 0.33; countKnown = true;
+        // Automne : 33% + bonus éclaireurs, compte connu si niv 1+
+        visibleRatio = Math.min(1, 0.33 + elfBonus * 0.17);
+        countKnown = elfBonus >= 1;
     } else {
-        // Hiver : 33% visible, nombre total inconnu
-        visibleRatio = 0.33; countKnown = false;
+        // Hiver : 33% + bonus éclaireurs, compte connu si niv 2+
+        visibleRatio = Math.min(1, 0.33 + elfBonus * 0.17);
+        countKnown = elfBonus >= 2;
+    }
+
+    if (visibleRatio >= 1) {
+        return { visible: newUnits, hidden: [], hiddenCount: 0, countKnown: true };
     }
 
     const visibleCount = Math.max(1, Math.round(total * visibleRatio));
@@ -5846,10 +5854,11 @@ function recruitUnit(unitDef) {
         const antiTraits = newUnit.traits.filter(t => t.startsWith('anti'));
         antiTraits.forEach(t => newUnit.traits.push(t));
     }
-    // ae_fabricant : Archers +1 ATK +1 anti-vol
-    if ((getMeta().legendaryOptions || {}).ae_fabricant && (newUnit.id === 'Archer')) {
-        newUnit.atk += 1;
-        newUnit.traits.push('anti-vol');
+    // ae_fabricant : Archers +1 ATK +1 anti-vol par niveau
+    const _fabLevel = ((getMeta().legendaryOptions || {}).ae_fabricant_level) || 0;
+    if (_fabLevel > 0 && newUnit.id === 'Archer') {
+        newUnit.atk += _fabLevel;
+        for (let _f=0;_f<_fabLevel;_f++) newUnit.traits.push('anti-vol');
     }
     // fn_forgeron : Infanterie +1 ATK
     if ((getMeta().legendaryOptions || {}).fn_forgeron && newUnit.traits.includes('infanterie')) {
@@ -7956,7 +7965,7 @@ function cleanForSave(obj) {
 
 function getGameState() {
     return {
-        version: '0.423',
+        version: '0.426',
         date: new Date().toISOString(),
         currentTurn, currentSeason,
         gold, mana, population, dust,
@@ -8948,7 +8957,7 @@ const LEGENDARY_OPTIONS = {
     ],
     arbreElfique: [
         { key:'ae_eclaireurs',  name:'Éclaireurs',           desc:'+1 visibilité horde (achetable plusieurs fois)', gold:80,  mana:0, pop:20, renewable:true },
-        { key:'ae_fabricant',   name:'Fabricant d\'arc',     desc:'Archers +1 ATK et +1 anti-vol',                gold:120, mana:0,   pop:30 },
+        { key:'ae_fabricant',   name:'Fabricant d\'arc',     desc:'Archers +1 ATK et +1 anti-vol (max 3)',        gold:120, mana:0,   pop:30, renewable:true, maxLevel:3 },
         { key:'ae_druidique',   name:'Cercle Druidique',     desc:'Debloque recrutement Dryade (ATK 6, elite)',   gold:150, mana:80,  pop:0  },
     ],
     forteresseNaine: [
@@ -8999,27 +9008,40 @@ function renderLegendaryBuildingPanel(container) {
         options.forEach(function(opt) {
             var owned = !!opts[opt.key];
             var canAfford = gold >= opt.gold && mana >= opt.mana && population >= opt.pop;
-            var isRenewable = opt.key === 'fn_forgeron' || opt.key === 'gt_modifTerrain';
+            var isRenewable = opt.renewable || opt.key === 'fn_forgeron' || opt.key === 'gt_modifTerrain';
             var isSpecial = isRenewable;
 
             var row = document.createElement('div');
             row.style.cssText = 'display:flex;align-items:center;gap:6px;padding:4px 0;border-bottom:1px solid #1a1406';
 
+            // Calculer niveau actuel et coût progressif
+            var curLevel = 0;
+            if (opt.key === 'ae_fabricant') curLevel = opts.ae_fabricant_level || 0;
+            else if (opt.key === 'ae_eclaireurs') curLevel = opts.ae_eclaireurs_level || 0;
+            else curLevel = owned ? 1 : 0;
+            var maxLevel = opt.maxLevel || 99;
+            var atMax = curLevel >= maxLevel;
+            var mult = Math.pow(3, curLevel); // ×3 par niveau
+            var curGold = opt.gold * mult;
+            var curPop = opt.pop * mult;
+            var curMana = opt.mana * mult;
+            var canAffordActual = gold >= curGold && mana >= curMana && population >= curPop && !atMax;
+
             var info = document.createElement('div');
             info.style.flex = '1';
-            info.innerHTML = '<div style="font-size:11px;color:'+(owned&&!isRenewable?'#4cffaa':'#c0a060')+'">'+(owned&&!isRenewable?'\u2713 ':'')+opt.name+'</div>'+
+            info.innerHTML = '<div style="font-size:11px;color:'+(atMax?'#4cffaa':'#c0a060')+'">'+(atMax?'\u2713 Max ':'')+opt.name+(curLevel>0&&!atMax?' (niv.'+curLevel+')':'')+(atMax?' (niv.'+curLevel+'/'+maxLevel+')':'')+'</div>'+
                              '<div style="font-size:9px;color:#6a5a3a">'+opt.desc+'</div>'+
-                             '<div style="font-size:9px;color:#8a7040">'+
-                             (opt.gold?'\uD83E\uDE99'+opt.gold+' ':'')+
-                             (opt.mana?'\u2728'+opt.mana+' ':'')+
-                             (opt.pop?'\uD83D\uDC65'+opt.pop:'')+
-                             '</div>';
+                             (!atMax?'<div style="font-size:9px;color:#8a7040">'+
+                             (curGold?'\uD83E\uDE99'+curGold+' ':'')+
+                             (curMana?'\u2728'+curMana+' ':'')+
+                             (curPop?'\uD83D\uDC65'+curPop:'')+
+                             '</div>':'');
             row.appendChild(info);
 
-            if (!owned || isRenewable) {
+            if (!atMax && (!owned || isRenewable)) {
                 var btn = document.createElement('button');
-                btn.style.cssText = 'background:linear-gradient(135deg,#1a1408,#2a2010);border:1px solid #'+(canAfford?'6a5020':'3a2a10')+';color:'+(canAfford?'#e0c080':'#4a3a20')+';border-radius:5px;padding:3px 8px;font-size:10px;cursor:'+(canAfford?'pointer':'not-allowed');
-                btn.disabled = !canAfford;
+                btn.style.cssText = 'background:linear-gradient(135deg,#1a1408,#2a2010);border:1px solid #'+(canAffordActual?'6a5020':'3a2a10')+';color:'+(canAffordActual?'#e0c080':'#4a3a20')+';border-radius:5px;padding:3px 8px;font-size:10px;cursor:'+(canAffordActual?'pointer':'not-allowed');
+                btn.disabled = !canAffordActual;
                 btn.textContent = 'Acheter';
                 btn.onclick = (function(k){ return function(){ useLegendaryOption(k); }; })(opt.key);
                 row.appendChild(btn);
@@ -9043,10 +9065,17 @@ function useLegendaryOption(key) {
         return null;
     })();
     if (!opt) return;
-    if (gold < opt.gold || mana < opt.mana || population < opt.pop) {
+    // Coût progressif pour les options à niveaux multiples
+    const _fabLvl = key==='ae_fabricant' ? (opts.ae_fabricant_level||0) : 0;
+    const _eclLvl = key==='ae_eclaireurs' ? (opts.ae_eclaireurs_level||0) : 0;
+    const _levelMult = Math.pow(3, _fabLvl + _eclLvl);
+    const _gCost = (opt.gold||0) * _levelMult;
+    const _mCost = (opt.mana||0) * _levelMult;
+    const _pCost = (opt.pop||0) * _levelMult;
+    if (gold < _gCost || mana < _mCost || population < _pCost) {
         addLog('❌ Ressources insuffisantes pour ' + (opt.name||key) + '.'); return;
     }
-    gold -= opt.gold; mana -= opt.mana; population -= opt.pop;
+    gold -= _gCost; mana -= _mCost; population -= _pCost;
 
     // Options qui ouvrent un modal : marquer comme utilisé immédiatement
     // puis lancer le modal (le coût est déjà payé)
@@ -9074,13 +9103,15 @@ function applyLegendaryOption(key, opts) {
         return;
     }
     else if (key === 'ae_fabricant') {
+        if (!opts.ae_fabricant_level) opts.ae_fabricant_level = 0;
+        opts.ae_fabricant_level++;
         cityArmy.forEach(function(u){
             if (u.id === 'Archer' || u.name === 'Archer') {
                 u.atk += 1;
-                u.traits.push('anti-vol'); // toujours +1 anti-vol
+                u.traits.push('anti-vol');
             }
         });
-        addLog('🌳 Arbre Elfique : Archers +1 ATK +1 anti-vol');
+        addLog('🌳 Fabricant d\'arc niv.'+opts.ae_fabricant_level+' : Archers +1 ATK +1 anti-vol');
     }
     else if (key === 'fn_forgeron') {
         cityArmy.forEach(function(u){
