@@ -562,7 +562,7 @@
 <div id="home-screen" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:#06040a;z-index:20000;flex-direction:column;align-items:center;justify-content:center;gap:20px">
     <div style="text-align:center;margin-bottom:10px">
         <div style="font-family:Cinzel,serif;font-size:28px;color:#c0a060;letter-spacing:3px;text-shadow:0 0 20px rgba(180,140,60,0.4)">⚔ Chronocity — A Rogue City Builder</div>
-        <div style="font-size:11px;color:#4a3a5a;margin-top:6px;letter-spacing:2px">VERSION 0.401</div>
+        <div style="font-size:11px;color:#4a3a5a;margin-top:6px;letter-spacing:2px">VERSION 0.403</div>
     </div>
     <div id="home-menu" style="display:flex;flex-direction:column;gap:10px;width:min(340px,90vw)">
         <button onclick="homeLoad()" style="width:100%;padding:16px 0;font-family:Cinzel,serif;font-size:14px;cursor:pointer;border-radius:8px;background:linear-gradient(135deg,#1a1030,#2a1a40);color:#c080ff;border:1px solid #5040a0">📂 Charger une partie</button>
@@ -1000,7 +1000,7 @@
 <!-- Frise de progression -->
 <div id="timeline">
     <div id="timeline-season">Saison 1</div>
-    <div style="font-family:Cinzel,serif;font-size:9px;color:#3a3050;margin-left:auto;padding-left:8px;white-space:nowrap">v0.401</div>
+    <div style="font-family:Cinzel,serif;font-size:9px;color:#3a3050;margin-left:auto;padding-left:8px;white-space:nowrap">v0.403</div>
     <div id="timeline-steps"></div>
     <button onclick="toggleSaveMenu()" style="background:linear-gradient(135deg,#1a1030,#2a1a40);border:1px solid #4a3060;color:#c0a060;font-size:14px;cursor:pointer;padding:2px 8px;border-radius:5px;white-space:nowrap;flex-shrink:0" title="Sauvegardes">💾 Save</button>
     <button onclick="toggleMetaSummary()" style="background:linear-gradient(135deg,#101a10,#1a2a1a);border:1px solid #2a5a2a;color:#4cffaa;font-size:14px;cursor:pointer;padding:2px 8px;border-radius:5px;white-space:nowrap;flex-shrink:0" title="Résumé méta">✦ Méta</button>
@@ -1601,15 +1601,15 @@ function addLog(message) {
 // Animation changement de tour
 const turnEvents = [
     null,
-    { icon: '❖', name: 'Exploration', desc: 'Révélez une tuile ce tour. Votre avatar pourra partir en donjon — pensez à l\'équiper avant !', color: '#1a3a5a', border: '#4a90d9' },
-    { icon: '⭐', name: 'Conjonction',  desc: 'Les caravanes n\'osent traverser les steppes qu\'au temps des Conjonctions, lorsque les anciennes routes reviennent dans le cours du monde. Envoyez une caravane ce tour pour récolter ×2 ressources !', color: '#3a2a00', border: '#e0a020' },
-    { icon: '❖', name: 'Exploration', desc: 'Révélez une tuile ce tour. Votre avatar pourra partir en donjon — pensez à l\'équiper avant !', color: '#1a3a5a', border: '#4a90d9' },
-    { icon: '⭐', name: 'Conjonction',  desc: 'Les caravanes n\'osent traverser les steppes qu\'au temps des Conjonctions, lorsque les anciennes routes reviennent dans le cours du monde. Envoyez une caravane ce tour pour récolter ×2 ressources !', color: '#3a2a00', border: '#e0a020' },
+    { icon: '❖', name: 'Exploration', desc: 'Vous allez pouvoir explorer un donjon pendant ce tour !', color: '#1a3a5a', border: '#4a90d9' },
+    { icon: '⭐', name: 'Conjonction',  desc: 'Le bon moment pour envoyer une caravane, la conjonction vous permet de doubler les ressources récoltées !', color: '#3a2a00', border: '#e0a020' },
+    { icon: '❖', name: 'Exploration', desc: 'Vous allez pouvoir explorer un donjon pendant ce tour !', color: '#1a3a5a', border: '#4a90d9' },
+    { icon: '⭐', name: 'Conjonction',  desc: 'Le bon moment pour envoyer une caravane, la conjonction vous permet de doubler les ressources récoltées !', color: '#3a2a00', border: '#e0a020' },
     { icon: '🔭', name: 'Rapport des éclaireurs', desc: 'Consultez la composition de la horde dans le panneau Horde — elle vient d\'être mise à jour.', color: '#3a1a3a', border: '#c060c0' },
-    { icon: '⭐', name: 'Conjonction',  desc: 'Les caravanes n\'osent traverser les steppes qu\'au temps des Conjonctions, lorsque les anciennes routes reviennent dans le cours du monde. Envoyez une caravane ce tour pour récolter ×2 ressources !', color: '#3a2a00', border: '#e0a020' },
-    { icon: '❖', name: 'Exploration', desc: 'Révélez une tuile ce tour. Votre avatar pourra partir en donjon — pensez à l\'équiper avant !', color: '#1a3a5a', border: '#4a90d9' },
-    { icon: '⭐', name: 'Conjonction',  desc: 'Les caravanes n\'osent traverser les steppes qu\'au temps des Conjonctions, lorsque les anciennes routes reviennent dans le cours du monde. Envoyez une caravane ce tour pour récolter ×2 ressources !', color: '#3a2a00', border: '#e0a020' },
-    { icon: '❖', name: 'Exploration', desc: 'Révélez une tuile ce tour. Votre avatar pourra partir en donjon — pensez à l\'équiper avant !', color: '#1a3a5a', border: '#4a90d9' },
+    { icon: '⭐', name: 'Conjonction',  desc: 'Le bon moment pour envoyer une caravane, la conjonction vous permet de doubler les ressources récoltées !', color: '#3a2a00', border: '#e0a020' },
+    { icon: '❖', name: 'Exploration', desc: 'Vous allez pouvoir explorer un donjon pendant ce tour !', color: '#1a3a5a', border: '#4a90d9' },
+    { icon: '⭐', name: 'Conjonction',  desc: 'Le bon moment pour envoyer une caravane, la conjonction vous permet de doubler les ressources récoltées !', color: '#3a2a00', border: '#e0a020' },
+    { icon: '❖', name: 'Exploration', desc: 'Vous allez pouvoir explorer un donjon pendant ce tour !', color: '#1a3a5a', border: '#4a90d9' },
     { icon: '⚔',  name: 'La Horde attaque !', desc: 'Recrutez vos dernières unités, équipez votre avatar, puis cliquez ⚔ dans la frise pour lancer le combat.', color: '#3a0a0a', border: '#e05050', isBattleTurn: true },
 ];
 const seasonNames = ['Printemps', 'Été', 'Automne', 'Hiver'];
@@ -1636,8 +1636,7 @@ function showTurnAnimation(turnNum, season, callback) {
     let desc = ev.desc;
     const collectTurns = [2, 4, 6, 8];
     if (collectTurns.includes(turnNum)) {
-        desc = `Or +${goldperturn} | Mana +${manaperturn} | Pop +${populationperturn}`;
-        desc += "\nC'est le bon moment pour construire un bâtiment de génération de ressources !";
+        desc = ev.desc + `\nRessources disponibles : Or +${goldperturn} | Mana +${manaperturn} | Pop +${populationperturn}`;
     }
     document.getElementById('turn-event-desc').textContent  = desc;
     document.getElementById('turn-season-badge').textContent = sName;
@@ -6702,7 +6701,7 @@ function renderTileGrid() {
 
             let bldHtml = t.buildings.map(b => {
                 const bns = getTileBonus(t.type, b);
-                return '<div class="tile-bld" style="position:relative;z-index:2">' + b.slice(0,8) + (bns ? ' ★' : '') + '</div>';
+                return '<div class="tile-bld" style="position:relative;z-index:2;max-width:72px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + b + (bns ? ' ★' : '') + '</div>';
             }).join('');
 
             if (imgUrl) {
@@ -7869,7 +7868,7 @@ function cleanForSave(obj) {
 
 function getGameState() {
     return {
-        version: '0.401',
+        version: '0.403',
         date: new Date().toISOString(),
         currentTurn, currentSeason,
         gold, mana, population, dust,
