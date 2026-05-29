@@ -562,7 +562,7 @@
 <div id="home-screen" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:#06040a;z-index:20000;flex-direction:column;align-items:center;justify-content:center;gap:20px">
     <div style="text-align:center;margin-bottom:10px">
         <div style="font-family:Cinzel,serif;font-size:28px;color:#c0a060;letter-spacing:3px;text-shadow:0 0 20px rgba(180,140,60,0.4)">⚔ Chronocity — A Rogue City Builder</div>
-        <div style="font-size:11px;color:#4a3a5a;margin-top:6px;letter-spacing:2px">VERSION 0.403</div>
+        <div style="font-size:11px;color:#4a3a5a;margin-top:6px;letter-spacing:2px">VERSION 0.406</div>
     </div>
     <div id="home-menu" style="display:flex;flex-direction:column;gap:10px;width:min(340px,90vw)">
         <button onclick="homeLoad()" style="width:100%;padding:16px 0;font-family:Cinzel,serif;font-size:14px;cursor:pointer;border-radius:8px;background:linear-gradient(135deg,#1a1030,#2a1a40);color:#c080ff;border:1px solid #5040a0">📂 Charger une partie</button>
@@ -1000,7 +1000,7 @@
 <!-- Frise de progression -->
 <div id="timeline">
     <div id="timeline-season">Saison 1</div>
-    <div style="font-family:Cinzel,serif;font-size:9px;color:#3a3050;margin-left:auto;padding-left:8px;white-space:nowrap">v0.403</div>
+    <div style="font-family:Cinzel,serif;font-size:9px;color:#3a3050;margin-left:auto;padding-left:8px;white-space:nowrap">v0.406</div>
     <div id="timeline-steps"></div>
     <button onclick="toggleSaveMenu()" style="background:linear-gradient(135deg,#1a1030,#2a1a40);border:1px solid #4a3060;color:#c0a060;font-size:14px;cursor:pointer;padding:2px 8px;border-radius:5px;white-space:nowrap;flex-shrink:0" title="Sauvegardes">💾 Save</button>
     <button onclick="toggleMetaSummary()" style="background:linear-gradient(135deg,#101a10,#1a2a1a);border:1px solid #2a5a2a;color:#4cffaa;font-size:14px;cursor:pointer;padding:2px 8px;border-radius:5px;white-space:nowrap;flex-shrink:0" title="Résumé méta">✦ Méta</button>
@@ -5661,8 +5661,8 @@ function renderRecruitList() {
         p.textContent='Construisez une Caserne pour recruter des soldats.'; el.appendChild(p);
     }
     el.innerHTML = '';
-    UNIT_CATALOG.forEach(u => {
-            const available = checkEqReq(u.req);
+    UNIT_CATALOG.filter(u => !u.special).forEach(u => {
+        const available = u.req===null||u.req===undefined ? true : typeof u.req==='function' ? u.req() : checkEqReq(u.req);
         const canAfford = gold >= u.gold && population >= u.pop && mana >= u.mana;
         const card = document.createElement('div');
         card.className = 'unit-card' + ((!available||!canAfford) ? ' unit-disabled' : '');
@@ -6177,6 +6177,7 @@ function renderBuildPanelList() {
 }
 
 function renderBuildTilePicker(el, buildingName) {
+    const buildingDef = (window.BUILDING_DEFS||[]).find(function(x){return x.name===buildingName;}) || null;
     el.innerHTML = '';
     const hdr = document.createElement('div');
     hdr.style.cssText = 'display:flex;align-items:center;gap:6px;margin-bottom:8px';
@@ -6274,65 +6275,9 @@ function renderTaxPanel() {
         '<span style="font-size:13px;font-weight:bold">👥<b style="color:#80c0ff"> +'+totalPop+'</b></span>';
     el.appendChild(summary);
 
-    // ── Détail par source ──
-    const sources = [];
-
-    // Tuiles
-    tileState.forEach((t, i) => {
-        if (i === 12 || !t.revealed || !t.type) return;
-        let g = 0, m = 0, p = 0;
-        t.buildings.forEach(bName => {
-            const bonus = getTileBonus(t.type, bName);
-            if (!bonus) return;
-            if (bonus.includes('Or'))   g += parseInt(bonus);
-            if (bonus.includes('Mana')) m += parseInt(bonus);
-            if (bonus.includes('Pop'))  p += parseInt(bonus);
-        });
-        if (g || m || p) sources.push({ label: TILE_TYPES[t.type]?.emoji+' '+t.type, gold:Math.floor(g*totalMult), mana:Math.floor(m*totalMult), pop:Math.floor(p*totalMult), baseGold:g, baseMana:m, basePop:p });
-    });
-
-    // Bâtiments fixes
-    const bldBase = { 'Ferme':{pop:5}, 'Mine':{gold:10}, 'Tour de Mana':{mana:10}, 'Tour de Magie':{mana:10} };
-    Object.entries(buildingCounts).forEach(([bName, n]) => {
-        if (!n || !bldBase[bName]) return;
-        const g = bldBase[bName];
-        const bg = (g.gold||0)*n, bm = (g.mana||0)*n, bp = (g.pop||0)*n;
-        sources.push({ label: bName+'×'+n, gold:Math.floor(bg*totalMult), mana:Math.floor(bm*totalMult), pop:Math.floor(bp*totalMult), baseGold:bg, baseMana:bm, basePop:bp });
-    });
-
-    if (sources.length > 0) {
-        const list = document.createElement('div');
-        list.style.cssText = 'display:flex;flex-direction:column;gap:2px;max-height:90px;overflow-y:auto;margin-bottom:6px';
-        sources.forEach(s => {
-            const row = document.createElement('div');
-            row.style.cssText = 'display:flex;justify-content:space-between;font-size:9px;padding:1px 2px;color:#6a6a7a';
-            const gains = [];
-            if (s.gold) gains.push('<span style="color:#c0a030">+'+s.gold+'🪙</span>');
-            if (s.mana) gains.push('<span style="color:#8060c0">+'+s.mana+'✨</span>');
-            if (s.pop)  gains.push('<span style="color:#6090b0">+'+s.pop+'👥</span>');
-            row.innerHTML = '<span>'+s.label+'</span><span>'+gains.join(' ')+'</span>';
-            list.appendChild(row);
-        });
-        el.appendChild(list);
-    }
-
     // ── Actions spéciales bâtiments ──
     const specialWrap = document.createElement('div');
     specialWrap.style.cssText = 'display:flex;flex-direction:column;gap:3px;border-top:1px solid #1a1a2e;padding-top:5px';
-
-    // Wards Cathédrale
-    if ((buildingCounts['Cathédrale']||0) >= 1) {
-        ['anti-demon','anti-mort-vivant'].forEach(wardType => {
-            const label = wardType==='anti-demon' ? 'Ward Anti-Démon' : 'Ward Anti-MV';
-            const canBuy = gold >= 40 && mana >= 30;
-            const btn = document.createElement('button');
-            btn.style.cssText = 'padding:4px 8px;border-radius:5px;font-size:9px;font-family:Cinzel,serif;text-align:left;cursor:'+(canBuy?'pointer':'not-allowed')+';'+(canBuy?'background:#1a0a2a;color:#c080ff;border:1px solid #5020a0;':'background:#0a0a0a;color:#3a3a3a;border:1px solid #1a1a1a;');
-            btn.innerHTML = '⛩ '+label+' <span style="float:right">40🪙 30✨</span>';
-            if (canBuy) btn.onclick = () => { gold -= 40; mana -= 30; if (!window._wards) window._wards=[]; window._wards.push({type:wardType,season:currentSeason}); const _wardId = wardType==='anti-demon' ? 'Ward' : 'WardMV';
-                cityArmy.push({id:_wardId,name:label,icon:'⛩',atk:0,atkMag:0,traits:[wardType],_wardSeason:currentSeason}); addLog('⛩ '+label+' activée !'); updateStats(); renderTaxPanel(); };
-            specialWrap.appendChild(btn);
-        });
-    }
 
     if (specialWrap.children.length > 0) el.appendChild(specialWrap);
 }
@@ -6772,7 +6717,14 @@ function renderRecruitListIn(el) {
         const p=document.createElement('p');p.style.cssText='color:#9a8a6a;font-size:12px;font-style:italic';
         p.textContent='Construisez une Caserne pour recruter des soldats.';el.appendChild(p);
     }
-    UNIT_CATALOG.forEach(u => {
+    // Trier : disponibles+finançables en premier, puis disponibles, puis reste
+    const _units = UNIT_CATALOG.filter(u => !u.special);
+    const _sorted = [
+        ..._units.filter(u => { const av = u.req===null||u.req===undefined ? true : typeof u.req==='function' ? u.req() : checkEqReq(u.req); return av && gold>=u.gold && population>=u.pop && mana>=u.mana && ((u.traits&&u.traits.includes('invocation')) || conscrit>0); }),
+        ..._units.filter(u => { const av = u.req===null||u.req===undefined ? true : typeof u.req==='function' ? u.req() : checkEqReq(u.req); return av && !(gold>=u.gold && population>=u.pop && mana>=u.mana && ((u.traits&&u.traits.includes('invocation')) || conscrit>0)); }),
+        ..._units.filter(u => { const av = u.req===null||u.req===undefined ? true : typeof u.req==='function' ? u.req() : checkEqReq(u.req); return !av; }),
+    ];
+    _sorted.forEach(u => {
         const available = u.req===null||u.req===undefined ? true : typeof u.req==='function' ? u.req() : checkEqReq(u.req);
         const canAfford = gold>=u.gold && population>=u.pop && mana>=u.mana && ((u.traits&&u.traits.includes('invocation')) || conscrit>0);
         const card=document.createElement('div');
@@ -7079,7 +7031,8 @@ function buyBuilding(name, tileIdx) {
         showErrorPopup(name, b.gold, b.pop, b.mana);
         setTurnProcessing(false); return;
     }
-    const _slotsReq = b.slotsRequired || 1;
+    const _bFromDefs = (window.BUILDING_DEFS||[]).find(function(x){return x.name===name;});
+    const _slotsReq = b.slotsRequired || (_bFromDefs && _bFromDefs.slotsRequired) || 1;
     if (tileIdx !== undefined && getTileFreeSlots(tileIdx) < _slotsReq) { showErrorPopup(name, b.gold, b.pop, b.mana); setTurnProcessing(false); return; }
 
     gold -= b.gold; population -= b.pop; mana -= b.mana;
@@ -7107,7 +7060,7 @@ function buyBuilding(name, tileIdx) {
     // Placer sur la tuile choisie
     if (tileIdx !== undefined && tileState[tileIdx]) {
         tileState[tileIdx].buildings.push(name);
-        if (_slotsReq >= 2) tileState[tileIdx].buildings.push('__slot__'+name); // slot réservé
+        if ((_slotsReq >= 2) || (_bFromDefs && (_bFromDefs.slotsRequired||1) >= 2)) tileState[tileIdx].buildings.push('__slot__'+name); // slot réservé
         applyTileBonus(tileState[tileIdx].type, name);
         space -= 1;
     }
@@ -7868,7 +7821,7 @@ function cleanForSave(obj) {
 
 function getGameState() {
     return {
-        version: '0.403',
+        version: '0.406',
         date: new Date().toISOString(),
         currentTurn, currentSeason,
         gold, mana, population, dust,
