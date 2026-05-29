@@ -559,7 +559,7 @@
 <div id="home-screen" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:#06040a;z-index:20000;flex-direction:column;align-items:center;justify-content:center;gap:20px">
     <div style="text-align:center;margin-bottom:10px">
         <div style="font-family:Cinzel,serif;font-size:28px;color:#c0a060;letter-spacing:3px;text-shadow:0 0 20px rgba(180,140,60,0.4)">⚔ Chronocity — A Rogue City Builder</div>
-        <div style="font-size:11px;color:#4a3a5a;margin-top:6px;letter-spacing:2px">VERSION 0.412</div>
+        <div style="font-size:11px;color:#4a3a5a;margin-top:6px;letter-spacing:2px">VERSION 0.418</div>
     </div>
     <div id="home-menu" style="display:flex;flex-direction:column;gap:10px;width:min(340px,90vw)">
         <button onclick="homeLoad()" style="width:100%;padding:16px 0;font-family:Cinzel,serif;font-size:14px;cursor:pointer;border-radius:8px;background:linear-gradient(135deg,#1a1030,#2a1a40);color:#c080ff;border:1px solid #5040a0">📂 Charger une partie</button>
@@ -864,6 +864,7 @@
             <div class="dng-hp-bar-wrap"><div class="dng-hp-bar" id="dng-avatar-hp-bar" style="background:#4caf7d;width:100%"></div></div>
             <div class="dng-hp-text" id="dng-avatar-hp-text"></div>
             <div class="dng-stats" id="dng-avatar-stats"></div>
+            <div id="dng-ranged-indicator" style="font-size:9px;color:#80ffb0;text-align:center"></div>
             <div id="dng-hist-player-inline" style="display:flex;gap:2px;flex-wrap:wrap;justify-content:center;margin-top:3px;min-height:18px"></div>
             <div id="dng-avatar-action-log" style="font-size:8px;color:#9a8a6a;text-align:center;margin-top:2px;min-height:14px;line-height:1.3"></div>
         </div>
@@ -997,7 +998,7 @@
 <!-- Frise de progression -->
 <div id="timeline">
     <div id="timeline-season">Saison 1</div>
-    <div style="font-family:Cinzel,serif;font-size:9px;color:#3a3050;margin-left:auto;padding-left:8px;white-space:nowrap">v0.412</div>
+    <div style="font-family:Cinzel,serif;font-size:9px;color:#3a3050;margin-left:auto;padding-left:8px;white-space:nowrap">v0.418</div>
     <div id="timeline-steps"></div>
     <button onclick="toggleSaveMenu()" style="background:linear-gradient(135deg,#1a1030,#2a1a40);border:1px solid #4a3060;color:#c0a060;font-size:14px;cursor:pointer;padding:2px 8px;border-radius:5px;white-space:nowrap;flex-shrink:0" title="Sauvegardes">💾 Save</button>
     <button onclick="toggleMetaSummary()" style="background:linear-gradient(135deg,#101a10,#1a2a1a);border:1px solid #2a5a2a;color:#4cffaa;font-size:14px;cursor:pointer;padding:2px 8px;border-radius:5px;white-space:nowrap;flex-shrink:0" title="Résumé méta">✦ Méta</button>
@@ -3504,7 +3505,9 @@ function renderEnemyPanel() {
     const back  = dungeonState.enemies.back.filter(e=>e.hp>0);
     if (front.length === 0 && back.length === 0) return;
 
-    const target = front[dungeonState.targetIdx] || front[0] || back[0];
+    const target = dungeonState.targetIdx === -1
+        ? (dungeonState.enemy && dungeonState.enemy.hp > 0 ? dungeonState.enemy : back[0] || front[0])
+        : (front[dungeonState.targetIdx] || front[0] || back[0]);
     if (!target) return;
     dungeonState.enemy = target;
 
@@ -3641,6 +3644,8 @@ function makeGridCell(e, isBack, row) {
             if (!isBack) {
                 const origIdx = dungeonState.enemies.front.indexOf(e);
                 dungeonState.targetIdx = origIdx;
+            } else {
+                dungeonState.targetIdx = -1; // cible back
             }
             dungeonState.enemy = e;
             renderEnemyPanel();
@@ -4193,6 +4198,7 @@ function dngUpdateAvatarStats() {
         '<span style="background:rgba(0,0,0,0.55);border-radius:4px;padding:2px 5px;color:#ff9060;font-size:11px">💥 '+avatarDmg+'</span>' +
         '<span style="background:rgba(0,0,0,0.55);border-radius:4px;padding:2px 5px;color:#4cffaa;font-size:11px">🛡 '+def+'</span>' +
         (protection>0?'<span style="background:rgba(0,0,0,0.55);border-radius:4px;padding:2px 5px;color:#80c0ff;font-size:11px">🔰 '+protection+'</span>':'') +
+        (avatarRanged?'<span style="background:rgba(0,0,0,0.55);border-radius:4px;padding:2px 5px;color:#80ffb0;font-size:11px">🏹 Distance</span>':'') +
         '</div>';
 }
 
@@ -5038,8 +5044,14 @@ function buyEquipment(name, costGold, costMana=0, costPop=0) {
     }
     gold -= costGold; mana -= costMana; population -= costPop;
     ownedEquipment[item.id] = true;
-    item.apply();
+    if (!item.isGlyph && !item.isPotion && item.slot) {
+        ewEquipInSlot(item.slot, item); // équipe ET applique
+    } else {
+        item.apply();
+    }
     updateStats();
+    if (typeof dngUpdateAvatarStats === 'function') dngUpdateAvatarStats();
+    if (dungeonState.active && typeof renderEnemyPanel === 'function') renderEnemyPanel();
     addLog('✅ ' + name + ' acheté !');
 }
 
@@ -7797,6 +7809,8 @@ function ewHandleItemClick(item) {
             ewEquipInSlot(slot, item);
         }
         renderEquipWindow();
+        if (typeof dngUpdateAvatarStats === 'function') dngUpdateAvatarStats();
+        if (dungeonState && dungeonState.active && typeof renderEnemyPanel === 'function') renderEnemyPanel();
     } catch(e) {
         console.error('ewHandleItemClick error:', e);
         addLog('⚠ Erreur équipement : ' + e.message);
@@ -7869,7 +7883,7 @@ function cleanForSave(obj) {
 
 function getGameState() {
     return {
-        version: '0.412',
+        version: '0.418',
         date: new Date().toISOString(),
         currentTurn, currentSeason,
         gold, mana, population, dust,
