@@ -559,7 +559,7 @@
 <div id="home-screen" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:#06040a;z-index:20000;flex-direction:column;align-items:center;justify-content:center;gap:20px">
     <div style="text-align:center;margin-bottom:10px">
         <div style="font-family:Cinzel,serif;font-size:28px;color:#c0a060;letter-spacing:3px;text-shadow:0 0 20px rgba(180,140,60,0.4)">⚔ Chronocity — A Rogue City Builder</div>
-        <div style="font-size:11px;color:#4a3a5a;margin-top:6px;letter-spacing:2px">VERSION 0.418</div>
+        <div style="font-size:11px;color:#4a3a5a;margin-top:6px;letter-spacing:2px">VERSION 0.42</div>
     </div>
     <div id="home-menu" style="display:flex;flex-direction:column;gap:10px;width:min(340px,90vw)">
         <button onclick="homeLoad()" style="width:100%;padding:16px 0;font-family:Cinzel,serif;font-size:14px;cursor:pointer;border-radius:8px;background:linear-gradient(135deg,#1a1030,#2a1a40);color:#c080ff;border:1px solid #5040a0">📂 Charger une partie</button>
@@ -998,7 +998,7 @@
 <!-- Frise de progression -->
 <div id="timeline">
     <div id="timeline-season">Saison 1</div>
-    <div style="font-family:Cinzel,serif;font-size:9px;color:#3a3050;margin-left:auto;padding-left:8px;white-space:nowrap">v0.418</div>
+    <div style="font-family:Cinzel,serif;font-size:9px;color:#3a3050;margin-left:auto;padding-left:8px;white-space:nowrap">v0.42</div>
     <div id="timeline-steps"></div>
     <button onclick="toggleSaveMenu()" style="background:linear-gradient(135deg,#1a1030,#2a1a40);border:1px solid #4a3060;color:#c0a060;font-size:14px;cursor:pointer;padding:2px 8px;border-radius:5px;white-space:nowrap;flex-shrink:0" title="Sauvegardes">💾 Save</button>
     <button onclick="toggleMetaSummary()" style="background:linear-gradient(135deg,#101a10,#1a2a1a);border:1px solid #2a5a2a;color:#4cffaa;font-size:14px;cursor:pointer;padding:2px 8px;border-radius:5px;white-space:nowrap;flex-shrink:0" title="Résumé méta">✦ Méta</button>
@@ -5501,6 +5501,33 @@ function armyTab(tab) {
     if (tab === 'result') renderArmyTabResult();
 }
 
+
+function calcTraitTotals(units) {
+    const totals = {};
+    units.forEach(function(u) {
+        (u.traits||[]).forEach(function(t) {
+            totals[t] = (totals[t]||0) + 1;
+        });
+    });
+    return totals;
+}
+
+function calcAntiTotals(units) {
+    const totals = {};
+    units.forEach(function(u) {
+        (u.traits||[]).forEach(function(t) {
+            if (t.startsWith('anti-')) totals[t] = (totals[t]||0) + 1;
+        });
+    });
+    return totals;
+}
+
+function traitSummaryHtml(totals, colorFn) {
+    return Object.entries(totals).map(function([t,n]) {
+        return '<span style="background:rgba(0,0,0,0.4);border-radius:3px;padding:1px 5px;font-size:9px;color:'+colorFn(t)+';white-space:nowrap">'+t+(n>1?' ×'+n:'')+'</span>';
+    }).join(' ');
+}
+
 function renderArmyTabCity() {
     const el = document.getElementById('army-tab-city');
     const cp = calcCityPower();
@@ -5523,6 +5550,23 @@ function renderArmyTabCity() {
         });
         html += '</table>';
     }
+    // Résumé traits ville
+    if (cityArmy.length > 0) {
+        const antiTotals = calcAntiTotals(cityArmy);
+        const hordeTotals = calcTraitTotals(hordeArmy);
+        html += '<div style="margin-top:10px;padding:8px;background:#0a0a14;border-radius:6px">';
+        html += '<div style="font-size:10px;color:#9a8a6a;margin-bottom:4px">⚜ Capacités anti-horde :</div>';
+        html += '<div style="display:flex;flex-wrap:wrap;gap:4px">';
+        Object.entries(antiTotals).forEach(function([t,n]) {
+            const hordeT = COUNTER_RULES[t] || '';
+            const needed = hordeTotals[hordeT] || 0;
+            const ok = n >= needed && needed > 0;
+            const surplus = needed === 0;
+            const color = surplus ? '#9a8a6a' : ok ? '#4cffaa' : '#ffaa40';
+            html += '<span style="background:rgba(0,0,0,0.4);border-radius:3px;padding:1px 5px;font-size:9px;color:'+color+'">'+t+(n>1?' ×'+n:'')+'</span>';
+        });
+        html += '</div></div>';
+    }
     html += '<p style="font-size:11px;color:#9a8a6a;margin-top:8px">Fortifications : '+fortifications+' | Avatar : '+(window.avatarBlocked?'indisponible':'disponible')+'</p>';
     el.innerHTML = html;
 }
@@ -5535,13 +5579,15 @@ function renderHordeTable(units, countered_fn) {
     units.forEach(function(u) { const k=u.name; counts[k]=(counts[k]||{u,n:0}); counts[k].n++; });
     Object.values(counts).forEach(function(obj) {
         const u=obj.u, n=obj.n;
-        const trait = u.traits[0]||'';
-        const countered = countered_fn(trait);
+        // traits affichés dans la cellule
         h += '<tr style="border-bottom:1px solid #1a1a2a">'+
             '<td style="padding:3px 0">'+u.icon+' '+u.name+'</td>'+
             '<td style="text-align:center;color:#ff8080">'+u.atk+'</td>'+
             '<td style="text-align:center;color:#cc88ff">'+u.atkMag+'</td>'+
-            '<td><span style="font-size:10px;padding:1px 4px;border-radius:3px;background:'+(countered?'#0a2a1a':'#2a0a0a')+';color:'+(countered?'#4cffaa':'#ff6060')+'">'+trait+(countered?' ✓':'')+'</span></td>'+
+            '<td><div style="display:flex;flex-wrap:wrap;gap:2px">'+u.traits.filter(function(tr){return tr!=='infanterie';}).map(function(tr,ti){
+                const ctr = countered_fn ? countered_fn(tr) : false;
+                return '<span style="font-size:9px;padding:1px 3px;border-radius:3px;background:'+(ctr?'#0a2a1a':'#2a0a0a')+';color:'+(ctr?'#4cffaa':'#ff6060')+'">'+tr+(ctr?' ✓':'')+'</span>';
+            }).join('')+'</div></td>'+
             '<td style="text-align:center;color:#ff8080;font-weight:bold">×'+n+'</td></tr>';
     });
     h += '</table>';
@@ -5656,6 +5702,30 @@ function renderArmyTabResult() {
         }
     } else {
         html += '<p style="color:#9a8a6a;text-align:center">La horde n\'a pas encore été révélée.</p>';
+    }
+    // Tableau confrontation traits
+    if (hordeRevealed && hordeArmy.length > 0) {
+        const hTotals = calcTraitTotals(hordeArmy);
+        const aTotals = calcAntiTotals(cityArmy);
+        html += '<div style="margin-top:12px;padding:8px;background:#0a0a14;border-radius:6px">';
+        html += '<div style="font-size:10px;color:#9a8a6a;margin-bottom:6px">⚔ Confrontation des traits :</div>';
+        html += '<table style="width:100%;font-size:10px;border-collapse:collapse">';
+        html += '<tr style="color:#9a8a6a;font-size:9px"><th style="text-align:left">Trait horde</th><th>Horde</th><th>Ville</th><th>Net</th><th></th></tr>';
+        Object.entries(hTotals).forEach(function([trait, hCount]) {
+            if (trait === 'infanterie') return;
+            const antiKey = Object.keys(COUNTER_RULES).find(function(k){ return COUNTER_RULES[k]===trait; });
+            const aCount = antiKey ? (aTotals[antiKey]||0) : 0;
+            const net = hCount - aCount;
+            const ok = net <= 0;
+            html += '<tr style="border-bottom:1px solid #1a1a2a">'+
+                '<td style="padding:3px 0;color:#ff8080">'+trait+'</td>'+
+                '<td style="text-align:center;color:#ff6060">'+hCount+'</td>'+
+                '<td style="text-align:center;color:#4cffaa">'+aCount+'</td>'+
+                '<td style="text-align:center;font-weight:bold;color:'+(ok?'#4cffaa':'#ff6060')+'">'+
+                    (net > 0 ? '+'+net : net)+'</td>'+
+                '<td style="text-align:center">'+(ok?'✓':'⚠')+'</td></tr>';
+        });
+        html += '</table></div>';
     }
     el.innerHTML = html;
 }
@@ -7883,7 +7953,7 @@ function cleanForSave(obj) {
 
 function getGameState() {
     return {
-        version: '0.418',
+        version: '0.42',
         date: new Date().toISOString(),
         currentTurn, currentSeason,
         gold, mana, population, dust,
