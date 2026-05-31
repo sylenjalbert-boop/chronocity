@@ -581,7 +581,7 @@
 <div id="home-screen" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:#06040a;z-index:20000;flex-direction:column;align-items:center;justify-content:center;gap:20px">
     <div style="text-align:center;margin-bottom:10px">
         <div style="font-family:Cinzel,serif;font-size:28px;color:#c0a060;letter-spacing:3px;text-shadow:0 0 20px rgba(180,140,60,0.4)">⚔ Chronocity — A Rogue City Builder</div>
-        <div style="font-size:11px;color:#4a3a5a;margin-top:6px;letter-spacing:2px">VERSION 0.453</div>
+        <div style="font-size:11px;color:#4a3a5a;margin-top:6px;letter-spacing:2px">VERSION 0.454</div>
     </div>
     <div id="home-menu" style="display:flex;flex-direction:column;gap:10px;width:min(340px,90vw)">
         <button onclick="homeLoad()" style="width:100%;padding:16px 0;font-family:Cinzel,serif;font-size:14px;cursor:pointer;border-radius:8px;background:linear-gradient(135deg,#1a1030,#2a1a40);color:#c080ff;border:1px solid #5040a0">📂 Charger une partie</button>
@@ -1021,7 +1021,7 @@
 <!-- Frise de progression -->
 <div id="timeline">
     <div id="timeline-season">Saison 1</div>
-    <div style="font-family:Cinzel,serif;font-size:9px;color:#3a3050;margin-left:auto;padding-left:8px;white-space:nowrap">v0.453</div>
+    <div style="font-family:Cinzel,serif;font-size:9px;color:#3a3050;margin-left:auto;padding-left:8px;white-space:nowrap">v0.454</div>
     <div id="timeline-steps"></div>
     <button onclick="toggleSaveMenu()" style="background:linear-gradient(135deg,#1a1030,#2a1a40);border:1px solid #4a3060;color:#c0a060;font-size:14px;cursor:pointer;padding:2px 8px;border-radius:5px;white-space:nowrap;flex-shrink:0" title="Sauvegardes">💾 Save</button>
     <button onclick="toggleMetaSummary()" style="background:linear-gradient(135deg,#101a10,#1a2a1a);border:1px solid #2a5a2a;color:#4cffaa;font-size:14px;cursor:pointer;padding:2px 8px;border-radius:5px;white-space:nowrap;flex-shrink:0" title="Résumé méta">✦ Méta</button>
@@ -1883,7 +1883,14 @@ function updateRecruitMode() {
     const freeBtn = document.getElementById('cfr-recruit-free');
     const actionBtn = document.getElementById('cfr-recruit-action');
     if (freeBtn) freeBtn.style.display = isS5 ? 'none' : '';
-    if (actionBtn) actionBtn.style.display = isS5 ? '' : 'none';
+    if (actionBtn) {
+        // Dans le dock : géré comme les autres boutons action
+        actionBtn.style.display = isS5 ? '' : 'none';
+        // Griser si plus d'action dispo
+        const acts = window.actionsDisponibles !== undefined ? window.actionsDisponibles : 1;
+        actionBtn.disabled = isS5 && acts <= 0;
+        actionBtn.style.opacity = (isS5 && acts <= 0) ? '0.4' : '';
+    }
     // Mettre à jour le texte d'instruction
     const instr = document.querySelector('.cb-instr');
     if (instr) {
@@ -4490,11 +4497,14 @@ function showHordeChiefAnimation(callback) {
 
 function closeHordeChief() {
     const ov = document.getElementById('horde-chief-overlay');
-    if (ov) ov.classList.remove('show');
+    if (ov) { ov.classList.remove('show'); ov.style.display = 'none'; }
     if (window._hordeChiefCallback) {
         const cb = window._hordeChiefCallback;
         window._hordeChiefCallback = null;
-        setTimeout(cb, 300);
+        setTimeout(function() {
+            cb();
+            if (typeof updateTimeline === 'function') updateTimeline();
+        }, 300);
     }
 }
 
@@ -8160,7 +8170,7 @@ function cleanForSave(obj) {
 
 function getGameState() {
     return {
-        version: '0.453',
+        version: '0.454',
         date: new Date().toISOString(),
         currentTurn, currentSeason,
         gold, mana, population, dust,
@@ -11281,22 +11291,28 @@ body.clarity-on #clarity-resbar {
                 el.appendChild(chip('🟡 1 ACTION', 'cc-action'));
             }
         });
-        // Bouton Recruter action (S5+) - injecté dans free rail
-        const freeRail = document.getElementById('clarity-free-rail');
-        if (freeRail && !document.getElementById('cfr-recruit-action')) {
+        // Bouton Recruter action (S5+) - injecté dans le dock d'actions
+        const dock2 = document.getElementById('clarity-action-dock');
+        if (dock2 && !document.getElementById('cfr-recruit-action')) {
             const btn = document.createElement('button');
-            btn.className = 'cfr-btn cfr-action-style';
+            btn.className = 'cad-btn';
             btn.id = 'cfr-recruit-action';
-            btn.dataset.target = 'recruit';
+            btn.dataset.action = 'recruit';
             btn.style.display = 'none';
             btn.style.background = 'linear-gradient(135deg,#2a1a00,#3a2800)';
             btn.style.borderColor = '#ffb040';
             btn.style.color = '#ffb040';
-            btn.innerHTML = '<span class="cfr-ico">⚔</span> Recruter <span style="font-size:9px;background:#ffb040;color:#000;border-radius:3px;padding:1px 4px;margin-left:3px">ACTION</span>';
-            // Insérer après cfr-recruit-free
-            const freeBtn = document.getElementById('cfr-recruit-free');
-            if (freeBtn && freeBtn.nextSibling) freeRail.insertBefore(btn, freeBtn.nextSibling);
-            else freeRail.appendChild(btn);
+            btn.innerHTML = '⚔ Recruter';
+            btn.addEventListener('click', function() {
+                if (window.actionsDisponibles <= 0) return;
+                window.actionsDisponibles = Math.max(0, window.actionsDisponibles - 1);
+                window._recruitsThisAction = 0;
+                if (typeof updateTimeline === 'function') updateTimeline();
+                // Ouvrir panel recruter
+                const freeBtn = document.getElementById('cfr-recruit-free');
+                if (freeBtn) freeBtn.click();
+            });
+            dock2.appendChild(btn);
         }
     }
 
