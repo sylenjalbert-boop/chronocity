@@ -173,6 +173,28 @@
         .dng-btn-skill{background:linear-gradient(135deg,#0e1e50,#182870);color:#a0c8ff;border:1px solid #3a5aaa;}
         .dng-btn-flee{background:var(--bg-card);color:var(--text-m);border:1px solid var(--border);}
         
+        
+/* ── Animation chef de horde ── */
+#horde-chief-overlay {
+    position:fixed;top:0;left:0;width:100%;height:100%;
+    background:rgba(0,0,0,0.92);z-index:99998;
+    display:none;flex-direction:column;align-items:center;justify-content:center;
+    opacity:0;transition:opacity 0.5s ease;pointer-events:none;
+}
+#horde-chief-overlay.show { display:flex;opacity:1;pointer-events:all; }
+#horde-chief-card {
+    max-width:480px;width:90%;background:linear-gradient(160deg,#1a0a0a,#2a0808);
+    border:2px solid #8b0000;border-radius:12px;padding:32px;text-align:center;
+    box-shadow:0 0 60px rgba(139,0,0,0.6);
+}
+#horde-chief-icon { font-size:72px;margin-bottom:16px;animation:chiefPulse 1.5s infinite alternate; }
+@keyframes chiefPulse { from{transform:scale(1);filter:drop-shadow(0 0 8px #ff0000);} to{transform:scale(1.08);filter:drop-shadow(0 0 24px #ff4400);} }
+#horde-chief-title { font-family:'Cinzel',serif;font-size:20px;color:#ff4040;font-weight:900;margin-bottom:8px;letter-spacing:2px; }
+#horde-chief-subtitle { font-size:13px;color:#ff8060;margin-bottom:16px;font-style:italic; }
+#horde-chief-text { font-size:12px;color:#c08080;line-height:1.6;margin-bottom:20px; }
+#horde-chief-btn { padding:10px 28px;border:none;border-radius:8px;background:#5a0000;color:#ffb0b0;font-size:13px;font-weight:bold;cursor:pointer;font-family:'Cinzel',serif; }
+#horde-chief-btn:hover { background:#8b0000; }
+
         /* ── Effets spéciaux donjon ── */
         #dng-effect-overlay {
             position:fixed; top:0; left:0; width:100%; height:100%;
@@ -559,7 +581,7 @@
 <div id="home-screen" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:#06040a;z-index:20000;flex-direction:column;align-items:center;justify-content:center;gap:20px">
     <div style="text-align:center;margin-bottom:10px">
         <div style="font-family:Cinzel,serif;font-size:28px;color:#c0a060;letter-spacing:3px;text-shadow:0 0 20px rgba(180,140,60,0.4)">⚔ Chronocity — A Rogue City Builder</div>
-        <div style="font-size:11px;color:#4a3a5a;margin-top:6px;letter-spacing:2px">VERSION 0.437</div>
+        <div style="font-size:11px;color:#4a3a5a;margin-top:6px;letter-spacing:2px">VERSION 0.453</div>
     </div>
     <div id="home-menu" style="display:flex;flex-direction:column;gap:10px;width:min(340px,90vw)">
         <button onclick="homeLoad()" style="width:100%;padding:16px 0;font-family:Cinzel,serif;font-size:14px;cursor:pointer;border-radius:8px;background:linear-gradient(135deg,#1a1030,#2a1a40);color:#c080ff;border:1px solid #5040a0">📂 Charger une partie</button>
@@ -828,6 +850,7 @@
     <div style="margin-top:24px;color:#9a8a6a;font-size:12px">Cliquez pour commencer</div>
 </div>
 
+<div id="horde-chief-overlay"><div id="horde-chief-card"><div id="horde-chief-icon">💀</div><div id="horde-chief-title">LE CHEF DE LA HORDE INTERVIENT</div><div id="horde-chief-subtitle">Les flux temporels sont perturbés !</div><div id="horde-chief-text"></div><button id="horde-chief-btn" onclick="closeHordeChief()">Faire face au destin</button></div></div>
 <!-- ===== ÉCRAN DONJON ===== -->
 <div id="dungeon-screen">
 <div id="dng-effect-overlay"><div id="dng-effect-icon"></div><div id="dng-effect-label"></div></div>
@@ -998,7 +1021,7 @@
 <!-- Frise de progression -->
 <div id="timeline">
     <div id="timeline-season">Saison 1</div>
-    <div style="font-family:Cinzel,serif;font-size:9px;color:#3a3050;margin-left:auto;padding-left:8px;white-space:nowrap">v0.437</div>
+    <div style="font-family:Cinzel,serif;font-size:9px;color:#3a3050;margin-left:auto;padding-left:8px;white-space:nowrap">v0.453</div>
     <div id="timeline-steps"></div>
     <button onclick="toggleSaveMenu()" style="background:linear-gradient(135deg,#1a1030,#2a1a40);border:1px solid #4a3060;color:#c0a060;font-size:14px;cursor:pointer;padding:2px 8px;border-radius:5px;white-space:nowrap;flex-shrink:0" title="Sauvegardes">💾 Save</button>
     <button onclick="toggleMetaSummary()" style="background:linear-gradient(135deg,#101a10,#1a2a1a);border:1px solid #2a5a2a;color:#4cffaa;font-size:14px;cursor:pointer;padding:2px 8px;border-radius:5px;white-space:nowrap;flex-shrink:0" title="Résumé méta">✦ Méta</button>
@@ -1422,6 +1445,7 @@ function applyTileBonus(tileType, buildingName) {
 // ===== FIN SYSTÈME TUILES =====
 let hordeHiddenUnits = []; // unités non identifiées (brouillard de guerre)
 let hordeScoutedThisSeason = false; // scout Monolithe déjà utilisé cette saison
+let hordeChiefShown = false;      // animation chef horde déjà montrée en S5
 let hordeHiddenCount = 0;  // nombre de troupes cachées connu ou non selon saison
 let currentTurn = 1;
 let currentSeason = 1;
@@ -1581,7 +1605,8 @@ function addLog(message) {
         const marketBonus    = (buildingCounts['Place du Marché']  || 0) > 0 ? 0.20 : 0;
         const caravanBonus   = (buildingCounts['Caravansérail']    || 0) > 0 ? 0.50 : 0;
         const caravanMult    = 1 + marketBonus + caravanBonus;
-        const mult = (isConjonction ? 2 : 1) * caravanMult;
+        const isDisrupted = currentSeason >= 5;
+        const mult = (isConjonction ? (isDisrupted ? 1.5 : 2) : 1) * caravanMult;
         gold += Math.floor(goldperturn * mult);
 		mana += Math.floor(manaperturn * mult);
 		population += Math.floor(populationperturn * mult);
@@ -1597,7 +1622,11 @@ function addLog(message) {
 		}
         const bonusLabel = caravanMult > 1 ? ' (×'+caravanMult.toFixed(1)+' caravane)' : '';
         if (isConjonction) {
-            addLog('🌟 Conjonction ! Caravane ×2'+bonusLabel+' — +' + Math.floor(goldperturn*mult) + ' Or, +' + Math.floor(manaperturn*mult) + ' Mana, +' + Math.floor(populationperturn*mult) + ' Population !');
+            if (isDisrupted) {
+                addLog('🌀 Conjonction perturbée ! Caravane ×1.5'+bonusLabel+' — +' + Math.floor(goldperturn*mult) + ' Or, +' + Math.floor(manaperturn*mult) + ' Mana, +' + Math.floor(populationperturn*mult) + ' Population !');
+            } else {
+                addLog('🌟 Conjonction ! Caravane ×2'+bonusLabel+' — +' + Math.floor(goldperturn*mult) + ' Or, +' + Math.floor(manaperturn*mult) + ' Mana, +' + Math.floor(populationperturn*mult) + ' Population !');
+            }
         } else {
             addLog('Caravane'+bonusLabel+' — +'+Math.floor(goldperturn*mult)+' Or, +'+Math.floor(manaperturn*mult)+' Mana, +'+Math.floor(populationperturn*mult)+' Population.');
         }
@@ -1641,8 +1670,19 @@ function showTurnAnimation(turnNum, season, callback) {
     // Sur les tours de récolte, afficher les ressources gagnées
     let desc = ev.desc;
     const collectTurns = [2, 4, 6, 8];
+    const isDisruptedSeason = (typeof currentSeason !== 'undefined') && currentSeason >= 5;
     if (collectTurns.includes(turnNum)) {
-        desc = ev.desc + `\nRessources disponibles : Or +${goldperturn} | Mana +${manaperturn} | Pop +${populationperturn}`;
+        if (isDisruptedSeason) {
+            // Override avec conjonction perturbée
+            const card2 = document.getElementById('turn-card');
+            if (card2) { card2.style.background = '#2a1500'; card2.style.borderColor = '#ff8c00'; }
+            document.getElementById('turn-event-icon').textContent = '🌀';
+            document.getElementById('turn-event-name').style.color = '#ff8c00';
+            document.getElementById('turn-event-name').textContent = 'Conjonction Perturbée';
+            desc = 'Le chef de la horde perturbe les flux temporels ! Le bonus de caravane n\'est plus que de ×1.5.\nRessources disponibles : Or +'+goldperturn+' | Mana +'+manaperturn+' | Pop +'+populationperturn;
+        } else {
+            desc = ev.desc + `\nRessources disponibles : Or +${goldperturn} | Mana +${manaperturn} | Pop +${populationperturn}`;
+        }
     }
     document.getElementById('turn-event-desc').textContent  = desc;
     document.getElementById('turn-season-badge').textContent = sName;
@@ -1701,25 +1741,19 @@ function showTurnAnimation(turnNum, season, callback) {
     overlay.addEventListener('click', closeAnim);
 }
 
-	function nextTurn() {
-    // On incrémente d'abord pour annoncer le BON tour à venir
+    function nextTurn() {
     currentTurn++;
-    // Cas fin de saison : reset du compteur seulement
     if (currentTurn > 10) {
         currentTurn = 1;
         currentSeason++;
-        // window.avatarBlocked sera remis à false au tour 1 de la nouvelle saison (voir ci-dessous)
     }
-    showTurnAnimation(currentTurn, currentSeason, () => {
-        // Début de nouvelle saison : débloquer l'avatar
-        // Il est bloqué pendant toute la saison suivant le combat (N+1)
-        // et libre à partir de la saison N+2
+
+    function _doTurnBody() {
         if (currentTurn === 1 && window.avatarBlocked && currentSeason > avatarBlockedSeason + 1) {
             window.avatarBlocked = false;
             avatarBlockedSeason = -1;
             addLog("L'avatar est à nouveau disponible pour explorer.");
         }
-        // Nouveau tour 1 d'une saison 2+ : sauvegarder la horde actuelle comme horde S-1
         if (currentTurn === 1 && currentSeason > 1 && hordeArmy.length > 0) {
             hordePrevSeason = [...hordeArmy];
         }
@@ -1728,60 +1762,58 @@ function showTurnAnimation(turnNum, season, callback) {
             const fog = applyFogOfWar(newUnits, currentSeason);
             const seasonIdx = (currentSeason - 1) % 4;
             const sNames = ['Printemps','Été','Automne','Hiver'];
-
-            // Sauvegarder la horde de S-1 avant d'ajouter les nouvelles unités
             hordePrevSeason = [...hordeArmy];
             hordeCurrentAdditions = [...fog.visible];
             hordeCurrentSeason = currentSeason;
-
-            // Ajouter les unités à la horde totale
             hordeArmy.push(...fog.visible);
             hordeHiddenUnits.push(...fog.hidden);
             hordeHiddenCount = fog.hiddenCount;
             hordeRevealed = true;
             hordeAggressiveness = hordeArmy.length + hordeHiddenUnits.length;
-
             let msg = '🔭 Éclaireurs [' + sNames[seasonIdx] + '] — ';
-            if (hordePrevSeason.length > 0) {
-                msg += 'Horde existante : ' + hordePrevSeason.length + ' unité(s). ';
-            }
+            if (hordePrevSeason.length > 0) msg += 'Horde existante : ' + hordePrevSeason.length + ' unité(s). ';
             if (fog.hidden.length === 0) {
                 msg += 'Renforts : ' + newUnits.map(u=>u.icon+u.name).join(', ');
             } else {
-                msg += fog.visible.length + ' renfort(s) identifié(s) : ' +
-                       fog.visible.map(u=>u.icon+u.name).join(', ');
-                if (fog.countKnown) {
-                    msg += ' + ' + fog.hidden.length + ' non identifié(s).';
-                } else {
-                    msg += ' + présence inconnue.';
-                }
+                msg += fog.visible.length + ' renfort(s) identifié(s) : ' + fog.visible.map(u=>u.icon+u.name).join(', ');
+                if (fog.countKnown) msg += ' + ' + fog.hidden.length + ' non identifié(s).';
+                else msg += ' + présence inconnue.';
             }
             addLog(msg);
             updateArmyPanels();
         }
         if (currentTurn === 10) {
-            // Le combat est déclenché manuellement via la frise (launchHordeBattle)
             addLog('⚔ La horde approche ! Préparez vos défenses et cliquez ⚔ dans la frise quand vous êtes prêt.');
         }
         updateStats();
         tileRevealedThisTurn = false;
-        window.dungeonUsedThisTurn  = false;
+        window.dungeonUsedThisTurn = false;
         window.actionsDisponibles = actionsParTour;
-        // Reset achat conscrit par tour (Autel de Guerre)
+        window._recruitsThisAction = 0;
         window._conscritBuyCount = 0;
-        // Expirer les wards de la saison précédente
         if (currentTurn === 1 && window._wards) {
             const prevSeason = currentSeason - 1;
             const expired = (window._wards || []).filter(w => w.season < currentSeason);
             if (expired.length > 0) {
-                cityArmy = cityArmy.filter(u => !(( u.id === 'Ward' || u.id === 'WardMV') && u._wardSeason < currentSeason));
+                cityArmy = cityArmy.filter(u => !((u.id === 'Ward' || u.id === 'WardMV') && u._wardSeason < currentSeason));
                 window._wards = (window._wards || []).filter(w => w.season >= currentSeason);
                 addLog('⛩ '+expired.length+' Ward(s) expirée(s) (fin de saison '+prevSeason+').');
             }
         }
         autoSave();
-        setTurnProcessing(false); // déverrouiller : le tour est résolu
-    });
+        setTurnProcessing(false);
+    }
+
+    function _launchTurnAnim() {
+        showTurnAnimation(currentTurn, currentSeason, _doTurnBody);
+    }
+
+    // Animation chef de horde : une fois au tour 1 de S5
+    if (currentSeason >= 5 && currentTurn === 1 && !hordeChiefShown) {
+        showHordeChiefAnimation(_launchTurnAnim);
+    } else {
+        _launchTurnAnim();
+    }
 }
 
 
@@ -1845,6 +1877,24 @@ function openGoblinFight() {
 
 
 // Frise de progression
+
+function updateRecruitMode() {
+    const isS5 = (typeof currentSeason !== 'undefined') && currentSeason >= 5;
+    const freeBtn = document.getElementById('cfr-recruit-free');
+    const actionBtn = document.getElementById('cfr-recruit-action');
+    if (freeBtn) freeBtn.style.display = isS5 ? 'none' : '';
+    if (actionBtn) actionBtn.style.display = isS5 ? '' : 'none';
+    // Mettre à jour le texte d'instruction
+    const instr = document.querySelector('.cb-instr');
+    if (instr) {
+        if (isS5) {
+            instr.innerHTML = 'Choisis <b>1 action principale</b> ce tour (Révéler · Construire · Caravane · <span style="color:#ffb040">Recruter</span>). Les actions <b style="color:#80c0ff">libres</b> (équiper, sort, donjon) ne consomment pas ton tour.';
+        } else {
+            instr.innerHTML = 'Choisis <b>1 action principale</b> ce tour (Révéler · Construire · Caravane). Les actions <b style="color:#80c0ff">libres</b> (recruter, équiper, sort, donjon) ne consomment pas ton tour.';
+        }
+    }
+}
+
 function updateTimeline() {
     const container = document.getElementById('timeline-steps');
     const seasonNames = ['Printemps', 'Été', 'Automne', 'Hiver'];
@@ -1871,7 +1921,9 @@ function updateTimeline() {
         const isDone = s.num < currentTurn;
         let circleClass = 'tl-circle';
         if (s.type === 'battle') circleClass += ' battle';
-        if (s.type === 'collect') circleClass += ' collect';
+        const _disrupted = (typeof currentSeason !== 'undefined') && currentSeason >= 5 && s.type === 'collect';
+        if (s.type === 'collect') circleClass += _disrupted ? ' collect-disrupted' : ' collect';
+        if (_disrupted) s.label = 'Perturbée';
         if (isDone) circleClass += ' done';
         if (isCurrent) circleClass += ' current';
 
@@ -1893,6 +1945,7 @@ function updateTimeline() {
         }
     }
     container.innerHTML = html;
+    updateRecruitMode();
 }
 
 // ---- Avatar exploration ----
@@ -2839,7 +2892,18 @@ function dungeonComplete() {
     document.getElementById('door-screen').classList.remove('show');
     // Annuler les malus temporaires du donjon (pas de bonus permanents)
     if(dungeonState.curseActive){ atk+=1; dungeonState.curseActive=false; }
-    if(dungeonState.licheAtkReduction > 0){ dungeonState.licheAtkReduction=0; }
+    if (dungeonState.combatAtkMalus > 0) { atk += dungeonState.combatAtkMalus; dungeonState.combatAtkMalus = 0; }
+    if (dungeonState.combatDefMalus > 0) { def += dungeonState.combatDefMalus; dungeonState.combatDefMalus = 0; }
+    dungeonState.licheAtkReduction = 0;
+    if (typeof rageActive !== 'undefined') { rageActive = false; rageRounds = 0; }
+    dungeonState.playerStunned = false;
+    dungeonState._freezeTurns = 0;
+    dungeonState._blessRoundsLeft = 0;
+    dungeonState._warcryRoundsLeft = 0;
+    dungeonState._mirrorShield = 0;
+    dungeonState._curseRoundsLeft = 0;
+    dungeonState.dragonBreathCounter = 0;
+    dungeonState.poisonStacks = [];
     gold += 20;
     updateStats();
     addLog('Donjon complété ! +20 Or.');
@@ -4404,6 +4468,36 @@ function updateGlyphButtons() {
 const _dngEffectQueue = [];
 let _dngEffectBusy = false;
 
+
+function showHordeChiefAnimation(callback) {
+    hordeChiefShown = true;
+    setTurnProcessing(false); // permettre les clics sur l'overlay
+    const ov = document.getElementById('horde-chief-overlay');
+    const txt = document.getElementById('horde-chief-text');
+    if (!ov) { if(callback) callback(); return; }
+    txt.innerHTML = 
+        '<p>"Mortels ! Vos caravanes ne voyageront plus librement — les routes temporelles m\'appartiennent désormais !"</p>'+
+        '<p style="margin-top:12px;color:#ff6040;font-weight:bold">⚠ Effets à partir de cette saison :</p>'+
+        '<p>• Le recrutement consomme une action principale</p>'+
+        '<p>• Les Conjonctions ne donnent plus que +50% de ressources</p>'+
+        '<p>• Le nombre de recrues par action est limité</p>';
+    ov.style.display = 'flex';
+    ov.style.opacity = '1';
+    ov.style.zIndex = '999999';
+    ov.classList.add('show');
+    window._hordeChiefCallback = callback;
+}
+
+function closeHordeChief() {
+    const ov = document.getElementById('horde-chief-overlay');
+    if (ov) ov.classList.remove('show');
+    if (window._hordeChiefCallback) {
+        const cb = window._hordeChiefCallback;
+        window._hordeChiefCallback = null;
+        setTimeout(cb, 300);
+    }
+}
+
 function dngShowEffect(icon, label, color, targetEl) {
     _dngEffectQueue.push({icon, label, color, targetEl});
     if (!_dngEffectBusy) _dngPlayNextEffect();
@@ -4881,6 +4975,22 @@ function closeDungeon() {
     if (dungeonTempDef  > 0) { def        -= dungeonTempDef;  addLog('🔰 Bonus DEF donjon (+'+dungeonTempDef+') expiré.'); }
     if (dungeonTempHp   > 0) { avatarMaxHp -= dungeonTempHp; avatarHp = Math.min(avatarHp, avatarMaxHp); }
     dungeonTempAtk = dungeonTempDmg = dungeonTempProt = dungeonTempDef = dungeonTempHp = 0;
+    // Restaurer ATK/DEF si malus non encore remis (fin de donjon sans mort)
+    if (dungeonState.combatAtkMalus > 0) { atk += dungeonState.combatAtkMalus; dungeonState.combatAtkMalus = 0; }
+    if (dungeonState.combatDefMalus > 0) { def += dungeonState.combatDefMalus; dungeonState.combatDefMalus = 0; }
+    // Reset tous les états temporaires de combat
+    if (typeof rageActive !== 'undefined') { rageActive = false; rageRounds = 0; }
+    dungeonState.playerStunned = false;
+    dungeonState._freezeTurns = 0;
+    dungeonState._blessRoundsLeft = 0;
+    dungeonState._warcryRoundsLeft = 0;
+    dungeonState._mirrorShield = 0;
+    dungeonState._curseRoundsLeft = 0;
+    dungeonState.dragonBreathCounter = 0;
+    dungeonState.poisonStacks = [];
+    dungeonState.licheAtkReduction = 0;
+    dungeonState.combatAtkMalus = 0;
+    dungeonState.combatDefMalus = 0;
     // Nettoyage gobelin
     dungeonState._isGoblinFight = false;
     document.getElementById('dungeon-title').textContent = '🏰 Donjon';
@@ -5822,7 +5932,16 @@ function renderRecruitList() {
     if (!el) return;
     const conscrHeader = document.createElement('div');
     conscrHeader.style.cssText='font-size:12px;color:#ffb040;margin-bottom:6px;padding:4px 8px;background:#2a1a00;border-radius:6px';
-    conscrHeader.textContent = '⚔ Conscription disponible : '+conscrit;
+    const isS5recruit = (typeof currentSeason !== 'undefined') && currentSeason >= 5;
+    const cityLvl = getMeta ? (getMeta().cityLevel || 0) : 0;
+    const maxRecruitsPerAction = cityLvl + 1;
+    if (!window._recruitsThisAction) window._recruitsThisAction = 0;
+    if (isS5recruit) {
+        conscrHeader.textContent = '⚔ Conscription : '+conscrit+' — Recrues ce tour : '+window._recruitsThisAction+'/'+maxRecruitsPerAction;
+        conscrHeader.style.cssText = 'font-size:12px;color:#ffb040;margin-bottom:4px;padding:4px 8px;background:#2a1800;border-radius:6px';
+    } else {
+        conscrHeader.textContent = '⚔ Conscription disponible : '+conscrit;
+    }
     el.appendChild(conscrHeader);
     // Barre de puissance ville vs horde
     const _cp = calcCityPower();
@@ -5862,6 +5981,19 @@ function renderRecruitList() {
         }
         el.appendChild(card);
     });
+}
+
+function doRecruitAction() {
+    // S5+ : recruter = action principale
+    const isS5r = (typeof currentSeason !== 'undefined') && currentSeason >= 5;
+    if (!isS5r) return; // pas d'action à consommer
+    if (window.actionsDisponibles <= 0) { addLog('❌ Plus d\'action disponible ce tour !'); return; }
+    window.actionsDisponibles = Math.max(0, window.actionsDisponibles - 1);
+    window._recruitsThisAction = 0;
+    updateTimeline();
+    // Ouvrir le panel recruter
+    const btn = document.getElementById('cfr-recruit-action') || document.getElementById('cfr-recruit-free');
+    if (btn) btn.click();
 }
 
 function recruitUnit(unitDef) {
@@ -6896,7 +7028,16 @@ function renderRecruitListIn(el) {
     stickyHeader.style.cssText = 'position:sticky;top:0;z-index:10;background:var(--bg-card,#0e0c1a);padding-bottom:4px;margin-bottom:4px';
     const conscrHeader = document.createElement('div');
     conscrHeader.style.cssText='font-size:12px;color:#ffb040;margin-bottom:4px;padding:4px 8px;background:#2a1a00;border-radius:6px';
-    conscrHeader.textContent = '⚔ Conscription disponible : '+conscrit;
+    const isS5recruit = (typeof currentSeason !== 'undefined') && currentSeason >= 5;
+    const cityLvl = getMeta ? (getMeta().cityLevel || 0) : 0;
+    const maxRecruitsPerAction = cityLvl + 1;
+    if (!window._recruitsThisAction) window._recruitsThisAction = 0;
+    if (isS5recruit) {
+        conscrHeader.textContent = '⚔ Conscription : '+conscrit+' — Recrues ce tour : '+window._recruitsThisAction+'/'+maxRecruitsPerAction;
+        conscrHeader.style.cssText = 'font-size:12px;color:#ffb040;margin-bottom:4px;padding:4px 8px;background:#2a1800;border-radius:6px';
+    } else {
+        conscrHeader.textContent = '⚔ Conscription disponible : '+conscrit;
+    }
     stickyHeader.appendChild(conscrHeader);
     // Barre de puissance
     const _cp = calcCityPower();
@@ -8019,7 +8160,7 @@ function cleanForSave(obj) {
 
 function getGameState() {
     return {
-        version: '0.437',
+        version: '0.453',
         date: new Date().toISOString(),
         currentTurn, currentSeason,
         gold, mana, population, dust,
@@ -11095,7 +11236,7 @@ body.clarity-on #clarity-resbar {
         r.id = 'clarity-free-rail';
         r.innerHTML = `
             <span class="cfr-label">🔵 Libre</span>
-            <button class="cfr-btn" data-target="recruit">
+            <button class="cfr-btn" id="cfr-recruit-free" data-target="recruit">
                 <span class="cfr-ico">⚔</span> Recruter
             </button>
             <button class="cfr-btn" data-target="equip">
@@ -11140,6 +11281,23 @@ body.clarity-on #clarity-resbar {
                 el.appendChild(chip('🟡 1 ACTION', 'cc-action'));
             }
         });
+        // Bouton Recruter action (S5+) - injecté dans free rail
+        const freeRail = document.getElementById('clarity-free-rail');
+        if (freeRail && !document.getElementById('cfr-recruit-action')) {
+            const btn = document.createElement('button');
+            btn.className = 'cfr-btn cfr-action-style';
+            btn.id = 'cfr-recruit-action';
+            btn.dataset.target = 'recruit';
+            btn.style.display = 'none';
+            btn.style.background = 'linear-gradient(135deg,#2a1a00,#3a2800)';
+            btn.style.borderColor = '#ffb040';
+            btn.style.color = '#ffb040';
+            btn.innerHTML = '<span class="cfr-ico">⚔</span> Recruter <span style="font-size:9px;background:#ffb040;color:#000;border-radius:3px;padding:1px 4px;margin-left:3px">ACTION</span>';
+            // Insérer après cfr-recruit-free
+            const freeBtn = document.getElementById('cfr-recruit-free');
+            if (freeBtn && freeBtn.nextSibling) freeRail.insertBefore(btn, freeBtn.nextSibling);
+            else freeRail.appendChild(btn);
+        }
     }
 
     function buildResBar() {
