@@ -559,7 +559,7 @@
 <div id="home-screen" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:#06040a;z-index:20000;flex-direction:column;align-items:center;justify-content:center;gap:20px">
     <div style="text-align:center;margin-bottom:10px">
         <div style="font-family:Cinzel,serif;font-size:28px;color:#c0a060;letter-spacing:3px;text-shadow:0 0 20px rgba(180,140,60,0.4)">⚔ Chronocity — A Rogue City Builder</div>
-        <div style="font-size:11px;color:#4a3a5a;margin-top:6px;letter-spacing:2px">VERSION 0.433</div>
+        <div style="font-size:11px;color:#4a3a5a;margin-top:6px;letter-spacing:2px">VERSION 0.436</div>
     </div>
     <div id="home-menu" style="display:flex;flex-direction:column;gap:10px;width:min(340px,90vw)">
         <button onclick="homeLoad()" style="width:100%;padding:16px 0;font-family:Cinzel,serif;font-size:14px;cursor:pointer;border-radius:8px;background:linear-gradient(135deg,#1a1030,#2a1a40);color:#c080ff;border:1px solid #5040a0">📂 Charger une partie</button>
@@ -998,7 +998,7 @@
 <!-- Frise de progression -->
 <div id="timeline">
     <div id="timeline-season">Saison 1</div>
-    <div style="font-family:Cinzel,serif;font-size:9px;color:#3a3050;margin-left:auto;padding-left:8px;white-space:nowrap">v0.433</div>
+    <div style="font-family:Cinzel,serif;font-size:9px;color:#3a3050;margin-left:auto;padding-left:8px;white-space:nowrap">v0.436</div>
     <div id="timeline-steps"></div>
     <button onclick="toggleSaveMenu()" style="background:linear-gradient(135deg,#1a1030,#2a1a40);border:1px solid #4a3060;color:#c0a060;font-size:14px;cursor:pointer;padding:2px 8px;border-radius:5px;white-space:nowrap;flex-shrink:0" title="Sauvegardes">💾 Save</button>
     <button onclick="toggleMetaSummary()" style="background:linear-gradient(135deg,#101a10,#1a2a1a);border:1px solid #2a5a2a;color:#4cffaa;font-size:14px;cursor:pointer;padding:2px 8px;border-radius:5px;white-space:nowrap;flex-shrink:0" title="Résumé méta">✦ Méta</button>
@@ -1371,6 +1371,12 @@ const tileState = Array.from({length:25}, (_,i) => ({
     revealed: i===12,
 }));
 
+function getBuildingSlotsRequired(name) {
+    // Bâtiments tier IV nécessitent 2 emplacements
+    const tier4 = ['Cathédrale', 'Autel de Guerre', 'Monolithe de Vigie'];
+    return tier4.includes(name) ? 2 : 1;
+}
+
 function getTileSlots(tileIdx) {
     const t = tileState[tileIdx];
     if (!t.type) return 0;
@@ -1383,8 +1389,9 @@ function getTileSlots(tileIdx) {
 }
 
 function getTileFreeSlots(tileIdx) {
-    // Compter slots utilisés : 1 par bâtiment normal + 1 par __slot__ (bâtiments tier IV = 2 slots)
-    const usedSlots = tileState[tileIdx].buildings.length;
+    const usedSlots = tileState[tileIdx].buildings.reduce(function(sum, b) {
+        return sum + getBuildingSlotsRequired(b);
+    }, 0);
     return getTileSlots(tileIdx) - usedSlots;
 }
 
@@ -6301,7 +6308,8 @@ function renderBuildPanelList() {
 
     const evaluated = buildings.map(b => {
         const prereqOk = !b.prereq || b.prereq();
-        const totalFreeSlots = tileState.reduce((s, _, i) => s + Math.max(0, getTileFreeSlots(i)), 0);
+        const _bReq = getBuildingSlotsRequired(b.name);
+        const totalFreeSlots = tileState.reduce((s, _, i) => s + (getTileFreeSlots(i) >= _bReq ? 1 : 0), 0);
         const canAfford = gold>=b.gold && population>=b.pop && mana>=b.mana && totalFreeSlots > 0;
         const ok = canAfford && prereqOk;
         return { ...b, ok, prereqOk, canAfford };
@@ -6352,6 +6360,7 @@ function renderBuildPanelList() {
 
 function renderBuildTilePicker(el, buildingName) {
     const buildingDef = (window.BUILDING_DEFS||[]).find(function(x){return x.name===buildingName;}) || null;
+    const _buildingSlotsReq = getBuildingSlotsRequired(buildingName);
     el.innerHTML = '';
     const hdr = document.createElement('div');
     hdr.style.cssText = 'display:flex;align-items:center;gap:6px;margin-bottom:8px';
@@ -6377,8 +6386,7 @@ function renderBuildTilePicker(el, buildingName) {
             const tt = isCity ? null : TILE_TYPES[t.type];
             const free = getTileFreeSlots(i);
             const bonus = isCity ? null : getTileBonus(t.type, buildingName);
-            const _reqSlots = buildingDef && buildingDef.slotsRequired || 1;
-            const ok = free >= _reqSlots;
+            const ok = free >= _buildingSlotsReq;
             div.className = 'mini-tile' + (ok ? '' : ' mini-locked');
             div.style.background = isCity ? 'linear-gradient(160deg,#3a2a1a,#5a4a2a)' : (TILE_GRADS[t.type] || '#222');
             div.title = (isCity ? 'Ville' : t.type) + (bonus?' ★'+bonus:'') + ' ('+free+' libre)';
@@ -6790,8 +6798,7 @@ function renderTileGrid() {
             _slotDiv.textContent = _cf+'/'+_ct;
             cell.appendChild(_slotDiv);
             if (placingMode) {
-                const _bDef = (window.BUILDING_DEFS||[]).find(function(x){return x.name===actionBuildingSelected;});
-                const _need = _bDef ? (_bDef.slotsRequired||1) : 1;
+                const _need = getBuildingSlotsRequired(actionBuildingSelected||'');
                 const freeSlots = getTileFreeSlots(12);
                 if (freeSlots >= _need) {
                     cell.classList.add('tile-placeable');
@@ -6845,13 +6852,14 @@ function renderTileGrid() {
             }
 
             if (placingMode) {
-                if (freeSlots > 0) {
+                const _bSlotsNeeded = getBuildingSlotsRequired(actionBuildingSelected||'');
+                if (freeSlots >= _bSlotsNeeded) {
                     cell.classList.add('tile-placeable');
                     cell.title = t.type + (bonus?' — Bonus: '+bonus:'') + ' ('+freeSlots+' emplacement libre)';
                     cell.onclick = (function(bName, idx){ return () => confirmTilePlacement(bName, idx); })(actionBuildingSelected, i);
                 } else {
                     cell.classList.add('tile-locked-build');
-                    cell.title = 'Aucun emplacement libre';
+                    cell.title = freeSlots < _bSlotsNeeded ? (_bSlotsNeeded+' emplacements requis, '+freeSlots+' disponible(s)') : 'Aucun emplacement libre';
                 }
             }
         }
@@ -7221,8 +7229,7 @@ function buyBuilding(name, tileIdx) {
         showErrorPopup(name, b.gold, b.pop, b.mana);
         setTurnProcessing(false); return;
     }
-    const _bFromDefs = (window.BUILDING_DEFS||[]).find(function(x){return x.name===name;});
-    const _slotsReq = b.slotsRequired || (_bFromDefs && _bFromDefs.slotsRequired) || 1;
+    const _slotsReq = getBuildingSlotsRequired(name);
     if (tileIdx !== undefined && getTileFreeSlots(tileIdx) < _slotsReq) { showErrorPopup(name, b.gold, b.pop, b.mana); setTurnProcessing(false); return; }
 
     gold -= b.gold; population -= b.pop; mana -= b.mana;
@@ -7250,9 +7257,8 @@ function buyBuilding(name, tileIdx) {
     // Placer sur la tuile choisie
     if (tileIdx !== undefined && tileState[tileIdx]) {
         tileState[tileIdx].buildings.push(name);
-        if ((_slotsReq >= 2) || (_bFromDefs && (_bFromDefs.slotsRequired||1) >= 2)) tileState[tileIdx].buildings.push('__slot__'+name); // slot réservé
         applyTileBonus(tileState[tileIdx].type, name);
-        space -= 1;
+        space -= _slotsReq;
     }
 
     addLog('⚒︎ ' + name + ' construit !');
@@ -8013,7 +8019,7 @@ function cleanForSave(obj) {
 
 function getGameState() {
     return {
-        version: '0.433',
+        version: '0.436',
         date: new Date().toISOString(),
         currentTurn, currentSeason,
         gold, mana, population, dust,
@@ -8098,7 +8104,7 @@ function restoreGameState(s) {
     hordeCurrentSeason = s.hordeCurrentSeason||0; hordeRevealed = s.hordeRevealed||false; hordeScoutedThisSeason = s.hordeScoutedThisSeason||false;
     if (s.hordeHiddenUnits) hordeHiddenUnits.splice(0, hordeHiddenUnits.length, ...s.hordeHiddenUnits);
     hordeHiddenCount = s.hordeHiddenCount||0;
-    if (s.tileState) tileState.splice(0, tileState.length, ...s.tileState);
+    if (s.tileState) { tileState.splice(0, tileState.length, ...s.tileState); tileState.forEach(function(t){ if(t&&t.buildings) t.buildings = t.buildings.filter(function(b){ return !b.startsWith('__slot__'); }); }); }
 
     // Recalculer les effets des bâtiments (remet fortifications au max)
     recalcBuildingEffects();
@@ -8593,7 +8599,6 @@ function recalcBuildingEffects() {
     tileState.forEach(function(tile) {
         if (!tile || !tile.buildings) return;
         tile.buildings.forEach(function(name) {
-            if (name.startsWith('__slot__')) return; // slot réservé tier IV, ignorer
             switch(name) {
                 case 'Ferme':          populationperturn += 5;  break;
                 case 'Mine':           goldperturn += 10;       break;
