@@ -2736,7 +2736,7 @@ function enterRoom(roomEntry) {
             }
             dungeonState.targetIdx = 0;
         }
-        dngTiming.histPlayer=[];dngTiming.histEnemy=[];
+        dngTiming.histPlayer=[];dngTiming.histEnemy=[];dngTiming.histEnemies={};
         rageActive=false;rageRounds=0;
         skillUsed = { Fireball:false, Benediction:false, Rage:false, Soin:false };
     // Restaurer ATK/DEF réduits durant ce combat
@@ -2884,7 +2884,7 @@ function dungeonComplete() {
 const dngTiming = {
     pos:0, dir:1, speed:0, animId:null,
     phase:'idle', perf:0, norm:0, half:0, missW:0,
-    histPlayer:[], histEnemy:[], MAX:5
+    histPlayer:[], histEnemy:[], histEnemies:{}, MAX:5
 };
 
 function moveMobileEnemies() {
@@ -3111,35 +3111,32 @@ function dngRenderHist() {
     render(dngTiming.histEnemy,'dng-hist-enemy','enemy');
     // Inline : dés joueur sous avatar
     render(dngTiming.histPlayer,'dng-hist-player-inline','player');
-    // Inline : dés ennemi sous la cellule de la cible (sans label seuil)
-    if (dungeonState.enemy) {
-        const front = dungeonState.enemies.front;
-        const back  = dungeonState.enemies.back;
-        const fi = front.indexOf(dungeonState.enemy);
-        const bi = back.indexOf(dungeonState.enemy);
-        let diceId = null;
-        if (fi !== -1) diceId = 'dng-hist-enemy-f' + fi;
-        else if (bi !== -1) diceId = 'dng-hist-enemy-b' + bi;
-        if (diceId) {
+    // Inline : dés de CHAQUE ennemi sous sa propre cellule
+    const front = dungeonState.enemies ? dungeonState.enemies.front : [];
+    const back  = dungeonState.enemies ? dungeonState.enemies.back  : [];
+    function renderEnemyDice(enemies, prefix) {
+        enemies.forEach(function(e, row) {
+            const diceId = prefix + row;
             const el = document.getElementById(diceId);
-            if (el) {
-                el.innerHTML = '';
-                const slots = Array(dngTiming.MAX).fill(null);
-                dngTiming.histEnemy.forEach(function(item,i){ slots[dngTiming.MAX-dngTiming.histEnemy.length+i]=item; });
-                slots.forEach(function(item,i){
-                    const d = document.createElement('div');
-                    if (!item) { d.className='dng-hdie empty'; d.textContent='—'; }
-                    else {
-                        d.className = 'dng-hdie enemy' + (i===dngTiming.MAX-1?' new':'');
-                        d.textContent = item.val; // pas de label seuil
-                    }
-                    el.appendChild(d);
-                });
-            }
-        }
+            if (!el) return;
+            el.innerHTML = '';
+            const hist = dngTiming.histEnemies[diceId] || [];
+            const slots = Array(dngTiming.MAX).fill(null);
+            hist.forEach(function(item, i){ slots[dngTiming.MAX - hist.length + i] = item; });
+            slots.forEach(function(item, i){
+                const d = document.createElement('div');
+                if (!item) { d.className='dng-hdie empty'; d.textContent='—'; }
+                else {
+                    d.className = 'dng-hdie enemy' + (i===dngTiming.MAX-1?' new':'');
+                    d.textContent = item.val;
+                }
+                el.appendChild(d);
+            });
+        });
     }
+    renderEnemyDice(front, 'dng-hist-enemy-f');
+    renderEnemyDice(back,  'dng-hist-enemy-b');
 }
-
 function dungeonBarClick() {
     document.getElementById('dungeon-screen')?.classList.remove('attack-active');
     if(dngTiming.phase!=='timing') return;
@@ -3720,6 +3717,13 @@ function checkAllEnemiesDead() {
 function enemyAttack(room) {
     if (!room || room.hp <= 0) return;
 
+    // Calculer le diceId de ce monstre (pour ses dés propres)
+    const _eFront = dungeonState.enemies ? dungeonState.enemies.front : [];
+    const _eBack  = dungeonState.enemies ? dungeonState.enemies.back  : [];
+    const _eFi = _eFront.indexOf(room);
+    const _eBi = _eBack.indexOf(room);
+    const _eDiceId = _eFi !== -1 ? 'dng-hist-enemy-f'+_eFi : (_eBi !== -1 ? 'dng-hist-enemy-b'+_eBi : null);
+
     // ── Stun : ennemi bloqué ──
     if (room._stunBlock) {
         room._stunTurns = (room._stunTurns || 1) - 1;
@@ -3769,7 +3773,11 @@ function enemyAttack(room) {
     const et = hitThresholdForEnemy(room, def);
     const er = rollDie(6);
     const ehit = er >= et;
-    dngPushHist(dngTiming.histEnemy, er, et+'+');
+    dngPushHist(dngTiming.histEnemy, er, et+'+'); // legacy (pour dng-hist-enemy global)
+    if (_eDiceId) {
+        if (!dngTiming.histEnemies[_eDiceId]) dngTiming.histEnemies[_eDiceId] = [];
+        dngPushHist(dngTiming.histEnemies[_eDiceId], er, et+'+');
+    }
     dngRenderHist();
     if(ehit){
         const ed = calcDamage(room.dmg, protection);
