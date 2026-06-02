@@ -708,14 +708,15 @@
 </div>
 
 <div id="pre-dungeon-window" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.82);z-index:10001;align-items:center;justify-content:center;overflow-y:auto">
-<div style="background:#080810;border:1px solid #3a2a3a;border-radius:14px;width:min(96vw,460px);max-height:90vh;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:8px;box-shadow:0 0 40px rgba(100,30,60,0.4);margin:auto">
+<div style="background:#080810;border:1px solid #3a2a3a;border-radius:14px;width:min(96vw,480px);max-height:90vh;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:8px;box-shadow:0 0 40px rgba(100,30,60,0.4);margin:auto">
     <div style="font-family:Cinzel,serif;font-size:17px;color:#c0a060;text-align:center;letter-spacing:2px">⚔ Partir en Donjon</div>
-    <div style="font-size:12px;color:#7a6a8a;text-align:center">Préparez votre avatar avant d&#39;entrer.</div>
+    <div style="font-size:12px;color:#7a6a8a;text-align:center">Préparez votre avatar et choisissez votre destination.</div>
     <div id="predng-stats" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px"></div>
     <div id="predng-equip" style="font-size:11px;color:#9a8a6a;background:#0a0812;border-radius:8px;padding:8px;line-height:1.9"></div>
-    <div style="display:flex;gap:8px">
+    <div style="font-size:10px;color:#4a3a5a;letter-spacing:1px;margin-top:2px">CHOISIR LE DONJON</div>
+    <div id="predng-dungeon-choices" style="display:flex;flex-direction:column;gap:5px"></div>
+    <div style="display:flex;gap:8px;margin-top:4px">
         <button onclick="openEquipWindow(true)" style="flex:1;background:linear-gradient(135deg,#1a1030,#2a1a40);border:1px solid #5040a0;color:#c080ff;border-radius:8px;padding:10px 0;font-family:Cinzel,serif;font-size:12px;cursor:pointer">⚔ S&#39;équiper</button>
-        <button onclick="confirmEnterDungeon()" style="flex:2;background:linear-gradient(135deg,#1a0a0a,#3a1010);border:1px solid #8a3030;color:#ffb0b0;border-radius:8px;padding:10px 0;font-family:Cinzel,serif;font-size:13px;cursor:pointer;letter-spacing:1px">▶ Entrer dans le Donjon</button>
     </div>
     <button onclick="closePredngWindow(true)" style="background:none;border:none;color:#4a3a5a;cursor:pointer;font-size:11px">← Annuler</button>
 </div>
@@ -1943,7 +1944,7 @@ function avatarExplore(yes) {
         addLog("L'avatar découvre l'entrée d'un donjon !");
         showExplorePopup('Donjon', `${3 + currentTurn - 1}+ salles | Butin rare`, "Des flambeaux illuminent un couloir sombre...");
         setTimeout(() => {
-            openDungeon(() => { nextTurn(); });
+            openDungeon(function(){ nextTurn(); }, 'grotte');
         }, 2400);
     } else {
         nextTurn();
@@ -2054,8 +2055,15 @@ function avatarJoinHorde(yes) {
     avatarSentToHorde = yes;
     if (yes) {
         addLog("L'avatar rejoint la défense ! Son ATK (" + atk + ") s'ajoute à la puissance.");
-        window.avatarBlocked = true;
-        avatarBlockedSeason = currentSeason;
+        // Projection : l'avatar participe mais reste disponible ce tour
+        if (window._catacombsProjection) {
+            window._catacombsProjection = false; // consommé
+            addLog('🔮 Projection active — l\'avatar reste disponible pour les donjons !');
+            // avatarBlocked reste false
+        } else {
+            window.avatarBlocked = true;
+            avatarBlockedSeason = currentSeason;
+        }
     }
     runCombatHorde();
 }
@@ -2072,6 +2080,7 @@ const META_DEFAULTS = {
     dust: 0,
     shells: 1,           // coquilles d'oeuf du temps (1 pour tests)
     shellsEarned: [],    // ['4','8'...] saisons hivernales déjà gagnées
+    ouroborosDone: [],   // ['4','8'...] saisons S4/S8... où l'Ouroboros a été vaincu
     legendary: {
         grandeTour: false, arbreElfique: false,
         forteresseNaine: false, sanctuaire: false, palaisMiroirs: false
@@ -2121,6 +2130,7 @@ function loadMeta() {
         def.cityLevel  = saved.cityLevel  || 0;
         def.shells     = saved.shells     || 0;
         def.shellsEarned = saved.shellsEarned || [];
+        def.ouroborosDone = saved.ouroborosDone || [];
         if (saved.legendary) Object.assign(def.legendary, saved.legendary);
         if (saved.legendaryOptions) def.legendaryOptions = Object.assign(def.legendaryOptions || {}, saved.legendaryOptions);
         // Migration et deep merge
@@ -2421,8 +2431,9 @@ const BOSS_POOLS = {
     ],
 };
 
-function getBossPool() {
-    const tier = currentSeason <= 1 ? 1 : currentSeason <= 3 ? 2 : 3;
+function getBossPool(overrideSeason) {
+    const s = overrideSeason || currentSeason;
+    const tier = s <= 1 ? 1 : s <= 3 ? 2 : 3;
     return BOSS_POOLS[tier];
 }
 
@@ -2494,15 +2505,16 @@ const TRAP_ROOMS = [
 const SPECIAL_ROOMS = [...BONUS_ROOMS, ...TRAP_ROOMS];
 
 // Génère les salles du donjon
-function generateDungeonRooms(totalTurns) {
+function generateDungeonRooms(totalTurns, overrideTier) {
     const numRooms = 3 + Math.floor(Math.random() * Math.max(1, totalTurns + 1));
-    const bossPool = getBossPool(); const boss = bossPool[Math.floor(Math.random() * bossPool.length)];
+    const _genSeason = overrideTier || currentSeason;
+    const bossPool = getBossPool(_genSeason); const boss = bossPool[Math.floor(Math.random() * bossPool.length)];
     const nonBossCount = numRooms - 1;
     const pool = [];
     for (let i = 0; i < nonBossCount; i++) {
         const r = Math.random();
         if (r < 0.70) {
-            const group = generateMonsterGroup(currentSeason);
+            const group = generateMonsterGroup(_genSeason);
             const isMulti = (group.front.length + group.back.length) > 1;
             pool.push({ kind:'monster', data: isMulti ? null : group.front[0], group: group, isMulti: isMulti });
         } else if (r < 0.90) {
@@ -2513,11 +2525,11 @@ function generateDungeonRooms(totalTurns) {
     }
     // Boss S2+ : alliés selon saison et saison
     let bossAllies = [];
-    if (currentSeason >= 2) {
-        const seasonNum = currentSeason;
+    if (_genSeason >= 2) {
+        const seasonNum = _genSeason;
         // Nombre d'alliés : été=1, automne=2, hiver=3 selon la saison dans l'année (simplification : saison mod)
         const allyCount = seasonNum <= 3 ? 1 : seasonNum <= 6 ? 2 : 3;
-        const allyPool = getMonsterPoolForSeason(currentSeason);
+        const allyPool = getMonsterPoolForSeason(_genSeason);
         for (let i = 0; i < allyCount; i++) {
             const ally = {...allyPool[Math.floor(Math.random()*allyPool.length)]};
             ally.hp = ally.maxHp;
@@ -2565,14 +2577,21 @@ function dngLog(msg, cls='') {
     log.scrollTop = log.scrollHeight;
 }
 
-function openDungeon(afterCallback) {
+function openDungeon(afterCallback, dungeonType) {
     window._meta = null; // Recharger la méta fraîche
     // Reset bonus temporaires
     dungeonTempAtk = dungeonTempDmg = dungeonTempProt = dungeonTempDef = dungeonTempHp = 0;
+    // Type de donjon : tour (tier-1), grotte (tier), catacombes (tier+1), ouroboros (tier+2)
+    const _type = dungeonType || 'grotte';
+    dungeonState.dungeonType = _type;
+    dungeonState._startTurn = currentTurn;
+    const _baseTier = currentSeason || 1;
+    const _tierOffset = { tour:-1, grotte:0, catacombes:1, ouroboros:2 }[_type] || 0;
+    const _tier = Math.max(1, _baseTier + _tierOffset);
     // Nombre de salles = 3 + aléatoire jusqu'à currentTurn
-    const pool = generateDungeonRooms(Math.max(0, currentTurn - 1)); // 3 + jusqu'à currentTurn salles
+    const pool = generateDungeonRooms(Math.max(0, currentTurn - 1), _tier);
     dungeonState.active = true;
-    dungeonState.tier = currentSeason || 1;
+    dungeonState.tier = _tier;
     dungeonState.generatedRooms = pool;
     dungeonState.visitedRooms = new Array(pool.length).fill(false);
     dungeonState.remainingRooms = pool.length;
@@ -2591,7 +2610,8 @@ function openDungeon(afterCallback) {
     dungeonState.avatarMaxHp = avatarMaxHp;
     document.getElementById('dungeon-log').innerHTML = '';
     document.getElementById('dungeon-screen')?.classList.add('show');
-    document.getElementById('dungeon-title').textContent = '🏰 Donjon';
+    const _dungeonNames = { tour:'🏚 Tour Abandonnée', grotte:'🕳 Grotte Mystérieuse', catacombes:'💀 Catacombes Maudites', ouroboros:'🐍 Aire d\'Ouroboros' };
+    document.getElementById('dungeon-title').textContent = _dungeonNames[_type] || '🏰 Donjon';
     showDoorChoice();
 }
 
@@ -4673,6 +4693,13 @@ function dungeonRoomWon() {
         t = t.replace(/^[,\s+]+|[,\s+]+$/g, '').trim();
         if (t) extras.push(t);
     });
+    // Multiplicateur selon type de donjon
+    const _lootMult = { tour:0.75, grotte:1, catacombes:1.25, ouroboros:2 }[dungeonState.dungeonType||'grotte'] || 1;
+    if (_lootMult !== 1) {
+        totalGold = Math.round(totalGold * _lootMult);
+        totalMana = Math.round(totalMana * _lootMult);
+        totalDust = Math.round(totalDust * _lootMult);
+    }
     const parts = [];
     if (totalGold > 0) parts.push('+'+totalGold+' Or');
     if (totalMana > 0) parts.push('+'+totalMana+' Mana');
@@ -4706,21 +4733,30 @@ function dungeonRoomWon() {
             dngLog('🏆 Donjon complété !', 'dlog-loot');
             addLog('Donjon complété ! Butin : ' + dungeonState.collectedLoot.join(' | '));
             // Coquille si boss hivernal (dernier tour d'exploration = tour 9, hiver)
-            // Vérifier si la dernière salle était un boss
             const lastRoomIdx = dungeonState.generatedRooms.length - 1;
             const lastRoom = dungeonState.generatedRooms[lastRoomIdx];
             const isBossRoom = (room && room.isBoss) || (lastRoom && lastRoom.kind === 'boss');
             const dungeonStartTurn = dungeonState._startTurn || currentTurn;
-            if (isBossRoom && isWinterHive() && dungeonStartTurn === 9) {
+            const drShell = document.getElementById('dr-shell');
+            // Ouroboros : coquille garantie
+            if (dungeonState.dungeonType === 'ouroboros' && isBossRoom) {
+                const got = awardOuroboros();
+                if (drShell) drShell.style.display = got ? 'block' : 'none';
+                if (got) dngLog('🥚 Coquille d\'Oeuf du Temps ! Ouroboros vaincu !', 'dlog-loot');
+            } else if (isBossRoom && isWinterHive() && dungeonStartTurn === 9) {
                 const got = awardShell();
-                const drShell = document.getElementById('dr-shell');
                 if (drShell) drShell.style.display = got ? 'block' : 'none';
                 if (got) dngLog('🥚 Coquille d\'Oeuf du Temps ! Boss hivernal vaincu.', 'dlog-loot');
             } else {
-                const drShell = document.getElementById('dr-shell');
                 if (drShell) drShell.style.display = 'none';
             }
-            dungeonComplete();
+            // Récompense catacombes tour 9
+            if (dungeonState.dungeonType === 'catacombes' && dungeonStartTurn === 9) {
+                dungeonComplete();
+                setTimeout(showCatacombsReward, 500);
+            } else {
+                dungeonComplete();
+            }
         };
     } else {
         btnContinue.style.display = 'inline-block';
@@ -7487,6 +7523,51 @@ function showPreDungeonWindow(callback) {
         } else { html += ' <span style="color:#3a2a4a">—</span>'; }
         eq.innerHTML = html;
     }
+    // Choix du type de donjon
+    const choicesEl = document.getElementById('predng-dungeon-choices');
+    if (choicesEl) {
+        const _s = currentSeason;
+        const _t = _s || 1;
+        const dungeonTypes = [
+            { id:'tour',       icon:'🏚', name:'Tour Abandonnée',   diff:'Facile',   tierLabel:'Tier '+Math.max(1,_t-1), color:'#6a9a6a', border:'#2a4a2a', note:'Ennemis moins coriaces — butin réduit' },
+            { id:'grotte',     icon:'🕳', name:'Grotte Mystérieuse',diff:'Normale',  tierLabel:'Tier '+_t,               color:'#c0a060', border:'#5a4a2a', note:'Difficulté standard de la saison' },
+            { id:'catacombes', icon:'💀', name:'Catacombes Maudites',diff:'Difficile',tierLabel:'Tier '+(_t+1),          color:'#c06060', border:'#5a2a2a', note:(_t===9||currentTurn===9)?'Récompense de carac. disponible !':'Butin amélioré ×1.25' },
+        ];
+        // Ouroboros disponible en S4, S8, S12...
+        const isOuroSeason = _s > 0 && _s % 4 === 0;
+        if (isOuroSeason) {
+            const ourosDone = isOuroborosDone ? isOuroborosDone() : false;
+            dungeonTypes.push({
+                id:'ouroboros', icon: ourosDone ? '🐍✓' : '🐍',
+                name:'Aire d\'Ouroboros', diff:'Légendaire', tierLabel:'Tier '+(_t+2),
+                color: ourosDone ? '#4a3a3a' : '#c080ff', border: ourosDone ? '#2a2a2a' : '#6030a0',
+                note: ourosDone ? 'Déjà conquis cette saison' : '🥚 Coquille d\'Oeuf du Temps en jeu !',
+                disabled: ourosDone
+            });
+        }
+        choicesEl.innerHTML = '';
+        dungeonTypes.forEach(function(dt) {
+            const btn = document.createElement('button');
+            btn.style.cssText = 'display:flex;align-items:center;gap:10px;width:100%;padding:8px 12px;background:#0c0818;border:1px solid '+dt.border+';border-radius:8px;color:'+dt.color+';cursor:'+(dt.disabled?'not-allowed':'pointer')+';text-align:left;opacity:'+(dt.disabled?'0.5':'1')+';transition:background .15s';
+            if (!dt.disabled) {
+                btn.onmouseover = function(){ this.style.background='#150e22'; };
+                btn.onmouseout  = function(){ this.style.background='#0c0818'; };
+            }
+            btn.innerHTML =
+                '<span style="font-size:20px">'+dt.icon+'</span>'+
+                '<div style="flex:1">'+
+                  '<div style="font-family:Cinzel,serif;font-size:12px">'+dt.name+
+                    ' <span style="font-size:9px;color:#6a5a7a;font-family:sans-serif">('+dt.tierLabel+')</span>'+
+                  '</div>'+
+                  '<div style="font-size:9px;color:#6a5a7a;margin-top:2px">'+dt.note+'</div>'+
+                '</div>'+
+                '<span style="font-size:9px;background:#0a0818;border:1px solid '+dt.border+';border-radius:4px;padding:2px 6px;white-space:nowrap">'+dt.diff+'</span>';
+            if (!dt.disabled) {
+                btn.onclick = (function(typeId){ return function(){ confirmEnterDungeon(typeId); }; })(dt.id);
+            }
+            choicesEl.appendChild(btn);
+        });
+    }
     w.style.display = 'flex';
 }
 
@@ -7501,15 +7582,17 @@ function closePredngWindow(cancelled) {
     }
 }
 
-function confirmEnterDungeon() {
+function confirmEnterDungeon(dungeonType) {
     const cb = ewPredungeonCallback;
+    const _dtype = dungeonType || window._pendingDungeonType || 'grotte';
+    window._pendingDungeonType = null;
     ewFromPreDungeon = false;
     ewPredungeonCallback = null;
     const w = document.getElementById('equip-window');
     if (w) w.style.display = 'none';
     const pd = document.getElementById('pre-dungeon-window');
     if (pd) pd.style.display = 'none';
-    if (cb) cb();
+    if (cb) cb(_dtype);
 }
 
 // ── Fenêtre équipement ──
@@ -8707,6 +8790,74 @@ function awardShell() {
 function isWinterHive() {
     // Hiver = saison dont l'index (currentSeason-1) % 4 === 3
     return (currentSeason - 1) % 4 === 3;
+}
+
+// Vérifie si l'Ouroboros est disponible cette saison (S4, S8, S12...)
+function isOuroborosSeason() {
+    return currentSeason > 0 && currentSeason % 4 === 0;
+}
+
+// Vérifie si l'Ouroboros a déjà été vaincu cette saison dans la méta
+function isOuroborosDone() {
+    const m = getMeta();
+    return (m.ouroborosDone || []).includes(String(currentSeason));
+}
+
+// Accorde la coquille pour l'Ouroboros et marque la saison
+function awardOuroboros() {
+    const m = getMeta();
+    if (!m.ouroborosDone) m.ouroborosDone = [];
+    const key = String(currentSeason);
+    if (m.ouroborosDone.includes(key)) return false;
+    m.ouroborosDone.push(key);
+    if (!m.shells) m.shells = 0;
+    m.shells++;
+    saveMeta(m); window._meta = m;
+    addLog('🥚 Coquille d\'Oeuf du Temps obtenue ! Ouroboros vaincu en S'+currentSeason+'. Total : ' + m.shells);
+    updateStats();
+    if (typeof renderMetaLevel === 'function') renderMetaLevel();
+    if (typeof renderMetaSummary === 'function') renderMetaSummary();
+    return true;
+}
+
+// Popup de récompense après Catacombes tour 9
+function showCatacombsReward() {
+    const choices = [
+        { label:'⚔ +1 ATK',      apply: function(){ atk += 1;       addLog('⚔ Catacombes : ATK +1 (permanent).'); updateStats(); } },
+        { label:'🗡 +1 Dégâts',   apply: function(){ avatarDmg += 1; addLog('🗡 Catacombes : Dégâts +1 (permanent).'); updateStats(); } },
+        { label:'🪙 +30 Or',      apply: function(){ gold += 30;     addLog('🪙 Catacombes : +30 Or.'); updateStats(); } },
+        { label:'✨ +20 Mana',    apply: function(){ mana += 20;     addLog('✨ Catacombes : +20 Mana.'); updateStats(); } },
+        { label:'👥 +5 Pop.',     apply: function(){ population += 5; addLog('👥 Catacombes : +5 Population.'); updateStats(); } },
+        { label:'🔮 Projection',  apply: function(){
+            window._catacombsProjection = true;
+            addLog('🔮 Projection : l\'avatar peut rejoindre la horde ET rester disponible ce tour.');
+        }},
+    ];
+    // Créer le modal
+    let modal = document.getElementById('catacombs-reward-modal');
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'catacombs-reward-modal';
+        modal.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);z-index:12000;display:flex;align-items:center;justify-content:center';
+        document.body.appendChild(modal);
+    }
+    modal.innerHTML =
+        '<div style="background:#0a0810;border:2px solid #8a3a6a;border-radius:14px;padding:20px;width:min(95vw,400px);box-shadow:0 0 40px rgba(150,30,80,0.5)">' +
+        '<div style="font-family:Cinzel,serif;font-size:16px;color:#e080b0;text-align:center;margin-bottom:6px">💀 Catacombes Maudites</div>' +
+        '<div style="font-size:12px;color:#9a7a8a;text-align:center;margin-bottom:14px">Les catacombes révèlent leurs secrets.<br>Choisissez une récompense permanente.</div>' +
+        choices.map(function(c, i) {
+            return '<button onclick="applyCatacombsChoice('+i+')" style="display:block;width:100%;margin:4px 0;padding:9px 12px;background:#120818;border:1px solid #5a2a4a;border-radius:8px;color:#e0b0c0;font-size:12px;cursor:pointer;text-align:left;transition:background .15s" onmouseover="this.style.background=\'#1e0e28\'" onmouseout="this.style.background=\'#120818\'">'+c.label+'</button>';
+        }).join('') +
+        '</div>';
+    modal.style.display = 'flex';
+    window._catacombsChoices = choices;
+}
+
+function applyCatacombsChoice(idx) {
+    const choices = window._catacombsChoices || [];
+    if (choices[idx]) choices[idx].apply();
+    const modal = document.getElementById('catacombs-reward-modal');
+    if (modal) modal.style.display = 'none';
 }
 
 
@@ -11531,8 +11682,8 @@ body.clarity-on #clarity-resbar {
                 if (typeof window.showPreDungeonWindow === 'function'
                         && typeof window.openDungeon === 'function') {
                     window.dungeonUsedThisTurn = true;
-                    window.showPreDungeonWindow(() => {
-                        window.openDungeon(() => { /* no nextTurn — free action */ });
+                    window.showPreDungeonWindow(function(dtype) {
+                        window.openDungeon(function(){ /* no nextTurn — free action */ }, dtype);
                     });
                     updateDungeonButton();
                 }
