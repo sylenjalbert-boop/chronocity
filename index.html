@@ -581,7 +581,7 @@
 <div id="home-screen" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:#06040a;z-index:20000;flex-direction:column;align-items:center;justify-content:center;gap:20px">
     <div style="text-align:center;margin-bottom:10px">
         <div style="font-family:Cinzel,serif;font-size:28px;color:#c0a060;letter-spacing:3px;text-shadow:0 0 20px rgba(180,140,60,0.4)">⚔ Chronocity — A Rogue City Builder</div>
-        <div style="font-size:11px;color:#4a3a5a;margin-top:6px;letter-spacing:2px">VERSION 0.491</div>
+        <div style="font-size:11px;color:#4a3a5a;margin-top:6px;letter-spacing:2px">VERSION 0.500</div>
     </div>
     <div id="home-menu" style="display:flex;flex-direction:column;gap:10px;width:min(340px,90vw)">
         <button onclick="homeLoad()" style="width:100%;padding:16px 0;font-family:Cinzel,serif;font-size:14px;cursor:pointer;border-radius:8px;background:linear-gradient(135deg,#1a1030,#2a1a40);color:#c080ff;border:1px solid #5040a0">📂 Charger une partie</button>
@@ -1023,7 +1023,7 @@
 <!-- Frise de progression -->
 <div id="timeline">
     <div id="timeline-season">Saison 1</div>
-    <div style="font-family:Cinzel,serif;font-size:9px;color:#3a3050;margin-left:auto;padding-left:8px;white-space:nowrap">v0.491</div>
+    <div style="font-family:Cinzel,serif;font-size:9px;color:#3a3050;margin-left:auto;padding-left:8px;white-space:nowrap">v0.500</div>
     <div id="timeline-steps"></div>
     <button onclick="toggleSaveMenu()" style="background:linear-gradient(135deg,#1a1030,#2a1a40);border:1px solid #4a3060;color:#c0a060;font-size:14px;cursor:pointer;padding:2px 8px;border-radius:5px;white-space:nowrap;flex-shrink:0" title="Sauvegardes">💾 Save</button>
     <button onclick="toggleMetaSummary()" style="background:linear-gradient(135deg,#101a10,#1a2a1a);border:1px solid #2a5a2a;color:#4cffaa;font-size:14px;cursor:pointer;padding:2px 8px;border-radius:5px;white-space:nowrap;flex-shrink:0" title="Résumé méta">✦ Méta</button>
@@ -11538,7 +11538,11 @@ body.clarity-on #clarity-resbar {
                 <p>Tu diriges une cité menacée par la <b>Horde</b>. Tu as <b>10 tours</b> par saison pour la préparer.</p>
                 <div class="ct-rule r-battle">
                     <span class="ct-rule-ic">⚔</span>
-                    <div>Au <b>tour 10</b>, la Horde attaque ta ville. Si tu perds, tu recommences (avec des bonus).</div>
+                    <div>Au <b>tour 10</b>, la Horde attaque ta ville. Si tu perds, tu recommences (avec des bonus méta).</div>
+                </div>
+                <div class="ct-rule r-free">
+                    <span class="ct-rule-ic">🗺</span>
+                    <div>Chaque saison : explore des tuiles, construis des bâtiments, recrute des troupes et envoie ton avatar en donjon.</div>
                 </div>
             `,
         },
@@ -11547,14 +11551,15 @@ body.clarity-on #clarity-resbar {
             body: `
                 <div class="ct-rule r-action">
                     <span class="ct-rule-ic">🟡</span>
-                    <div>Chaque tour, choisis <b>1 action principale</b> parmi 3 :
-                    <br>· <b>❖ Révéler</b> une tuile · <b>⚒︎ Construire</b> un bâtiment · <b><svg viewBox="0 0 64 48" width="1.4em" height="1em" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-0.15em"><path d="M8 32Q8 6 32 6T56 32"/><line x1="18" y1="9" x2="18" y2="32"/><line x1="32" y1="6" x2="32" y2="32"/><line x1="46" y1="9" x2="46" y2="32"/><line x1="6" y1="32" x2="58" y2="32"/><circle cx="16" cy="40" r="5"/><circle cx="48" cy="40" r="5"/></svg> Caravane</b> (envoyer une caravane)</div>
+                    <div>Chaque tour, choisis <b>1 action principale</b> :<br>
+                    · <b>❖ Révéler</b> une tuile · <b>⚒︎ Construire</b> un bâtiment · <b>🛒 Caravane</b><br>
+                    <span style="color:#ffb040">· À partir de la <b>Saison 5</b> : <b>Recruter</b> devient aussi une action principale.</span></div>
                 </div>
                 <div class="ct-rule r-free">
                     <span class="ct-rule-ic">🔵</span>
-                    <div>Tu peux aussi faire des <b>actions libres</b> sans limite : <b>recruter</b> des troupes, <b>équiper</b> ton avatar, <b>acheter</b> dans les bâtiments, ou <b>entrer dans le donjon</b> (quand disponible).</div>
+                    <div>Les <b>actions libres</b> ne coûtent pas de tour : <b>équiper</b> l’avatar, <b>acheter</b> dans les bâtiments, <b>donjon</b>, et en S1–S4 <b>recruter</b> aussi.</div>
                 </div>
-                <p style="font-size:12px;color:#9a8a6a">Le bandeau en haut t'indique en permanence : <b>🟡 action dispo / prise</b> et les options 🔵 libres.</p>
+                <p style="font-size:12px;color:#9a8a6a">Le bandeau du haut indique : <b>🟡 action dispo / prise</b> et les options 🔵 libres.</p>
             `,
         },
         {
@@ -11562,33 +11567,80 @@ body.clarity-on #clarity-resbar {
             body: `
                 <div class="ct-rule r-action" style="border-color:#e0a020;background:rgba(58,42,0,0.4)">
                     <span class="ct-rule-ic">⭐</span>
-                    <div><em style="color:#e0c060">"Les caravanes n'osent traverser les steppes qu'au temps des Conjonctions, lorsque les anciennes routes reviennent dans le cours du monde."</em></div>
+                    <div><em style="color:#e0c060">\"Les caravanes n’osent traverser les steppes qu’au temps des Conjonctions, lorsque les anciennes routes reviennent dans le cours du monde.\"</em></div>
                 </div>
-                <p>Aux tours <b>2, 4, 6 et 8</b>, une Conjonction s'ouvre. Si tu envoies une caravane ce tour, tu récupères <b>×2 ressources</b> (or, mana, population).</p>
-                <p style="font-size:12px;color:#9a8a6a">Les ressources ne sont <b>plus récoltées automatiquement</b> : c'est à toi d'envoyer la caravane pour en profiter !</p>
+                <p>Aux tours <b>2, 4, 6 et 8</b>, une Conjonction s’ouvre. Envoie une caravane ce tour pour récupérer <b>×2 ressources</b> (or, mana, population).</p>
+                <p style="font-size:12px;color:#9a8a6a">Les ressources ne sont <b>pas récoltées automatiquement</b> : c’est à toi d’envoyer la caravane pour en profiter !</p>
             `,
         },
         {
             title: 'Ce que tu construis sert au combat',
             body: `
                 <p>Chaque <b>tuile révélée</b> rejoint ta ville et offre des emplacements de bâtiments.</p>
-                <p>Les <b>bâtiments</b> donnent : ressources (or, mana, pop), fortifications, ou débloquent le recrutement (Caserne → unités, Académie → unités d'élite).</p>
-                <p>Au tour 10, <b>ton armée + tes fortifications</b> affrontent la Horde. Préparez-la !</p>
+                <p>Les <b>bâtiments</b> donnent : ressources, fortifications, ou débloquent le recrutement (Caserne → troupes, Académie → élite).</p>
+                <p>Au tour 10, <b>ton armée + tes fortifications</b> affrontent la Horde.</p>
                 <div class="ct-rule r-battle">
                     <span class="ct-rule-ic">👁</span>
-                    <div>La composition de la Horde se <b>révèle au tour 5</b>. Adapte ta défense en conséquence.</div>
+                    <div>La composition de la Horde se <b>révèle au tour 5</b>. Adapte ta stratégie en conséquence.</div>
+                </div>
+            `,
+        },
+        {
+            title: 'Les Donjons 🏚🕳💀',
+            body: `
+                <p>Ton avatar peut explorer un donjon chaque tour — <b>action libre</b>, sans consommer ton tour principal.</p>
+                <div class="ct-rule r-free">
+                    <span class="ct-rule-ic">🕳</span>
+                    <div>Choisis ton niveau de risque :<br>
+                    · <b>🏚 Tour Abandonnée</b> — tier -1, butin ×0.75<br>
+                    · <b>🕳 Grotte Mystérieuse</b> — tier normal, butin ×1<br>
+                    · <b>💀 Catacombes Maudites</b> — tier +1, butin ×1.25</div>
+                </div>
+                <div class="ct-rule r-battle">
+                    <span class="ct-rule-ic">💀</span>
+                    <div>Au <b>tour 9 dans les Catacombes</b>, une récompense permanente est offerte si tu vaincs le boss : +ATK, +Dégâts, ressources, ou <b>Projection</b> (l’avatar combat la horde ET reste dispo ce tour).</div>
+                </div>
+                <p style="font-size:12px;color:#9a8a6a">En <b>S4, S8, S12…</b> l’<b>🐍 Aire d’Ouroboros</b> apparaît (tier +2, ×2 butin). La vaincre donne une <b>🥚 Coquille</b> — une seule fois par occurrence dans la méta.</p>
+            `,
+        },
+        {
+            title: 'L\'Avatar & ses Classes 🗡',
+            body: `
+                <p>Ton avatar explore les donjons et peut rejoindre la <b>défense de la horde</b> (son ATK renforce ta puissance).</p>
+                <div class="ct-rule r-free">
+                    <span class="ct-rule-ic">⚔</span>
+                    <div>Équipe-le avec armes, armure, bijoux, <b>glyphes</b> (sorts à usage) et <b>potions</b>. Le butin des donjons alimente directement tes ressources.</div>
+                </div>
+                <div class="ct-rule r-action" style="border-color:#c080ff;background:rgba(30,10,50,0.4)">
+                    <span class="ct-rule-ic">🪞</span>
+                    <div>Le <b>Palais des Miroirs</b> (bâtiment légendaire — 1 🥚) débloque une <b>classe permanente</b> : <b>Archer, Guerrier, Mage</b> ou <b>Aventurier</b>. Chaque classe ajoute des compétences uniques en combat.</div>
+                </div>
+                <p style="font-size:12px;color:#9a8a6a">Sans classe, l’avatar combat en généraliste. Avec une classe, des boutons de compétences apparaissent pendant les combats en donjon.</p>
+            `,
+        },
+        {
+            title: 'Saison 5+ : Le Recrutement change 🔁',
+            body: `
+                <p>En <b>Saison 1–4</b>, recruter est une action libre : tu peux le faire autant que tu veux sans consommer ton tour.</p>
+                <div class="ct-rule r-battle">
+                    <span class="ct-rule-ic">⚠</span>
+                    <div>À partir de la <b>Saison 5</b>, recruter devient une <b>action principale</b>. Chaque session de recrutement consomme ton tour — mais tu peux recruter <b>plusieurs unités</b> en une seule action.</div>
+                </div>
+                <div class="ct-rule r-free">
+                    <span class="ct-rule-ic">💡</span>
+                    <div>Planifie à l’avance : construis ta Caserne et ton Académie <b>avant la S5</b> pour profiter du recrutement libre les premières saisons.</div>
                 </div>
             `,
         },
         {
             title: 'Poussière du Temps & Méta-progression ✨',
             body: `
-                <p>À chaque victoire ou défaite tu gagnes de la <b>✨ Poussière du Temps</b>. Elle persiste entre les parties et te permet d'acheter des <b>améliorations permanentes</b> (plus d'or de départ, meilleur avatar, bâtiments bonus…).</p>
+                <p>À chaque fin de partie tu gagnes de la <b>✨ Poussière du Temps</b>. Elle persiste et permet d’acheter des <b>améliorations permanentes</b> : or de départ, avatar plus fort, bâtiments bonus…</p>
                 <div class="ct-rule r-free">
                     <span class="ct-rule-ic">🥚</span>
-                    <div>Les <b>Coquilles d'Œuf du Temps</b> sont des objets rares récupérés en donjon. Elles débloquent des <b>options légendaires</b> uniques et puissantes, inaccessibles autrement.</div>
+                    <div>Les <b>Coquilles d’Œuf du Temps</b> se gagnent en donjon (boss hivernal tour 9, Ouroboros S4/S8…). Elles débloquent des <b>bâtiments légendaires</b> : Grande Tour, Arbre Elfique, Forteresse Naine, Sanctuaire, <b>Palais des Miroirs</b>.</div>
                 </div>
-                <p style="font-size:12px;color:#9a8a6a">Accède à la méta-progression depuis le menu <b>≡</b> en haut à droite. Chaque run te rend plus fort !</p>
+                <p style="font-size:12px;color:#9a8a6a">Menu <b>≡</b> en haut à droite pour la méta-progression. Chaque run te rend plus fort !</p>
             `,
         },
     ];
