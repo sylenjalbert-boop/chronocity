@@ -581,7 +581,7 @@
 <div id="home-screen" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:#06040a;z-index:20000;flex-direction:column;align-items:center;justify-content:center;gap:20px">
     <div style="text-align:center;margin-bottom:10px">
         <div style="font-family:Cinzel,serif;font-size:28px;color:#c0a060;letter-spacing:3px;text-shadow:0 0 20px rgba(180,140,60,0.4)">⚔ Chronocity — A Rogue City Builder</div>
-        <div style="font-size:11px;color:#4a3a5a;margin-top:6px;letter-spacing:2px">VERSION 0.477</div>
+        <div style="font-size:11px;color:#4a3a5a;margin-top:6px;letter-spacing:2px">VERSION 0.486</div>
     </div>
     <div id="home-menu" style="display:flex;flex-direction:column;gap:10px;width:min(340px,90vw)">
         <button onclick="homeLoad()" style="width:100%;padding:16px 0;font-family:Cinzel,serif;font-size:14px;cursor:pointer;border-radius:8px;background:linear-gradient(135deg,#1a1030,#2a1a40);color:#c080ff;border:1px solid #5040a0">📂 Charger une partie</button>
@@ -654,6 +654,7 @@
     </div>
     <div id="save-slots"></div>
     <button onclick="openGlossary(true)" style="width:100%;background:#0a0818;border:1px solid #2a1a3a;color:#9a8a6a;border-radius:6px;padding:6px 0;font-family:Cinzel,serif;font-size:11px;cursor:pointer;margin-top:4px">📖 Glossaire</button>
+    <button onclick="if(confirm('Commencer un nouveau run ? La partie en cours sera perdue.')){ hideSaveMenu(); initNewRun(); }" style="width:100%;background:linear-gradient(135deg,#0a1a0a,#1a2a0a);border:1px solid #2a5a2a;color:#4cffaa;border-radius:6px;padding:7px 0;font-family:Cinzel,serif;font-size:11px;cursor:pointer;margin-top:2px">▶ Commencer un nouveau run</button>
     <div style="border-top:1px solid #2a2040;margin-top:4px;padding-top:10px;display:flex;gap:8px">
         <button onclick="resetRunFromMenu(true)" style="flex:1;background:linear-gradient(135deg,#1a0a0a,#2a0a0a);color:#ff8060;border:1px solid #5a2a2a;border-radius:6px;padding:7px 0;font-family:Cinzel,serif;font-size:11px;cursor:pointer">↺ Reset run</button>
         <button onclick="resetRunFromMenu(false)" style="flex:1;background:linear-gradient(135deg,#2a0808,#3a0808);color:#ff4040;border:1px solid #7a2a2a;border-radius:6px;padding:7px 0;font-family:Cinzel,serif;font-size:11px;cursor:pointer">⚠ Reset run+méta</button>
@@ -1021,7 +1022,7 @@
 <!-- Frise de progression -->
 <div id="timeline">
     <div id="timeline-season">Saison 1</div>
-    <div style="font-family:Cinzel,serif;font-size:9px;color:#3a3050;margin-left:auto;padding-left:8px;white-space:nowrap">v0.477</div>
+    <div style="font-family:Cinzel,serif;font-size:9px;color:#3a3050;margin-left:auto;padding-left:8px;white-space:nowrap">v0.486</div>
     <div id="timeline-steps"></div>
     <button onclick="toggleSaveMenu()" style="background:linear-gradient(135deg,#1a1030,#2a1a40);border:1px solid #4a3060;color:#c0a060;font-size:14px;cursor:pointer;padding:2px 8px;border-radius:5px;white-space:nowrap;flex-shrink:0" title="Sauvegardes">💾 Save</button>
     <button onclick="toggleMetaSummary()" style="background:linear-gradient(135deg,#101a10,#1a2a1a);border:1px solid #2a5a2a;color:#4cffaa;font-size:14px;cursor:pointer;padding:2px 8px;border-radius:5px;white-space:nowrap;flex-shrink:0" title="Résumé méta">✦ Méta</button>
@@ -1840,6 +1841,7 @@ function openGoblinFight() {
     window._meta = null; // Recharger la méta fraîche
     // On ouvre le donjon avec une seule salle : le gobelin
     dungeonState.active = true;
+    dungeonState._deathProcessed = false;
     dungeonState.room = 0;
     // Initialiser/restaurer les HP si première ouverture
     if (avatarMaxHp === 0) {
@@ -2541,7 +2543,7 @@ function generateDungeonRooms(totalTurns) {
     const pool = [];
     for (let i = 0; i < nonBossCount; i++) {
         const r = Math.random();
-        if (r < 0.55) {
+        if (r < 0.70) {
             const group = generateMonsterGroup(currentSeason);
             const isMulti = (group.front.length + group.back.length) > 1;
             pool.push({ kind:'monster', data: isMulti ? null : group.front[0], group: group, isMulti: isMulti });
@@ -4118,6 +4120,13 @@ function endRound() {
         setTimeout(startEnemyPhase, 400);
         return;
     }
+    // Si des ennemis sont morts pendant les effets de round (DoT), déclencher victoire
+    if (dungeonState._dotKilledEnemy && dungeonState.active && getAllLivingEnemies().length === 0) {
+        dungeonState._dotKilledEnemy = false;
+        setTimeout(function(){ renderEnemyPanel(); checkAllEnemiesDead(); }, 150);
+        return;
+    }
+    dungeonState._dotKilledEnemy = false;
     // Reset actions joueur
     dungeonState.playerActionsLeft = 1;
     dngShowAttackBtn(true);
@@ -4165,13 +4174,14 @@ function triggerRoundEffects() {
         const living = getAllLivingEnemies();
         living.forEach(function(e) {
             dealDamageToEnemy(e, dungeonState._poisonCloud, '#40ff80');
+            if (e.hp <= 0) dungeonState._dotKilledEnemy = true;
         });
         dngLog('☁ Nuage de poison : -'+dungeonState._poisonCloud+' HP sur tous les ennemis !', 'dlog-good');
         // Retirer _poisoned des ennemis morts
         [...dungeonState.enemies.front, ...dungeonState.enemies.back]
             .filter(e => e.hp <= 0)
             .forEach(e => { e._poisoned = false; });
-        setTimeout(function(){ renderEnemyPanel(); checkAllEnemiesDead(); }, 100);
+        setTimeout(function(){ renderEnemyPanel(); }, 100);
     }
 
     // ── Freeze : expiration (une fois par round, pas par ennemi) ──
@@ -4878,7 +4888,7 @@ function dungeonRoomWon() {
     const parts = [];
     if (totalGold > 0) parts.push('+'+totalGold+' Or');
     if (totalMana > 0) parts.push('+'+totalMana+' Mana');
-    if (totalDust > 0) parts.push('+'+totalDust+' Poussière');
+    if (totalDust > 0) parts.push('+'+totalDust+' Poussière'+(totalDust>1?'s':''));
     extras.forEach(x => parts.push(x));
     const lootText = parts.join(', ') || 'Rien';
     dungeonState.collectedLoot.push(lootText);
@@ -4957,6 +4967,8 @@ function dungeonNextRoom() {
 }
 
 function dungeonAvatarDied() {
+    if (dungeonState._deathProcessed) return; // éviter le double appel
+    dungeonState._deathProcessed = true;
     // Restaurer ATK/DEF réduits
     if (dungeonState.combatAtkMalus > 0) { atk += dungeonState.combatAtkMalus; dungeonState.combatAtkMalus = 0; }
     if (dungeonState.combatDefMalus > 0) { def += dungeonState.combatDefMalus; dungeonState.combatDefMalus = 0; }
@@ -7684,7 +7696,7 @@ function metaBuySkill(id, cost) {
     if (currentLevel >= maxLevel) return;
     if (m.dust < cost) return;
     m.dust -= cost;
-    runDustSpent += cost;
+    m.runDustSpent = (m.runDustSpent||0) + cost;
     m.hero.skillLevels[id] = currentLevel + 1;
     saveMeta(m);
     window._meta = m;
@@ -7827,7 +7839,7 @@ function metaBuyHeroLevel() {
     const cost = HERO_LEVEL_COSTS[lvl];
     if (!cost || m.dust < cost) return;
     m.dust -= cost;
-    runDustSpent += cost;
+    m.runDustSpent = (m.runDustSpent||0) + cost;
     m.heroLevel = lvl + 1;
     saveMeta(m);
     window._meta = m;
@@ -7844,7 +7856,7 @@ function metaBuyCityLevel() {
     const cost = CITY_LEVEL_COSTS[lvl];
     if (!cost || m.dust < cost) return;
     m.dust -= cost;
-    runDustSpent += cost;
+    m.runDustSpent = (m.runDustSpent||0) + cost;
     m.cityLevel = lvl + 1;
     saveMeta(m);
     window._meta = m;
@@ -8546,10 +8558,6 @@ function renderSaveMenu() {
         } else {
             label.innerHTML = '<span style="color:#4a4060">Slot '+(i+1)+' — Vide</span>';
         }
-        const btnSave = document.createElement('button');
-        btnSave.textContent = '💾'; btnSave.title = 'Sauvegarder';
-        btnSave.style.cssText = 'background:#1a1a2e;border:1px solid #4a4060;color:#c0a060;border-radius:5px;padding:4px 8px;cursor:pointer;font-size:14px';
-        btnSave.onclick = (function(s){ return function(){ saveToSlot(s); }; })(i);
         const btnLoad = document.createElement('button');
         btnLoad.textContent = '📂'; btnLoad.title = 'Charger'; btnLoad.disabled = !info;
         btnLoad.style.cssText = 'background:#1a1a2e;border:1px solid #4a4060;color:'+(info?'#4cffaa':'#333')+';border-radius:5px;padding:4px 8px;cursor:'+(info?'pointer':'default')+';font-size:14px';
@@ -8558,7 +8566,7 @@ function renderSaveMenu() {
         btnDel.textContent = '🗑'; btnDel.title = 'Supprimer'; btnDel.disabled = !info;
         btnDel.style.cssText = 'background:#1a1a2e;border:1px solid #4a4060;color:'+(info?'#ff6060':'#333')+';border-radius:5px;padding:4px 8px;cursor:'+(info?'pointer':'default')+';font-size:14px';
         if (info) btnDel.onclick = (function(s){ return function(){ if(confirm('Supprimer le slot '+(s+1)+' ?')){ deleteSave(s); } }; })(i);
-        div.appendChild(label); div.appendChild(btnSave); div.appendChild(btnLoad); div.appendChild(btnDel);
+        div.appendChild(label); div.appendChild(btnLoad); div.appendChild(btnDel);
         slots.appendChild(div);
     }
 }
@@ -8973,7 +8981,7 @@ function dungeonUseGlyph(type) {
         const dmg = Math.max(3, Math.floor(atk * 1.5));
         allE.forEach(function(e){ dealDamageToEnemy(e, dmg, '#ff8040'); });
         dngLog('🔥 Boule de Feu ! -'+dmg+' HP à tous les ennemis', 'dlog-good');
-        setTimeout(function(){ renderEnemyPanel(); checkAllEnemiesDead(); }, 100);
+        setTimeout(function(){ renderEnemyPanel(); }, 100);
     } else if (type === 'rage') {
         if (glyphRage <= 0) return;
         glyphRage--;
@@ -9829,7 +9837,7 @@ function dungeonUseClassSkill(skillId) {
             col.forEach(function(e){ dealDamageToEnemy(e, dmg, '#40c080'); });
             dngLog('🏹 Volée ! -'+dmg+' HP à '+col.length+' cible(s)', 'dlog-good');
             dngShowEffect('🏹', 'VOLÉE !', '#80ffb0', document.querySelector('#dng-enemies-zone'));
-            setTimeout(function(){ renderEnemyPanel(); checkAllEnemiesDead(); }, 100);
+            setTimeout(function(){ renderEnemyPanel(); }, 100);
             if (!isFree) {
             dungeonState.playerActionsLeft = Math.max(0, (dungeonState.playerActionsLeft||1) - 1);
             if (dungeonState.playerActionsLeft > 0) { dngShowAttackBtn(true); updateGlyphButtons(); }
@@ -9891,7 +9899,7 @@ function dungeonUseClassSkill(skillId) {
             if (target) { dealDamageToEnemy(target, magDmg, '#ffff60'); }
             dngLog('⚡ Zap ! -'+magDmg+' dégâts magiques.', 'dlog-good');
             dngShowEffect('⚡', 'ZAP !', '#ffff60', document.querySelector('#dng-enemies-zone'));
-            setTimeout(function(){ renderEnemyPanel(); checkAllEnemiesDead(); }, 100);
+            setTimeout(function(){ renderEnemyPanel(); }, 100);
             dungeonState.playerActionsLeft = Math.max(0, (dungeonState.playerActionsLeft||1) - 1);
             if (dungeonState.playerActionsLeft > 0) { dngShowAttackBtn(true); updateGlyphButtons(); }
             else { setTimeout(startEnemyPhase, 200); } // action → riposte
@@ -9968,7 +9976,7 @@ function dungeonUseClassSkill(skillId) {
                 dealDamageToEnemy(e, reduced, '#ffd060');
             });
             dngLog('⚙ Pièges de lames ! -'+tdmg+' dégâts sur la colonne (prot. appliquée).', 'dlog-good');
-            setTimeout(function(){ renderEnemyPanel(); checkAllEnemiesDead(); }, 100);
+            setTimeout(function(){ renderEnemyPanel(); }, 100);
             if (!isFree) {
             dungeonState.playerActionsLeft = Math.max(0, (dungeonState.playerActionsLeft||1) - 1);
             if (dungeonState.playerActionsLeft > 0) { dngShowAttackBtn(true); updateGlyphButtons(); }
@@ -10009,13 +10017,19 @@ function dungeonUseClassSkill(skillId) {
 function buyClassSkill(skId) {
     const m = getMeta();
     if (!m.hero.skillLevels) m.hero.skillLevels = {};
+    // Vérifier que le skill appartient à la classe actuelle
+    const _cls = (m.legendaryOptions||{}).classeAvatar;
+    if (_cls && typeof CLASS_DATA !== 'undefined' && CLASS_DATA[_cls]) {
+        const _clsSkillIds = CLASS_DATA[_cls].skills.map(function(s){ return 'cls_'+s.id; });
+        if (skId.startsWith('cls_') && !_clsSkillIds.includes(skId)) { addLog('❌ Compétence réservée à une autre classe.'); return; }
+    }
     const lvl = m.hero.skillLevels[skId] || 0;
     const maxLvl = 1 + (m.heroLevel || 0);
     if (lvl >= maxLvl) { addLog('Niveau maximum atteint.'); return; }
     const cost = metaCost(1, lvl);
     if ((m.dust || 0) < cost) { addLog('Poussière insuffisante.'); return; }
     m.dust -= cost;
-    runDustSpent += cost;
+    m.runDustSpent = (m.runDustSpent||0) + cost;
     m.hero.skillLevels[skId] = lvl + 1;
     saveMeta(m); window._meta = m;
     addLog('✦ ' + skId + ' niveau ' + (lvl+1) + ' !');
