@@ -2556,6 +2556,8 @@ let dungeonState = {
     collectedLoot: [],
     pendingLootEnemies: [], // ennemis tués dont le loot n'a pas encore été collecté
     buttonsLocked: false,
+    _resolving: false,      // verrou : une résolution d'action est en cours
+    _actionToken: 0,        // token incrémenté à chaque nouvelle action — invalide les setTimeout obsolètes
     poisonStacks: [],  // [{roundsLeft:3}, ...] un stack par touche empoisonnée
     stunNext: false,
     dragonBreathCounter: 0,
@@ -2566,6 +2568,13 @@ let dungeonState = {
     playerActionsLeft: 1,  // actions restantes au joueur ce round
     playerStunned: false,      // stun : le joueur saute son prochain tour
 };
+
+// Verrou de flux combat — empêche les résolutions concurrentes
+function dngLock()   { dungeonState._resolving = true; dungeonState._actionToken = (dungeonState._actionToken||0) + 1; return dungeonState._actionToken; }
+function dngUnlock() { dungeonState._resolving = false; }
+function dngIsLocked() { return dungeonState._resolving; }
+// Retourne true si le token a expiré (une nouvelle action a commencé depuis)
+function dngTokenValid(token) { return token === dungeonState._actionToken; }
 
 function dngLog(msg, cls='') {
     const log = document.getElementById('dungeon-log');
@@ -3160,6 +3169,8 @@ function dngRenderHist() {
 function dungeonBarClick() {
     document.getElementById('dungeon-screen')?.classList.remove('attack-active');
     if(dngTiming.phase!=='timing') return;
+    if(dngIsLocked()) return; // résolution déjà en cours
+    dngLock(); // verrouiller dès le clic
     dngStopAnim();
     dngShowAttackBtn(false); // garder jauge visible pendant résolution
     const pos=dngTiming.pos;
@@ -3331,8 +3342,17 @@ function dungeonBarClick() {
             if(e) e.hp=0;
         });
         dngLog(dungeonState.enemy.name+' vaincu !','dlog-good');
-        // Délai pour laisser l'animation de recul se terminer avant de rééquilibrer
-        setTimeout(function(){ if(checkAllEnemiesDead()) return; }, 400);
+        // Ennemi mort → checkAllEnemiesDead gère tout (loot + suite)
+        setTimeout(function(){
+            if (checkAllEnemiesDead()) return; // tous morts → dungeonRoomWon
+            // Il reste des survivants : continuer le flux normal
+            if(dungeonState.licheAtkReduction > 0) dngSetupZones();
+            dungeonState.playerActionsLeft = Math.max(0, (dungeonState.playerActionsLeft || 1) - 1);
+            if (dungeonState.playerActionsLeft > 0) {
+                dngShowAttackBtn(true); updateGlyphButtons(); return;
+            }
+            startEnemyPhase();
+        }, 400);
     } else {
         // Mettre à jour la HP bar immédiatement sans reconstruire la cellule
         const _te = dungeonState.enemy;
@@ -3340,40 +3360,25 @@ function dungeonBarClick() {
         const _bi = dungeonState.enemies.back.indexOf(_te);
         if (_fi !== -1) updateGridCellHp(_te, false, _fi);
         else if (_bi !== -1) updateGridCellHp(_te, true, _bi);
-        // Re-render complet après l'animation recoil
-        setTimeout(function(){ renderEnemyPanel(); }, 400);
+        // Re-render complet après l'animation recoil, puis continuer le flux
+        setTimeout(function(){
+            renderEnemyPanel();
+            if(dungeonState.licheAtkReduction > 0) dngSetupZones();
+            const living = getAllLivingEnemies();
+            if (living.length === 0) { endRound(); return; }
+            dungeonState.playerActionsLeft = Math.max(0, (dungeonState.playerActionsLeft || 1) - 1);
+            if (dungeonState.playerActionsLeft > 0) {
+                dngShowAttackBtn(true); updateGlyphButtons(); return;
+            }
+            const anyFrozen = living.some(function(e){ return e._frozen; });
+            const wasMiss = zone === 'miss';
+            if (wasMiss && anyFrozen) {
+                dngLog('❄ Attaque ratée — les ennemis gelés ne ripostent pas !', 'dlog-good');
+                endRound(); return;
+            }
+            startEnemyPhase();
+        }, 300);
     }
-    // Gestion actions joueur
-    setTimeout(function() {
-        if(dungeonState.licheAtkReduction > 0) dngSetupZones();
-
-        // Si tous les ennemis sont morts, pas de phase ennemis
-        const living = getAllLivingEnemies();
-        if (living.length === 0) { endRound(); return; }
-
-        // Consommer 1 action joueur
-        dungeonState.playerActionsLeft = Math.max(0, (dungeonState.playerActionsLeft || 1) - 1);
-
-        if (dungeonState.playerActionsLeft > 0) {
-            // Il reste des actions : réafficher le bouton d'attaque
-            dngShowAttackBtn(true);
-            updateGlyphButtons();
-            return;
-        }
-
-        // Plus d'actions joueur → phase ennemis
-        // Freeze : si l'attaque est un miss et qu'il y a des ennemis gelés, pas de riposte
-        const anyFrozen = living.some(function(e){ return e._frozen; });
-        const wasMiss = zone === 'miss';
-        if (wasMiss && anyFrozen) {
-            dngLog('❄ Attaque ratée — les ennemis gelés ne ripostent pas !', 'dlog-good');
-            endRound();
-            return;
-        }
-
-        startEnemyPhase();
-
-    }, 300);
 }
 
 
@@ -3961,8 +3966,9 @@ function startEnemyPhase() {
     const living = getAllLivingEnemies();
     if (living.length === 0) { endRound(); return; }
 
+    const _seqTok = dungeonState._actionToken;
     function attackSeq(idx) {
-        if (!dungeonState.active) return;
+        if (!dungeonState.active || !dngTokenValid(_seqTok)) return;
         if (idx >= living.length) {
             applyHpUpdate();
             if (dungeonState.avatarHp <= 0) { setTimeout(dungeonAvatarDied, 300); return; }
@@ -3989,13 +3995,15 @@ function endRound() {
         dngLog('💫 Stun ! Votre tour est annulé — phase ennemis !', 'dlog-bad');
         const living = getAllLivingEnemies();
         if (living.length === 0) { endRound(); return; }
-        setTimeout(startEnemyPhase, 400);
+        const _tokStun = dungeonState._actionToken;
+        setTimeout(function(){ if (dngTokenValid(_tokStun) && dungeonState.active) startEnemyPhase(); }, 400);
         return;
     }
     // Si tous les ennemis sont morts (DoT, compétence, etc.), déclencher victoire
     if (dungeonState.active && getAllLivingEnemies().length === 0 && !dungeonState._roomWonPending) {
         dungeonState._roomWonPending = true;
-        setTimeout(function(){ renderEnemyPanel(); checkAllEnemiesDead(); }, 150);
+        const _tokDot = dungeonState._actionToken;
+        setTimeout(function(){ if (dngTokenValid(_tokDot)) { renderEnemyPanel(); checkAllEnemiesDead(); } }, 150);
         return;
     }
     // Reset actions joueur
@@ -4265,6 +4273,7 @@ function dngShowAttackBtn(show) {
         // Délai minimum de "respiration" — correspond au temps de résolution perçu
         const delay = dngTiming._resolveStart ? Math.max(0, 700 - (Date.now() - dngTiming._resolveStart)) : 0;
         setTimeout(function() {
+            dngUnlock(); // libérer le verrou : le joueur peut agir
             dngTiming.phase = 'idle';
             cancelAnimationFrame(dngTiming.animId);
             if (btn) {
@@ -4288,6 +4297,7 @@ function dngShowAttackBtn(show) {
 function dungeonStartAttack(e) {
     if (e) e.stopPropagation();
     if (dngTiming.phase !== 'idle') return; // bloquer les clics rapides (waiting/timing/resolving)
+    if (dngIsLocked()) return; // résolution en cours
     const btn = document.getElementById('dng-btn-attack');
     if (btn) { btn.disabled = true; btn.style.display = 'none'; }
     const tw = document.getElementById('dng-timing-wrap');
@@ -4531,6 +4541,7 @@ function dungeonShowDmg(who, amount, color) {
 // consumeAction=true  → consomme 1 action (skill offensif, glyph, etc.)
 // consumeAction=false → action gratuite (buff sans dégâts, potion, etc.)
 function afterPlayerAction(consumeAction) {
+    if (!dungeonState.active) return;
     if (consumeAction !== false) {
         dungeonState.playerActionsLeft = Math.max(0, (dungeonState.playerActionsLeft || 1) - 1);
     }
@@ -4544,19 +4555,22 @@ function afterPlayerAction(consumeAction) {
         return;
     }
     // Sinon, phase ennemis
-    setTimeout(startEnemyPhase, 200);
+    const _tok = dungeonState._actionToken;
+    setTimeout(function(){ if (dngTokenValid(_tok) && dungeonState.active) startEnemyPhase(); }, 200);
 }
 
 function dungeonUseSkill(type) {
     // Compétence permanente — utilise l'action (riposte ennemie suit), 1× par combat
     if (!dungeonState.active) return;
     if (dngTiming.phase === 'timing') return;
+    if (dngIsLocked()) return; // résolution en cours
     if (document.getElementById('dungeon-reward').classList.contains('visible')) return;
     const metaMap = { fireball:'Fireball', bless:'Benediction', rage:'Rage', heal:'Soin' };
     const metaId = metaMap[type];
     if (!hasMetaSkill(metaId)) return;
     if (skillUsed[metaId]) { dngLog('Compétence déjà utilisée ce combat.', 'dlog-info'); return; }
     skillUsed[metaId] = true;
+    dngLock();
     dngStopAnim();
     dngShowAttackBtn(false);
 
@@ -4575,7 +4589,7 @@ function dungeonUseSkill(type) {
         dngLog('🌟 Bénédiction (Niv.'+blessLvl+') ! Zone ×1 → ×1.2 pendant '+(1+blessLvl)+' rounds.', 'dlog-good');
         dngShowEffect('🌟', 'BÉNÉ !', '#ffd060', 'dng-avatar-side');
     } else if (type === 'rage') {
-        if (rageActive) return;
+        if (rageActive) { dngUnlock(); return; }
         const rageLvl = getSkillLevel('Rage') || 1;
         rageActive = true; rageRounds = 1 + rageLvl;
         dngLog('💢 Rage (Niv.'+rageLvl+') ! Dégâts ×2 pendant '+rageRounds+' rounds.', 'dlog-good');
@@ -4592,7 +4606,8 @@ function dungeonUseSkill(type) {
         dngShowEffect('💊', '+'+healed+' HP', '#4cffaa', 'dng-avatar-side');
     }
 
-    setTimeout(function(){ afterPlayerAction(true); }, 300);
+    const _tok1 = dungeonState._actionToken;
+    setTimeout(function(){ if (dngTokenValid(_tok1) && dungeonState.active) afterPlayerAction(true); }, 300);
 }
 
 // Aliases legacy
@@ -4638,6 +4653,7 @@ function dungeonFlee() {
 }
 
 function dungeonRoomWon() {
+    dngUnlock(); // fin de résolution — la salle est gagnée
     dungeonState._roomWonPending = false; // reset guard
     // Reset compétences après chaque victoire (par combat, pas par donjon)
     skillUsed = { Fireball:false, Benediction:false, Rage:false, Soin:false };
@@ -4793,6 +4809,7 @@ function dungeonNextRoom() {
 function dungeonAvatarDied() {
     if (dungeonState._deathProcessed) return; // éviter le double appel
     dungeonState._deathProcessed = true;
+    dngUnlock(); // mort du joueur — fin de résolution
     // Restaurer ATK/DEF réduits
     if (dungeonState.combatAtkMalus > 0) { atk += dungeonState.combatAtkMalus; dungeonState.combatAtkMalus = 0; }
     if (dungeonState.combatDefMalus > 0) { def += dungeonState.combatDefMalus; dungeonState.combatDefMalus = 0; }
@@ -8683,22 +8700,25 @@ function dungeonUseGlyph(type) {
     if (document.getElementById('dungeon-reward')?.classList.contains('visible')) return;
     if (!dungeonState.active) return;
     if (dngTiming.phase === 'timing' || dngTiming.phase === 'resolving') return;
+    if (dngIsLocked()) return;
+    dngLock();
     if (type === 'fireball') {
-        if (glyphFireball <= 0) return;
+        if (glyphFireball <= 0) { dngUnlock(); return; }
         glyphFireball--;
         if (glyphFireball === 0) equippedItems.glyphs = equippedItems.glyphs.map(function(id){ return id === 'Fireball' ? null : id; });
         const dmg = Math.max(3, Math.floor(atk * 1.5));
         getAllLivingEnemies().forEach(function(e){ dealDamageToEnemy(e, dmg, '#ff8040'); });
         dngLog('🔥 Boule de Feu ! -'+dmg+' HP à tous les ennemis', 'dlog-good');
     } else if (type === 'rage') {
-        if (glyphRage <= 0) return;
+        if (glyphRage <= 0) { dngUnlock(); return; }
         glyphRage--;
         if (glyphRage === 0) equippedItems.glyphs = equippedItems.glyphs.map(function(id){ return id === 'Rage' ? null : id; });
         dungeonState.rageTurns = (dungeonState.rageTurns||0) + 3;
         dngLog('💢 Glyphe de Rage : +ATK pendant 3 rounds', 'dlog-good');
     }
     updateStats();
-    setTimeout(function(){ afterPlayerAction(true); }, 300);
+    const _tokG = dungeonState._actionToken;
+    setTimeout(function(){ if (dngTokenValid(_tokG) && dungeonState.active) afterPlayerAction(true); }, 300);
 }
 
 
@@ -9560,6 +9580,8 @@ function renderClassSkills() {
 
 function dungeonUseClassSkill(skillId) {
     if (!dungeonState.active) return;
+    if (dngIsLocked()) return; // résolution en cours
+    dngLock();
     const skill = avatarClass && CLASS_DATA[avatarClass] &&
                   CLASS_DATA[avatarClass].skills.find(function(s){ return s.id===skillId; });
     if (!skill) return;
@@ -9706,7 +9728,8 @@ function dungeonUseClassSkill(skillId) {
         }
     }
     updateStats && updateStats();
-    setTimeout(function(){ afterPlayerAction(isFree ? false : true); }, 200);
+    const _tokC = dungeonState._actionToken;
+    setTimeout(function(){ if (dngTokenValid(_tokC) && dungeonState.active) afterPlayerAction(isFree ? false : true); }, 200);
 }
 
 
