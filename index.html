@@ -8001,6 +8001,7 @@ function getGameState() {
         hordeHiddenCount: hordeHiddenCount||0,
         tileState: cleanForSave(tileState||[]),
         meta: cleanForSave(getMeta()),
+        hordeChiefShown: hordeChiefShown||false,
     };
 }
 
@@ -8014,6 +8015,7 @@ function restoreGameState(s) {
     potionHeal = s.potionHeal||0; potionAntiPoison = s.potionAntiPoison||0;
     glyphSlots = s.glyphSlots||1; potionSlots = s.potionSlots||1;
     runDeaths = s.runDeaths||0; runDustSpent = s.runDustSpent||0;
+    hordeChiefShown = s.hordeChiefShown||false;
 
     // ── Restaurer la méta d'abord ──
     if (s.meta) { window._meta = s.meta; saveMeta(s.meta); }
