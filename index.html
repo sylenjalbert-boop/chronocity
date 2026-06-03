@@ -9219,6 +9219,20 @@ function applyLegendaryOption(key, opts) {
         m.legendaryOptions.ae_eclaireurs_level = (m.legendaryOptions.ae_eclaireurs_level || 0) + 1;
         saveMeta(m);
         addLog('🌳 Éclaireurs niv.'+m.legendaryOptions.ae_eclaireurs_level+' : +1 visibilité horde !');
+        // Rafraîchir la visibilité horde si déjà révélée
+        if (hordeRevealed && currentSeason >= 5) {
+            const allUnits = [...hordeCurrentAdditions, ...hordeHiddenUnits];
+            if (allUnits.length > 0) {
+                const fog = applyFogOfWar(allUnits, currentSeason);
+                // Reconstruire hordeArmy : unités des saisons précédentes + nouvelles visibles
+                hordeArmy.splice(0, hordeArmy.length, ...hordePrevSeason, ...fog.visible);
+                hordeHiddenUnits.splice(0, hordeHiddenUnits.length, ...fog.hidden);
+                hordeHiddenCount = fog.hiddenCount;
+                hordeCurrentAdditions.splice(0, hordeCurrentAdditions.length, ...fog.visible);
+                addLog('🔭 Visibilité horde mise à jour : '+fog.visible.length+' identifié(s)'+(fog.hidden.length > 0 ? ', '+fog.hidden.length+' encore inconnu(s).' : '.'));
+                updateStats();
+            }
+        }
     }
     else if (key === 'ae_druidique') {
         addLog('🌳 Cercle Druidique : Dryade disponible au recrutement !');
