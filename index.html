@@ -2878,7 +2878,7 @@ function showSpecialRoom(spec) {
         document.getElementById('rs-bonus').style.color = isPiege ? '#ff6060' : '#ffd060';
         dngLog(`${spec.emoji} ${spec.name} : ${result}`, isPiege ? 'dlog-bad' : 'dlog-good');
         // Si avatar mort (piège lames rare)
-        if (dungeonState.avatarHp <= 0) { setTimeout(dungeonAvatarDied, 1000); return; }
+        if (dungeonState.avatarHp <= 0) { setTimeout(function(){ if (!dungeonState._deathProcessed) dungeonAvatarDied(); }, 1000); return; }
         setTimeout(() => {
             document.getElementById('room-special').classList.remove('show');
             showDoorChoice();
@@ -3784,7 +3784,7 @@ function enemyAttack(room) {
             avatarTakeDamage(breathDmg, 'dragon');
             dngLog('🔥 '+room.name+' souffle ! -'+breathDmg+' HP (ignore protection)', 'dlog-bad');
             dngShowEffect('🔥', 'SOUFFLE !', '#ff6020', 'dng-avatar-side');
-            if (dungeonState.avatarHp <= 0) { setTimeout(dungeonAvatarDied, 300); }
+            if (dungeonState.avatarHp <= 0) { setTimeout(function(){ if (!dungeonState._deathProcessed) dungeonAvatarDied(); }, 300); }
             return; // le souffle remplace l'attaque ce round
         }
         // sinon : attaque normale (ne pas return, continuer le code)
@@ -3957,7 +3957,10 @@ function avatarTakeDamage(dmg, source) {
     // Vérification de survie
     if (dungeonState.avatarHp <= 0) {
         dungeonState.avatarHp = 0;
-        setTimeout(function(){ if (typeof dungeonAvatarDied === 'function') dungeonAvatarDied(); }, 300);
+        dungeonState.active = false; // stopper immédiatement toute séquence en cours
+        setTimeout(function(){
+            if (!dungeonState._deathProcessed) dungeonAvatarDied();
+        }, 300);
     }
 }
 
@@ -3971,11 +3974,11 @@ function startEnemyPhase() {
         if (!dungeonState.active || !dngTokenValid(_seqTok)) return;
         if (idx >= living.length) {
             applyHpUpdate();
-            if (dungeonState.avatarHp <= 0) { setTimeout(dungeonAvatarDied, 300); return; }
+            if (dungeonState.avatarHp <= 0) { setTimeout(function(){ if (!dungeonState._deathProcessed) dungeonAvatarDied(); }, 300); return; }
             endRound();
             return;
         }
-        if (dungeonState.avatarHp <= 0) { setTimeout(dungeonAvatarDied, 300); return; }
+        if (dungeonState.avatarHp <= 0) { setTimeout(function(){ if (!dungeonState._deathProcessed) dungeonAvatarDied(); }, 300); return; }
         const e = living[idx];
         enemyAttack(e);
         setTimeout(function(){ attackSeq(idx + 1); }, living.length > 1 ? 350 : 0);
@@ -3988,7 +3991,7 @@ function endRound() {
     const rb2 = document.getElementById('dng-result'); if (rb2) rb2.textContent = '';
     dungeonState.roundCounter++;
     triggerRoundEffects();
-    if (dungeonState.avatarHp <= 0) { setTimeout(dungeonAvatarDied, 300); return; }
+    if (dungeonState.avatarHp <= 0) { setTimeout(function(){ if (!dungeonState._deathProcessed) dungeonAvatarDied(); }, 300); return; }
     // Stun : sauter le tour joueur, les ennemis attaquent à nouveau
     if (dungeonState.playerStunned) {
         dungeonState.playerStunned = false;
