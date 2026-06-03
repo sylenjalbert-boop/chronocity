@@ -6966,20 +6966,22 @@ function runCombatHorde() {
     // Effets spéciaux (vol, pillard, mort-vivant)
     // ══════════════════════════════════════════
 
-    // Vol
+    // Vol — N traits vol passent = N unités les plus fortes éliminées avant combat
     const volNet = traitNet['vol'] || 0;
     if (volNet > 0) {
-        let strongest = null, strongestAtk = -1;
-        cityArmy.forEach(function(u){ const a=u.atk+u.atkMag; if(a>strongestAtk){strongestAtk=a;strongest=u;} });
-        if (strongest) {
-            const idx2 = cityArmy.indexOf(strongest);
-            cityArmy.splice(idx2, 1);
-            cityAtk -= strongestAtk;
-            hordeLog.push('🐲 Vol : ' + strongest.icon + ' ' + strongest.name + ' éliminé avant combat !');
+        const volCount = Math.floor(volNet);
+        for (let i = 0; i < volCount && cityArmy.length > 0; i++) {
+            let strongest = null, strongestAtk = -1;
+            cityArmy.forEach(function(u){ const a=u.atk+u.atkMag; if(a>strongestAtk){strongestAtk=a;strongest=u;} });
+            if (strongest) {
+                cityArmy.splice(cityArmy.indexOf(strongest), 1);
+                cityAtk -= strongestAtk;
+                hordeLog.push('🐲 Vol : ' + strongest.icon + ' ' + strongest.name + ' éliminé avant combat !');
+            }
         }
     }
 
-    // Pillard
+    // Pillard — N traits pillard passent = N bâtiments détruits
     const pillardNet = traitNet['pillard'] || 0;
     if (pillardNet > 0) {
         const allBld = [];
@@ -7001,11 +7003,20 @@ function runCombatHorde() {
         }
     }
 
-    // Mort-vivant
+    // Sapeur — N traits sapeur passent = N fortifications détruites
+    const sapeurNet = traitNet['sapeur'] || 0;
+    if (sapeurNet > 0) {
+        const sapCount = Math.min(Math.ceil(sapeurNet), fortifications);
+        if (sapCount > 0) {
+            fortifications = Math.max(0, fortifications - sapCount);
+            hordeLog.push('⛏ Sapeur : -' + sapCount + ' fortification(s) détruites (reste ' + fortifications + ')');
+        }
+    }
+
+    // Mort-vivant — N traits mort-vivant passent = N unités aléatoires détruites
     const mvNet = traitNet['mort-vivant'] || 0;
-    const antiMv = antiCounts['anti-mort-vivant'] || 0;
-    const mvPass = allHorde.filter(function(u){ return u.traits.includes('mort-vivant'); }).length - antiMv;
-    if (mvPass > 0 && cityArmy.length > 0) {
+    const mvPass = Math.floor(mvNet);
+    for (let i = 0; i < mvPass && cityArmy.length > 0; i++) {
         const idx2 = Math.floor(Math.random() * cityArmy.length);
         const lost = cityArmy.splice(idx2, 1)[0];
         cityAtk -= lost.atk + lost.atkMag;
