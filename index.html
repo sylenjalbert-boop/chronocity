@@ -581,7 +581,7 @@
 <div id="home-screen" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:#06040a;z-index:20000;flex-direction:column;align-items:center;justify-content:center;gap:20px">
     <div style="text-align:center;margin-bottom:10px">
         <div style="font-family:Cinzel,serif;font-size:28px;color:#c0a060;letter-spacing:3px;text-shadow:0 0 20px rgba(180,140,60,0.4)">⚔ Chronocity — A Rogue City Builder</div>
-        <div style="font-size:11px;color:#4a3a5a;margin-top:6px;letter-spacing:2px">VERSION 0.500</div>
+        <div style="font-size:11px;color:#4a3a5a;margin-top:6px;letter-spacing:2px">VERSION 0.501</div>
     </div>
     <div id="home-menu" style="display:flex;flex-direction:column;gap:10px;width:min(340px,90vw)">
         <button onclick="homeLoad()" style="width:100%;padding:16px 0;font-family:Cinzel,serif;font-size:14px;cursor:pointer;border-radius:8px;background:linear-gradient(135deg,#1a1030,#2a1a40);color:#c080ff;border:1px solid #5040a0">📂 Charger une partie</button>
@@ -1023,7 +1023,7 @@
 <!-- Frise de progression -->
 <div id="timeline">
     <div id="timeline-season">Saison 1</div>
-    <div style="font-family:Cinzel,serif;font-size:9px;color:#3a3050;margin-left:auto;padding-left:8px;white-space:nowrap">v0.500</div>
+    <div style="font-family:Cinzel,serif;font-size:9px;color:#3a3050;margin-left:auto;padding-left:8px;white-space:nowrap">v0.501</div>
     <div id="timeline-steps"></div>
     <button onclick="toggleSaveMenu()" style="background:linear-gradient(135deg,#1a1030,#2a1a40);border:1px solid #4a3060;color:#c0a060;font-size:14px;cursor:pointer;padding:2px 8px;border-radius:5px;white-space:nowrap;flex-shrink:0" title="Sauvegardes">💾 Save</button>
     <button onclick="toggleMetaSummary()" style="background:linear-gradient(135deg,#101a10,#1a2a1a);border:1px solid #2a5a2a;color:#4cffaa;font-size:14px;cursor:pointer;padding:2px 8px;border-radius:5px;white-space:nowrap;flex-shrink:0" title="Résumé méta">✦ Méta</button>
@@ -2878,7 +2878,7 @@ function showSpecialRoom(spec) {
         document.getElementById('rs-bonus').style.color = isPiege ? '#ff6060' : '#ffd060';
         dngLog(`${spec.emoji} ${spec.name} : ${result}`, isPiege ? 'dlog-bad' : 'dlog-good');
         // Si avatar mort (piège lames rare)
-        if (dungeonState.avatarHp <= 0) { setTimeout(function(){ if (!dungeonState._deathProcessed) dungeonAvatarDied(); }, 1000); return; }
+        if (dungeonState.avatarHp <= 0) { setTimeout(function(){ triggerDeath(); }, 1000); return; }
         setTimeout(() => {
             document.getElementById('room-special').classList.remove('show');
             showDoorChoice();
@@ -3784,7 +3784,7 @@ function enemyAttack(room) {
             avatarTakeDamage(breathDmg, 'dragon');
             dngLog('🔥 '+room.name+' souffle ! -'+breathDmg+' HP (ignore protection)', 'dlog-bad');
             dngShowEffect('🔥', 'SOUFFLE !', '#ff6020', 'dng-avatar-side');
-            if (dungeonState.avatarHp <= 0) { setTimeout(function(){ if (!dungeonState._deathProcessed) dungeonAvatarDied(); }, 300); }
+            if (dungeonState.avatarHp <= 0) { setTimeout(function(){ triggerDeath(); }, 300); }
             return; // le souffle remplace l'attaque ce round
         }
         // sinon : attaque normale (ne pas return, continuer le code)
@@ -3958,14 +3958,27 @@ function avatarTakeDamage(dmg, source) {
     if (dungeonState.avatarHp <= 0) {
         dungeonState.avatarHp = 0;
         dungeonState.active = false; // stopper immédiatement toute séquence en cours
-        setTimeout(function(){
-            if (!dungeonState._deathProcessed) dungeonAvatarDied();
-        }, 300);
+        setTimeout(function(){ triggerDeath(); }, 300);
     }
 }
 
+// Point de mort unique — appelé dès que hp <= 0, depuis n'importe quel contexte
+function triggerDeath() {
+    if (dungeonState._deathProcessed) return;
+    dungeonState._deathProcessed = true;
+    dungeonState.active = false;
+    // Libérer tous les verrous et états bloquants
+    dngUnlock();
+    dngTiming.phase = 'idle';
+    cancelAnimationFrame(dngTiming.animId);
+    const ov = document.getElementById('dng-click-overlay');
+    if (ov) ov.style.display = 'none';
+    const screen = document.getElementById('dungeon-screen');
+    if (screen) screen.style.cursor = 'default';
+    dungeonAvatarDied();
+}
+
 function startEnemyPhase() {
-    // Phase ennemis : chaque ennemi vivant attaque séquentiellement
     const living = getAllLivingEnemies();
     if (living.length === 0) { endRound(); return; }
 
@@ -3974,11 +3987,11 @@ function startEnemyPhase() {
         if (!dungeonState.active || !dngTokenValid(_seqTok)) return;
         if (idx >= living.length) {
             applyHpUpdate();
-            if (dungeonState.avatarHp <= 0) { setTimeout(function(){ if (!dungeonState._deathProcessed) dungeonAvatarDied(); }, 300); return; }
+            if (dungeonState.avatarHp <= 0) { setTimeout(function(){ triggerDeath(); }, 300); return; }
             endRound();
             return;
         }
-        if (dungeonState.avatarHp <= 0) { setTimeout(function(){ if (!dungeonState._deathProcessed) dungeonAvatarDied(); }, 300); return; }
+        if (dungeonState.avatarHp <= 0) { setTimeout(function(){ triggerDeath(); }, 300); return; }
         const e = living[idx];
         enemyAttack(e);
         setTimeout(function(){ attackSeq(idx + 1); }, living.length > 1 ? 350 : 0);
@@ -3991,7 +4004,7 @@ function endRound() {
     const rb2 = document.getElementById('dng-result'); if (rb2) rb2.textContent = '';
     dungeonState.roundCounter++;
     triggerRoundEffects();
-    if (dungeonState.avatarHp <= 0) { setTimeout(function(){ if (!dungeonState._deathProcessed) dungeonAvatarDied(); }, 300); return; }
+    if (dungeonState.avatarHp <= 0) { setTimeout(function(){ triggerDeath(); }, 300); return; }
     // Stun : sauter le tour joueur, les ennemis attaquent à nouveau
     if (dungeonState.playerStunned) {
         dungeonState.playerStunned = false;
@@ -4810,20 +4823,13 @@ function dungeonNextRoom() {
 }
 
 function dungeonAvatarDied() {
-    if (dungeonState._deathProcessed) return; // éviter le double appel
-    dungeonState._deathProcessed = true;
-    dngUnlock(); // mort du joueur — fin de résolution
-    // Restaurer ATK/DEF réduits
+    // Note : _deathProcessed, dngUnlock, phase=idle déjà gérés par triggerDeath()
     if (dungeonState.combatAtkMalus > 0) { atk += dungeonState.combatAtkMalus; dungeonState.combatAtkMalus = 0; }
     if (dungeonState.combatDefMalus > 0) { def += dungeonState.combatDefMalus; dungeonState.combatDefMalus = 0; }
     runDeaths++;
-    // Stopper immédiatement l'animation et déverrouiller
     dngStopAnim();
-    dngTiming.phase = 'idle';
-    cancelAnimationFrame(dngTiming.animId);
     avatarHp = 0;
     dngLog('☠ Votre avatar est mort. Partie terminée.', 'dlog-bad');
-    // Masquer l'overlay dé s'il est visible
     const ov = document.getElementById('dng-die-overlay');
     if (ov) ov.style.display = 'none';
     setTimeout(() => {
