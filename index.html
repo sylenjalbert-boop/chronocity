@@ -9225,8 +9225,8 @@ function applyLegendaryOption(key, opts) {
         m.legendaryOptions.ae_eclaireurs_level = (m.legendaryOptions.ae_eclaireurs_level || 0) + 1;
         saveMeta(m);
         addLog('🌳 Éclaireurs niv.'+m.legendaryOptions.ae_eclaireurs_level+' : +1 visibilité horde !');
-        // Rafraîchir la visibilité horde si déjà révélée
-        if (hordeRevealed && currentSeason >= 5) {
+        // Rafraîchir la visibilité horde si déjà révélée et qu'il reste des unités cachées
+        if (hordeRevealed && hordeHiddenUnits.length > 0) {
             const allUnits = [...hordeCurrentAdditions, ...hordeHiddenUnits];
             if (allUnits.length > 0) {
                 const fog = applyFogOfWar(allUnits, currentSeason);
