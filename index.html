@@ -138,6 +138,8 @@
         .horde-unit{background:#120808;border-color:#3a1010;}
         .horde-unit .unit-stats{color:#d08080;}
         #dungeon-screen{display:none;position:fixed;left:0;top:0;width:100%;height:100%;background:#060408;z-index:10500;flex-direction:column;font-family:'Crimson Text',Georgia,serif;color:var(--text);overflow:hidden;}
+        #dungeon-screen.resolving > *:not(#dng-log):not(#dungeon-header) { pointer-events:none !important; }
+        #dungeon-screen.resolving #dng-click-overlay { pointer-events:none !important; }
         #dungeon-screen.show{display:flex;}
         #dungeon-header{background:var(--bg-panel);padding:10px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:14px;}
         #dungeon-title{font-family:'Cinzel',serif;font-size:16px;font-weight:bold;color:var(--purple-l);min-width:110px;letter-spacing:1px;}
@@ -788,7 +790,7 @@
     <div style="text-align:center;margin-bottom:10px">
         <div style="font-family:Cinzel,serif;font-size:28px;color:#c0a060;letter-spacing:3px;text-shadow:0 0 20px rgba(180,140,60,0.4)">⚔ Chronocity — A Roguelite City Builder</div>
         <button onclick="showLadder()" style="margin-top:8px;padding:6px 18px;background:#0a0818;border:1px solid #3a2a5a;border-radius:8px;color:#9a7aaa;font-size:11px;cursor:pointer;font-family:Cinzel,serif">🏆 Classement</button>
-        <div style="font-size:11px;color:#4a3a5a;margin-top:6px;letter-spacing:2px" data-version="0.510">VERSION 0.526</div>
+        <div style="font-size:11px;color:#4a3a5a;margin-top:6px;letter-spacing:2px" data-version="0.510">VERSION 0.527</div>
     </div>
     <div id="home-menu" style="display:flex;flex-direction:column;gap:10px;width:min(340px,90vw)">
         <button onclick="homeLoad()" style="width:100%;padding:16px 0;font-family:Cinzel,serif;font-size:14px;cursor:pointer;border-radius:8px;background:linear-gradient(135deg,#1a1030,#2a1a40);color:#c080ff;border:1px solid #5040a0">📂 Charger une partie</button>
@@ -1231,7 +1233,7 @@
 <!-- Frise de progression -->
 <div id="timeline">
     <div id="timeline-season">Saison 1</div>
-    <div style="font-family:Cinzel,serif;font-size:9px;color:#3a3050;margin-left:auto;padding-left:8px;white-space:nowrap">v0.526</div>
+    <div style="font-family:Cinzel,serif;font-size:9px;color:#3a3050;margin-left:auto;padding-left:8px;white-space:nowrap">v0.527</div>
     <div id="timeline-steps"></div>
     <button onclick="toggleSaveMenu()" style="background:linear-gradient(135deg,#1a1030,#2a1a40);border:1px solid #4a3060;color:#c0a060;font-size:14px;cursor:pointer;padding:2px 8px;border-radius:5px;white-space:nowrap;flex-shrink:0" title="Sauvegardes">💾 Save</button>
     <button onclick="toggleMetaSummary()" style="background:linear-gradient(135deg,#101a10,#1a2a1a);border:1px solid #2a5a2a;color:#4cffaa;font-size:14px;cursor:pointer;padding:2px 8px;border-radius:5px;white-space:nowrap;flex-shrink:0" title="Résumé méta">✦ Méta</button>
@@ -2816,8 +2818,18 @@ let dungeonState = {
 };
 
 // Verrou de flux combat — empêche les résolutions concurrentes
-function dngLock()   { dungeonState._resolving = true; dungeonState._actionToken = (dungeonState._actionToken||0) + 1; return dungeonState._actionToken; }
-function dngUnlock() { dungeonState._resolving = false; }
+function dngLock()   {
+    dungeonState._resolving = true;
+    dungeonState._actionToken = (dungeonState._actionToken||0) + 1;
+    const s = document.getElementById('dungeon-screen');
+    if (s) s.classList.add('resolving');
+    return dungeonState._actionToken;
+}
+function dngUnlock() {
+    dungeonState._resolving = false;
+    const s = document.getElementById('dungeon-screen');
+    if (s) s.classList.remove('resolving');
+}
 function dngIsLocked() { return dungeonState._resolving; }
 // Retourne true si le token a expiré (une nouvelle action a commencé depuis)
 function dngTokenValid(token) { return token === dungeonState._actionToken; }
@@ -3306,6 +3318,8 @@ function dngStartAnim() {
         // Ne pas démarrer si une résolution est en cours
         if (dngIsLocked()) {
             dngTiming.phase = 'idle';
+            const s = document.getElementById('dungeon-screen');
+            if (s) s.classList.remove('resolving');
             return;
         }
         // Démarrer vraiment l'animation
