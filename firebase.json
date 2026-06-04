@@ -6,7 +6,8 @@
       ".firebaserc",
       "firestore.rules",
       "firestore.indexes.json",
-      "*.md"
+      "*.md",
+      ".github"
     ],
     "rewrites": [
       {
