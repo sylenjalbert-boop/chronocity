@@ -7,6 +7,12 @@ service cloud.firestore {
       allow read, write: if request.auth != null && request.auth.uid == userId;
     }
 
+    // Leaderboard : lecture publique, écriture uniquement par le propriétaire
+    match /leaderboard/{userId} {
+      allow read: if true;
+      allow write: if request.auth != null && request.auth.uid == userId;
+    }
+
     // Config version : lecture publique, écriture admin uniquement
     match /config/{document} {
       allow read: if true;
