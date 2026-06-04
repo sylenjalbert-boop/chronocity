@@ -699,6 +699,50 @@
                 }
             } catch(e) { /* silencieux — pas bloquant */ }
         };
+
+        // ── Icônes de classe ──
+        window.CLASS_ICONS = {
+            warrior:    '🗡',
+            archer:     '🏹',
+            mage:       '✨',
+            adventurer: '📜',
+        };
+        window.CLASS_ICON_DEFAULT = '⚔';
+
+        // ── Profil utilisateur (pseudo) ──
+        window.fbGetProfile = async function() {
+            if (!window._fbUser) return null;
+            try {
+                const ref = doc(db, 'users', window._fbUser.uid, 'profile', 'data');
+                const snap = await getDoc(ref);
+                return snap.exists() ? snap.data() : null;
+            } catch(e) { return null; }
+        };
+
+        window.fbSaveProfile = async function(profile) {
+            if (!window._fbUser) return;
+            try {
+                const ref = doc(db, 'users', window._fbUser.uid, 'profile', 'data');
+                await setDoc(ref, profile);
+            } catch(e) { console.error('fbSaveProfile error:', e); }
+        };
+
+        // ── Leaderboard ──
+        window.fbUpdateLeaderboard = async function(data) {
+            if (!window._fbUser) return;
+            try {
+                const ref = doc(db, 'leaderboard', window._fbUser.uid);
+                await setDoc(ref, data);
+            } catch(e) { console.error('fbUpdateLeaderboard error:', e); }
+        };
+
+        window.fbGetLeaderboard = async function() {
+            try {
+                const col = collection(db, 'leaderboard');
+                const snap = await getDocs(col);
+                return snap.docs.map(function(d){ return { id: d.id, ...d.data() }; });
+            } catch(e) { console.error('fbGetLeaderboard error:', e); return []; }
+        };
     </script>
 </head>
 <body>
@@ -721,11 +765,30 @@
     <button onclick="fbLogout()" style="background:none;border:none;color:#4a3a5a;cursor:pointer;font-size:10px">Déconnexion</button>
 </div>
 
+<!-- ═══ PSEUDO SCREEN ═══ -->
+<div id="fb-pseudo-screen" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.92);z-index:99998;align-items:center;justify-content:center;flex-direction:column;gap:14px">
+    <div style="font-family:Cinzel,serif;font-size:20px;color:#c0a060">Choisissez votre pseudo</div>
+    <div style="font-size:11px;color:#6a5a4a">3 à 20 caractères, lettres et chiffres uniquement</div>
+    <input id="pseudo-input" maxlength="20" placeholder="MonPseudo123" style="padding:10px 16px;background:#0e0c1a;border:1px solid #4040a0;border-radius:8px;color:#e0d0ff;font-size:14px;text-align:center;width:220px;font-family:Cinzel,serif">
+    <div id="pseudo-error" style="font-size:10px;color:#ff6060;min-height:14px"></div>
+    <button onclick="confirmPseudo()" style="padding:10px 28px;background:linear-gradient(135deg,#1a1030,#2a1a40);border:1px solid #6040c0;border-radius:8px;color:#c080ff;font-family:Cinzel,serif;font-size:13px;cursor:pointer">Confirmer</button>
+</div>
+
+<!-- ═══ LADDER SCREEN ═══ -->
+<div id="ladder-screen" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.92);z-index:99997;align-items:flex-start;justify-content:center;padding-top:4vh;overflow-y:auto">
+    <div style="background:#080610;border:1px solid #3a2a5a;border-radius:14px;width:min(96vw,500px);padding:16px;display:flex;flex-direction:column;gap:8px">
+        <div style="font-family:Cinzel,serif;font-size:18px;color:#c0a060;text-align:center;letter-spacing:2px">🏆 Classement</div>
+        <div id="ladder-content" style="min-height:200px;font-size:11px"></div>
+        <button onclick="document.getElementById('ladder-screen').style.display='none'" style="padding:8px;background:#0a0818;border:1px solid #3a2a4a;border-radius:8px;color:#6a5a7a;cursor:pointer;font-size:11px">Fermer</button>
+    </div>
+</div>
+
 <!-- ════ ÉCRAN D'ACCUEIL ════ -->
 <div id="home-screen" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:#06040a;z-index:20000;flex-direction:column;align-items:center;justify-content:center;gap:20px">
     <div style="text-align:center;margin-bottom:10px">
         <div style="font-family:Cinzel,serif;font-size:28px;color:#c0a060;letter-spacing:3px;text-shadow:0 0 20px rgba(180,140,60,0.4)">⚔ Chronocity — A Roguelite City Builder</div>
-        <div style="font-size:11px;color:#4a3a5a;margin-top:6px;letter-spacing:2px" data-version="0.510">VERSION 0.510</div>
+        <button onclick="showLadder()" style="margin-top:8px;padding:6px 18px;background:#0a0818;border:1px solid #3a2a5a;border-radius:8px;color:#9a7aaa;font-size:11px;cursor:pointer;font-family:Cinzel,serif">🏆 Classement</button>
+        <div style="font-size:11px;color:#4a3a5a;margin-top:6px;letter-spacing:2px" data-version="0.510">VERSION 0.520</div>
     </div>
     <div id="home-menu" style="display:flex;flex-direction:column;gap:10px;width:min(340px,90vw)">
         <button onclick="homeLoad()" style="width:100%;padding:16px 0;font-family:Cinzel,serif;font-size:14px;cursor:pointer;border-radius:8px;background:linear-gradient(135deg,#1a1030,#2a1a40);color:#c080ff;border:1px solid #5040a0">📂 Charger une partie</button>
@@ -1168,7 +1231,7 @@
 <!-- Frise de progression -->
 <div id="timeline">
     <div id="timeline-season">Saison 1</div>
-    <div style="font-family:Cinzel,serif;font-size:9px;color:#3a3050;margin-left:auto;padding-left:8px;white-space:nowrap">v0.510</div>
+    <div style="font-family:Cinzel,serif;font-size:9px;color:#3a3050;margin-left:auto;padding-left:8px;white-space:nowrap">v0.520</div>
     <div id="timeline-steps"></div>
     <button onclick="toggleSaveMenu()" style="background:linear-gradient(135deg,#1a1030,#2a1a40);border:1px solid #4a3060;color:#c0a060;font-size:14px;cursor:pointer;padding:2px 8px;border-radius:5px;white-space:nowrap;flex-shrink:0" title="Sauvegardes">💾 Save</button>
     <button onclick="toggleMetaSummary()" style="background:linear-gradient(135deg,#101a10,#1a2a1a);border:1px solid #2a5a2a;color:#4cffaa;font-size:14px;cursor:pointer;padding:2px 8px;border-radius:5px;white-space:nowrap;flex-shrink:0" title="Résumé méta">✦ Méta</button>
@@ -1413,12 +1476,23 @@ document.addEventListener('DOMContentLoaded', () => {
                 applyMetaBonuses();
             }
         }
-        // 2. Vérifier la version
+        // 2. Vérifier/créer le profil pseudo
+        if (window.fbGetProfile) {
+            const profile = await window.fbGetProfile();
+            if (!profile || !profile.pseudo) {
+                showPseudoScreen();
+            } else {
+                window._fbPseudo = profile.pseudo;
+                const nameEl = document.getElementById('fb-user-name');
+                if (nameEl) nameEl.textContent = profile.pseudo;
+            }
+        }
+        // 3. Vérifier la version
         if (window.fbCheckVersion) {
             const currentVer = document.querySelector('[data-version]')?.dataset.version || '0.510';
             await window.fbCheckVersion(currentVer);
         }
-        // 3. Rafraîchir l'UI méta si ouverte
+        // 4. Rafraîchir l'UI méta si ouverte
         if (typeof renderMetaHero === 'function') renderMetaHero();
         if (typeof renderMetaSummary === 'function') renderMetaSummary();
     };
@@ -2246,6 +2320,7 @@ const META_DEFAULTS = {
     dust: 0,
     shells: 1,           // coquilles d'oeuf du temps (1 pour tests)
     shellsEarned: [],    // ['4','8'...] saisons hivernales déjà gagnées
+    shellsSpent: 0,      // coquilles dépensées en bâtiments légendaires
     ouroborosDone: [],   // ['4','8'...] saisons S4/S8... où l'Ouroboros a été vaincu
     legendary: {
         grandeTour: false, arbreElfique: false,
@@ -3059,6 +3134,8 @@ function showSpecialRoom(spec) {
 }
 
 function dungeonComplete() {
+    // Mise à jour leaderboard à la victoire
+    if (typeof updateLeaderboardScore === 'function') updateLeaderboardScore(true);
     document.getElementById('door-screen').classList.remove('show');
     // Annuler les malus temporaires du donjon (pas de bonus permanents)
     if(dungeonState.curseActive){ atk+=1; dungeonState.curseActive=false; }
@@ -3979,6 +4056,7 @@ function enemyAttack(room) {
     if(ehit){
         const ed = calcDamage(room.dmg, protection);
         avatarTakeDamage(ed, 'enemy');
+        if (!dungeonState.active) return; // avatar mort pendant l'attaque — stopper
         dngLog(room.name+' : dé '+er+' ('+et+'+) ✓ → -'+ed+' dégâts','dlog-bad');
         // Effets spéciaux
         if(room.special==='poison'){
@@ -5008,7 +5086,14 @@ function dungeonAvatarDied() {
     if (ov) ov.style.display = 'none';
     setTimeout(() => {
         document.getElementById('dungeon-screen')?.classList.remove('show');
-        showDefeatScreen();
+        try {
+            showDefeatScreen();
+        } catch(e) {
+            console.error('showDefeatScreen error:', e);
+            // Fallback : afficher endScreen directement
+            const s = document.getElementById('endScreen');
+            if (s) s.style.display = 'flex';
+        }
     }, 1200);
 }
 
@@ -6987,6 +7072,8 @@ function showDefeatScreen() {
     if (ov) ov.style.display = 'none';
     // Sauvegarder la poussière accumulée ce run
     saveRunDust();
+    // Mettre à jour le leaderboard
+    if (typeof updateLeaderboardScore === 'function') updateLeaderboardScore(false);
     // Mettre à jour l'affichage poussière dans l'écran de fin
     const dustEl = document.getElementById('meta-dust-display');
     if (dustEl) dustEl.textContent = getMeta().dust;
@@ -7325,10 +7412,12 @@ function metaTab(tab) {
         if(panel) panel.style.display = t===tab ? '' : 'none';
         if(btn)   btn.classList.toggle('active', t===tab);
     });
-    if(tab==='hero')  renderMetaHero();
-    if(tab==='city')  renderMetaCity();
-    if(tab==='level') renderMetaLevel();
-    if(tab==='legendary') renderMetaLegendary();
+    try {
+        if(tab==='hero')  renderMetaHero();
+        if(tab==='city')  renderMetaCity();
+        if(tab==='level') renderMetaLevel();
+        if(tab==='legendary') renderMetaLegendary();
+    } catch(e) { console.error('metaTab render error:', e); }
 }
 
 function startNewRun() {
@@ -9279,6 +9368,7 @@ function buyLegendaryBuilding(key) {
     if (!m.legendary) m.legendary = {};
     if (m.legendary[key]) { addLog('Déjà possédé.'); return; }
     m.shells--;
+    m.shellsSpent = (m.shellsSpent||0) + 1;
     m.legendary[key] = true;
     saveMeta(m);
     window._meta = m;
@@ -10082,6 +10172,149 @@ function applyRune(traitName) {
     saveMeta(m); window._meta = m;
     renderBuildPanelList();
 }
+
+// ══════════════════════════════════════════
+// PSEUDO + LEADERBOARD
+// ══════════════════════════════════════════
+
+function showPseudoScreen() {
+    const el = document.getElementById('fb-pseudo-screen');
+    if (el) el.style.display = 'flex';
+}
+
+async function confirmPseudo() {
+    const input = document.getElementById('pseudo-input');
+    const errEl = document.getElementById('pseudo-error');
+    const pseudo = (input ? input.value : '').trim();
+    if (!pseudo || pseudo.length < 3 || pseudo.length > 20 || !/^[a-zA-Z0-9_-]+$/.test(pseudo)) {
+        if (errEl) errEl.textContent = '3-20 caractères, lettres/chiffres/_ uniquement';
+        return;
+    }
+    if (errEl) errEl.textContent = '';
+    window._fbPseudo = pseudo;
+    if (window.fbSaveProfile) await window.fbSaveProfile({ pseudo: pseudo });
+    const nameEl = document.getElementById('fb-user-name');
+    if (nameEl) nameEl.textContent = pseudo;
+    const el = document.getElementById('fb-pseudo-screen');
+    if (el) el.style.display = 'none';
+    if (typeof addLog === 'function') addLog('👤 Pseudo enregistré : ' + pseudo);
+}
+
+function calcArmyPower() {
+    let power = 0;
+    (window.cityArmy || []).forEach(function(u){ power += (u.atk||0) + (u.atkMag||0); });
+    return power;
+}
+
+async function updateLeaderboardScore(victory) {
+    if (!window._fbUser || !window._fbPseudo) return;
+    const m = typeof getMeta === 'function' ? getMeta() : {};
+    const clsKey = (m.legendaryOptions || {}).classeAvatar || null;
+    const clsIcons = { warrior:'🗡', archer:'🏹', mage:'✨', adventurer:'📜' };
+    const clsIcon = clsKey ? (clsIcons[clsKey] || '⚔') : '⚔';
+    const season = typeof currentSeason !== 'undefined' ? currentSeason : 0;
+    const deaths = typeof runDeaths !== 'undefined' ? runDeaths : 0;
+
+    let totalRuns = 1;
+    let bestSeason = season;
+    let bestShells = m.shellsSpent || 0;
+    let bestDust = m.runDustSpent || 0;
+    let bestDeaths = deaths;
+    let bestArmy = calcArmyPower();
+
+    // Lire le doc existant pour incrémenter totalRuns et conserver le meilleur score
+    if (window._fbGetDoc && window._fbDoc && window._fbDb) {
+        try {
+            const ref = window._fbDoc(window._fbDb, 'leaderboard', window._fbUser.uid);
+            const snap = await window._fbGetDoc(ref);
+            if (snap.exists()) {
+                const prev = snap.data();
+                totalRuns = (prev.totalRuns || 0) + 1;
+                // Comparer avec le score précédent selon les critères
+                const prevBetter = (prev.bestSeason||0) > bestSeason ||
+                    ((prev.bestSeason||0) === bestSeason && (
+                        (prev.shellsSpent||0) < bestShells ||
+                        ((prev.shellsSpent||0) === bestShells && (prev.dustSpent||0) < bestDust)
+                    ));
+                if (prevBetter) {
+                    bestSeason = prev.bestSeason || 0;
+                    bestShells = prev.shellsSpent || 0;
+                    bestDust   = prev.dustSpent   || 0;
+                    bestDeaths = prev.deaths       || 0;
+                    bestArmy   = prev.armyPower    || 0;
+                }
+            }
+        } catch(e) { console.error('leaderboard read error:', e); }
+    }
+
+    const data = {
+        pseudo:      window._fbPseudo,
+        classIcon:   clsIcon,
+        className:   clsKey,
+        bestSeason:  bestSeason,
+        shellsSpent: bestShells,
+        dustSpent:   bestDust,
+        deaths:      bestDeaths,
+        armyPower:   bestArmy,
+        victory:     !!victory,
+        totalRuns:   totalRuns,
+        updatedAt:   Date.now()
+    };
+    if (window.fbUpdateLeaderboard) await window.fbUpdateLeaderboard(data);
+}
+
+async function showLadder() {
+    const screen = document.getElementById('ladder-screen');
+    const cnt = document.getElementById('ladder-content');
+    if (!screen || !cnt) return;
+    screen.style.display = 'flex';
+    cnt.innerHTML = '<div style="text-align:center;color:#6a5a7a;padding:20px">Chargement...</div>';
+    if (!window.fbGetLeaderboard) {
+        cnt.innerHTML = '<div style="text-align:center;color:#ff6060;padding:20px">Connectez-vous pour voir le classement.</div>';
+        return;
+    }
+    const entries = await window.fbGetLeaderboard();
+    entries.sort(function(a, b) {
+        if ((b.bestSeason||0) !== (a.bestSeason||0)) return (b.bestSeason||0) - (a.bestSeason||0);
+        if ((a.shellsSpent||0) !== (b.shellsSpent||0)) return (a.shellsSpent||0) - (b.shellsSpent||0);
+        if ((a.dustSpent||0) !== (b.dustSpent||0)) return (a.dustSpent||0) - (b.dustSpent||0);
+        if ((a.deaths||0) !== (b.deaths||0)) return (a.deaths||0) - (b.deaths||0);
+        return (b.armyPower||0) - (a.armyPower||0);
+    });
+    const top = entries.slice(0, 20);
+    if (top.length === 0) {
+        cnt.innerHTML = '<div style="text-align:center;color:#6a5a7a;padding:20px">Aucun joueur pour le moment.</div>';
+        return;
+    }
+    const medals = ['🥇','🥈','🥉'];
+    let html = '<table style="width:100%;border-collapse:collapse;font-size:11px">';
+    html += '<tr style="color:#6a5a7a;font-size:9px;border-bottom:1px solid #1a1a2a">' +
+        '<th style="text-align:left;padding:4px 2px">#</th>' +
+        '<th style="text-align:left;padding:4px 2px">Joueur</th>' +
+        '<th style="text-align:center;padding:4px 2px">S.</th>' +
+        '<th style="text-align:center;padding:4px 2px">🥚</th>' +
+        '<th style="text-align:center;padding:4px 2px">✦</th>' +
+        '<th style="text-align:center;padding:4px 2px">💀</th>' +
+        '<th style="text-align:center;padding:4px 2px">⚔</th>' +
+        '</tr>';
+    top.forEach(function(e, i) {
+        const isMe = window._fbUser && e.id === window._fbUser.uid;
+        const rank = medals[i] || (i+1);
+        html += '<tr style="border-bottom:1px solid #0a0a14;' + (isMe?'background:#0d0a1e;':'') + '">' +
+            '<td style="padding:5px 2px;color:#6a5a7a">' + rank + '</td>' +
+            '<td style="padding:5px 2px;color:' + (isMe?'#c080ff':'#e0d0b0') + '">' +
+                (e.classIcon||'⚔') + ' ' + (e.pseudo||'Anonyme') + '</td>' +
+            '<td style="text-align:center;color:#c0a060;font-weight:bold">' + (e.bestSeason||0) + '</td>' +
+            '<td style="text-align:center;color:#e0c080">' + (e.shellsSpent||0) + '</td>' +
+            '<td style="text-align:center;color:#ffd060">' + (e.dustSpent||0) + '</td>' +
+            '<td style="text-align:center;color:#ff6060">' + (e.deaths||0) + '</td>' +
+            '<td style="text-align:center;color:#4cffaa">' + (e.armyPower||0) + '</td>' +
+            '</tr>';
+    });
+    html += '</table>';
+    cnt.innerHTML = html;
+}
+
 
 </script>
 
