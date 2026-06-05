@@ -745,7 +745,10 @@
         window.fbUpdateLeaderboard = async function(data) {
             if (!window._fbUser) return;
             try {
-                const ref = doc(db, 'leaderboard', window._fbUser.uid);
+                // Clé = uid_classe (max 5 entrées par joueur)
+                const clsKey = data.className || 'none';
+                const docId = window._fbUser.uid + '_' + clsKey;
+                const ref = doc(db, 'leaderboard', docId);
                 await setDoc(ref, data);
             } catch(e) { console.error('fbUpdateLeaderboard error:', e); }
         };
@@ -803,7 +806,7 @@
         <div style="font-family:Cinzel,serif;font-size:28px;color:#c0a060;letter-spacing:3px;text-shadow:0 0 20px rgba(180,140,60,0.4)">⚔ Chronocity — A Roguelite City Builder</div>
         <div id="home-player-info" style="font-size:12px;color:#6a5a7a;margin-top:6px;min-height:18px"></div>
         <button onclick="showLadder()" style="margin-top:8px;padding:6px 18px;background:#0a0818;border:1px solid #3a2a5a;border-radius:8px;color:#9a7aaa;font-size:11px;cursor:pointer;font-family:Cinzel,serif">🏆 Classement</button>
-        <div style="font-size:11px;color:#4a3a5a;margin-top:6px;letter-spacing:2px" data-version="0.510">VERSION 0.537</div>
+        <div style="font-size:11px;color:#4a3a5a;margin-top:6px;letter-spacing:2px" data-version="0.510">VERSION 0.542</div>
     </div>
     <div id="home-menu" style="display:flex;flex-direction:column;gap:10px;width:min(340px,90vw)">
         <button onclick="homeLoad()" style="width:100%;padding:16px 0;font-family:Cinzel,serif;font-size:14px;cursor:pointer;border-radius:8px;background:linear-gradient(135deg,#1a1030,#2a1a40);color:#c080ff;border:1px solid #5040a0">📂 Charger une partie</button>
@@ -1250,7 +1253,7 @@
 <!-- Frise de progression -->
 <div id="timeline">
     <div id="timeline-season">Saison 1</div>
-    <div style="font-family:Cinzel,serif;font-size:9px;color:#3a3050;margin-left:auto;padding-left:8px;white-space:nowrap">v0.537</div>
+    <div style="font-family:Cinzel,serif;font-size:9px;color:#3a3050;margin-left:auto;padding-left:8px;white-space:nowrap">v0.542</div>
     <div id="timeline-steps"></div>
     <button onclick="toggleSaveMenu()" style="background:linear-gradient(135deg,#1a1030,#2a1a40);border:1px solid #4a3060;color:#c0a060;font-size:14px;cursor:pointer;padding:2px 8px;border-radius:5px;white-space:nowrap;flex-shrink:0" title="Sauvegardes">💾 Save</button>
     <button onclick="toggleMetaSummary()" style="background:linear-gradient(135deg,#101a10,#1a2a1a);border:1px solid #2a5a2a;color:#4cffaa;font-size:14px;cursor:pointer;padding:2px 8px;border-radius:5px;white-space:nowrap;flex-shrink:0" title="Résumé méta">✦ Méta</button>
@@ -3019,6 +3022,9 @@ function enterRoom(roomEntry) {
         dungeonState.stunNext = false;
         dungeonState.dragonBreathCounter = 0;
         dungeonState.licheAtkReduction = 0;
+        // Restaurer ATK/DEF réduits par le combat précédent
+        if (dungeonState.combatAtkMalus > 0) { atk += dungeonState.combatAtkMalus; dungeonState.combatAtkMalus = 0; }
+        if (dungeonState.combatDefMalus > 0) { def += dungeonState.combatDefMalus; dungeonState.combatDefMalus = 0; }
         dungeonState.isMulti = room.isMulti || false;
         if (dungeonState.isMulti && room.group) {
             dungeonState.enemies = {
@@ -4155,7 +4161,6 @@ function enemyAttack(room) {
             const crushLvl = Math.min(3, Math.max(1, Math.floor((currentSeason||1) / 2)));
             room._crushDef = (room._crushDef || 0) + crushLvl;
             def = Math.max(1, def - crushLvl);
-            dungeonTempDef = (dungeonTempDef || 0) + crushLvl;
             dungeonState.combatDefMalus = (dungeonState.combatDefMalus || 0) + crushLvl;
             dngLog('🔨 '+room.name+' brise l\'armure ! DEF -'+crushLvl+' (héro DEF : '+def+')', 'dlog-bad');
             dngShowEffect('🔨', 'ARMOR CRUSH !', '#ff8040', 'dng-avatar-side');
@@ -5750,7 +5755,7 @@ function renderHordeTable(units, countered_fn, hiddenCount) {
     units.forEach(function(u) { const k=u.name; counts[k]=(counts[k]||{u,n:0}); counts[k].n++; });
     Object.values(counts).forEach(function(obj) {
         const u=obj.u, n=obj.n;
-        const scoutBadge = u._scouted ? ' <span style="font-size:9px;color:#40c0ff" title="Scouté">🔭</span>' : '';
+        const scoutBadge = u._scouted ? ' <span style="font-size:9px;color:#40c0ff" title="Scouté">🔭 scouté</span>' : '';
         // traits affichés dans la cellule
         h += '<tr style="border-bottom:1px solid #1a1a2a'+(u._scouted?';opacity:0.85':'')+'">'+ 
             '<td style="padding:3px 0">'+u.icon+' '+u.name+scoutBadge+'</td>'+
@@ -10388,9 +10393,10 @@ async function updateLeaderboardScore(victory) {
     let bestArmy = calcArmyPower();
 
     // Lire le doc existant pour incrémenter totalRuns et conserver le meilleur score
+    const _docId = window._fbUser.uid + '_' + (clsKey || 'none');
     if (window._fbGetDoc && window._fbDoc && window._fbDb) {
         try {
-            const ref = window._fbDoc(window._fbDb, 'leaderboard', window._fbUser.uid);
+            const ref = window._fbDoc(window._fbDb, 'leaderboard', _docId);
             const snap = await window._fbGetDoc(ref);
             if (snap.exists()) {
                 const prev = snap.data();
@@ -10463,12 +10469,13 @@ async function showLadder() {
         '<th style="text-align:center;padding:4px 2px">⚔</th>' +
         '</tr>';
     top.forEach(function(e, i) {
-        const isMe = window._fbUser && e.id === window._fbUser.uid;
+        const isMe = window._fbUser && e.id && e.id.startsWith(window._fbUser.uid);
         const rank = medals[i] || (i+1);
+        const clsName = { warrior:'Guerrier', archer:'Archer', mage:'Mage', adventurer:'Aventurier', none:'' }[e.className||'none'] || '';
         html += '<tr style="border-bottom:1px solid #0a0a14;' + (isMe?'background:#0d0a1e;':'') + '">' +
             '<td style="padding:5px 2px;color:#6a5a7a">' + rank + '</td>' +
             '<td style="padding:5px 2px;color:' + (isMe?'#c080ff':'#e0d0b0') + '">' +
-                (e.classIcon||'⚔') + ' ' + (e.pseudo||'Anonyme') + '</td>' +
+                (e.classIcon||'⚔') + ' ' + (e.pseudo||'Anonyme') + (clsName ? '<br><span style="font-size:9px;color:#6a5a7a">' + clsName + '</span>' : '') + '</td>' +
             '<td style="text-align:center;color:#c0a060;font-weight:bold">' + (e.bestSeason||0) + '</td>' +
             '<td style="text-align:center;color:#e0c080">' + (e.shellsSpent||0) + '</td>' +
             '<td style="text-align:center;color:#ffd060">' + (e.dustSpent||0) + '</td>' +
