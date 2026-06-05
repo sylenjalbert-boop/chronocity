@@ -575,6 +575,161 @@
             transform: scale(1.05);
         }
 
+
+        /* ══════════════════════════════════════════
+           OURY — Companion serpent
+           ══════════════════════════════════════════ */
+        #oury-widget {
+            position: fixed;
+            bottom: 12px;
+            right: 12px;
+            z-index: 9990;
+            display: none;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 6px;
+            pointer-events: none;
+        }
+        body.clarity-on #oury-widget { display: flex; }
+
+        #oury-bubble {
+            background: #0a0818;
+            border: 1px solid #4a2a6a;
+            border-radius: 12px 12px 2px 12px;
+            padding: 8px 12px;
+            font-size: 11px;
+            color: #d0b8f0;
+            max-width: 200px;
+            line-height: 1.5;
+            display: none;
+            pointer-events: none;
+            box-shadow: 0 0 16px rgba(120,60,180,0.3);
+            font-style: italic;
+        }
+        #oury-bubble.visible { display: block; }
+
+        #oury-card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            pointer-events: all;
+        }
+
+        #oury-img-wrap {
+            position: relative;
+            width: 56px;
+            height: 56px;
+            cursor: pointer;
+        }
+        #oury-img {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            border: 2px solid #6a3a9a;
+            object-fit: cover;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 0 10px rgba(120,60,180,0.4);
+        }
+        #oury-img:hover { transform: scale(1.08); box-shadow: 0 0 18px rgba(160,80,220,0.6); }
+        #oury-img.wiggle { animation: ouryWiggle 0.5s ease; }
+        #oury-rest-badge {
+            position: absolute;
+            bottom: -2px; right: -2px;
+            background: #1a0828;
+            border: 1px solid #4a2a6a;
+            border-radius: 50%;
+            font-size: 12px;
+            width: 20px; height: 20px;
+            display: flex; align-items: center; justify-content: center;
+            display: none;
+        }
+        #oury-name {
+            font-size: 9px;
+            color: #6a4a8a;
+            font-family: Cinzel, serif;
+            letter-spacing: 1px;
+        }
+        #oury-btns {
+            display: flex;
+            gap: 3px;
+            flex-wrap: wrap;
+            justify-content: center;
+            max-width: 160px;
+        }
+        .oury-btn {
+            background: #0d0818;
+            border: 1px solid #3a2050;
+            border-radius: 6px;
+            color: #9a6abf;
+            font-size: 9px;
+            padding: 3px 7px;
+            cursor: pointer;
+            transition: background 0.15s, color 0.15s;
+            white-space: nowrap;
+        }
+        .oury-btn:hover { background: #1a0e2a; color: #c090ef; border-color: #6a3a9a; }
+        .oury-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+        .oury-btn.primary { border-color: #6a3a9a; color: #c080ff; }
+
+        /* Chat Oury */
+        #oury-chat {
+            position: fixed;
+            bottom: 140px;
+            right: 12px;
+            width: min(92vw, 320px);
+            background: #08060e;
+            border: 1px solid #3a2050;
+            border-radius: 12px;
+            z-index: 9991;
+            display: none;
+            flex-direction: column;
+            box-shadow: 0 0 30px rgba(100,40,160,0.4);
+            overflow: hidden;
+            pointer-events: all;
+        }
+        #oury-chat.open { display: flex; }
+        #oury-chat-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            background: #0d0818;
+            border-bottom: 1px solid #2a1a3a;
+        }
+        #oury-chat-header img { width: 28px; height: 28px; border-radius: 50%; border: 1px solid #5a3a7a; object-fit: cover; }
+        #oury-chat-header span { flex: 1; font-family: Cinzel, serif; font-size: 11px; color: #b080e0; }
+        #oury-chat-close { background: none; border: none; color: #5a4a6a; cursor: pointer; font-size: 16px; }
+        #oury-chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            max-height: 260px;
+            min-height: 100px;
+        }
+        .oury-msg { font-size: 11px; line-height: 1.5; padding: 6px 10px; border-radius: 8px; max-width: 85%; }
+        .oury-msg.oury { background: #120820; border: 1px solid #3a1a5a; color: #c0a0e0; align-self: flex-start; border-radius: 8px 8px 8px 2px; font-style: italic; }
+        .oury-msg.player { background: #0a1020; border: 1px solid #1a3050; color: #a0b8d0; align-self: flex-end; border-radius: 8px 8px 2px 8px; }
+        .oury-msg.system { background: none; color: #4a3a5a; font-size: 10px; align-self: center; font-style: italic; }
+        #oury-chat-input-row { display: flex; gap: 6px; padding: 8px; border-top: 1px solid #2a1a3a; }
+        #oury-chat-input { flex: 1; background: #0e0c1a; border: 1px solid #3a2050; border-radius: 6px; color: #d0c0f0; font-size: 11px; padding: 6px 8px; outline: none; }
+        #oury-chat-send { background: #1a0a2a; border: 1px solid #5a3a8a; border-radius: 6px; color: #c080ff; font-size: 11px; padding: 6px 10px; cursor: pointer; }
+        #oury-chat-send:hover { background: #2a1040; }
+        #oury-usage-display { font-size: 9px; color: #3a2a4a; text-align: center; padding: 2px 0 6px; }
+
+        @keyframes ouryWiggle {
+            0%,100% { transform: rotate(0deg) scale(1.08); }
+            25% { transform: rotate(-8deg) scale(1.1); }
+            75% { transform: rotate(8deg) scale(1.1); }
+        }
+        @keyframes ouryBounce {
+            0%,100% { transform: translateY(0); }
+            50% { transform: translateY(-4px); }
+        }
+
         </style>
     <!-- Firebase SDK -->
     <script type="module">
@@ -791,6 +946,40 @@
     <button onclick="confirmPseudo()" style="padding:10px 28px;background:linear-gradient(135deg,#1a1030,#2a1a40);border:1px solid #6040c0;border-radius:8px;color:#c080ff;font-family:Cinzel,serif;font-size:13px;cursor:pointer">Confirmer</button>
 </div>
 
+<!-- ═══ OURY WIDGET ═══ -->
+<div id="oury-widget">
+    <div id="oury-bubble"></div>
+    <div id="oury-card">
+        <div id="oury-img-wrap" onclick="ouryPet()" title="Pet Oury 🐍">
+            <img id="oury-img" src="img/oury.jpg" alt="Oury">
+            <div id="oury-rest-badge" title="Oury se repose...">💤</div>
+        </div>
+        <div id="oury-name">✦ OURY ✦</div>
+        <div id="oury-btns">
+            <button class="oury-btn" onclick="ouryPet()">🐍 Pet</button>
+            <button class="oury-btn" onclick="ouryThank()">💜 Thank</button>
+            <button class="oury-btn primary" id="oury-btn-ask" onclick="ouryOpenChat()">💬 Ask</button>
+            <button class="oury-btn primary" id="oury-btn-help" onclick="ouryGetHelp()">🔮 Help</button>
+        </div>
+    </div>
+</div>
+
+<!-- ═══ OURY CHAT ═══ -->
+<div id="oury-chat">
+    <div id="oury-chat-header">
+        <img src="img/oury.jpg" alt="Oury">
+        <span>Oury</span>
+        <button id="oury-chat-close" onclick="ouryCloseChat()">×</button>
+    </div>
+    <div id="oury-chat-messages"></div>
+    <div id="oury-usage-display"></div>
+    <div id="oury-chat-input-row">
+        <input id="oury-chat-input" placeholder="Pose ta question à Oury..." maxlength="200"
+            onkeydown="if(event.key==='Enter')ourySendMessage()">
+        <button id="oury-chat-send" onclick="ourySendMessage()">➤</button>
+    </div>
+</div>
+
 <!-- ═══ LADDER SCREEN ═══ -->
 <div id="ladder-screen" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.92);z-index:99997;align-items:flex-start;justify-content:center;padding-top:4vh;overflow-y:auto">
     <div style="background:#080610;border:1px solid #3a2a5a;border-radius:14px;width:min(96vw,500px);padding:16px;display:flex;flex-direction:column;gap:8px">
@@ -806,7 +995,7 @@
         <div style="font-family:Cinzel,serif;font-size:28px;color:#c0a060;letter-spacing:3px;text-shadow:0 0 20px rgba(180,140,60,0.4)">⚔ Chronocity — A Roguelite City Builder</div>
         <div id="home-player-info" style="font-size:12px;color:#6a5a7a;margin-top:6px;min-height:18px"></div>
         <button onclick="showLadder()" style="margin-top:8px;padding:6px 18px;background:#0a0818;border:1px solid #3a2a5a;border-radius:8px;color:#9a7aaa;font-size:11px;cursor:pointer;font-family:Cinzel,serif">🏆 Classement</button>
-        <div style="font-size:11px;color:#4a3a5a;margin-top:6px;letter-spacing:2px" data-version="0.510">VERSION 0.542</div>
+        <div style="font-size:11px;color:#4a3a5a;margin-top:6px;letter-spacing:2px" data-version="0.510">VERSION 0.551</div>
     </div>
     <div id="home-menu" style="display:flex;flex-direction:column;gap:10px;width:min(340px,90vw)">
         <button onclick="homeLoad()" style="width:100%;padding:16px 0;font-family:Cinzel,serif;font-size:14px;cursor:pointer;border-radius:8px;background:linear-gradient(135deg,#1a1030,#2a1a40);color:#c080ff;border:1px solid #5040a0">📂 Charger une partie</button>
@@ -1253,7 +1442,7 @@
 <!-- Frise de progression -->
 <div id="timeline">
     <div id="timeline-season">Saison 1</div>
-    <div style="font-family:Cinzel,serif;font-size:9px;color:#3a3050;margin-left:auto;padding-left:8px;white-space:nowrap">v0.542</div>
+    <div style="font-family:Cinzel,serif;font-size:9px;color:#3a3050;margin-left:auto;padding-left:8px;white-space:nowrap">v0.551</div>
     <div id="timeline-steps"></div>
     <button onclick="toggleSaveMenu()" style="background:linear-gradient(135deg,#1a1030,#2a1a40);border:1px solid #4a3060;color:#c0a060;font-size:14px;cursor:pointer;padding:2px 8px;border-radius:5px;white-space:nowrap;flex-shrink:0" title="Sauvegardes">💾 Save</button>
     <button onclick="toggleMetaSummary()" style="background:linear-gradient(135deg,#101a10,#1a2a1a);border:1px solid #2a5a2a;color:#4cffaa;font-size:14px;cursor:pointer;padding:2px 8px;border-radius:5px;white-space:nowrap;flex-shrink:0" title="Résumé méta">✦ Méta</button>
@@ -1985,6 +2174,7 @@ function showTurnAnimation(turnNum, season, callback) {
 }
 
     function nextTurn() {
+    if (typeof ouryOnTurnEnd === 'function') ouryOnTurnEnd();
     currentTurn++;
     if (currentTurn > 10) {
         currentTurn = 1;
@@ -2293,6 +2483,7 @@ function closeHordeBattle() {
 }
 
 function launchHordeBattle() {
+    if (typeof ouryCheckHordeBattle === 'function') ouryCheckHordeBattle();
     if (currentTurn !== 10) return;
     showAvatarHordePrompt();
 }
@@ -7429,7 +7620,13 @@ function runCombatHorde() {
     }
 
     const diff = cityAtk - hordeAtk;
-    showHordeBattleScreen(hordeAtk, cityAtk, diff, hordeLog, cityLog);
+    // Oury peut intervenir si défaite de justesse (≤5 points)
+    let finalDiff = diff;
+    if (diff < 0 && diff >= -5 && typeof ouryCheckHordeNul === 'function' && ouryCheckHordeNul(cityAtk, hordeAtk)) {
+        finalDiff = 0; // Nul — Oury a sauvé la mise
+        hordeLog.push('🐍 Oury intervient ! Combat déclaré NUL !');
+    }
+    showHordeBattleScreen(hordeAtk, cityAtk, finalDiff, hordeLog, cityLog);
 }
 
 function buyBuilding(name, tileIdx) {
@@ -10485,6 +10682,352 @@ async function showLadder() {
     });
     html += '</table>';
     cnt.innerHTML = html;
+}
+
+
+// ══════════════════════════════════════════════════════════════
+// OURY — Serpent compagnon
+// ══════════════════════════════════════════════════════════════
+
+const OURY_IMG = 'img/oury.jpg';
+const OURY_DAILY_LIMIT = 10;
+const OURY_REST_TURNS = 10;
+
+// État d'Oury
+window.ouryState = {
+    restTurnsLeft: 0,     // tours de repos restants
+    chatHistory: [],       // historique du chat
+    bubbleTimer: null,
+};
+
+// ── Utilitaires ──
+
+function ouryGetUsageKey() {
+    const today = new Date().toISOString().slice(0, 10);
+    return 'oury_usage_' + today;
+}
+
+async function ouryGetUsage() {
+    if (!window._fbUser || !window._fbGetDoc || !window._fbDoc || !window._fbDb) {
+        // Fallback localStorage
+        const key = ouryGetUsageKey();
+        return parseInt(localStorage.getItem(key) || '0');
+    }
+    try {
+        const ref = window._fbDoc(window._fbDb, 'users', window._fbUser.uid, 'oury', ouryGetUsageKey());
+        const snap = await window._fbGetDoc(ref);
+        return snap.exists() ? (snap.data().count || 0) : 0;
+    } catch(e) { return 0; }
+}
+
+async function ouryIncrementUsage() {
+    const key = ouryGetUsageKey();
+    if (!window._fbUser || !window._fbSetDoc || !window._fbDoc || !window._fbDb) {
+        const cur = parseInt(localStorage.getItem(key) || '0');
+        localStorage.setItem(key, cur + 1);
+        return cur + 1;
+    }
+    try {
+        const ref = window._fbDoc(window._fbDb, 'users', window._fbUser.uid, 'oury', key);
+        const snap = await window._fbGetDoc(ref);
+        const newCount = (snap.exists() ? snap.data().count || 0 : 0) + 1;
+        await window._fbSetDoc(ref, { count: newCount });
+        return newCount;
+    } catch(e) { return 0; }
+}
+
+function ouryShowBubble(msg, duration) {
+    const b = document.getElementById('oury-bubble');
+    if (!b) return;
+    if (window.ouryState.bubbleTimer) clearTimeout(window.ouryState.bubbleTimer);
+    b.textContent = msg;
+    b.classList.add('visible');
+    window.ouryState.bubbleTimer = setTimeout(function() { b.classList.remove('visible'); }, duration || 4000);
+}
+
+function ouryWiggle() {
+    const img = document.getElementById('oury-img');
+    if (!img) return;
+    img.classList.remove('wiggle');
+    void img.offsetWidth;
+    img.classList.add('wiggle');
+    setTimeout(function() { img.classList.remove('wiggle'); }, 600);
+}
+
+function ouryUpdateRestUI() {
+    const rest = window.ouryState.restTurnsLeft > 0;
+    const badge = document.getElementById('oury-rest-badge');
+    const askBtn = document.getElementById('oury-btn-ask');
+    const helpBtn = document.getElementById('oury-btn-help');
+    if (badge) badge.style.display = rest ? 'flex' : 'none';
+    if (askBtn) askBtn.disabled = rest;
+    if (helpBtn) helpBtn.disabled = rest;
+    if (askBtn) askBtn.title = rest ? 'Oury se repose... (' + window.ouryState.restTurnsLeft + ' tours)' : '';
+    if (helpBtn) helpBtn.title = rest ? 'Oury se repose...' : '';
+}
+
+function ouryStartRest() {
+    window.ouryState.restTurnsLeft = OURY_REST_TURNS;
+    ouryUpdateRestUI();
+    ouryShowBubble('*sssoupir* Je dois me reposer... Revenez dans ' + OURY_REST_TURNS + ' tours... 💤', 5000);
+}
+
+// Appelé à chaque nextTurn
+function ouryOnTurnEnd() {
+    if (window.ouryState.restTurnsLeft > 0) {
+        window.ouryState.restTurnsLeft--;
+        ouryUpdateRestUI();
+        if (window.ouryState.restTurnsLeft === 0) {
+            ouryShowBubble('*étirement* Je suis reposé\u00b7e ! Prêt\u00b7e à aider ! 🐍✨', 4000);
+            ouryWiggle();
+        }
+    }
+}
+
+// ── Contexte de jeu pour l'API ──
+
+function ouryGetGameContext() {
+    const m = typeof getMeta === 'function' ? getMeta() : {};
+    const cls = (m.legendaryOptions || {}).classeAvatar;
+    const clsNames = { warrior: 'Guerrier', archer: 'Archer', mage: 'Mage', adventurer: 'Aventurier' };
+    const hordeStr = (typeof hordeArmy !== 'undefined' && hordeArmy.length > 0)
+        ? hordeArmy.map(u => u.icon + ' ' + u.name).join(', ')
+        : 'Non révélée';
+    const armyStr = (typeof cityArmy !== 'undefined' && cityArmy.length > 0)
+        ? cityArmy.map(u => u.icon + ' ' + u.name).join(', ')
+        : 'Aucune troupe';
+    return `Contexte du jeu Chronocity:
+- Saison: ${typeof currentSeason !== 'undefined' ? currentSeason : '?'} — Tour: ${typeof currentTurn !== 'undefined' ? currentTurn : '?'}
+- Ressources: Or ${typeof gold !== 'undefined' ? gold : '?'} | Mana ${typeof mana !== 'undefined' ? mana : '?'} | Pop ${typeof population !== 'undefined' ? population : '?'}
+- Avatar: ATK ${typeof atk !== 'undefined' ? atk : '?'} | DEF ${typeof def !== 'undefined' ? def : '?'} | HP ${typeof avatarHp !== 'undefined' ? avatarHp : '?'}/${typeof avatarMaxHp !== 'undefined' ? avatarMaxHp : '?'}${cls ? ' | Classe: ' + clsNames[cls] : ''}
+- Armée ville: ${armyStr}
+- Horde: ${hordeStr}
+- Fortifications: ${typeof fortifications !== 'undefined' ? fortifications : '?'}`;
+}
+
+// ── Appel API Anthropic ──
+
+const OURY_FUNCTION_URL = 'https://us-central1-chronocity-70122.cloudfunctions.net/ouryChat';
+
+async function ouryCallAPI(systemPrompt, userMessage, useHistory) {
+    const usage = await ouryGetUsage();
+    if (usage >= OURY_DAILY_LIMIT) {
+        ouryShowBubble('*ssouffle tristement* J\u2019ai \u00e9puis\u00e9 mes forces pour aujourd\u2019hui... Revenez demain ! 🐍💤', 5000);
+        return null;
+    }
+
+    const messages = [];
+    if (useHistory && window.ouryState.chatHistory.length > 0) {
+        messages.push(...window.ouryState.chatHistory.slice(-6));
+    }
+    messages.push({ role: 'user', content: userMessage });
+
+    try {
+        const res = await fetch(OURY_FUNCTION_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ systemPrompt, messages })
+        });
+        const data = await res.json();
+        const text = data.content && data.content[0] ? data.content[0].text : null;
+        if (text) await ouryIncrementUsage();
+        ouryUpdateUsageDisplay();
+        return text;
+    } catch(e) { console.error('Oury API error:', e); return null; }
+}
+
+async function ouryUpdateUsageDisplay() {
+    const el = document.getElementById('oury-usage-display');
+    if (!el) return;
+    const usage = await ouryGetUsage();
+    el.textContent = usage + '/' + OURY_DAILY_LIMIT + ' questions aujourd\u2019hui';
+}
+
+// ── Système prompt de base ──
+
+function ouryBaseSystem() {
+    return `Tu es Oury, un petit serpent magique ultra-mignon qui aide le joueur dans le jeu Chronocity (roguelite city-builder).
+Tu es adorable, enthousiaste, tu ssssifles parfois dans tes phrases, et tu veux VRAIMENT beaucoup aider.
+Tu fais des petites actions entre astérisques (*se love contre toi*, *agite la queue*).
+Réponds toujours en français, de manière courte et charmante (max 3 phrases).
+${ouryGetGameContext()}`;
+}
+
+// ── Boutons ──
+
+async function ouryPet() {
+    ouryWiggle();
+    const responses = [
+        '*sssse love contre toi* Sssssi doux... merci ! 🐍💜',
+        '*ronronne comme un serpent peut ronronner* Ssssensationnel ! 🌟',
+        '*gigote de joie* Tu essst le meilleur joueur du monde ! ✨',
+        '*lèche ta main* Sssss\u2019il te plaît encore ! 💜',
+        '*fait des petits cercles* Tellement content\u00b7e !!!!! 🐍',
+    ];
+    if (Math.random() < 0.4) {
+        // Parfois appel API pour plus de variété
+        const resp = await ouryCallAPI(
+            ouryBaseSystem() + '\nLe joueur vient de te faire des câlins. Réagis comme un animal de compagnie adorable qui parle.',
+            'Le joueur me fait des câlins !', false
+        );
+        if (resp) { ouryShowBubble(resp, 4000); return; }
+    }
+    const r = responses[Math.floor(Math.random() * responses.length)];
+    ouryShowBubble(r, 3500);
+}
+
+async function ouryThank() {
+    ouryWiggle();
+    const resp = await ouryCallAPI(
+        ouryBaseSystem() + '\nLe joueur te remercie. Réponds avec gratitude et fais-lui des compliments sincères et mignons sur ses qualités de joueur.',
+        'Merci Oury !', false
+    );
+    if (resp) ouryShowBubble(resp, 5000);
+    else ouryShowBubble('*sssse redresse fièrement* C\u2019esssst moi qui te remercie ! Tu essst un joueur ssssuperbe ! 💜', 4000);
+}
+
+function ouryOpenChat() {
+    if (window.ouryState.restTurnsLeft > 0) {
+        ouryShowBubble('*bâille* Ssssuis trop fatigué... ' + window.ouryState.restTurnsLeft + ' tours de repos encore... 💤', 3000);
+        return;
+    }
+    const chat = document.getElementById('oury-chat');
+    if (!chat) return;
+    chat.classList.add('open');
+    if (window.ouryState.chatHistory.length === 0) {
+        ouryAddChatMsg('oury', '*emerge de ses anneaux* Ssssalut ! Je sssuis Oury ! Pose-moi n\u2019importe quelle question sur ta partie ! 🐍✨');
+    }
+    ouryUpdateUsageDisplay();
+    setTimeout(function() { document.getElementById('oury-chat-input')?.focus(); }, 100);
+}
+
+function ouryCloseChat() {
+    document.getElementById('oury-chat')?.classList.remove('open');
+}
+
+function ouryAddChatMsg(role, text) {
+    const msgs = document.getElementById('oury-chat-messages');
+    if (!msgs) return;
+    const div = document.createElement('div');
+    div.className = 'oury-msg ' + role;
+    div.textContent = text;
+    msgs.appendChild(div);
+    msgs.scrollTop = msgs.scrollHeight;
+}
+
+async function ourySendMessage() {
+    const input = document.getElementById('oury-chat-input');
+    if (!input) return;
+    const text = input.value.trim();
+    if (!text) return;
+    input.value = '';
+    ouryAddChatMsg('player', text);
+    ouryAddChatMsg('system', 'Oury réfléchit...');
+
+    const resp = await ouryCallAPI(ouryBaseSystem(), text, true);
+    // Retirer le message "réfléchit"
+    const msgs = document.getElementById('oury-chat-messages');
+    if (msgs && msgs.lastChild && msgs.lastChild.classList.contains('system')) msgs.removeChild(msgs.lastChild);
+
+    if (resp) {
+        window.ouryState.chatHistory.push({ role: 'user', content: text });
+        window.ouryState.chatHistory.push({ role: 'assistant', content: resp });
+        ouryAddChatMsg('oury', resp);
+    } else {
+        ouryAddChatMsg('system', 'Oury est à court d\u2019énergie pour aujourd\u2019hui...');
+    }
+}
+
+async function ouryGetHelp() {
+    if (window.ouryState.restTurnsLeft > 0) {
+        ouryShowBubble('*bâille* Ssssuis trop fatigué... 💤', 3000);
+        return;
+    }
+    ouryShowBubble('*plisse les yeux* Je regarde ta situation... 🔮', 2000);
+    const resp = await ouryCallAPI(
+        ouryBaseSystem() + '\nAnalyse la situation de jeu et donne 2-3 conseils stratégiques précis et utiles. Reste dans le personnage d\u2019Oury.',
+        'Analyse ma situation et donne-moi tes meilleurs conseils stratégiques !', false
+    );
+    if (resp) {
+        ouryOpenChat();
+        ouryAddChatMsg('oury', resp);
+    }
+}
+
+// ── Interventions automatiques ──
+
+// Intervention horde : si puissance horde > puissance ville par 1-5 points
+function ouryCheckHordeBattle() {
+    if (window.ouryState.restTurnsLeft > 0) return;
+    const cityP = typeof calcCityPower === 'function' ? calcCityPower() : 0;
+    const hordeP = typeof calcHordePower === 'function' ? calcHordePower() : 0;
+    if (typeof hordeP !== 'number') return;
+    const diff = hordeP - cityP;
+    if (diff > 0 && diff <= 5) {
+        setTimeout(async function() {
+            const resp = await ouryCallAPI(
+                ouryBaseSystem() + '\nLe joueur est sur le point de lancer le combat de horde. La horde est plus forte de ' + diff + ' points mais c\u2019est très serré ! Encourage-le et suggère ce qu\u2019il pourrait encore faire avant le combat.',
+                'Le joueur va lancer le combat de horde !', false
+            );
+            if (resp) {
+                ouryShowBubble(resp, 7000);
+                ouryWiggle();
+            }
+        }, 500);
+    }
+}
+
+// Intervention donjon mort : si avatar à mort mais ennemi à portée
+function ouryCheckDungeonSave() {
+    if (window.ouryState.restTurnsLeft > 0) return false;
+    if (!dungeonState || !dungeonState.active) return false;
+    if (dungeonState.avatarHp > 0) return false;
+
+    // Vérifier si un ennemi est à portée des dégâts du héros
+    const living = typeof getAllLivingEnemies === 'function' ? getAllLivingEnemies() : [];
+    const target = living.find(function(e) {
+        const eHp = e.hp || 0;
+        const heroDmg = Math.max(1, (typeof avatarDmg !== 'undefined' ? avatarDmg : 2) + (typeof atk !== 'undefined' ? atk : 2));
+        return eHp > 0 && eHp <= heroDmg;
+    });
+
+    if (!target) return false;
+
+    // Oury sauve le joueur !
+    ouryStartRest();
+    const dmg = target.hp;
+    target.hp = 0;
+    if (typeof dealDamageToEnemy === 'function') dealDamageToEnemy(target, dmg, '#c080ff');
+    if (typeof dngLog === 'function') dngLog('🐍 Oury surgit et terrasse ' + target.name + ' ! (' + dmg + ' dégâts)', 'dlog-good');
+
+    // Restaurer 1 HP au héros
+    if (typeof dungeonState !== 'undefined') { dungeonState.avatarHp = 1; }
+    if (typeof avatarHp !== 'undefined') { avatarHp = 1; }
+    if (typeof applyHpUpdate === 'function') applyHpUpdate();
+
+    ouryShowBubble('*JAILLIT de nulle part* PERSSSONNE ne touche à mon joueur ! 🐍⚡ *siffle victorieusement*', 5000);
+    ouryWiggle();
+
+    // Continuer le combat
+    setTimeout(function() {
+        if (typeof checkAllEnemiesDead === 'function') checkAllEnemiesDead();
+    }, 800);
+
+    return true;
+}
+
+// Intervention horde nul : si défaite par ≤ 5 points
+function ouryCheckHordeNul(cityPower, hordePower) {
+    if (window.ouryState.restTurnsLeft > 0) return false;
+    const diff = hordePower - cityPower;
+    if (diff <= 0 || diff > 5) return false;
+
+    // Oury intervient — combat = nul
+    ouryStartRest();
+    ouryShowBubble('*sssse glisse entre les armées* STOP ! Ce combat esssst un match nul ! Je le décrète ! 🐍✨', 6000);
+    ouryWiggle();
+    if (typeof addLog === 'function') addLog('🐍 Oury intervient ! Le combat de horde est déclaré NUL — la horde recule !');
+    return true; // signale au code appelant de traiter comme nul
 }
 
 
