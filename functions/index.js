@@ -1,22 +1,22 @@
 const { onRequest } = require('firebase-functions/v2/https');
-const { defineSecret } = require('firebase-functions/params');
-
-const anthropicKey = defineSecret('ANTHROPIC_API_KEY');
 
 exports.ouryChat = onRequest(
-    { secrets: ['ANTHROPIC_API_KEY'], cors: ['https://chronocity-70122.web.app', 'http://localhost'] },
+    { cors: ['https://chronocity-70122.web.app', 'http://localhost'] },
     async (req, res) => {
         if (req.method !== 'POST') { res.status(405).send('Method Not Allowed'); return; }
 
         const { systemPrompt, messages } = req.body;
         if (!systemPrompt || !messages) { res.status(400).send('Missing params'); return; }
 
+        const apiKey = process.env.ANTHROPIC_API_KEY;
+        if (!apiKey) { res.status(500).send('API key not configured'); return; }
+
         try {
             const response = await fetch('https://api.anthropic.com/v1/messages', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'x-api-key': anthropicKey.value(),
+                    'x-api-key': apiKey,
                     'anthropic-version': '2023-06-01'
                 },
                 body: JSON.stringify({
