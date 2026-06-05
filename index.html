@@ -609,17 +609,20 @@
         window._fbUser     = null;
 
         // ── Auth state ──
-        onAuthStateChanged(auth, function(user) {
-            window._fbUser = user;
-            if (user) {
-                document.getElementById('fb-login-screen').style.display = 'none';
-                document.getElementById('fb-user-bar').style.display = 'flex';
-                document.getElementById('fb-user-name').textContent = user.displayName || user.email;
-                if (typeof window.fbOnLogin === 'function') window.fbOnLogin(user);
-            } else {
-                document.getElementById('fb-login-screen').style.display = 'flex';
-                document.getElementById('fb-user-bar').style.display = 'none';
-            }
+        window._fbReady = new Promise(function(resolve) {
+            onAuthStateChanged(auth, function(user) {
+                window._fbUser = user;
+                resolve(user);
+                if (user) {
+                    document.getElementById('fb-login-screen').style.display = 'none';
+                    document.getElementById('fb-user-bar').style.display = 'flex';
+                    document.getElementById('fb-user-name').textContent = user.displayName || user.email;
+                    if (typeof window.fbOnLogin === 'function') window.fbOnLogin(user);
+                } else {
+                    document.getElementById('fb-login-screen').style.display = 'flex';
+                    document.getElementById('fb-user-bar').style.display = 'none';
+                }
+            });
         });
 
         // ── Login Google ──
@@ -790,7 +793,7 @@
     <div style="text-align:center;margin-bottom:10px">
         <div style="font-family:Cinzel,serif;font-size:28px;color:#c0a060;letter-spacing:3px;text-shadow:0 0 20px rgba(180,140,60,0.4)">⚔ Chronocity — A Roguelite City Builder</div>
         <button onclick="showLadder()" style="margin-top:8px;padding:6px 18px;background:#0a0818;border:1px solid #3a2a5a;border-radius:8px;color:#9a7aaa;font-size:11px;cursor:pointer;font-family:Cinzel,serif">🏆 Classement</button>
-        <div style="font-size:11px;color:#4a3a5a;margin-top:6px;letter-spacing:2px" data-version="0.510">VERSION 0.528</div>
+        <div style="font-size:11px;color:#4a3a5a;margin-top:6px;letter-spacing:2px" data-version="0.510">VERSION 0.530</div>
     </div>
     <div id="home-menu" style="display:flex;flex-direction:column;gap:10px;width:min(340px,90vw)">
         <button onclick="homeLoad()" style="width:100%;padding:16px 0;font-family:Cinzel,serif;font-size:14px;cursor:pointer;border-radius:8px;background:linear-gradient(135deg,#1a1030,#2a1a40);color:#c080ff;border:1px solid #5040a0">📂 Charger une partie</button>
@@ -1233,7 +1236,7 @@
 <!-- Frise de progression -->
 <div id="timeline">
     <div id="timeline-season">Saison 1</div>
-    <div style="font-family:Cinzel,serif;font-size:9px;color:#3a3050;margin-left:auto;padding-left:8px;white-space:nowrap">v0.528</div>
+    <div style="font-family:Cinzel,serif;font-size:9px;color:#3a3050;margin-left:auto;padding-left:8px;white-space:nowrap">v0.530</div>
     <div id="timeline-steps"></div>
     <button onclick="toggleSaveMenu()" style="background:linear-gradient(135deg,#1a1030,#2a1a40);border:1px solid #4a3060;color:#c0a060;font-size:14px;cursor:pointer;padding:2px 8px;border-radius:5px;white-space:nowrap;flex-shrink:0" title="Sauvegardes">💾 Save</button>
     <button onclick="toggleMetaSummary()" style="background:linear-gradient(135deg,#101a10,#1a2a1a);border:1px solid #2a5a2a;color:#4cffaa;font-size:14px;cursor:pointer;padding:2px 8px;border-radius:5px;white-space:nowrap;flex-shrink:0" title="Résumé méta">✦ Méta</button>
@@ -8693,6 +8696,15 @@ function renderSaveMenu() {
     slots.innerHTML = '<div style="text-align:center;color:#6a5a7a;padding:10px;font-size:11px">Chargement...</div>';
 
     async function doRender() {
+        // Attendre que Firebase Auth soit résolu
+        if (window._fbReady) await window._fbReady;
+
+        // Si pas connecté, afficher un message
+        if (!window._fbUser) {
+            slots.innerHTML = '<div style="text-align:center;color:#6a5a7a;padding:10px;font-size:11px">Connectez-vous pour accéder à vos sauvegardes.</div>';
+            return;
+        }
+
         // Charger les infos depuis Firestore si connecté, sinon localStorage seul
         const cloudInfos = {};
         if (window._fbUser && window._fbGetDoc && window._fbDoc && window._fbDb) {
@@ -8701,12 +8713,13 @@ function renderSaveMenu() {
                     const ref = window._fbDoc(window._fbDb, 'users', window._fbUser.uid, 'saves', 'slot'+i);
                     const snap = await window._fbGetDoc(ref);
                     if (snap.exists()) {
-                        const data = JSON.parse(snap.data().data);
+                        const raw = snap.data().data;
+                        const data = typeof raw === 'string' ? JSON.parse(raw) : raw;
                         // Sync locale
-                        localStorage.setItem(SAVE_PREFIX + i, JSON.stringify(data));
+                        localStorage.setItem(SAVE_PREFIX + i, typeof raw === 'string' ? raw : JSON.stringify(data));
                         cloudInfos[i] = data;
                     }
-                } catch(e) {}
+                } catch(e) { console.error('Firestore load slot '+i+':', e); }
             }
         }
 
