@@ -995,7 +995,7 @@
         <div style="font-family:Cinzel,serif;font-size:28px;color:#c0a060;letter-spacing:3px;text-shadow:0 0 20px rgba(180,140,60,0.4)">⚔ Chronocity — A Roguelite City Builder</div>
         <div id="home-player-info" style="font-size:12px;color:#6a5a7a;margin-top:6px;min-height:18px"></div>
         <button onclick="showLadder()" style="margin-top:8px;padding:6px 18px;background:#0a0818;border:1px solid #3a2a5a;border-radius:8px;color:#9a7aaa;font-size:11px;cursor:pointer;font-family:Cinzel,serif">🏆 Classement</button>
-        <div style="font-size:11px;color:#4a3a5a;margin-top:6px;letter-spacing:2px" data-version="0.510">VERSION 0.558</div>
+        <div style="font-size:11px;color:#4a3a5a;margin-top:6px;letter-spacing:2px" data-version="0.510">VERSION 0.559</div>
     </div>
     <div id="home-menu" style="display:flex;flex-direction:column;gap:10px;width:min(340px,90vw)">
         <button onclick="homeLoad()" style="width:100%;padding:16px 0;font-family:Cinzel,serif;font-size:14px;cursor:pointer;border-radius:8px;background:linear-gradient(135deg,#1a1030,#2a1a40);color:#c080ff;border:1px solid #5040a0">📂 Charger une partie</button>
@@ -1442,7 +1442,7 @@
 <!-- Frise de progression -->
 <div id="timeline">
     <div id="timeline-season">Saison 1</div>
-    <div style="font-family:Cinzel,serif;font-size:9px;color:#3a3050;margin-left:auto;padding-left:8px;white-space:nowrap">v0.558</div>
+    <div style="font-family:Cinzel,serif;font-size:9px;color:#3a3050;margin-left:auto;padding-left:8px;white-space:nowrap">v0.559</div>
     <div id="timeline-steps"></div>
     <button onclick="toggleSaveMenu()" style="background:linear-gradient(135deg,#1a1030,#2a1a40);border:1px solid #4a3060;color:#c0a060;font-size:14px;cursor:pointer;padding:2px 8px;border-radius:5px;white-space:nowrap;flex-shrink:0" title="Sauvegardes">💾 Save</button>
     <button onclick="toggleMetaSummary()" style="background:linear-gradient(135deg,#101a10,#1a2a1a);border:1px solid #2a5a2a;color:#4cffaa;font-size:14px;cursor:pointer;padding:2px 8px;border-radius:5px;white-space:nowrap;flex-shrink:0" title="Résumé méta">✦ Méta</button>
@@ -4464,6 +4464,8 @@ function avatarTakeDamage(dmg, source) {
     // Vérification de survie
     if (dungeonState.avatarHp <= 0) {
         dungeonState.avatarHp = 0;
+        // Oury peut intervenir si un ennemi est à portée
+        if (typeof ouryCheckDungeonSave === 'function' && ouryCheckDungeonSave()) return;
         dungeonState.active = false; // stopper immédiatement toute séquence en cours
         setTimeout(function(){ triggerDeath(); }, 300);
     }
@@ -11022,6 +11024,40 @@ async function ouryGetHelp() {
 // ── Interventions automatiques ──
 
 // Intervention horde : si puissance horde > puissance ville par 1-5 points
+// Intervention donjon : Oury sauve le héros si un ennemi est à portée de dégâts
+function ouryCheckDungeonSave() {
+    if (!window.ouryState || window.ouryState.restTurnsLeft > 0) return false;
+    if (!dungeonState || !dungeonState.active) return false;
+
+    // Vérifier si un ennemi vivant est à portée des dégâts du héros
+    const living = typeof getAllLivingEnemies === 'function' ? getAllLivingEnemies() : [];
+    const heroDmg = Math.max(1, (typeof avatarDmg !== 'undefined' ? avatarDmg : 2) + (typeof atk !== 'undefined' ? atk : 2));
+    const target = living.find(function(e) { return e.hp > 0 && e.hp <= heroDmg; });
+    if (!target) return false;
+
+    // Oury sauve le joueur !
+    ouryStartRest();
+    const dmg = target.hp;
+    target.hp = 0;
+    if (typeof dealDamageToEnemy === 'function') dealDamageToEnemy(target, dmg, '#c080ff');
+    if (typeof dngLog === 'function') dngLog('🐍 Oury surgit et terrasse ' + target.name + ' ! (' + dmg + ' dégâts)', 'dlog-good');
+
+    // Restaurer 1 HP au héros
+    dungeonState.avatarHp = 1;
+    if (typeof avatarHp !== 'undefined') avatarHp = 1;
+    if (typeof applyHpUpdate === 'function') applyHpUpdate();
+
+    ouryShowBubble("*JAILLIT de nulle part* PERSSSONNE ne touche à mon joueur ! 🐍⚡ *siffle victorieusement*", 5000);
+    ouryWiggle();
+
+    // Continuer le combat
+    setTimeout(function() {
+        if (typeof checkAllEnemiesDead === 'function') checkAllEnemiesDead();
+    }, 800);
+
+    return true;
+}
+
 function ouryCheckHordeBattle() {
     if (window.ouryState.restTurnsLeft > 0) return;
     const cityP = typeof calcCityPower === 'function' ? calcCityPower() : 0;
