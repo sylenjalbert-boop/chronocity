@@ -730,6 +730,58 @@
             50% { transform: translateY(-4px); }
         }
 
+
+        /* ── Oury Drama Overlay ── */
+        #oury-drama {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 99995;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0,0,0,0.75);
+            animation: ouryDramaFadeIn 0.3s ease;
+        }
+        #oury-drama.show { display: flex; }
+        #oury-drama-card {
+            background: linear-gradient(135deg, #08040e, #120820);
+            border: 2px solid #8040c0;
+            border-radius: 16px;
+            padding: 20px 28px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            max-width: min(90vw, 420px);
+            box-shadow: 0 0 40px rgba(160,80,220,0.6), inset 0 0 30px rgba(80,20,120,0.3);
+            animation: ouryDramaPop 0.4s cubic-bezier(0.17,0.89,0.32,1.28);
+        }
+        #oury-drama-img {
+            width: 72px; height: 72px;
+            border-radius: 50%;
+            border: 3px solid #c080ff;
+            object-fit: cover;
+            box-shadow: 0 0 20px rgba(180,100,255,0.8);
+            animation: ouryDramaGlow 0.8s ease-in-out infinite alternate;
+            flex-shrink: 0;
+        }
+        #oury-drama-text {
+            flex: 1;
+            font-size: 13px;
+            line-height: 1.6;
+            color: #e0c8ff;
+            font-style: italic;
+        }
+        #oury-drama-title {
+            font-family: Cinzel, serif;
+            font-size: 15px;
+            color: #c080ff;
+            font-style: normal;
+            margin-bottom: 6px;
+            text-shadow: 0 0 10px rgba(180,100,255,0.8);
+        }
+        @keyframes ouryDramaFadeIn { from { opacity:0; } to { opacity:1; } }
+        @keyframes ouryDramaPop { from { transform:scale(0.7); opacity:0; } to { transform:scale(1); opacity:1; } }
+        @keyframes ouryDramaGlow { from { box-shadow:0 0 10px rgba(180,100,255,0.5); } to { box-shadow:0 0 30px rgba(180,100,255,1); } }
         </style>
     <!-- Firebase SDK -->
     <script type="module">
@@ -946,6 +998,17 @@
     <button onclick="confirmPseudo()" style="padding:10px 28px;background:linear-gradient(135deg,#1a1030,#2a1a40);border:1px solid #6040c0;border-radius:8px;color:#c080ff;font-family:Cinzel,serif;font-size:13px;cursor:pointer">Confirmer</button>
 </div>
 
+<!-- ═══ OURY DRAMA OVERLAY ═══ -->
+<div id="oury-drama">
+    <div id="oury-drama-card">
+        <img id="oury-drama-img" src="img/oury.jpg" alt="Oury">
+        <div>
+            <div id="oury-drama-title">✦ OURY INTERVIENT ✦</div>
+            <div id="oury-drama-text"></div>
+        </div>
+    </div>
+</div>
+
 <!-- ═══ OURY WIDGET ═══ -->
 <div id="oury-widget">
     <div id="oury-bubble"></div>
@@ -995,7 +1058,7 @@
         <div style="font-family:Cinzel,serif;font-size:28px;color:#c0a060;letter-spacing:3px;text-shadow:0 0 20px rgba(180,140,60,0.4)">⚔ Chronocity — A Roguelite City Builder</div>
         <div id="home-player-info" style="font-size:12px;color:#6a5a7a;margin-top:6px;min-height:18px"></div>
         <button onclick="showLadder()" style="margin-top:8px;padding:6px 18px;background:#0a0818;border:1px solid #3a2a5a;border-radius:8px;color:#9a7aaa;font-size:11px;cursor:pointer;font-family:Cinzel,serif">🏆 Classement</button>
-        <div style="font-size:11px;color:#4a3a5a;margin-top:6px;letter-spacing:2px" data-version="0.559">VERSION 0.559</div>
+        <div style="font-size:11px;color:#4a3a5a;margin-top:6px;letter-spacing:2px" data-version="0.560">VERSION 0.560</div>
     </div>
     <div id="home-menu" style="display:flex;flex-direction:column;gap:10px;width:min(340px,90vw)">
         <button onclick="homeLoad()" style="width:100%;padding:16px 0;font-family:Cinzel,serif;font-size:14px;cursor:pointer;border-radius:8px;background:linear-gradient(135deg,#1a1030,#2a1a40);color:#c080ff;border:1px solid #5040a0">📂 Charger une partie</button>
@@ -1442,7 +1505,7 @@
 <!-- Frise de progression -->
 <div id="timeline">
     <div id="timeline-season">Saison 1</div>
-    <div style="font-family:Cinzel,serif;font-size:9px;color:#3a3050;margin-left:auto;padding-left:8px;white-space:nowrap">v0.559</div>
+    <div style="font-family:Cinzel,serif;font-size:9px;color:#3a3050;margin-left:auto;padding-left:8px;white-space:nowrap">v0.560</div>
     <div id="timeline-steps"></div>
     <button onclick="toggleSaveMenu()" style="background:linear-gradient(135deg,#1a1030,#2a1a40);border:1px solid #4a3060;color:#c0a060;font-size:14px;cursor:pointer;padding:2px 8px;border-radius:5px;white-space:nowrap;flex-shrink:0" title="Sauvegardes">💾 Save</button>
     <button onclick="toggleMetaSummary()" style="background:linear-gradient(135deg,#101a10,#1a2a1a);border:1px solid #2a5a2a;color:#4cffaa;font-size:14px;cursor:pointer;padding:2px 8px;border-radius:5px;white-space:nowrap;flex-shrink:0" title="Résumé méta">✦ Méta</button>
@@ -11024,6 +11087,25 @@ async function ouryGetHelp() {
 // ── Interventions automatiques ──
 
 // Intervention horde : si puissance horde > puissance ville par 1-5 points
+
+// ── Oury Drama Overlay ──
+function ouryShowDrama(title, message, duration, imgSrc) {
+    const overlay = document.getElementById('oury-drama');
+    const titleEl = document.getElementById('oury-drama-title');
+    const textEl  = document.getElementById('oury-drama-text');
+    const imgEl   = document.getElementById('oury-drama-img');
+    if (!overlay || !titleEl || !textEl) return;
+    if (title)  titleEl.textContent = title;
+    if (message) textEl.innerHTML = message;
+    if (imgEl)  imgEl.src = imgSrc || 'img/oury.jpg';
+    overlay.classList.add('show');
+    clearTimeout(overlay._hideTimer);
+    overlay._hideTimer = setTimeout(function() {
+        overlay.classList.remove('show');
+    }, duration || 2500);
+    overlay.onclick = function() { overlay.classList.remove('show'); };
+}
+
 // Intervention donjon : Oury sauve le héros si un ennemi est à portée de dégâts
 function ouryCheckDungeonSave() {
     if (!window.ouryState || window.ouryState.restTurnsLeft > 0) return false;
@@ -11047,7 +11129,14 @@ function ouryCheckDungeonSave() {
     if (typeof avatarHp !== 'undefined') avatarHp = 1;
     if (typeof applyHpUpdate === 'function') applyHpUpdate();
 
-    ouryShowBubble("*JAILLIT de nulle part* PERSSSONNE ne touche à mon joueur ! 🐍⚡ *siffle victorieusement*", 5000);
+    ouryShowDrama(
+        '✦ OURY INTERVIENT ✦',
+        '*surgit des ombres dans un éclair violet* 🐍⚡<br><br>' +
+        '<strong>"ASSEZ !"</strong><br><br>' +
+        'Oury frappe <em>' + target.name + '</em> avec une précision foudroyante !<br>' +
+        '<span style="color:#c080ff">La mort peut attendre...</span>',
+        2800
+    );
     ouryWiggle();
 
     // Continuer le combat
@@ -11086,7 +11175,15 @@ function ouryCheckHordeNul(cityPower, hordePower) {
 
     // Oury intervient — combat = nul
     ouryStartRest();
-    ouryShowBubble('*sssse glisse entre les armées* STOP ! Ce combat esssst un match nul ! Je le décrète ! 🐍✨', 6000);
+    ouryShowDrama(
+        '✦ DÉCRET SERPENTIN ✦',
+        '*s\'élance entre les deux armées dans un tourbillon d\'écailles* 🐍✨<br><br>' +
+        '<strong>"HALTE À TOUS !"</strong><br><br>' +
+        'Par décision divine serpentine, ce combat est déclaré...<br>' +
+        '<span style="color:#ffd060;font-size:15px;font-family:Cinzel,serif">⚖ ÉGALITÉ ⚖</span><br>' +
+        '<span style="color:#6a5a7a;font-size:11px">La horde recule. Pour cette fois.</span>',
+        3500
+    );
     ouryWiggle();
     if (typeof addLog === 'function') addLog('🐍 Oury intervient ! Le combat de horde est déclaré NUL — la horde recule !');
     return true; // signale au code appelant de traiter comme nul
