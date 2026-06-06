@@ -995,7 +995,7 @@
         <div style="font-family:Cinzel,serif;font-size:28px;color:#c0a060;letter-spacing:3px;text-shadow:0 0 20px rgba(180,140,60,0.4)">⚔ Chronocity — A Roguelite City Builder</div>
         <div id="home-player-info" style="font-size:12px;color:#6a5a7a;margin-top:6px;min-height:18px"></div>
         <button onclick="showLadder()" style="margin-top:8px;padding:6px 18px;background:#0a0818;border:1px solid #3a2a5a;border-radius:8px;color:#9a7aaa;font-size:11px;cursor:pointer;font-family:Cinzel,serif">🏆 Classement</button>
-        <div style="font-size:11px;color:#4a3a5a;margin-top:6px;letter-spacing:2px" data-version="0.510">VERSION 0.554</div>
+        <div style="font-size:11px;color:#4a3a5a;margin-top:6px;letter-spacing:2px" data-version="0.510">VERSION 0.556</div>
     </div>
     <div id="home-menu" style="display:flex;flex-direction:column;gap:10px;width:min(340px,90vw)">
         <button onclick="homeLoad()" style="width:100%;padding:16px 0;font-family:Cinzel,serif;font-size:14px;cursor:pointer;border-radius:8px;background:linear-gradient(135deg,#1a1030,#2a1a40);color:#c080ff;border:1px solid #5040a0">📂 Charger une partie</button>
@@ -1442,7 +1442,7 @@
 <!-- Frise de progression -->
 <div id="timeline">
     <div id="timeline-season">Saison 1</div>
-    <div style="font-family:Cinzel,serif;font-size:9px;color:#3a3050;margin-left:auto;padding-left:8px;white-space:nowrap">v0.554</div>
+    <div style="font-family:Cinzel,serif;font-size:9px;color:#3a3050;margin-left:auto;padding-left:8px;white-space:nowrap">v0.556</div>
     <div id="timeline-steps"></div>
     <button onclick="toggleSaveMenu()" style="background:linear-gradient(135deg,#1a1030,#2a1a40);border:1px solid #4a3060;color:#c0a060;font-size:14px;cursor:pointer;padding:2px 8px;border-radius:5px;white-space:nowrap;flex-shrink:0" title="Sauvegardes">💾 Save</button>
     <button onclick="toggleMetaSummary()" style="background:linear-gradient(135deg,#101a10,#1a2a1a);border:1px solid #2a5a2a;color:#4cffaa;font-size:14px;cursor:pointer;padding:2px 8px;border-radius:5px;white-space:nowrap;flex-shrink:0" title="Résumé méta">✦ Méta</button>
@@ -10766,9 +10766,11 @@ function ouryWiggle() {
 function ouryUpdateRestUI() {
     const rest = window.ouryState.restTurnsLeft > 0;
     const badge = document.getElementById('oury-rest-badge');
+    const img = document.getElementById('oury-img');
     const askBtn = document.getElementById('oury-btn-ask');
     const helpBtn = document.getElementById('oury-btn-help');
     if (badge) badge.style.display = rest ? 'flex' : 'none';
+    if (img) img.src = rest ? 'img/oury dodo.jpg' : 'img/oury.jpg';
     if (askBtn) askBtn.disabled = rest;
     if (helpBtn) helpBtn.disabled = rest;
     if (askBtn) askBtn.title = rest ? 'Oury se repose... (' + window.ouryState.restTurnsLeft + ' tours)' : '';
@@ -10859,42 +10861,96 @@ function ouryBaseSystem() {
 Tu es adorable, enthousiaste, tu ssssifles parfois dans tes phrases, et tu veux VRAIMENT beaucoup aider.
 Tu fais des petites actions entre astérisques (*se love contre toi*, *agite la queue*).
 Réponds toujours en français, de manière courte et charmante (max 3 phrases).
-${ouryGetGameContext()}`;
+
+RÈGLES DU JEU (respecte-les absolument dans tes conseils) :
+
+STRUCTURE D'UN RUN :
+- 10 tours par saison. Au tour 10 : combat de horde obligatoire.
+- 1 action principale par tour : Révéler une tuile, Construire un bâtiment, ou Caravane (ressources ×2 aux tours pairs 2/4/6/8).
+- Actions libres (sans limite) : Recruter (gratuit en S1-S4, action principale en S5+), Équiper l'avatar, Donjon (tours 1/3/7/9).
+- La horde se révèle partiellement au tour 5.
+
+CE QU'ON NE PEUT PAS FAIRE :
+- Il est IMPOSSIBLE de construire des "fortifications" directement — elles viennent uniquement des bâtiments (Murailles, Tours de Garde, etc.).
+- On ne peut pas "améliorer" les bâtiments existants.
+- On ne peut pas déplacer des bâtiments déjà posés.
+- Les caravanes ne peuvent être envoyées QUE aux tours pairs (conjonctions : 2/4/6/8) pour obtenir ×2 ressources — aux autres tours ça donne ×1.
+
+RESSOURCES :
+- Or : acheter bâtiments et équipements.
+- Mana : bâtiments magiques et équipements.
+- Population : recruter des troupes et certains bâtiments.
+- Poussière du Temps (✦) : méta-progression permanente, gagnée en fin de run.
+
+COMBAT DE HORDE :
+- Puissance ville = ATK armée + fortifications + bonus méta.
+- Stratégie : équilibrer infanterie (bon ATK/coût) + cavalerie (ignore protection) + unités magiques (contre mort-vivants).
+- Les traits ennemis (pillard, vol, mort-vivant, sapeur) ont des contre-traits spécifiques.
+
+DONJONS :
+- L'avatar explore des donjons, gagne de l'or/mana/poussière et équipements.
+- 3 types : Tour (facile), Grotte (normal), Catacombes (difficile, meilleur butin).
+- En S4/S8/S12 : Ouroboros disponible (très difficile, donne une Coquille d'Œuf).
+- Catacombes au tour 9 : récompense permanente (ATK, Dmg, or, mana, pop, ou Projection).
+
+ÉQUIPEMENT AVATAR :
+- Slots : arme principale, arme secondaire, armure, collier, ceinture, glyphes (sorts), potions.
+- Si l'avatar est de bas niveau (début de méta, peu de poussière) : acheter une Dague acérée en priorité — elle donne ATK+2 et Dmg+1, ce qui permet de gagner les premiers donjons et accumuler de la poussière plus vite.
+- Les glyphes et potions sont à usage unique (consommés en donjon).
+
+MÉTA-PROGRESSION (Poussière ✦) :
+- Investir d'abord dans : Niveau Héros (débloque compétences), puis stats de base (ATK, HP).
+- Les Coquilles d'Œuf débloquent des bâtiments légendaires (Palais des Miroirs → classe avatar).
+- Le Palais des Miroirs donne une classe permanente à l'avatar : Archer, Guerrier, Mage ou Aventurier.
+
+CONSEILS GÉNÉRAUX :
+- Prioriser les Conjonctions (tours 2/4/6/8) pour la Caravane — doubler les ressources est crucial.
+- Construire Caserne tôt pour recruter des troupes dès S1-S2.
+- Adapter sa stratégie à la composition de la horde révélée au tour 5.
+- Ne pas négliger les donjons — la poussière accumulée est très importante pour la méta.
+
+${ouryGetGameContext()}\`;
 }
 
 // ── Boutons ──
 
-async function ouryPet() {
+function ouryPet() {
     ouryWiggle();
     const responses = [
         '*sssse love contre toi* Sssssi doux... merci ! 🐍💜',
-        '*ronronne comme un serpent peut ronronner* Ssssensationnel ! 🌟',
+        '*ronronne comme un serpent peut ronronner* Ssssensationnel ! ⭐',
         '*gigote de joie* Tu essst le meilleur joueur du monde ! ✨',
-        '*lèche ta main* Sssss\u2019il te plaît encore ! 💜',
-        '*fait des petits cercles* Tellement content\u00b7e !!!!! 🐍',
+        '*lèche ta main* Encore encore encore ! 💜',
+        '*fait des petits cercles* Tellement content·e !!!!! 🐍',
+        '*se roule en boule sur toi* Chaud... doux... parfait... 🐍✨',
+        '*dresse la tête fièrement* Je ssssuis le sssserpent le plus choyé du royaume ! 👑',
+        '*agite sa queue à toute vitesse* Ssssuperbe sssensation ! ⭐',
+        '*siffle doucement* Sssss... tu me rends sssssi heureux·se... 🐍',
+        '*se dresse et fait un câlin imaginaire* Mwah ! 💜🐍',
+        '*tourne en rond d\'excitation* On recommence ? On recommence ? 🌀🐍',
+        '*ferme les yeux de bonheur* Parfait. Tout essst parfait. 😌✨',
+        '*bâille miniaturement* Ssssi agréable... 😴🐍',
     ];
-    if (Math.random() < 0.4) {
-        // Parfois appel API pour plus de variété
-        const resp = await ouryCallAPI(
-            ouryBaseSystem() + '\nLe joueur vient de te faire des câlins. Réagis comme un animal de compagnie adorable qui parle.',
-            'Le joueur me fait des câlins !', false
-        );
-        if (resp) { ouryShowBubble(resp, 4000); return; }
-    }
     const r = responses[Math.floor(Math.random() * responses.length)];
     ouryShowBubble(r, 3500);
 }
-
-async function ouryThank() {
+function ouryThank() {
     ouryWiggle();
-    const resp = await ouryCallAPI(
-        ouryBaseSystem() + '\nLe joueur te remercie. Réponds avec gratitude et fais-lui des compliments sincères et mignons sur ses qualités de joueur.',
-        'Merci Oury !', false
-    );
-    if (resp) ouryShowBubble(resp, 5000);
-    else ouryShowBubble('*sssse redresse fièrement* C\u2019esssst moi qui te remercie ! Tu essst un joueur ssssuperbe ! 💜', 4000);
+    const responses = [
+        "*sssse redresse fièrement* C\'essst moi qui te remercie ! Tu essst un joueur ssssuperbe ! 💜",
+        "*s\'illumine de joie* Oh ! Merci à toi d\'exissster ! Tu essst si gentil·le ! ✨🐍",
+        "*ondule de bonheur* Sssss... tu es la meilleure persssonne que je connaisse ! 🌟",
+        "*pose sa tête sur ton épaule* Non NON c\'essst MOI qui te remercie d\'avoir bessssoin de moi ! 💜",
+        "*fait des petits bonds* Tu essst le sssstratège le plus brillant que j\'aie jamaisss vu ! 🧠✨",
+        "*enroule doucement autour de ton bras* Ensemble on va aller sssssi loin ! 🐍🌍",
+        "*chuchote* Entre toi et moi... tu essst clairement le meilleur joueur de Chronocity. Chut ! 🤫🐍",
+        "*agite joyeusement la queue* MERCI à toi de sssi bien prendre ssssoin de notre ville ! 🏙️🐍",
+        "*siffle tout doucement* Ssssavoir que tu es là me rend sssssi heureux·se... 🐍💜",
+        "*frémit d\'émotion* Je... je ne ssssais pas quoi dire... Sssssi honoré·e ! 🐍🥹",
+    ];
+    const r = responses[Math.floor(Math.random() * responses.length)];
+    ouryShowBubble(r, 5000);
 }
-
 function ouryOpenChat() {
     if (window.ouryState.restTurnsLeft > 0) {
         ouryShowBubble('*bâille* Ssssuis trop fatigué... ' + window.ouryState.restTurnsLeft + ' tours de repos encore... 💤', 3000);
@@ -10973,56 +11029,17 @@ function ouryCheckHordeBattle() {
     if (typeof hordeP !== 'number') return;
     const diff = hordeP - cityP;
     if (diff > 0 && diff <= 5) {
-        setTimeout(async function() {
-            const resp = await ouryCallAPI(
-                ouryBaseSystem() + '\nLe joueur est sur le point de lancer le combat de horde. La horde est plus forte de ' + diff + ' points mais c\u2019est très serré ! Encourage-le et suggère ce qu\u2019il pourrait encore faire avant le combat.',
-                'Le joueur va lancer le combat de horde !', false
-            );
-            if (resp) {
-                ouryShowBubble(resp, 7000);
-                ouryWiggle();
-            }
+        const warnings = [
+            '*sssserre les écailles* Attention ! La horde est plus forte de ' + diff + ' point(s) ! Recrute une unité si tu peux ! 🐍⚠️',
+            "*agite la queue nerveusement* C'essst très sssserré ! " + diff + " point(s) d'écart... Vérifie ton armée et équipe l'avatar ! 🐍",
+            "*siffle d'inquiétude* Sssssi proche ! La horde mène de " + diff + "... Envoie ton avatar en renfort ! 💜🐍",
+            "*se dresse en alerte* SSSSTOPP ! " + diff + " point(s) de différence ! Dernier moment pour recruter ! 🐍⚔️",
+        ];
+        setTimeout(function() {
+            ouryShowBubble(warnings[Math.floor(Math.random() * warnings.length)], 7000);
+            ouryWiggle();
         }, 500);
     }
-}
-
-// Intervention donjon mort : si avatar à mort mais ennemi à portée
-function ouryCheckDungeonSave() {
-    if (window.ouryState.restTurnsLeft > 0) return false;
-    if (!dungeonState || !dungeonState.active) return false;
-    if (dungeonState.avatarHp > 0) return false;
-
-    // Vérifier si un ennemi est à portée des dégâts du héros
-    const living = typeof getAllLivingEnemies === 'function' ? getAllLivingEnemies() : [];
-    const target = living.find(function(e) {
-        const eHp = e.hp || 0;
-        const heroDmg = Math.max(1, (typeof avatarDmg !== 'undefined' ? avatarDmg : 2) + (typeof atk !== 'undefined' ? atk : 2));
-        return eHp > 0 && eHp <= heroDmg;
-    });
-
-    if (!target) return false;
-
-    // Oury sauve le joueur !
-    ouryStartRest();
-    const dmg = target.hp;
-    target.hp = 0;
-    if (typeof dealDamageToEnemy === 'function') dealDamageToEnemy(target, dmg, '#c080ff');
-    if (typeof dngLog === 'function') dngLog('🐍 Oury surgit et terrasse ' + target.name + ' ! (' + dmg + ' dégâts)', 'dlog-good');
-
-    // Restaurer 1 HP au héros
-    if (typeof dungeonState !== 'undefined') { dungeonState.avatarHp = 1; }
-    if (typeof avatarHp !== 'undefined') { avatarHp = 1; }
-    if (typeof applyHpUpdate === 'function') applyHpUpdate();
-
-    ouryShowBubble('*JAILLIT de nulle part* PERSSSONNE ne touche à mon joueur ! 🐍⚡ *siffle victorieusement*', 5000);
-    ouryWiggle();
-
-    // Continuer le combat
-    setTimeout(function() {
-        if (typeof checkAllEnemiesDead === 'function') checkAllEnemiesDead();
-    }, 800);
-
-    return true;
 }
 
 // Intervention horde nul : si défaite par ≤ 5 points
