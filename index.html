@@ -688,6 +688,19 @@
             overflow: hidden;
             pointer-events: all;
         }
+        @media (max-width: 700px), (orientation:landscape) and (max-height:600px) {
+            #oury-chat.open {
+                top: 0 !important;
+                bottom: 0 !important;
+                left: 0 !important;
+                right: 0 !important;
+                width: 100% !important;
+                border-radius: 0 !important;
+                z-index: 99990 !important;
+            }
+            #oury-chat-messages { max-height: none !important; flex: 1; }
+            #oury-chat-close { font-size: 24px !important; padding: 4px 8px !important; }
+        }
         #oury-chat.open { display: flex; }
         #oury-chat-header {
             display: flex;
@@ -1058,7 +1071,7 @@
         <div style="font-family:Cinzel,serif;font-size:28px;color:#c0a060;letter-spacing:3px;text-shadow:0 0 20px rgba(180,140,60,0.4)">⚔ Chronocity — A Roguelite City Builder</div>
         <div id="home-player-info" style="font-size:12px;color:#6a5a7a;margin-top:6px;min-height:18px"></div>
         <button onclick="showLadder()" style="margin-top:8px;padding:6px 18px;background:#0a0818;border:1px solid #3a2a5a;border-radius:8px;color:#9a7aaa;font-size:11px;cursor:pointer;font-family:Cinzel,serif">🏆 Classement</button>
-        <div style="font-size:11px;color:#4a3a5a;margin-top:6px;letter-spacing:2px" data-version="0.563">VERSION 0.563</div>
+        <div style="font-size:11px;color:#4a3a5a;margin-top:6px;letter-spacing:2px" data-version="0.566">VERSION 0.566</div>
     </div>
     <div id="home-menu" style="display:flex;flex-direction:column;gap:10px;width:min(340px,90vw)">
         <button onclick="homeLoad()" style="width:100%;padding:16px 0;font-family:Cinzel,serif;font-size:14px;cursor:pointer;border-radius:8px;background:linear-gradient(135deg,#1a1030,#2a1a40);color:#c080ff;border:1px solid #5040a0">📂 Charger une partie</button>
@@ -1194,10 +1207,10 @@
     <div style="font-size:12px;color:#7a6a8a;text-align:center">Préparez votre avatar et choisissez votre destination.</div>
     <div id="predng-stats" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px"></div>
     <div id="predng-equip" style="font-size:11px;color:#9a8a6a;background:#0a0812;border-radius:8px;padding:8px;line-height:1.9"></div>
+    <button onclick="openEquipWindow(true)" style="background:linear-gradient(135deg,#1a1030,#2a1a40);border:1px solid #5040a0;color:#c080ff;border-radius:8px;padding:10px 0;font-family:Cinzel,serif;font-size:12px;cursor:pointer;width:100%">⚔ S&#39;équiper</button>
     <div style="font-size:10px;color:#4a3a5a;letter-spacing:1px;margin-top:2px">CHOISIR LE DONJON</div>
     <div id="predng-dungeon-choices" style="display:flex;flex-direction:column;gap:5px"></div>
     <div style="display:flex;gap:8px;margin-top:4px">
-        <button onclick="openEquipWindow(true)" style="flex:1;background:linear-gradient(135deg,#1a1030,#2a1a40);border:1px solid #5040a0;color:#c080ff;border-radius:8px;padding:10px 0;font-family:Cinzel,serif;font-size:12px;cursor:pointer">⚔ S&#39;équiper</button>
     </div>
     <button onclick="closePredngWindow(true)" style="background:none;border:none;color:#4a3a5a;cursor:pointer;font-size:11px">← Annuler</button>
 </div>
@@ -1505,7 +1518,7 @@
 <!-- Frise de progression -->
 <div id="timeline">
     <div id="timeline-season">Saison 1</div>
-    <div style="font-family:Cinzel,serif;font-size:9px;color:#3a3050;margin-left:auto;padding-left:8px;white-space:nowrap">v0.563</div>
+    <div style="font-family:Cinzel,serif;font-size:9px;color:#3a3050;margin-left:auto;padding-left:8px;white-space:nowrap">v0.566</div>
     <div id="timeline-steps"></div>
     <button onclick="toggleSaveMenu()" style="background:linear-gradient(135deg,#1a1030,#2a1a40);border:1px solid #4a3060;color:#c0a060;font-size:14px;cursor:pointer;padding:2px 8px;border-radius:5px;white-space:nowrap;flex-shrink:0" title="Sauvegardes">💾 Save</button>
     <button onclick="toggleMetaSummary()" style="background:linear-gradient(135deg,#101a10,#1a2a1a);border:1px solid #2a5a2a;color:#4cffaa;font-size:14px;cursor:pointer;padding:2px 8px;border-radius:5px;white-space:nowrap;flex-shrink:0" title="Résumé méta">✦ Méta</button>
@@ -12509,6 +12522,9 @@ body.clarity-on #clarity-resbar {
             <button class="cfr-btn" id="cfr-recruit-free" data-target="recruit">
                 <span class="cfr-ico">⚔</span> Recruter
             </button>
+            <button class="cfr-btn cfr-dungeon" data-target="dungeon" id="cfr-dungeon" style="display:none">
+                <span class="cfr-ico" style="color:#a0c8e8;font-variant-emoji:text">🗝</span> Explorer le donjon
+            </button>
             <button class="cfr-btn" data-target="equip">
                 <span class="cfr-ico">🛡</span> Équiper
             </button>
@@ -12517,9 +12533,6 @@ body.clarity-on #clarity-resbar {
             </button>
             <button class="cfr-btn" data-target="horde">
                 <span class="cfr-ico" style="color:#a0c8e8;font-variant-emoji:text">⛧</span> La horde
-            </button>
-            <button class="cfr-btn cfr-dungeon" data-target="dungeon" id="cfr-dungeon" style="display:none">
-                <span class="cfr-ico" style="color:#a0c8e8;font-variant-emoji:text">🗝</span> Explorer le donjon
             </button>
             <button class="cfr-btn" id="cfr-monolith" style="display:none" onclick="doMonolithScout()">
                 <span class="cfr-ico" style="color:#a0c8e8;font-variant-emoji:text">👁</span> <span id="cfr-monolith-label">Scouter</span>
