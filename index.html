@@ -9473,6 +9473,7 @@ function initNewRun() {
     currentTurn = 1; currentSeason = 1;
     window._meta = null; // Forcer rechargement méta fraîche
     const m = getMeta();
+    console.log('[DEBUG initNewRun] m.city.conscrit:', m.city ? m.city.conscrit : 'NO CITY', 'full city:', JSON.stringify(m.city));
     gold = 100 + (m.city.gold || 0) * 25;
     mana = 0 + (m.city.mana || 0) * 25;
     population = 50 + (m.city.pop || 0) * 25;
