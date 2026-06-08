@@ -1071,7 +1071,7 @@
         <div style="font-family:Cinzel,serif;font-size:28px;color:#c0a060;letter-spacing:3px;text-shadow:0 0 20px rgba(180,140,60,0.4)">⚔ Chronocity — A Roguelite City Builder</div>
         <div id="home-player-info" style="font-size:12px;color:#6a5a7a;margin-top:6px;min-height:18px"></div>
         <button onclick="showLadder()" style="margin-top:8px;padding:6px 18px;background:#0a0818;border:1px solid #3a2a5a;border-radius:8px;color:#9a7aaa;font-size:11px;cursor:pointer;font-family:Cinzel,serif">🏆 Classement</button>
-        <div style="font-size:11px;color:#4a3a5a;margin-top:6px;letter-spacing:2px" data-version="0.583">VERSION 0.583</div>
+        <div style="font-size:11px;color:#4a3a5a;margin-top:6px;letter-spacing:2px" data-version="0.587">VERSION 0.587</div>
     </div>
     <div id="home-menu" style="display:flex;flex-direction:column;gap:10px;width:min(340px,90vw)">
         <button onclick="homeLoad()" style="width:100%;padding:16px 0;font-family:Cinzel,serif;font-size:14px;cursor:pointer;border-radius:8px;background:linear-gradient(135deg,#1a1030,#2a1a40);color:#c080ff;border:1px solid #5040a0">📂 Charger une partie</button>
@@ -1518,7 +1518,7 @@
 <!-- Frise de progression -->
 <div id="timeline">
     <div id="timeline-season">Saison 1</div>
-    <div style="font-family:Cinzel,serif;font-size:9px;color:#3a3050;margin-left:auto;padding-left:8px;white-space:nowrap">v0.583</div>
+    <div style="font-family:Cinzel,serif;font-size:9px;color:#3a3050;margin-left:auto;padding-left:8px;white-space:nowrap">v0.587</div>
     <div id="timeline-steps"></div>
     <button onclick="toggleSaveMenu()" style="background:linear-gradient(135deg,#1a1030,#2a1a40);border:1px solid #4a3060;color:#c0a060;font-size:14px;cursor:pointer;padding:2px 8px;border-radius:5px;white-space:nowrap;flex-shrink:0" title="Sauvegardes">💾 Save</button>
     <button onclick="toggleMetaSummary()" style="background:linear-gradient(135deg,#101a10,#1a2a1a);border:1px solid #2a5a2a;color:#4cffaa;font-size:14px;cursor:pointer;padding:2px 8px;border-radius:5px;white-space:nowrap;flex-shrink:0" title="Résumé méta">✦ Méta</button>
@@ -2267,6 +2267,21 @@ function showTurnAnimation(turnNum, season, callback) {
             avatarBlockedSeason = -1;
             addLog("L'avatar est à nouveau disponible pour explorer.");
         }
+        // Oury avertit au tour 9 d'une saison Ouroboros
+        if (currentTurn === 9 && currentSeason % 4 === 0 && typeof isOuroborosDone === 'function' && !isOuroborosDone()) {
+            const ouroWarnings = [
+                "*se dresse en alerte maximale* 🐍⚡ TOUR 9 ! L'Aire d'Ouroboros est OUVERTE ! C'essst légendaire mais BRUTAL — prépare bien ton avatar avant d'y aller !",
+                "*frémit d'excitation* 🐍🥚 C'essst le moment ! L'Ouroboros t'attend au tour 9 ! Une Coquille d'Oeuf en jeu... mais assssure-toi d'être au mieux de ta forme !",
+                "*siffle intensément* ⚡🐍 L'OUROBOROS ! Maissss attention — c'essst le donjon le plus dangereux ! Équipe-toi BIEN avant d'y mettre un pied !",
+                "*s'enroule nerveusement* 🥚🐍 Ssss... l'Aire d'Ouroboros est disponible ! Une coquille t'attend... massss l'Ouroboros ne fait pas de cadeaux. Sssois prêt·e !"
+            ];
+            setTimeout(function() {
+                if (typeof ouryShowBubble === 'function') {
+                    ouryShowBubble(ouroWarnings[Math.floor(Math.random() * ouroWarnings.length)], 8000);
+                    if (typeof ouryWiggle === 'function') ouryWiggle();
+                }
+            }, 1500);
+        }
         if (currentTurn === 1 && currentSeason > 1 && hordeArmy.length > 0) {
             hordePrevSeason = [...hordeArmy];
         }
@@ -2653,6 +2668,41 @@ const FIB_SEQ = [2, 5, 13, 34, 89, 233, 610, 1597, 4181, 10946];
 function metaCost(tier, n) {
     const fib = FIB_SEQ[Math.min(n, FIB_SEQ.length - 1)];
     return fib + (tier - 1);
+}
+
+// Calcule la poussière totale dépensée depuis les achats méta
+function calcTotalDustSpent(m) {
+    if (!m) return 0;
+    let total = 0;
+    // Niveaux héros
+    for (let i = 0; i < (m.heroLevel||0); i++) total += HERO_LEVEL_COSTS[i] || 0;
+    // Niveaux ville
+    for (let i = 0; i < (m.cityLevel||0); i++) total += CITY_LEVEL_COSTS[i] || 0;
+    // Achats héros stats (tier 1-3)
+    const heroTiers = { atk:1, hpMax:1, prot:2, dmg:2, def:3 };
+    if (m.hero) Object.entries(heroTiers).forEach(function(e) {
+        const key = e[0], tier = e[1], n = m.hero[key]||0;
+        for (let i = 0; i < n; i++) total += metaCost(tier, i);
+    });
+    // Skills héros (tier 4)
+    if (m.hero && m.hero.skillLevels) Object.values(m.hero.skillLevels).forEach(function(lvl) {
+        for (let i = 0; i < (lvl||0); i++) total += metaCost(4, i);
+    });
+    // Achats ville
+    const cityTiers = { power:1, fortif:1, gold:1, mana:1, pop:1, conscrit:2, space:4 };
+    if (m.city) Object.entries(cityTiers).forEach(function(e) {
+        const key = e[0], tier = e[1], n = m.city[key]||0;
+        for (let i = 0; i < n; i++) total += metaCost(tier, i);
+    });
+    // Skills de classe (tier 4)
+    if (m.hero && m.hero.skillLevels) {
+        Object.entries(m.hero.skillLevels).forEach(function(e) {
+            if (e[0].startsWith('cls_')) {
+                for (let i = 0; i < (e[1]||0); i++) total += metaCost(4, i);
+            }
+        });
+    }
+    return total;
 }
 
 // Coût du niveau héros : 10, 25, 50, 90, 150, 240...
@@ -5378,10 +5428,6 @@ function dungeonRoomWon() {
                 const got = awardOuroboros();
                 if (drShell) drShell.style.display = got ? 'block' : 'none';
                 if (got) dngLog('🥚 Coquille d\'Oeuf du Temps ! Ouroboros vaincu !', 'dlog-loot');
-            } else if (isBossRoom && isWinterHive() && dungeonStartTurn === 9) {
-                const got = awardShell();
-                if (drShell) drShell.style.display = got ? 'block' : 'none';
-                if (got) dngLog('🥚 Coquille d\'Oeuf du Temps ! Boss hivernal vaincu.', 'dlog-loot');
             } else {
                 if (drShell) drShell.style.display = 'none';
             }
@@ -8265,16 +8311,18 @@ function showPreDungeonWindow(callback) {
             { id:'grotte',     icon:'🕳', name:'Grotte Mystérieuse',diff:'Normale',  tierLabel:'Tier '+_t,               color:'#c0a060', border:'#5a4a2a', note:'Difficulté standard de la saison' },
             { id:'catacombes', icon:'💀', name:'Catacombes Maudites',diff:'Difficile',tierLabel:'Tier '+(_t+1),          color:'#c06060', border:'#5a2a2a', note:(_t===9||currentTurn===9)?'Récompense de carac. disponible !':'Butin amélioré ×1.25' },
         ];
-        // Ouroboros disponible en S4, S8, S12...
+        // Ouroboros disponible en S4, S8, S12... mais seulement au tour 9
         const isOuroSeason = _s > 0 && _s % 4 === 0;
         if (isOuroSeason) {
             const ourosDone = isOuroborosDone ? isOuroborosDone() : false;
+            const ouroLocked = currentTurn !== 9;
             dungeonTypes.push({
                 id:'ouroboros', icon: ourosDone ? '🐍✓' : '🐍',
-                name:'Aire d\'Ouroboros', diff:'Légendaire', tierLabel:'Tier '+(_t+2),
-                color: ourosDone ? '#4a3a3a' : '#c080ff', border: ourosDone ? '#2a2a2a' : '#6030a0',
-                note: ourosDone ? 'Déjà conquis cette saison' : '🥚 Coquille d\'Oeuf du Temps en jeu !',
-                disabled: ourosDone
+                name:"Aire d'Ouroboros", diff:'Légendaire', tierLabel:'Tier '+(_t+2),
+                color: ourosDone ? '#4a3a3a' : ouroLocked ? '#5a4a7a' : '#c080ff',
+                border: ourosDone ? '#2a2a2a' : ouroLocked ? '#3a2a5a' : '#6030a0',
+                note: ourosDone ? 'Déjà conquis cette saison' : ouroLocked ? '⏳ Disponible au tour 9 uniquement' : '🥚 Coquille d'Oeuf du Temps en jeu !',
+                disabled: ourosDone || ouroLocked
             });
         }
         choicesEl.innerHTML = '';
@@ -9005,7 +9053,7 @@ function renderMetaSummary() {
 
     let html = row('Run', slot, '#9a8a6a');
     html += row('💀 Morts', runDeaths, runDeaths===0?'#4cffaa':'#ff6060');
-    html += row('✦ Poussière totale dépensée', (getMeta().totalDustSpent||0) + ' ✦', '#ffd060');
+    html += row('✦ Poussière totale dépensée', (typeof calcTotalDustSpent === 'function' ? calcTotalDustSpent(getMeta()) : (getMeta().totalDustSpent||0)) + ' ✦', '#ffd060');
     html += row('🥚 Coquilles disponibles', (getMeta().shells||0), '#e0c080');
 
     html += row('🌟 Poussière totale', m.dust + ' ✦', '#ffd060');
@@ -9648,12 +9696,13 @@ function formatTraits(traits, useClass) {
 function getShells() { return getMeta().shells || 0; }
 
 function awardShell() {
-    // Vérifier si l'hiver actuel a déjà donné une coquille
+    // Vérifier si l'hiver actuel a déjà donné une coquille (via shellsEarned OU ouroborosDone)
     const m = getMeta();
     if (!m.shells) m.shells = 0;
     if (!m.shellsEarned) m.shellsEarned = [];
     const key = String(currentSeason);
-    if (m.shellsEarned.includes(key)) return false; // déjà gagné
+    if (m.shellsEarned.includes(key)) return false; // déjà gagné via donjon hivernal
+    if (m.ouroborosDone && m.ouroborosDone.includes(key)) return false; // déjà gagné via Ouroboros
     m.shells++;
     m.shellsEarned.push(key);
     saveMeta(m);
@@ -9686,7 +9735,8 @@ function awardOuroboros() {
     const m = getMeta();
     if (!m.ouroborosDone) m.ouroborosDone = [];
     const key = String(currentSeason);
-    if (m.ouroborosDone.includes(key)) return false;
+    if (m.ouroborosDone.includes(key)) return false; // déjà gagné via Ouroboros
+    if (m.shellsEarned && m.shellsEarned.includes(key)) return false; // déjà gagné via donjon hivernal
     m.ouroborosDone.push(key);
     if (!m.shells) m.shells = 0;
     m.shells++;
@@ -10721,7 +10771,7 @@ async function updateLeaderboardScore(victory) {
     let totalRuns = 1;
     let bestSeason = season;
     let bestShells = m.shellsSpent || 0;
-    let bestDust = m.totalDustSpent || m.runDustSpent || 0;
+    let bestDust = (typeof calcTotalDustSpent === 'function' ? calcTotalDustSpent(m) : 0) || m.totalDustSpent || m.runDustSpent || 0;
     let bestDeaths = deaths;
     let bestArmy = calcArmyPower();
 
