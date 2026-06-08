@@ -1071,7 +1071,7 @@
         <div style="font-family:Cinzel,serif;font-size:28px;color:#c0a060;letter-spacing:3px;text-shadow:0 0 20px rgba(180,140,60,0.4)">⚔ Chronocity — A Roguelite City Builder</div>
         <div id="home-player-info" style="font-size:12px;color:#6a5a7a;margin-top:6px;min-height:18px"></div>
         <button onclick="showLadder()" style="margin-top:8px;padding:6px 18px;background:#0a0818;border:1px solid #3a2a5a;border-radius:8px;color:#9a7aaa;font-size:11px;cursor:pointer;font-family:Cinzel,serif">🏆 Classement</button>
-        <div style="font-size:11px;color:#4a3a5a;margin-top:6px;letter-spacing:2px" data-version="0.587">VERSION 0.587</div>
+        <div style="font-size:11px;color:#4a3a5a;margin-top:6px;letter-spacing:2px" data-version="0.589">VERSION 0.589</div>
     </div>
     <div id="home-menu" style="display:flex;flex-direction:column;gap:10px;width:min(340px,90vw)">
         <button onclick="homeLoad()" style="width:100%;padding:16px 0;font-family:Cinzel,serif;font-size:14px;cursor:pointer;border-radius:8px;background:linear-gradient(135deg,#1a1030,#2a1a40);color:#c080ff;border:1px solid #5040a0">📂 Charger une partie</button>
@@ -1518,7 +1518,7 @@
 <!-- Frise de progression -->
 <div id="timeline">
     <div id="timeline-season">Saison 1</div>
-    <div style="font-family:Cinzel,serif;font-size:9px;color:#3a3050;margin-left:auto;padding-left:8px;white-space:nowrap">v0.587</div>
+    <div style="font-family:Cinzel,serif;font-size:9px;color:#3a3050;margin-left:auto;padding-left:8px;white-space:nowrap">v0.589</div>
     <div id="timeline-steps"></div>
     <button onclick="toggleSaveMenu()" style="background:linear-gradient(135deg,#1a1030,#2a1a40);border:1px solid #4a3060;color:#c0a060;font-size:14px;cursor:pointer;padding:2px 8px;border-radius:5px;white-space:nowrap;flex-shrink:0" title="Sauvegardes">💾 Save</button>
     <button onclick="toggleMetaSummary()" style="background:linear-gradient(135deg,#101a10,#1a2a1a);border:1px solid #2a5a2a;color:#4cffaa;font-size:14px;cursor:pointer;padding:2px 8px;border-radius:5px;white-space:nowrap;flex-shrink:0" title="Résumé méta">✦ Méta</button>
@@ -2270,10 +2270,10 @@ function showTurnAnimation(turnNum, season, callback) {
         // Oury avertit au tour 9 d'une saison Ouroboros
         if (currentTurn === 9 && currentSeason % 4 === 0 && typeof isOuroborosDone === 'function' && !isOuroborosDone()) {
             const ouroWarnings = [
-                "*se dresse en alerte maximale* 🐍⚡ TOUR 9 ! L'Aire d'Ouroboros est OUVERTE ! C'essst légendaire mais BRUTAL — prépare bien ton avatar avant d'y aller !",
-                "*frémit d'excitation* 🐍🥚 C'essst le moment ! L'Ouroboros t'attend au tour 9 ! Une Coquille d'Oeuf en jeu... mais assssure-toi d'être au mieux de ta forme !",
-                "*siffle intensément* ⚡🐍 L'OUROBOROS ! Maissss attention — c'essst le donjon le plus dangereux ! Équipe-toi BIEN avant d'y mettre un pied !",
-                "*s'enroule nerveusement* 🥚🐍 Ssss... l'Aire d'Ouroboros est disponible ! Une coquille t'attend... massss l'Ouroboros ne fait pas de cadeaux. Sssois prêt·e !"
+                "*se dresse en alerte maximale* 🐍⚡ TOUR 9 ! L'Aire d'Ouroboros est OUVERTE ! C'essst legendaire mais BRUTAL — prepare bien ton avatar avant d'y aller !",
+                "*fremit d'excitation* 🐍🥚 C'essst le moment ! L'Ouroboros t'attend au tour 9 ! Une Coquille d'Oeuf en jeu... mais assssure-toi d'etre au mieux de ta forme !",
+                "*siffle intensement* ⚡🐍 L'OUROBOROS ! Maissss attention — c'essst le donjon le plus dangereux ! Equipe-toi BIEN avant d'y mettre un pied !",
+                "*s'enroule nerveusement* 🥚🐍 Ssss... l'Aire d'Ouroboros est disponible ! Une coquille t'attend... massss l'Ouroboros ne fait pas de cadeaux. Sssois pret·e !",
             ];
             setTimeout(function() {
                 if (typeof ouryShowBubble === 'function') {
@@ -8321,7 +8321,7 @@ function showPreDungeonWindow(callback) {
                 name:"Aire d'Ouroboros", diff:'Légendaire', tierLabel:'Tier '+(_t+2),
                 color: ourosDone ? '#4a3a3a' : ouroLocked ? '#5a4a7a' : '#c080ff',
                 border: ourosDone ? '#2a2a2a' : ouroLocked ? '#3a2a5a' : '#6030a0',
-                note: ourosDone ? 'Déjà conquis cette saison' : ouroLocked ? '⏳ Disponible au tour 9 uniquement' : '🥚 Coquille d'Oeuf du Temps en jeu !',
+                note: ourosDone ? 'Déjà conquis cette saison' : ouroLocked ? '⏳ Disponible au tour 9 uniquement' : "🥚 Coquille d'Oeuf du Temps en jeu !",
                 disabled: ourosDone || ouroLocked
             });
         }
