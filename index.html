@@ -1071,7 +1071,7 @@
         <div style="font-family:Cinzel,serif;font-size:28px;color:#c0a060;letter-spacing:3px;text-shadow:0 0 20px rgba(180,140,60,0.4)">⚔ Chronocity — A Roguelite City Builder</div>
         <div id="home-player-info" style="font-size:12px;color:#6a5a7a;margin-top:6px;min-height:18px"></div>
         <button onclick="showLadder()" style="margin-top:8px;padding:6px 18px;background:#0a0818;border:1px solid #3a2a5a;border-radius:8px;color:#9a7aaa;font-size:11px;cursor:pointer;font-family:Cinzel,serif">🏆 Classement</button>
-        <div style="font-size:11px;color:#4a3a5a;margin-top:6px;letter-spacing:2px" data-version="0.579">VERSION 0.579</div>
+        <div style="font-size:11px;color:#4a3a5a;margin-top:6px;letter-spacing:2px" data-version="0.580">VERSION 0.580</div>
     </div>
     <div id="home-menu" style="display:flex;flex-direction:column;gap:10px;width:min(340px,90vw)">
         <button onclick="homeLoad()" style="width:100%;padding:16px 0;font-family:Cinzel,serif;font-size:14px;cursor:pointer;border-radius:8px;background:linear-gradient(135deg,#1a1030,#2a1a40);color:#c080ff;border:1px solid #5040a0">📂 Charger une partie</button>
@@ -1518,7 +1518,7 @@
 <!-- Frise de progression -->
 <div id="timeline">
     <div id="timeline-season">Saison 1</div>
-    <div style="font-family:Cinzel,serif;font-size:9px;color:#3a3050;margin-left:auto;padding-left:8px;white-space:nowrap">v0.579</div>
+    <div style="font-family:Cinzel,serif;font-size:9px;color:#3a3050;margin-left:auto;padding-left:8px;white-space:nowrap">v0.580</div>
     <div id="timeline-steps"></div>
     <button onclick="toggleSaveMenu()" style="background:linear-gradient(135deg,#1a1030,#2a1a40);border:1px solid #4a3060;color:#c0a060;font-size:14px;cursor:pointer;padding:2px 8px;border-radius:5px;white-space:nowrap;flex-shrink:0" title="Sauvegardes">💾 Save</button>
     <button onclick="toggleMetaSummary()" style="background:linear-gradient(135deg,#101a10,#1a2a1a);border:1px solid #2a5a2a;color:#4cffaa;font-size:14px;cursor:pointer;padding:2px 8px;border-radius:5px;white-space:nowrap;flex-shrink:0" title="Résumé méta">✦ Méta</button>
@@ -8727,7 +8727,6 @@ function getGameState() {
         gold, mana, population, dust,
         goldperturn, manaperturn, populationperturn,
         fortifications, conscrit, space,
-        conscritMax: conscrit + (cityArmy ? cityArmy.filter(function(u){ return u.traits && !u.traits.includes('invocation'); }).length : 0),
         atk, def, avatarHp, avatarMaxHp, avatarDmg,
         avatarRanged, avatarPiercing, protection,
         glyphFireball, glyphHeal, glyphRage, glyphBless,
@@ -8813,18 +8812,10 @@ function restoreGameState(s) {
     hordeHiddenCount = s.hordeHiddenCount||0;
     if (s.tileState) { tileState.splice(0, tileState.length, ...s.tileState); tileState.forEach(function(t){ if(t&&t.buildings) t.buildings = t.buildings.filter(function(b){ return !b.startsWith('__slot__'); }); }); }
 
-    // Recalculer les effets des bâtiments (remet conscrit au max calculé)
+    // Recalculer les effets des bâtiments
     recalcBuildingEffects();
-    // Restaurer conscrit en préservant les recrutements effectués
-    if (s.conscrit !== undefined && s.conscritMax !== undefined) {
-        // conscritMax sauvegardé = max avant recrutements, conscrit = après recrutements
-        // On calcule le max actuel (après recalc), puis on soustrait les recrutements
-        const recruited = Math.max(0, s.conscritMax - s.conscrit);
-        conscrit = Math.max(0, conscrit - recruited);
-    } else if (s.conscrit !== undefined) {
-        // Ancienne save sans conscritMax : utiliser directement
-        conscrit = s.conscrit;
-    }
+    // Restaurer conscrit directement depuis la sauvegarde
+    if (s.conscrit !== undefined) conscrit = s.conscrit;
     // Restaurer les fortifications actuelles depuis la sauvegarde (peuvent être inférieures au max après combat)
     if (s.fortifications !== undefined) {
         fortifications = Math.min(s.fortifications, getMaxFort());
@@ -9396,9 +9387,7 @@ function recalcBuildingEffects() {
     Object.keys(buildingCounts).forEach(function(k){ buildingCounts[k] = 0; });
     populationperturn = 0; goldperturn = 0; manaperturn = 0;
     const m = getMeta();
-    // Toujours repartir de la base méta pour le calcul du max conscrit
-    window._conscritBase = 3 + (m.city ? m.city.conscrit || 0 : 0);
-    conscrit = window._conscritBase;
+    // Ne pas toucher à conscrit ici — géré séparément
     fortifications = 1 + (m.city ? m.city.fortif   || 0 : 0);
     // Recalculer space depuis les tuiles (source de vérité unique)
     space = tileState.reduce(function(s, _, i) { return s + Math.max(0, getTileFreeSlots(i)); }, 0);
@@ -9412,13 +9401,13 @@ function recalcBuildingEffects() {
                 case 'Ferme':              populationperturn += 5;              break;
                 case 'Mine':               goldperturn += 10;                   break;
                 case 'Tour de Mana':       manaperturn += 10;                   break;
-                case 'Caserne':            conscrit += 2;                       break;
-                case 'Tour de Garde':      conscrit += 2; fortifications += 2;  break;
-                case 'Archerie':           conscrit += 2;                       break;
-                case 'École de Magie':     conscrit += 2;                       break;
-                case 'Académie militaire': conscrit += 4;                       break;
-                case 'Tour de Magie':      conscrit += 1; manaperturn += 10;    break;
-                case 'Autel de Guerre':    conscrit += 6;                       break;
+                case 'Caserne':            break; // conscrit géré à l'init
+                case 'Tour de Garde':      fortifications += 2; break;
+                case 'Archerie':           break;
+                case 'École de Magie':     break;
+                case 'Académie militaire': break;
+                case 'Tour de Magie':      manaperturn += 10; break;
+                case 'Autel de Guerre':    break;
             }
             buildingCounts[name] = (buildingCounts[name] || 0) + 1;
             if (tile.type && typeof getTileBonus === 'function') {
@@ -9485,7 +9474,7 @@ function initNewRun() {
     mana = 0 + (m.city.mana || 0) * 25;
     population = 50 + (m.city.pop || 0) * 25;
     dust = m.dust || 0;
-    fortifications = 1; conscrit = 3; space = 0;
+    fortifications = 1; conscrit = 3 + (m.city ? m.city.conscrit || 0 : 0); space = 0;
     atk = 2; def = 2; avatarDmg = 2; protection = 0;
     avatarMaxHp = 9;
     avatarHp = avatarMaxHp;
