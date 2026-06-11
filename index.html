@@ -1557,8 +1557,8 @@
   <div style="background:#0e0c0a;border-radius:10px;padding:20px;max-width:580px;border:1px solid #2e2518;width:92%;
               color:#ddd;max-height:85vh;overflow-y:auto">
     <div style="display:flex;gap:0;margin-bottom:16px;border-bottom:1px solid #333">
-      <button class="army-tab active" id="tab-city"  onclick="armyTab('city')" >⚔ Armée</button>
-      <button class="army-tab"        id="tab-horde" onclick="armyTab('horde')">👹 Horde</button>
+      <button class="army-tab active" id="tab-city"  onclick="armyTab('city')" >'+t('army_tab_city')+'</button>
+      <button class="army-tab"        id="tab-horde" onclick="armyTab('horde')">'+t('army_tab_horde')+'</button>
       <button class="army-tab"        id="tab-result"onclick="armyTab('result')">📊 Résultat prévu</button>
     </div>
     <div id="army-tab-city"></div>
@@ -1611,10 +1611,10 @@
 
         <!-- Onglets -->
         <div style="display:flex;background:#060610;border-bottom:1px solid #1a1a2e">
-            <button class="meta-tab active" id="mtab-hero"  onclick="metaTab('hero')">⚔ Avatar</button>
-            <button class="meta-tab"        id="mtab-city"  onclick="metaTab('city')">🏰 Ville</button>
-            <button class="meta-tab"        id="mtab-level"     onclick="metaTab('level')">△ Niveau</button>
-            <button class="meta-tab"        id="mtab-legendary" onclick="metaTab('legendary')">🥚 Légendaire</button>
+            <button class="meta-tab active" id="mtab-hero"  onclick="metaTab('hero')">⚔ '+t('meta_tab_hero').slice(2)+'</button>
+            <button class="meta-tab"        id="mtab-city"  onclick="metaTab('city')">🏰 '+t('meta_tab_city').slice(2)+'</button>
+            <button class="meta-tab"        id="mtab-level"     onclick="metaTab('level')">△ '+t('meta_tab_level').slice(2)+'</button>
+            <button class="meta-tab"        id="mtab-legendary" onclick="metaTab('legendary')">🥚 '+t('meta_tab_legendary').slice(2)+'</button>
         </div>
 
         <!-- Contenu onglets -->
@@ -2219,6 +2219,160 @@ const LANGS = {
         tut_7_body: '<p>En <b>Saison 1–4</b>, recruter est une action libre : tu peux le faire autant que tu veux sans consommer ton tour.</p><div class="ct-rule r-battle"><span class="ct-rule-ic">⚠</span><div>À partir de la <b>Saison 5</b>, recruter devient une <b>action principale</b>. Chaque session de recrutement consomme ton tour — mais tu peux recruter <b>plusieurs unités</b> en une seule action.</div></div><div class="ct-rule r-free"><span class="ct-rule-ic">💡</span><div>Planifie à l\'avance : construis ta Caserne et ton Académie <b>avant la S5</b> pour profiter du recrutement libre les premières saisons.</div></div>',
         tut_8_title: 'Poussière du Temps & Méta-progression ✨',
         tut_8_body: '<p>À chaque fin de partie tu gagnes de la <b>✨ Poussière du Temps</b>. Elle persiste et permet d\'acheter des <b>améliorations permanentes</b> : or de départ, avatar plus fort, bâtiments bonus…</p><div class="ct-rule r-free"><span class="ct-rule-ic">🥚</span><div>Les <b>Coquilles d\'Œuf du Temps</b> se gagnent en donjon (boss hivernal tour 9, Ouroboros S4/S8…). Elles débloquent des <b>bâtiments légendaires</b> : Grande Tour, Arbre Elfique, Forteresse Naine, Sanctuaire, <b>Palais des Miroirs</b>.</div></div><p style="font-size:12px;color:#9a8a6a">Menu <b>≡</b> en haut à droite pour la méta-progression. Chaque run te rend plus fort !</p>',
+
+        // ── Actions / Tour ──
+        action_reveler: 'Révéler une tuile', action_construire: 'Construire',
+        action_caravane: 'Caravane', action_recruter: 'Recruter',
+        action_dispo: '🟡 Action disponible', action_prise: '🟡 Action prise',
+        action_libre: '🔵 Action libre',
+        ui_turn_action_hint: 'Choisis <b>1 action principale</b> ce tour (Révéler · Construire · Caravane · Recruter)',
+        ui_turn_action_hint_early: 'Choisis <b>1 action principale</b> ce tour (Révéler · Construire · Caravane). Le recrutement est libre en S1–S4.',
+        ui_combat_turn: '👺 Combat',
+        ui_preparing_defenses: 'Retour au jeu — préparez vos défenses',
+        ui_conjunction_perturbed: 'Conjonction Perturbée',
+        ui_no_action: 'Aucune action disponible',
+        ui_impossible_combat: 'Impossible during combat!',
+
+        // ── Placement bâtiment ──
+        ui_placement_hint: 'Cliquez une tuile verte pour placer',
+        ui_placement_active: '⚒︎ Placement de',
+        ui_placement_sub: 'Cliquez une tuile verte sur la carte',
+        ui_cancel_placement: '✕ Cancel placement',
+        ui_no_space: 'Plus d\'emplacement disponible.',
+
+        // ── Tiles (explore popups & logs) ──
+        tile_reveal_Prairie_log: 'Prairie révélée ! +{n} emplacements.',
+        tile_reveal_Collines_log: 'Collines révélées ! +10 Or/tour, +1 emplacement.',
+        tile_reveal_Montagne_log: 'Montagne révélée ! +30 Mana, +5 Mana/tour, +5 Or/tour.',
+        tile_reveal_Lac_log: 'Lac révélé ! +10 Pop (+5 par Conjonction).',
+        tile_reveal_Foret_log: 'Forêt révélée ! +1 Fortification.',
+        tile_Prairie_flavor: 'Des terres fertiles prêtes à être bâties.',
+        tile_Collines_flavor: 'Des collines riches en ressources.',
+        tile_Montagne_flavor: "Les cristaux irradient d\'énergie.",
+        tile_Lac_flavor: "Des réfugiés s\'installent au bord du lac.",
+        tile_Foret_flavor: 'Le bois renforce vos remparts.',
+        tile_bonus_prefix: 'Bonus tuile : ',
+
+        // ── Stats UI ──
+        stat_or: 'Or', stat_mana: 'Mana', stat_pop: 'Population',
+        stat_fort: 'Fortifications', stat_espace: 'Espaces',
+        stat_pertour: '/tour', stat_parconj: '/Conj',
+        stat_pouvoir_ville: 'Pouvoir Ville', stat_pouvoir_horde: 'Pouvoir Horde',
+
+        // ── Combat horde (résultat) ──
+        combat_victoire: '✓ Victory! Advantage of ',
+        combat_victoire_recule: ' — The horde retreats.',
+        combat_egalite: '⚖ Draw — You hold on, barely.',
+        combat_defaite: '✗ Defeat! The horde deals ',
+        combat_degats: ' damage to the city.',
+        combat_horde_label: '👹 Horde',
+        combat_ville_label: '🏰 Ville',
+        combat_fortif_label: 'Fortifications',
+        combat_troupes_inconnues: 'Unidentified troops',
+
+        // ── Recrutement ──
+        recruit_title: '⚔ Recruter',
+        recruit_none: 'Aucune unité disponible.',
+        recruit_no_caserne: 'Construisez une Caserne pour recruter.',
+        recruit_btn: 'Recruter',
+        recruit_cancel: 'Annuler',
+        recruit_cost: 'Coût :',
+        recruit_max: 'Max',
+        recruit_bought: '⚔ Conscrit acheté !',
+
+        // ── Caravane ──
+        caravane_title: '🛒 Caravane',
+        caravane_sent: '🛒 Caravane envoyée !',
+        caravane_or: 'Or',
+        caravane_mana: 'Mana',
+        caravane_pop: 'Pop',
+        caravane_perturb: '🌀 Conjonction perturbée ! Caravane ×1.5',
+        caravane_normal: '🛒 Caravane envoyée (hors conjonction).',
+
+        // ── Donjon ──
+        dungeon_title: 'Donjon',
+        dungeon_tour_abandonee: '🏚 Abandoned Tower',
+        dungeon_grotte: '🕳 Mysterious Cave',
+        dungeon_catacombes: '💀 Cursed Catacombs',
+        dungeon_ouroboros: '🐍 Aire d\'Ouroboros',
+        dungeon_enter: 'Entrer',
+        dungeon_cancel: 'Annuler',
+        dungeon_hp: 'PV',
+        dungeon_atk: 'ATK',
+        dungeon_def: 'DEF',
+        dungeon_prot: 'Prot',
+        dungeon_round: 'Round',
+        dungeon_victory: '🏆 Victoire !',
+        dungeon_defeat: '💀 Défaite',
+        dungeon_loot: 'Butin :',
+        dungeon_boss: 'BOSS',
+        dungeon_flee: 'Fuir',
+        dungeon_attack: 'Attaquer',
+        dungeon_no_weapon: 'Pas d\'arme équipée !',
+        dungeon_miss: 'Miss',
+        dungeon_weak: 'Weak',
+        dungeon_hit: 'Hit',
+        dungeon_perfect: 'Perfect',
+        dungeon_coquille: '🥚 Coquille d\'Oeuf du Temps obtenue !',
+        dungeon_ouroboros_win: 'Ouroboros vaincu en S',
+        dungeon_projection: '🔮 Projection active — l\'avatar reste disponible pour les donjons !',
+
+        // ── Équipement ──
+        equip_title: '🎒 Équipement',
+        equip_arme: 'Arme', equip_armure: 'Armure', equip_bijou: 'Bijou',
+        equip_glyphe: 'Glyphe', equip_potion: 'Potion',
+        equip_none: 'Aucun',
+        equip_vendre: 'Vendre',
+        equip_equiper: 'Équiper',
+        equip_desequiper: 'Déséquiper',
+
+        // ── Armée ──
+        army_tab_city: '⚔ Armée',
+        army_tab_horde: '👹 Horde',
+        army_no_units: 'No units recruited.',
+        army_horde_hidden: 'La horde n\'a pas encore été révélée.',
+        army_power_city: 'Pouvoir Ville',
+        army_power_horde: 'Pouvoir Horde',
+
+        // ── Saisons ──
+        season_Printemps: 'Spring', season_Ete: 'Summer',
+        season_Automne: 'Autumn', season_Hiver: 'Winter',
+
+        // ── Méta ──
+        meta_dust: '✨ Time Dust available',
+        meta_tab_hero: '⚔ Avatar', meta_tab_city: '🏰 Ville',
+        meta_tab_level: '△ Niveau', meta_tab_legendary: '🥚 Légendaire',
+        meta_buy: 'Acheter', meta_max: 'Max', meta_locked: 'Verrouillé',
+        meta_reset_run: 'Remettre à zéro les morts et la poussière dépensée ?',
+        meta_reset_all: 'Réinitialiser toute la méta-progression ?',
+        meta_nouveau_run: '▶ New Run',
+
+        // ── Save menu slots ──
+        save_ecraser: 'Écraser le slot ',
+        save_charger: 'Charger le slot ',
+        save_supprimer: 'Supprimer le slot ',
+        save_sauvegarder: 'Sauvegarder',
+        save_cloud: '☁ Sauvegarde cloud',
+
+        // ── Classe ──
+        class_choisir: 'Choisir la classe ',
+        class_reset_warn: 'au reset méta.',
+
+        // ── Météo ──
+        meteo_Ensoleille: '☀ Ensoleillé', meteo_Nuageux: '🌥 Nuageux',
+        meteo_Pluvieux: '🌧 Pluvieux', meteo_Orageux: '⛈ Orageux',
+        meteo_Neige: '❄ Neige', meteo_Brume: '🌫 Brume',
+        meteo_Canicule: '🌡 Canicule',
+
+        // ── Logs fréquents ──
+        log_benediction: '✨ Bénédiction : +',
+        log_benediction_tuiles: ' tile(s) blessed)',
+        log_soin_eglise: '⛪ Soin de l\'Église ! +',
+        log_soin_hp: ' HP',
+        log_fortif_perdue: '💥 Fortification détruite !',
+        log_batiment_detruit: '💥 Bâtiment détruit : ',
+        log_shell_obtenue: '🥚 Coquille obtenue ! Total : ',
+        log_rune_gravee: '⚒ Rune gravée sur toutes les unités !',
         lang_select_title: '🌐 Choisir la langue',
         lang_fr: '🇫🇷 Français',
         lang_en: '🇬🇧 English',
@@ -2522,6 +2676,160 @@ const LANGS = {
         tut_7_body: '<p>In <b>Seasons 1–4</b>, recruiting is a free action: you can do it as often as you like without spending your turn.</p><div class="ct-rule r-battle"><span class="ct-rule-ic">⚠</span><div>From <b>Season 5</b>, recruiting becomes a <b>main action</b>. Each recruitment session costs your turn — but you can recruit <b>multiple units</b> in one action.</div></div><div class="ct-rule r-free"><span class="ct-rule-ic">💡</span><div>Plan ahead: build your Barracks and Academy <b>before S5</b> to enjoy free recruitment in the early seasons.</div></div>',
         tut_8_title: 'Time Dust & Meta-Progression ✨',
         tut_8_body: '<p>At the end of each run you earn <b>✨ Time Dust</b>. It persists and lets you buy <b>permanent upgrades</b>: starting gold, stronger avatar, bonus buildings…</p><div class="ct-rule r-free"><span class="ct-rule-ic">🥚</span><div><b>Time Egg Shells</b> are earned in dungeons (winter boss turn 9, Ouroboros S4/S8…). They unlock <b>legendary buildings</b>: Great Tower, Elven Tree, Dwarven Fortress, Sanctuary, <b>Mirror Palace</b>.</div></div><p style="font-size:12px;color:#9a8a6a">Menu <b>≡</b> top-right for meta-progression. Each run makes you stronger!</p>',
+
+        // ── Actions / Turn ──
+        action_reveler: 'Reveal a tile', action_construire: 'Build',
+        action_caravane: 'Caravan', action_recruter: 'Recruit',
+        action_dispo: '🟡 Action available', action_prise: '🟡 Action taken',
+        action_libre: '🔵 Free action',
+        ui_turn_action_hint: 'Choose <b>1 main action</b> this turn (Reveal · Build · Caravan · Recruit)',
+        ui_turn_action_hint_early: 'Choose <b>1 main action</b> this turn (Reveal · Build · Caravan). Recruiting is free in S1–S4.',
+        ui_combat_turn: '👺 Combat',
+        ui_preparing_defenses: 'Back to game — prepare your defenses',
+        ui_conjunction_perturbed: 'Conjunction Disrupted',
+        ui_no_action: 'No action available',
+        ui_impossible_combat: 'Impossible during combat!',
+
+        // ── Building placement ──
+        ui_placement_hint: 'Click a green tile to place',
+        ui_placement_active: '⚒︎ Placing',
+        ui_placement_sub: 'Click a green tile on the map',
+        ui_cancel_placement: '✕ Cancel placement',
+        ui_no_space: 'No available slot.',
+
+        // ── Tiles ──
+        tile_reveal_Prairie_log: 'Grassland revealed! +{n} slots.',
+        tile_reveal_Collines_log: 'Hills revealed! +10 Gold/turn, +1 slot.',
+        tile_reveal_Montagne_log: 'Mountain revealed! +30 Mana, +5 Mana/turn, +5 Gold/turn.',
+        tile_reveal_Lac_log: 'Lake revealed! +10 Pop (+5 per Conjunction).',
+        tile_reveal_Foret_log: 'Forest revealed! +1 Fortification.',
+        tile_Prairie_flavor: 'Fertile lands ready to be built upon.',
+        tile_Collines_flavor: 'Hills rich in resources.',
+        tile_Montagne_flavor: 'The crystals radiate energy.',
+        tile_Lac_flavor: 'Refugees settle by the lake.',
+        tile_Foret_flavor: 'The wood reinforces your ramparts.',
+        tile_bonus_prefix: 'Tile bonus: ',
+
+        // ── Stats UI ──
+        stat_or: 'Gold', stat_mana: 'Mana', stat_pop: 'Population',
+        stat_fort: 'Fortifications', stat_espace: 'Slots',
+        stat_pertour: '/turn', stat_parconj: '/Conj',
+        stat_pouvoir_ville: 'City Power', stat_pouvoir_horde: 'Horde Power',
+
+        // ── Horde combat result ──
+        combat_victoire: '✓ Victory! Advantage of ',
+        combat_victoire_recule: ' — The horde retreats.',
+        combat_egalite: '⚖ Draw — You hold on, barely.',
+        combat_defaite: '✗ Defeat! The horde deals ',
+        combat_degats: ' damage to the city.',
+        combat_horde_label: '👹 Horde',
+        combat_ville_label: '🏰 City',
+        combat_fortif_label: 'Fortifications',
+        combat_troupes_inconnues: 'Unidentified troops',
+
+        // ── Recruitment ──
+        recruit_title: '⚔ Recruit',
+        recruit_none: 'No units available.',
+        recruit_no_caserne: 'Build a Barracks to recruit.',
+        recruit_btn: 'Recruit',
+        recruit_cancel: 'Cancel',
+        recruit_cost: 'Cost:',
+        recruit_max: 'Max',
+        recruit_bought: '⚔ Conscript bought!',
+
+        // ── Caravan ──
+        caravane_title: '🛒 Caravan',
+        caravane_sent: '🛒 Caravan dispatched!',
+        caravane_or: 'Gold',
+        caravane_mana: 'Mana',
+        caravane_pop: 'Pop',
+        caravane_perturb: '🌀 Conjunction disrupted! Caravan ×1.5',
+        caravane_normal: '🛒 Caravan dispatched (no conjunction).',
+
+        // ── Dungeon ──
+        dungeon_title: 'Dungeon',
+        dungeon_tour_abandonee: '🏚 Abandoned Tower',
+        dungeon_grotte: '🕳 Mysterious Cave',
+        dungeon_catacombes: '💀 Cursed Catacombs',
+        dungeon_ouroboros: '🐍 Ouroboros Lair',
+        dungeon_enter: 'Enter',
+        dungeon_cancel: 'Cancel',
+        dungeon_hp: 'HP',
+        dungeon_atk: 'ATK',
+        dungeon_def: 'DEF',
+        dungeon_prot: 'Prot',
+        dungeon_round: 'Round',
+        dungeon_victory: '🏆 Victory!',
+        dungeon_defeat: '💀 Defeat',
+        dungeon_loot: 'Loot:',
+        dungeon_boss: 'BOSS',
+        dungeon_flee: 'Flee',
+        dungeon_attack: 'Attack',
+        dungeon_no_weapon: 'No weapon equipped!',
+        dungeon_miss: 'Miss',
+        dungeon_weak: 'Weak',
+        dungeon_hit: 'Hit',
+        dungeon_perfect: 'Perfect',
+        dungeon_coquille: '🥚 Time Egg Shell obtained!',
+        dungeon_ouroboros_win: 'Ouroboros defeated in S',
+        dungeon_projection: '🔮 Projection active — avatar remains available for dungeons!',
+
+        // ── Equipment ──
+        equip_title: '🎒 Equipment',
+        equip_arme: 'Weapon', equip_armure: 'Armor', equip_bijou: 'Jewel',
+        equip_glyphe: 'Glyph', equip_potion: 'Potion',
+        equip_none: 'None',
+        equip_vendre: 'Sell',
+        equip_equiper: 'Equip',
+        equip_desequiper: 'Unequip',
+
+        // ── Army ──
+        army_tab_city: '⚔ Army',
+        army_tab_horde: '👹 Horde',
+        army_no_units: 'No units recruited.',
+        army_horde_hidden: 'The horde has not been revealed yet.',
+        army_power_city: 'City Power',
+        army_power_horde: 'Horde Power',
+
+        // ── Seasons ──
+        season_Printemps: 'Spring', season_Ete: 'Summer',
+        season_Automne: 'Autumn', season_Hiver: 'Winter',
+
+        // ── Meta ──
+        meta_dust: '✨ Time Dust available',
+        meta_tab_hero: '⚔ Avatar', meta_tab_city: '🏰 City',
+        meta_tab_level: '△ Level', meta_tab_legendary: '🥚 Legendary',
+        meta_buy: 'Buy', meta_max: 'Max', meta_locked: 'Locked',
+        meta_reset_run: 'Reset deaths and spent dust?',
+        meta_reset_all: 'Reset all meta-progression?',
+        meta_nouveau_run: '▶ New Run',
+
+        // ── Save menu slots ──
+        save_ecraser: 'Overwrite slot ',
+        save_charger: 'Load slot ',
+        save_supprimer: 'Delete slot ',
+        save_sauvegarder: 'Save',
+        save_cloud: '☁ Cloud save',
+
+        // ── Class ──
+        class_choisir: 'Choose class ',
+        class_reset_warn: 'on meta reset.',
+
+        // ── Weather ──
+        meteo_Ensoleille: '☀ Sunny', meteo_Nuageux: '🌥 Cloudy',
+        meteo_Pluvieux: '🌧 Rainy', meteo_Orageux: '⛈ Stormy',
+        meteo_Neige: '❄ Snow', meteo_Brume: '🌫 Foggy',
+        meteo_Canicule: '🌡 Heatwave',
+
+        // ── Frequent logs ──
+        log_benediction: '✨ Blessing: +',
+        log_benediction_tuiles: ' tile(s) blessed)',
+        log_soin_eglise: '⛪ Church healed! +',
+        log_soin_hp: ' HP',
+        log_fortif_perdue: '💥 Fortification destroyed!',
+        log_batiment_detruit: '💥 Building destroyed: ',
+        log_shell_obtenue: '🥚 Shell obtained! Total: ',
+        log_rune_gravee: '⚒ Rune engraved on all units!',
         lang_select_title: '🌐 Choose Language',
         lang_fr: '🇫🇷 Français',
         lang_en: '🇬🇧 English',
@@ -2808,7 +3116,7 @@ function showCityPanel() {
         panel.innerHTML =
             '<div style="background:#0e0e1a;border-radius:14px;border:1px solid #2a2a4a;'+
             'padding:20px;width:320px;max-width:92vw">'+
-            '<div style="font-size:16px;font-weight:bold;color:#ffd060;margin-bottom:14px">🏰 Ville</div>'+
+            '<div style="font-size:16px;font-weight:bold;color:#ffd060;margin-bottom:14px">🏰 '+t('meta_tab_city').slice(2)+'</div>'+
 
             '<div style="background:#12121e;border-radius:8px;padding:10px;margin-bottom:10px">'+
             '<div style="font-size:12px;color:#9a8a6a;margin-bottom:6px">Fortifications</div>'+
@@ -2936,13 +3244,13 @@ function addLog(message) {
 			if (blessedTiles.length > 0) {
 				const bonus = Math.floor(blessedTiles.length * 5 * mult);
 				gold += bonus; population += bonus;
-				addLog('✨ Bénédiction : +'+bonus+' Or +'+bonus+' Pop ('+blessedTiles.length+' tuiles bénie(s))');
+				addLog(t('log_benediction')+bonus+' Or +'+bonus+' Pop ('+blessedTiles.length+t('log_benediction_tuiles'));
 			}
 		}
         const bonusLabel = caravanMult > 1 ? ' (×'+caravanMult.toFixed(1)+' caravane)' : '';
         if (isConjonction) {
             if (isDisrupted) {
-                addLog('🌀 Conjonction perturbée ! Caravane ×1.5'+bonusLabel+' — +' + Math.floor(goldperturn*mult) + ' Or, +' + Math.floor(manaperturn*mult) + ' Mana, +' + Math.floor(populationperturn*mult) + ' Population !');
+                addLog(t('caravane_perturb')+bonusLabel+' — +' + Math.floor(goldperturn*mult) + ' Or, +' + Math.floor(manaperturn*mult) + ' Mana, +' + Math.floor(populationperturn*mult) + ' Population !');
             } else {
                 addLog('🌟 Conjonction ! Caravane ×2'+bonusLabel+' — +' + Math.floor(goldperturn*mult) + ' Or, +' + Math.floor(manaperturn*mult) + ' Mana, +' + Math.floor(populationperturn*mult) + ' Population !');
             }
@@ -2966,7 +3274,7 @@ const turnEvents = [
     { icon: '❖', get name(){ return t('event_Exploration'); }, get desc(){ return t('event_Exploration_desc'); }, color: '#1a3a5a', border: '#4a90d9' },
     { icon: '⚔',  get name(){ return t('event_HordeAttaque'); }, get desc(){ return t('event_HordeAttaque_desc'); }, color: '#3a0a0a', border: '#e05050', isBattleTurn: true },
 ];
-const seasonNames = ['Printemps', 'Été', 'Automne', 'Hiver'];
+const seasonNames = [t('season_Printemps'), t('season_Ete'), t('season_Automne'), t('season_Hiver')];
 const seasonColors = ['#1a5a1a', '#5a3a00', '#5a2a00', '#1a1a5a'];
 
 function showTurnAnimation(turnNum, season, callback) {
@@ -3100,7 +3408,7 @@ function showTurnAnimation(turnNum, season, callback) {
             const newUnits = generateHordeForSeason(currentSeason);
             const fog = applyFogOfWar(newUnits, currentSeason);
             const seasonIdx = (currentSeason - 1) % 4;
-            const sNames = ['Printemps','Été','Automne','Hiver'];
+            const sNames = [t('season_Printemps'),t('season_Ete'),t('season_Automne'),t('season_Hiver')];
             hordePrevSeason = [...hordeArmy];
             hordeCurrentAdditions = [...fog.visible];
             hordeCurrentSeason = currentSeason;
@@ -3241,7 +3549,7 @@ function updateRecruitMode(endTurnVisible) {
 
 function updateTimeline() {
     const container = document.getElementById('timeline-steps');
-    const seasonNames = ['Printemps', 'Été', 'Automne', 'Hiver'];
+    const seasonNames = [t('season_Printemps'), t('season_Ete'), t('season_Automne'), t('season_Hiver')];
     window.currentSeason = currentSeason;
     document.getElementById('timeline-season').textContent =
         t('ui_season') + ' ' + currentSeason + ' — ' + (seasonNames[(currentSeason - 1) % 4] || t('ui_season') + ' ' + currentSeason);
@@ -3341,20 +3649,20 @@ function showHordeBattleScreen(hordeAtk, cityAtk, diff, hordeLog, cityLog) {
 
     if (won && !draw) {
         res.style.background = '#0a2a0a'; res.style.color = '#4cffaa';
-        res.textContent = '✓ Victoire ! Avantage de '+(diff)+' — La horde recule.';
+        res.textContent = t('combat_victoire')+(diff)+t('combat_victoire_recule');
         dust += 5; gold += diff * 2;
         addLog('Victoire contre la horde ! +5 XP, +'+(diff*2)+' Or');
         btn.style.background = '#2e6e3e'; btn.style.color = '#cfffd5';
     } else if (draw) {
         res.style.background = '#1a1a0a'; res.style.color = '#ffff80';
-        res.textContent = '⚖ Égalité — Vous tenez bon, de justesse.';
+        res.textContent = t('combat_egalite');
         btn.style.background = '#3a3a10'; btn.style.color = '#ffff80';
     } else {
         const dmg = Math.abs(diff);
         fortifications = Math.max(0, fortifications - dmg);
         updateStats();
         res.style.background = '#2a0a0a'; res.style.color = '#ff6060';
-        res.textContent = '✗ Défaite ! La horde inflige '+dmg+' dégât(s) — Fortifications : '+fortifications;
+        res.textContent = t('combat_defaite')+dmg+' dégât(s) — Fortifications : '+fortifications;
         eff.textContent = fortifications <= 0 ? 'Plus aucune fortification — la ville est tombée !' : '';
         addLog('Défaite ! -'+dmg+' fortifications. Restant : '+fortifications);
         btn.style.background = '#5a1a1a'; btn.style.color = '#ffd0d0';
@@ -3425,7 +3733,7 @@ function avatarJoinHorde(yes) {
         // Projection : l'avatar participe mais reste disponible ce tour
         if (window._catacombsProjection) {
             window._catacombsProjection = false; // consommé
-            addLog('🔮 Projection active — l\'avatar reste disponible pour les donjons !');
+            addLog(t('dungeon_projection'));
             // avatarBlocked reste false
         } else {
             window.avatarBlocked = true;
@@ -4039,7 +4347,7 @@ function openDungeon(afterCallback, dungeonType) {
     dungeonState.avatarMaxHp = avatarMaxHp;
     document.getElementById('dungeon-log').innerHTML = '';
     document.getElementById('dungeon-screen')?.classList.add('show');
-    const _dungeonNames = { tour:'🏚 Tour Abandonnée', grotte:'🕳 Grotte Mystérieuse', catacombes:'💀 Catacombes Maudites', ouroboros:'🐍 Aire d\'Ouroboros' };
+    const _dungeonNames = { tour:t('dungeon_tour_abandonee'), grotte:t('dungeon_grotte'), catacombes:t('dungeon_catacombes'), ouroboros:'🐍 Aire d\'Ouroboros' };
     document.getElementById('dungeon-title').textContent = _dungeonNames[_type] || '🏰 Donjon';
     showDoorChoice();
 }
@@ -6945,7 +7253,7 @@ function renderArmyTabHorde() {
     if (!hordeRevealed) {
         if (hordePrevSeason.length > 0 && currentSeason > 1) {
             // S2+ tours 1-4 : montrer la horde de S-1
-            const sNames2 = ['Printemps','Été','Automne','Hiver'];
+            const sNames2 = [t('season_Printemps'),t('season_Ete'),t('season_Automne'),t('season_Hiver')];
             const antiCounts2 = {};
             cityArmy.forEach(function(c){ c.traits.forEach(function(t){
                 if (t.startsWith('anti')) antiCounts2[t] = (antiCounts2[t]||0)+1;
@@ -6969,7 +7277,7 @@ function renderArmyTabHorde() {
         }
         return;
     }
-    const sNames = ['Printemps','Été','Automne','Hiver'];
+    const sNames = [t('season_Printemps'),t('season_Ete'),t('season_Automne'),t('season_Hiver')];
     // Compter les anti par trait pour l'affichage (même logique que le calcul réel)
     const antiCountsDisplay = {};
     cityArmy.forEach(function(c){ c.traits.forEach(function(t){
@@ -7537,28 +7845,28 @@ function applyTileReveal(idx, forceType) {
     switch(type) {
         case 'Prairie':
             space += tt.slots;
-            logMessage = 'Prairie révélée ! +'+tt.slots+' emplacements.';
-            showExplorePopup('Prairie 🌾', '+'+tt.slots+' Emplacements', 'Des terres fertiles prêtes à être bâties.');
+            logMessage = t('tile_reveal_Prairie_log').replace('{n}', tt.slots);
+            showExplorePopup(t('tile_Prairie')+' 🌾', '+'+tt.slots+' '+t('tile_Prairie_desc'), t('tile_Prairie_flavor'));
             break;
         case 'Collines':
             goldperturn += 10; space += 1;
-            logMessage = 'Collines révélées ! +10 Or/tour, +1 emplacement.';
-            showExplorePopup('Collines ⛰', '+10 Or/tour | +1 Emplacement', 'Des collines riches en ressources.');
+            logMessage = t('tile_reveal_Collines_log');
+            showExplorePopup(t('tile_Collines')+' ⛰', t('tile_Collines_desc'), t('tile_Collines_flavor'));
             break;
         case 'Montagne':
             mana += 30; manaperturn += 5; goldperturn += 5;
-            logMessage = 'Montagne révélée ! +30 Mana, +5 Mana/tour, +5 Or/tour.';
-            showExplorePopup('Montagne 🏔', '+30 Mana | +5 Mana/tour | +5 Or/tour', "Les cristaux irradient d'énergie.");
+            logMessage = t('tile_reveal_Montagne_log');
+            showExplorePopup(t('tile_Montagne')+' 🏔', t('tile_Montagne_desc'), t('tile_Montagne_flavor'));
             break;
         case 'Lac':
             population += 10; populationperturn += 5; space += 1;
-            logMessage = 'Lac révélé ! +10 Pop (+5 par Conjonction).';
-            showExplorePopup('Lac 💧', '+10 Pop | +5/Conjonction | +1 Emplacement', "Des réfugiés s'installent au bord du lac.");
+            logMessage = t('tile_reveal_Lac_log');
+            showExplorePopup(t('tile_Lac')+' 💧', t('tile_Lac_desc'), t('tile_Lac_flavor'));
             break;
         case 'Forêt':
             fortifications += 1; space += 1;
-            logMessage = 'Forêt révélée ! +1 Fortification.';
-            showExplorePopup('Forêt 🌲', '+1 Fortification | +1 Emplacement', 'Le bois renforce vos remparts.');
+            logMessage = t('tile_reveal_Foret_log');
+            showExplorePopup(t('tile_Foret')+' 🌲', t('tile_Foret_desc'), t('tile_Foret_flavor'));
             break;
     }
     if (logMessage) addLog(logMessage);
@@ -7585,8 +7893,8 @@ function renderBuildPanelList() {
         // Mode placement actif : montrer un message + bouton annuler
         el.innerHTML =
             '<div style="background:#0a2a1a;border-radius:8px;padding:10px;text-align:center;color:#4cffaa;font-size:12px">'+
-            '⚒︎ Placement de <b>'+actionBuildingSelected+'</b><br>'+
-            '<span style="color:#9a8a6a;font-size:10px">Cliquez une tuile verte sur la carte</span>'+
+            t('ui_placement_active')+' <b>'+actionBuildingSelected+'</b><br>'+
+            '<span style="color:#9a8a6a;font-size:10px">'+t('ui_placement_sub')+'</span>'+
             '</div>'+
             '<button onclick="cancelTilePlacement()" style="width:100%;margin-top:8px;padding:6px;border:none;border-radius:6px;background:#2a1a1a;color:#ff8080;cursor:pointer;font-size:11px">✕ Annuler le placement</button>';
         return;
@@ -7883,7 +8191,7 @@ function removeBuildingEffects(name) {
 
 function calcScoutVisibility() {
     // Visibilité de base selon la saison
-    const seasonNames = ['Printemps','Été','Automne','Hiver'];
+    const seasonNames = [t('season_Printemps'),t('season_Ete'),t('season_Automne'),t('season_Hiver')];
     const seasonIdx = (currentSeason - 1) % 4;
     const baseVis = 4 - seasonIdx; // Printemps=4, Été=3, Automne=2, Hiver=1
 
@@ -7915,7 +8223,7 @@ function doCityHeal() {
     gold -= 30; mana -= 20;
     const h = Math.min(3, avatarMaxHp - avatarHp);
     avatarHp += h;
-    addLog('⛪ Soin de l\'Église ! +'+h+' HP ('+avatarHp+'/'+avatarMaxHp+')');
+    addLog(t('log_soin_eglise')+h+' HP ('+avatarHp+'/'+avatarMaxHp+')');
     updateStats();
 }
 
@@ -8678,7 +8986,7 @@ function startNewRun() {
 }
 
 function resetAllMeta() {
-    if(confirm('Réinitialiser toute la méta-progression ?')) {
+    if(confirm(t('meta_reset_all'))) {
         localStorage.removeItem('cityRogue_meta');
         location.reload();
     }
@@ -9858,7 +10166,7 @@ function toggleMetaSummary() {
 }
 
 function resetRunStats() {
-    if (confirm('Remettre à zéro les morts et la poussière dépensée ?')) {
+    if (confirm(t('meta_reset_run'))) {
         window._runDustAwarded = false; runDeaths = 0; runDustSpent = 0;
         if (activeSlot !== null) saveToSlot(activeSlot);
         renderMetaSummary();
@@ -9995,11 +10303,11 @@ function renderSaveMenu() {
             const btnLoad = document.createElement('button');
             btnLoad.textContent = '📂'; btnLoad.title = 'Charger'; btnLoad.disabled = !info;
             btnLoad.style.cssText = 'background:#1a1a2e;border:1px solid #4a4060;color:'+(info?'#4cffaa':'#333')+';border-radius:5px;padding:4px 8px;cursor:'+(info?'pointer':'default')+';font-size:14px';
-            if (info) btnLoad.onclick = (function(s){ return function(){ if(confirm('Charger le slot '+(s+1)+' ?')){ loadFromSlot(s); } }; })(i);
+            if (info) btnLoad.onclick = (function(s){ return function(){ if(confirm(t('save_charger')+(s+1)+' ?')){ loadFromSlot(s); } }; })(i);
             const btnDel = document.createElement('button');
             btnDel.textContent = '🗑'; btnDel.title = 'Supprimer'; btnDel.disabled = !info;
             btnDel.style.cssText = 'background:#1a1a2e;border:1px solid #4a4060;color:'+(info?'#ff6060':'#333')+';border-radius:5px;padding:4px 8px;cursor:'+(info?'pointer':'default')+';font-size:14px';
-            if (info) btnDel.onclick = (function(s){ return function(){ if(confirm('Supprimer le slot '+(s+1)+' ?')){ deleteSave(s); } }; })(i);
+            if (info) btnDel.onclick = (function(s){ return function(){ if(confirm(t('save_supprimer')+(s+1)+' ?')){ deleteSave(s); } }; })(i);
             div.appendChild(label); div.appendChild(btnLoad); div.appendChild(btnDel);
             slots.appendChild(div);
         }
@@ -10089,7 +10397,7 @@ function homeNew() {
             div.innerHTML = '<div style="font-size:24px">✦</div><div class="home-slot-info"><div class="home-slot-name">Slot '+(i+1)+'</div><div style="color:#4cffaa">Vide — Nouveau run</div></div>';
         }
         div.onclick = (function(slot, hasData){ return function(){
-            if (hasData && !confirm('Écraser le slot '+(slot+1)+' ?')) return;
+            if (hasData && !confirm(t('save_ecraser')+(slot+1)+' ?')) return;
             const emptyMeta = JSON.parse(JSON.stringify(META_DEFAULTS));
             localStorage.setItem(META_KEY, JSON.stringify(emptyMeta));
             window._meta = emptyMeta;
@@ -10683,7 +10991,7 @@ function awardShell() {
     m.shellsEarned.push(key);
     saveMeta(m);
     window._meta = m;
-    addLog('🥚 Coquille d\'Oeuf du Temps obtenue ! Total : ' + m.shells);
+    addLog(t('log_shell_obtenue') + m.shells);
     updateStats();
     if (typeof renderMetaLevel === 'function') renderMetaLevel();
     if (typeof renderMetaSummary === 'function') renderMetaSummary();
@@ -10717,7 +11025,7 @@ function awardOuroboros() {
     if (!m.shells) m.shells = 0;
     m.shells++;
     saveMeta(m); window._meta = m;
-    addLog('🥚 Coquille d\'Oeuf du Temps obtenue ! Ouroboros vaincu en S'+currentSeason+'. Total : ' + m.shells);
+    addLog(t('dungeon_coquille')+' '+t('dungeon_ouroboros_win')+currentSeason+'. Total : ' + m.shells);
     updateStats();
     if (typeof renderMetaLevel === 'function') renderMetaLevel();
     if (typeof renderMetaSummary === 'function') renderMetaSummary();
@@ -10734,7 +11042,7 @@ function showCatacombsReward() {
         { label:'👥 +5 Pop.',     apply: function(){ population += 5; addLog('👥 Catacombes : +5 Population.'); updateStats(); } },
         { label:'🔮 Projection',  apply: function(){
             window._catacombsProjection = true;
-            addLog('🔮 Projection : l\'avatar peut rejoindre la horde ET rester disponible ce tour.');
+            addLog(t('dungeon_projection'));
         }},
     ];
     // Créer le modal
@@ -11687,7 +11995,7 @@ function openRuneChoiceModal() {
 function applyRune(traitName) {
     document.getElementById('rune-choice-modal').style.display = 'none';
     cityArmy.forEach(function(u){ u.traits.push(traitName); });
-    addLog('⚒ Rune '+traitName+' gravée sur toutes les unités !');
+    addLog(t('log_rune_gravee').split(' ')[0]+' '+traitName+' gravée sur toutes les unités !');
     const m = getMeta();
     if (!m.legendaryOptions) m.legendaryOptions = {};
     m.legendaryOptions['fn_runes'] = true;
@@ -13937,13 +14245,13 @@ body.clarity-on #clarity-resbar {
     window.clarityRenderStatus = function() { renderStatus(); };
     function renderStatus() {
         const s = document.getElementById('cb-status');
-        const t = document.getElementById('cb-turn');
-        if (!s || !t) return;
+        const turnEl = document.getElementById('cb-turn');
+        if (!s || !turnEl) return;
         const turn = readTurn();
         const season = readSeason();
-        const seasonNames = ['Printemps', 'Été', 'Automne', 'Hiver'];
+        const seasonNames = [t('season_Printemps'), t('season_Ete'), t('season_Automne'), t('season_Hiver')];
         const seasonName = seasonNames[(season - 1) % 4];
-        t.textContent = `Tour ${turn} / 10 · Saison ${season} — ${seasonName}`;
+        turnEl.textContent = `Tour ${turn} / 10 · Saison ${season} — ${seasonName}`;
         // Masquer l'affichage redondant de la timeline
         const tlSeason = document.getElementById('timeline-season');
         if (tlSeason) tlSeason.style.display = 'none';
