@@ -854,9 +854,9 @@
                     document.getElementById('fb-user-name').textContent = user.displayName || user.email;
                     // fbOnLogin charge la méta et le pseudo — on attend qu'il finisse
                     if (typeof window.fbOnLogin === 'function') {
-                        Promise.resolve(window.fbOnLogin(user)).then(function(){ _fbLoginResolve(user); });
+                        Promise.resolve(window.fbOnLogin(user)).then(function(){ if(typeof loadLang==='function')loadLang(); _fbLoginResolve(user); });
                     } else {
-                        _fbLoginResolve(user);
+                        if(typeof loadLang==='function')loadLang(); _fbLoginResolve(user);
                     }
                 } else {
                     document.getElementById('fb-login-screen').style.display = 'flex';
@@ -1088,14 +1088,15 @@
     <div style="text-align:center;margin-bottom:10px">
         <div style="font-family:Cinzel,serif;font-size:28px;color:#c0a060;letter-spacing:3px;text-shadow:0 0 20px rgba(180,140,60,0.4)">⚔ Chronocity — A Roguelite City Builder</div>
         <div id="home-player-info" style="font-size:12px;color:#6a5a7a;margin-top:6px;min-height:18px"></div>
-        <button onclick="showLadder()" style="margin-top:8px;padding:6px 18px;background:#0a0818;border:1px solid #3a2a5a;border-radius:8px;color:#9a7aaa;font-size:11px;cursor:pointer;font-family:Cinzel,serif">🏆 Classement</button>
+        <button id="home-btn-ladder" onclick="showLadder()" style="margin-top:8px;padding:6px 18px;background:#0a0818;border:1px solid #3a2a5a;border-radius:8px;color:#9a7aaa;font-size:11px;cursor:pointer;font-family:Cinzel,serif">🏆 Classement</button>
         <div style="font-size:11px;color:#4a3a5a;margin-top:6px;letter-spacing:2px" data-version="0.595">VERSION 0.595</div>
     </div>
     <div id="home-menu" style="display:flex;flex-direction:column;gap:10px;width:min(340px,90vw)">
-        <button onclick="homeLoad()" style="width:100%;padding:16px 0;font-family:Cinzel,serif;font-size:14px;cursor:pointer;border-radius:8px;background:linear-gradient(135deg,#1a1030,#2a1a40);color:#c080ff;border:1px solid #5040a0">📂 Charger une partie</button>
-        <button onclick="homeNew()"  style="width:100%;padding:16px 0;font-family:Cinzel,serif;font-size:14px;cursor:pointer;border-radius:8px;background:linear-gradient(135deg,#0a1a0a,#1a2a0a);color:#4cffaa;border:1px solid #2a5a2a">✦ Commencer une partie</button>
-        <button onclick="openGlossary()" style="width:100%;padding:16px 0;font-family:Cinzel,serif;font-size:14px;cursor:pointer;border-radius:8px;background:linear-gradient(135deg,#0a0818,#1a1028);color:#9a8a6a;border:1px solid #2a1a3a">📖 Glossaire</button>
+        <button id="home-btn-load" onclick="homeLoad()" style="width:100%;padding:16px 0;font-family:Cinzel,serif;font-size:14px;cursor:pointer;border-radius:8px;background:linear-gradient(135deg,#1a1030,#2a1a40);color:#c080ff;border:1px solid #5040a0">📂 Charger une partie</button>
+        <button id="home-btn-new" onclick="homeNew()"  style="width:100%;padding:16px 0;font-family:Cinzel,serif;font-size:14px;cursor:pointer;border-radius:8px;background:linear-gradient(135deg,#0a1a0a,#1a2a0a);color:#4cffaa;border:1px solid #2a5a2a">✦ Commencer une partie</button>
+        <button id="home-btn-glossary" onclick="openGlossary()" style="width:100%;padding:16px 0;font-family:Cinzel,serif;font-size:14px;cursor:pointer;border-radius:8px;background:linear-gradient(135deg,#0a0818,#1a1028);color:#9a8a6a;border:1px solid #2a1a3a">📖 Glossaire</button>
         <a href="mailto:chronocity.roguegame@gmail.com?subject=Feedback%20/%20Bug%20Chronocity" style="display:block;width:100%;padding:16px 0;font-family:Cinzel,serif;font-size:14px;cursor:pointer;border-radius:8px;background:linear-gradient(135deg,#1a0a0a,#2a1010);color:#ff9060;border:1px solid #5a2a1a;text-align:center;text-decoration:none;box-sizing:border-box">📧 Feedback / Bug</a>
+        <button id="home-btn-lang" onclick="openLangSelector()" style="width:100%;padding:12px 0;font-family:Cinzel,serif;font-size:13px;cursor:pointer;border-radius:8px;background:#08080e;color:#7a6a9a;border:1px solid #2a2040">🌐 Langue / Language</button>
     </div>
     <div id="home-slots" style="display:none;flex-direction:column;gap:8px;width:min(360px,92vw)"></div>
     <button id="home-back-btn" onclick="homeBack()" style="display:none;background:none;border:none;color:#4a3a5a;cursor:pointer;font-size:12px">← Retour</button>
@@ -1157,7 +1158,7 @@
 </div>
 <div id="save-menu" style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#0a0818;border:1px solid #3a2a5a;border-radius:12px;padding:16px 20px;z-index:10000;flex-direction:column;gap:8px;min-width:300px;max-width:360px;box-shadow:0 0 40px rgba(80,40,120,0.4)">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
-        <div style="font-family:Cinzel,serif;font-size:14px;color:#c0a060;letter-spacing:1px">💾 Sauvegardes</div>
+        <div id="save-menu-title" style="font-family:Cinzel,serif;font-size:14px;color:#c0a060;letter-spacing:1px">☰ Menu</div>
         <div style="display:flex;align-items:center;gap:6px">
             <button onclick="renderSaveMenu()" style="background:none;border:none;color:#6a5a80;font-size:14px;cursor:pointer;line-height:1" title="Rafraîchir depuis le cloud">🔄</button>
             <button onclick="hideSaveMenu()" style="background:none;border:none;color:#6a5a80;font-size:18px;cursor:pointer;line-height:1">✕</button>
@@ -1165,12 +1166,13 @@
     </div>
     <div id="save-cloud-status" style="font-size:9px;color:#4a3a5a;text-align:right;margin-top:-4px"></div>
     <div id="save-slots"></div>
-    <button onclick="openGlossary(true)" style="width:100%;background:#0a0818;border:1px solid #2a1a3a;color:#9a8a6a;border-radius:6px;padding:6px 0;font-family:Cinzel,serif;font-size:11px;cursor:pointer;margin-top:4px">📖 Glossaire</button>
-    <button onclick="if(confirm('Commencer un nouveau run ? La partie en cours sera perdue.')){ hideSaveMenu(); initNewRun(); }" style="width:100%;background:linear-gradient(135deg,#0a1a0a,#1a2a0a);border:1px solid #2a5a2a;color:#4cffaa;border-radius:6px;padding:7px 0;font-family:Cinzel,serif;font-size:11px;cursor:pointer;margin-top:2px">▶ Commencer un nouveau run</button>
+    <button id="menu-glossary-btn" onclick="openGlossary(true)" style="width:100%;background:#0a0818;border:1px solid #2a1a3a;color:#9a8a6a;border-radius:6px;padding:6px 0;font-family:Cinzel,serif;font-size:11px;cursor:pointer;margin-top:4px">📖 Glossaire</button>
+    <button id="menu-new-run-btn" onclick="if(confirm(t('menu_confirm_new_run'))){ hideSaveMenu(); initNewRun(); }" style="width:100%;background:linear-gradient(135deg,#0a1a0a,#1a2a0a);border:1px solid #2a5a2a;color:#4cffaa;border-radius:6px;padding:7px 0;font-family:Cinzel,serif;font-size:11px;cursor:pointer;margin-top:2px">▶ Commencer un nouveau run</button>
     <div style="border-top:1px solid #2a2040;margin-top:4px;padding-top:10px;display:flex;gap:8px">
-        <button onclick="resetRunFromMenu(true)" style="flex:1;background:linear-gradient(135deg,#1a0a0a,#2a0a0a);color:#ff8060;border:1px solid #5a2a2a;border-radius:6px;padding:7px 0;font-family:Cinzel,serif;font-size:11px;cursor:pointer">↺ Reset run</button>
-        <button onclick="resetRunFromMenu(false)" style="flex:1;background:linear-gradient(135deg,#2a0808,#3a0808);color:#ff4040;border:1px solid #7a2a2a;border-radius:6px;padding:7px 0;font-family:Cinzel,serif;font-size:11px;cursor:pointer">⚠ Reset run+méta</button>
+        <button id="menu-reset-run-btn" onclick="resetRunFromMenu(true)" style="flex:1;background:linear-gradient(135deg,#1a0a0a,#2a0a0a);color:#ff8060;border:1px solid #5a2a2a;border-radius:6px;padding:7px 0;font-family:Cinzel,serif;font-size:11px;cursor:pointer">↺ Reset run</button>
+        <button id="menu-reset-all-btn" onclick="resetRunFromMenu(false)" style="flex:1;background:linear-gradient(135deg,#2a0808,#3a0808);color:#ff4040;border:1px solid #7a2a2a;border-radius:6px;padding:7px 0;font-family:Cinzel,serif;font-size:11px;cursor:pointer">⚠ Reset run+méta</button>
     </div>
+    <button onclick="openLangSelector()" style="width:100%;background:#08080e;border:1px solid #2a2040;color:#7a6a9a;border-radius:6px;padding:6px 0;font-family:Cinzel,serif;font-size:11px;cursor:pointer;margin-top:2px">🌐 Langue / Language</button>
 </div>
 
 
@@ -1538,7 +1540,7 @@
     <div id="timeline-season">Saison 1</div>
     <div style="font-family:Cinzel,serif;font-size:9px;color:#3a3050;margin-left:auto;padding-left:8px;white-space:nowrap">v0.595</div>
     <div id="timeline-steps"></div>
-    <button onclick="toggleSaveMenu()" style="background:linear-gradient(135deg,#1a1030,#2a1a40);border:1px solid #4a3060;color:#c0a060;font-size:14px;cursor:pointer;padding:2px 8px;border-radius:5px;white-space:nowrap;flex-shrink:0" title="Sauvegardes">💾 Save</button>
+    <button id="main-menu-btn" onclick="toggleSaveMenu()" style="background:linear-gradient(135deg,#1a1030,#2a1a40);border:1px solid #4a3060;color:#c0a060;font-size:16px;cursor:pointer;padding:2px 10px;border-radius:5px;white-space:nowrap;flex-shrink:0;letter-spacing:1px" title="Menu">☰ Menu</button>
     <button onclick="toggleMetaSummary()" style="background:linear-gradient(135deg,#101a10,#1a2a1a);border:1px solid #2a5a2a;color:#4cffaa;font-size:14px;cursor:pointer;padding:2px 8px;border-radius:5px;white-space:nowrap;flex-shrink:0" title="Résumé méta">✦ Méta</button>
 </div>
 
@@ -1910,17 +1912,747 @@ const TILE_IMAGES = {
     Montagne: 'https://raw.githubusercontent.com/sylenjalbert-boop/chronocity/main/img/montagne.jpeg',
     Prairie:  'https://raw.githubusercontent.com/sylenjalbert-boop/chronocity/main/img/plaines.jpg',
 };
+// ═══════════════════════════════════════════════════════════
+// SYSTÈME I18N — LANGUES
+// ═══════════════════════════════════════════════════════════
+const LANGS = {
+    fr: {
+        // Tuiles
+        tile_Prairie: 'Prairie', tile_Collines: 'Collines', tile_Montagne: 'Montagne',
+        tile_Lac: 'Lac', tile_Foret: 'Forêt', tile_Ville: 'Ville',
+        tile_Prairie_desc: '+2 emplacements',
+        tile_Collines_desc: '+10 Or/tour | +1 emplacement',
+        tile_Montagne_desc: '+30 Mana | +5 Mana/tour | +5 Or/tour',
+        tile_Lac_desc: '+10 Pop | +5 Pop/tour | +1 emplacement',
+        tile_Foret_desc: '+1 Fortification | +1 emplacement',
+        tile_Collines_bonus_Mine: '+10 Or/tour',
+        tile_Lac_bonus_Ferme: '+5 Pop/tour',
+        tile_Foret_bonus_Caserne: '+1 Fortification',
+
+        // Ennemis
+        enemy_Gobelin: 'Gobelin', enemy_Orc: 'Orc', enemy_Squelette: 'Squelette',
+        enemy_GoblinSoldat: 'Gobelin Soldat', enemy_OrcElite: 'Orc Élite',
+        enemy_SqueletteArme: 'Squelette Armé', enemy_Araignee: 'Araignée',
+        enemy_Troll: 'Troll', enemy_ArcherGobelin: 'Archer Gobelin',
+        enemy_Vampire: 'Vampire', enemy_Demon: 'Démon',
+        enemy_SeigneurGobelin: 'Seigneur Gobelin', enemy_Necromancien: 'Nécromancien',
+        enemy_OrcBriseur: 'Orc Briseur', enemy_GoblinBoss: 'Gobelin Boss',
+        enemy_AraigneeGeante: 'Araignée Géante', enemy_LicheMineure: 'Liche Mineure',
+        enemy_DemonArcaniste: 'Démon Arcaniste', enemy_SqueletteAncien: 'Squelette Ancien',
+        enemy_TrollAbysses: 'Troll des Abysses',
+        // Boss
+        enemy_OrcCapitaine: 'Orc Capitaine', enemy_SqueletteRoyal: 'Squelette Royal',
+        enemy_OrcBoss: 'Orc Boss', enemy_Liche: 'Liche',
+        enemy_DragonNoir: 'Dragon Noir', enemy_LicheAncienne: 'Liche Ancienne',
+        enemy_DemonMajeur: 'Démon Majeur',
+
+        // Événements de tour
+        event_Exploration: 'Exploration',
+        event_Exploration_desc: 'Vous allez pouvoir explorer un donjon pendant ce tour !',
+        event_Conjonction: 'Conjonction',
+        event_Conjonction_desc: 'Le bon moment pour envoyer une caravane, la conjonction vous permet de doubler les ressources récoltées !',
+        event_RapportEclaireurs: 'Rapport des éclaireurs',
+        event_RapportEclaireurs_desc: "Consultez la composition de la horde dans le panneau Horde — elle vient d'être mise à jour.",
+        event_HordeAttaque: 'La Horde attaque !',
+        event_HordeAttaque_desc: 'Recrutez vos dernières unités, équipez votre avatar, puis cliquez ⚔ dans la frise pour lancer le combat.',
+        tl_Explore: 'Explore', tl_Conjonction: 'Conjonction', tl_Eclaireurs: 'Éclaireurs', tl_COMBAT: 'COMBAT',
+
+        // Classes
+        class_archer: 'Archer', class_archer_desc: 'Distance, +1 seuil toucher. Robe ou armure légère.',
+        class_warrior: 'Guerrier', class_warrior_desc: 'Toutes armures, +10 HP.',
+        class_mage: 'Mage', class_mage_desc: 'Robe uniquement, baguette gratuite, dégâts magiques.',
+        class_adventurer: 'Aventurier', class_adventurer_desc: 'Scout horde, immunité pièges. Robe ou légère.',
+        // Skills classes
+        skill_volley: 'Volée de flèches', skill_volley_desc: 'Dégâts sur toute une colonne',
+        skill_explosive: 'Flèche explosive', skill_explosive_desc: '(Passif) Dégâts aux ennemis adjacents si touche',
+        skill_piercing: 'Flèche perçante', skill_piercing_desc: 'Ignore la protection. Utilisations = 1 + niveau. Gratuit.',
+        skill_vampiric: 'Tir vampirique', skill_vampiric_desc: 'Prochain tir soigne les dégâts infligés. Utilisations = 2 + niveau. Gratuit.',
+        skill_warcry: 'Cri de guerre', skill_warcry_desc: 'ATK ennemis ÷2 ce round',
+        skill_stun: 'Stun', skill_stun_desc: 'Bloque 1 ennemi 2 tours (touche sur 2+)',
+        skill_crushing: 'Crushing Blow', skill_crushing_desc: '(Passif) -1 DEF ennemi par touche',
+        skill_perfect_heal: 'Second Souffle', skill_perfect_heal_desc: '(Passif) Coup parfait (×1.2) → +1 HP (+1 par niveau)',
+        skill_shield: 'Armure de mana', skill_shield_desc: 'Active : ajoute des PV temporaires absorbés avant les PV réels.',
+        skill_zap: 'Zap', skill_zap_desc: 'X dégâts magiques, 1 cible',
+        skill_freeze: 'Freeze', skill_freeze_desc: 'Bloque ennemis 3 rounds (annulé si dégâts)',
+        skill_arcane: 'Arcane', skill_arcane_desc: '(Passif) Dégâts de baguette/bâton +1 par niveau.',
+        skill_rewind: 'Rewind', skill_rewind_desc: 'Recharge les compétences (coûte HP). Action.',
+        skill_poison_cloud: 'Nuage de poison', skill_poison_cloud_desc: '-1+niv HP/tour sur tous les monstres.',
+        skill_blade_trap: 'Pièges de lames', skill_blade_trap_desc: 'Dmg+niv dégâts sur une colonne (prot. appliquée).',
+        skill_curse: 'Malédiction', skill_curse_desc: '-1+niv ATK sur tous pendant 3+niv rounds.',
+        skill_mirror: 'Images miroir', skill_mirror_desc: 'Absorbe (niv+1)×2 dégâts/attaque pendant 3+niv rounds.',
+        skill_ScoutHorde: 'Scout', skill_ScoutHorde_desc: '+1 unité horde révélée par niveau au tour des éclaireurs.',
+
+        // Bâtiments légendaires
+        leg_grandeTour: 'Grande Tour', leg_grandeTour_desc: 'Sorts puissants en jeu.',
+        leg_arbreElfique: 'Arbre Elfique', leg_arbreElfique_desc: 'Unités et options elfiques.',
+        leg_forteresseNaine: 'Forteresse Naine', leg_forteresseNaine_desc: 'Unités et options naines.',
+        leg_sanctuaire: 'Sanctuaire', leg_sanctuaire_desc: 'Bénédictions et inquisiteurs.',
+        leg_palaisMiroirs: 'Palais des Miroirs', leg_palaisMiroirs_desc: 'Classe permanente pour votre avatar.',
+        leg_opt_gt_boostAtk: 'Boost ATK', leg_opt_gt_boostAtk_desc: '+1 ATK à toutes les unités ville',
+        leg_opt_gt_modifTerrain: 'Modification Terrain', leg_opt_gt_modifTerrain_desc: 'Transforme une tuile révélée en autre type',
+        leg_opt_gt_boostTraits: 'Renforcement Traits', leg_opt_gt_boostTraits_desc: '+1 à tous les traits des unités ville',
+        leg_opt_ae_eclaireurs: 'Éclaireurs', leg_opt_ae_eclaireurs_desc: '+1 visibilité horde (achetable plusieurs fois)',
+        leg_opt_ae_fabricant: "Fabricant d'arc", leg_opt_ae_fabricant_desc: 'Archers +1 ATK et +1 anti-vol (max 3)',
+        leg_opt_ae_druidique: 'Cercle Druidique', leg_opt_ae_druidique_desc: 'Débloque recrutement Dryade (ATK 6, elite)',
+        leg_opt_fn_forgeron: 'Forgeron', leg_opt_fn_forgeron_desc: 'Infanterie +1 ATK (renouvelable)',
+        leg_opt_fn_runes: 'Maître des Runes', leg_opt_fn_runes_desc: 'Acheter rune anti-démon ou anti-mort-vivant',
+        leg_opt_fn_ingenieurs: 'Ingénieurs', leg_opt_fn_ingenieurs_desc: 'Débloque Ingénieur (ATK 4, anti-sapeur II)',
+        leg_opt_sa_aura: 'Aura de Pureté', leg_opt_sa_aura_desc: 'Élites gagnent anti-mort-vivant',
+        leg_opt_sa_inquisiteurs: 'Inquisiteurs', leg_opt_sa_inquisiteurs_desc: 'Débloque Inquisiteur (ATK 6, anti-démon III)',
+        leg_opt_sa_benediction: 'Bénédiction', leg_opt_sa_benediction_desc: 'Plaines/Collines/Lacs +5 Or +5 Pop/récolte',
+
+        // UI — Écran d'accueil
+        ui_load_game: '📂 Charger une partie',
+        ui_new_game: '✦ Commencer une partie',
+        ui_glossary: '📖 Glossaire',
+        ui_feedback: '📧 Feedback / Bug',
+        ui_back: '← Retour',
+        ui_leaderboard: '🏆 Classement',
+        ui_language: '🌐 Langue',
+
+        // UI — Menu (ex Save)
+        menu_title: '☰ Menu',
+        menu_refresh: '🔄', menu_close: '✕',
+        menu_glossary: '📖 Glossaire',
+        menu_new_run: '▶ Commencer un nouveau run',
+        menu_reset_run: '↺ Reset run',
+        menu_reset_all: '⚠ Reset run+méta',
+        menu_confirm_new_run: 'Commencer un nouveau run ? La partie en cours sera perdue.',
+        menu_save_btn: '☰ Menu',
+        slot_empty: 'Vide',
+        slot_label: 'Slot',
+
+        // UI — Général
+        ui_cancel: 'Annuler',
+        ui_confirm: 'Confirmer',
+        ui_continue: 'Continuer',
+        ui_close: 'Fermer',
+        ui_buy: '🥚 Acheter',
+        ui_season: 'Saison',
+        ui_turn: 'Tour',
+
+        // Sélecteur langue
+
+        // ── Glossaire — Labels onglets ──
+        glo_tab_terrains: '❖ Terrains', glo_tab_batiments: '⌂ Bâtiments',
+        glo_tab_traits: '⚜ Traits', glo_tab_monstres: '⛧ Monstres', glo_tab_combat: '🎯 Combat',
+
+        // ── Glossaire — Terrains ──
+        glo_terrains_title: '❖ Terrains — Révélation et bonus',
+        glo_tile_slots: 'emplacement(s)',
+        glo_tile_Ville_slots: 'emplacements méta',
+        glo_tile_Ville_desc: 'Emplacements débloqués via méta-progression (onglet Ville → Espace +1).',
+        glo_tile_nobuilding: 'Pas de construction possible.',
+
+        // ── Glossaire — Bâtiments ──
+        glo_batiments_title_t1: '⌂ Bâtiments — Tier I',
+        glo_batiments_title_t2: '⌂ Bâtiments — Tier II',
+        glo_batiments_title_t3: '⌂ Bâtiments — Tier III',
+        glo_batiments_title_t4: '⌂ Bâtiments — Tier IV (Uniques)',
+        glo_units_title: '⚔ Unités défensives',
+        glo_req: 'Prérequis :',
+        glo_unlocks: 'Débloque :',
+        glo_unique: 'Unique',
+        glo_elite: 'Élite',
+        glo_trait_label: 'Trait :',
+        glo_traits_label: 'Traits :',
+        // Descriptions bâtiments
+        bld_Ferme_desc: 'La ferme nourrit et attire de nouveaux habitants.',
+        bld_Mine_desc: 'Les mineurs extraient de précieux minerais.',
+        bld_Caserne_desc: 'De nouvelles recrues renforcent votre armée.',
+        bld_TourMana_desc: 'Capte les flux arcaniques environnants.',
+        bld_Eglise_desc: 'La prière soigne le corps et l\'âme.',
+        bld_TourGarde_desc: 'Des gardes veillent sur les remparts.',
+        bld_Archerie_desc: 'Des archers s\'entraînent chaque aube.',
+        bld_EcoleMagie_desc: 'Les arts arcaniques y sont enseignés.',
+        bld_PlaceMarche_desc: 'Les caravanes s\'y arrêtent volontiers.',
+        bld_Academie_desc: 'L\'élite militaire est formée ici.',
+        bld_Temple_desc: 'Un lieu de recueillement et de pouvoir.',
+        bld_TourMagie_desc: 'Amplifie les flux de mana environnants.',
+        bld_Caravanserail_desc: 'Les marchands y font halte en sécurité.',
+        bld_Cathedrale_desc: 'Bastion de lumière contre les ténèbres.',
+        bld_AutelGuerre_desc: 'L\'appel aux armes retentit en permanence.',
+        bld_MonolitheVigie_desc: 'Son œil scrute les troupes de la Horde.',
+        // Descriptions unités
+        unit_Milicien_desc: 'Protège la ville des pillards. Aucun prérequis.',
+        unit_Soldat_desc: 'Infanterie de base solide.',
+        unit_Lancier_desc: 'Brise les charges de cavalerie.',
+        unit_Garde_desc: 'Infanterie lourde anti-pillard.',
+        unit_Archer_desc: 'Abat les créatures volantes. Peut cibler rang arrière.',
+        unit_Elementaire_desc: 'Invoqué. Infanterie magique.',
+        unit_Hallebardier_desc: 'Infanterie d\'élite anti-cavalerie.',
+        unit_Arbaletrier_desc: 'Anti-vol amélioré, portée longue.',
+        unit_SoldatPavois_desc: 'Neutralise les attaques à distance.',
+        unit_Pretre_desc: 'Repousse les forces démoniaques.',
+        unit_ElementaireAir_desc: 'Anti-vol, invoqué.',
+        unit_ElementaireTerre_desc: 'Anti-distance, invoqué.',
+        unit_ElementaireEau_desc: 'Anti-pillard, invoqué.',
+        unit_ElementaireFeu_desc: 'Anti-cavalerie, invoqué.',
+        unit_Paladin_desc: 'Élite : anti-cavalerie et anti-mort-vivant.',
+        unit_Dryade_desc: 'Élite elfique invoquée. Requiert Cercle Druidique.',
+        unit_Ingenieur_desc: 'Anti-sapeur II, anti-distance II.',
+        unit_Inquisiteur_desc: 'ATK 6, Anti-Démon III.',
+
+        // ── Glossaire — Traits ──
+        glo_traits_title: '⚜ Traits de la Horde — Système de contrage',
+        glo_traits_intro1: 'Chaque trait de la horde est contré par le trait correspondant de tes unités. Si le net (traits horde − anti-traits ville) est ≤ 0 : effet neutralisé. Si > 0 : l\'effet passe avec les unités les plus puissantes.',
+        glo_traits_intro2: 'Les traits doubles (Cavalerie II, Vol II, etc.) comptent pour 2 poids — il faut plus d\'anti-traits pour les neutraliser.',
+        trait_cavalerie_name: '🐴 Cavalerie — contré : anti-cavalerie',
+        trait_cavalerie_desc: 'Si non contré : ATK ×2.',
+        trait_distance_name: '🏹 Distance — contré : anti-distance',
+        trait_distance_desc: 'Si non contré : ATK ×2.',
+        trait_vol_name: '🐲 Vol — contré : anti-vol',
+        trait_vol_desc: 'Si non contré : détruit l\'unité ville la plus forte avant le combat.',
+        trait_pillard_name: '🔥 Pillard — contré : anti-pillard',
+        trait_pillard_desc: 'Si non contré : détruit 1 bâtiment même si la horde est repoussée.',
+        trait_sapeur_name: '⛏ Sapeur — contré : anti-sapeur',
+        trait_sapeur_desc: 'Si non contré : -1 fortification par trait sapeur (minimum 1 fortification).',
+        trait_mortVivant_name: '💀 Mort-Vivant — contré : anti-mort-vivant',
+        trait_mortVivant_desc: 'Si au moins 1 passe : détruit une unité aléatoire de ton armée.',
+        trait_demon_name: '😈 Démon — contré : anti-démon',
+        trait_demon_desc: 'Si au moins 1 passe : toute ton infanterie ne compte pas pour ce combat.',
+
+        // ── Glossaire — Monstres ──
+        glo_horde_title: '⚔ Horde — Unités par saison',
+        glo_dungeon_normal_title: '👹 Donjon — Monstres normaux',
+        glo_dungeon_elite_title: '👹 Donjon — Monstres Tier 5-6',
+        glo_boss_title: '💀 Boss de Donjon',
+        glo_boss_intro: 'À partir de S2, les boss sont accompagnés d\'alliés (1 en S2-3, 2 en S4-6, 3 en S7+).',
+        glo_back_rank: 'rang arrière',
+        // Descriptions spéciales ennemis donjon
+        edesc_Gobelin: 'Appelle des renforts tous les 5 rounds.',
+        edesc_Orc: 'Sur un 6 : Crush Armor passif (réduit DEF héro, cumulatif).',
+        edesc_Squelette: 'Sur un 6 : réduit ATK héro de -1 (cumulatif).',
+        edesc_GoblinSoldat: 'Appelle des renforts tous les 5 rounds.',
+        edesc_OrcElite: 'Sur un 6 : Crush Armor.',
+        edesc_SqueletteArme: 'Sur un 6 : réduit ATK héro.',
+        edesc_Araignee: 'Poison cumulatif : chaque touche ajoute 1 stack (-1 HP/round pendant 3 rounds).',
+        edesc_Troll: 'Sur un 6 : Stun (attaque à nouveau).',
+        edesc_ArcherGobelin: 'Appelle des renforts. Rang arrière.',
+        edesc_Vampire: 'Drain vital : se régénère des dégâts infligés.',
+        edesc_Demon: 'Sur un 6 : Zap démoniaque (dégâts magiques ignore protection).',
+        edesc_SeigneurGobelin: 'Appelle des renforts tous les 5 rounds.',
+        edesc_Necromancien: 'Invoque des squelettes périodiquement. Rang arrière.',
+        edesc_OrcBriseur: 'Crush Armor renforcé (tier monte avec saison).',
+        edesc_GoblinBoss: 'Appelle des renforts tous les 5 rounds.',
+        edesc_AraigneeGeante: 'Poison cumulatif renforcé.',
+        edesc_LicheMineure: 'Réduit ATK héro. Rang arrière.',
+        edesc_DemonArcaniste: 'Sur un 6 : Zap démoniaque puissant (tier monte avec saison). Rang arrière.',
+        edesc_SqueletteAncien: 'Réduit ATK héro sur 6.',
+        edesc_TrollAbysses: 'Stun renforcé.',
+        // Boss descriptions
+        edesc_OrcCapitaine: 'Aucun effet spécial.',
+        edesc_SqueletteRoyal: 'Réduit ATK héro.',
+        edesc_OrcBoss: 'Aucun effet spécial.',
+        edesc_Liche: 'Réduit ATK héro à chaque touche (cumulatif). Contré par Collier béni.',
+        edesc_DragonNoir: 'Souffle tous les 4 rounds (ignore protection). Attaque normalement les autres rounds.',
+        edesc_LicheAncienne: 'Réduction ATK amplifiée.',
+        edesc_DemonMajeur: 'Zap démoniaque sur 6.',
+
+        // ── Glossaire — Combat ──
+        glo_combat_title: '🎯 Système de Combat — Donjon',
+        glo_combat_jauge_name: 'Jauge d\'attaque',
+        glo_combat_jauge_desc: 'Cliquez au bon moment : ×0 Raté | ×0.5 Faible | ×1 Touché | ×1.2 Parfait. La zone change selon ATK et DEF des ennemis.',
+        glo_combat_actions_name: 'Actions par round',
+        glo_combat_actions_desc: 'Le joueur effectue ses actions (attaques ou compétences actives). Puis chaque ennemi vivant attaque à son tour. Fin du round : effets de durée (poison, rage…) sont appliqués.',
+        glo_combat_rang_name: 'Rang avant / arrière',
+        glo_combat_rang_desc: 'Les ennemis au rang arrière ne peuvent être ciblés qu\'avec une arme à distance ou la compétence Volée.',
+        glo_combat_skills_name: 'Compétences actives',
+        glo_combat_skills_desc: 'Utilisent l\'action du round (1× par combat sauf Soin). Déclenchent la phase ennemie après usage.',
+        glo_combat_glyphs_name: 'Glyphes',
+        glo_combat_glyphs_desc: 'Distorsion (tous ennemis), Rage (×2 dégâts), Bénédiction (agrandit la zone parfait). Obtenus via Parchemin — tier du donjon influence lequel est proposé.',
+        glo_combat_potions_name: 'Potions',
+        glo_combat_potions_desc: 'Soin (+3 HP), Anti-Poison (retire tous les stacks de poison). Utilisables hors action.',
+        glo_fx_title: '☠ Effets Spéciaux Ennemis',
+        glo_fx_poison_name: '☠ Poison (Araignée)',
+        glo_fx_poison_desc: 'Chaque touche ajoute 1 stack : -1 HP/round pendant 3 rounds. Plusieurs araignées ou plusieurs touches = stacks cumulatifs. Contré par Potion Anti-Poison.',
+        glo_fx_stun_name: '💫 Stun (Troll)',
+        glo_fx_stun_desc: 'Sur un 6 : attaque une deuxième fois dans le même round.',
+        glo_fx_lifesteal_name: '🧛 Drain Vital (Vampire)',
+        glo_fx_lifesteal_desc: 'Se régénère des dégâts infligés (récupère les HP perdus).',
+        glo_fx_breath_name: '🔥 Souffle (Dragon)',
+        glo_fx_breath_desc: 'Tous les 4 rounds : attaque automatique qui ignore la protection. Les autres rounds : attaque normale.',
+        glo_fx_atkred_name: '💀 Malédiction ATK (Liche)',
+        glo_fx_atkred_desc: 'Chaque touche réduit l\'ATK du héro de -1 (cumulatif). Contré par Collier béni.',
+        glo_fx_zap_name: '⚡ Zap Passif (Démon)',
+        glo_fx_zap_desc: 'Sur un 6 : frappe magique qui ignore la protection. Dégâts augmentent avec la saison.',
+        glo_fx_crush_name: '🔨 Crush Armor (Orc)',
+        glo_fx_crush_desc: 'Sur un 6 : réduit la DEF du héro (cumulatif). Intensité augmente avec la saison.',
+        glo_fx_call_name: '🔔 Appel à l\'aide (Gobelin)',
+        glo_fx_call_desc: 'Tous les 5 rounds : invoque un renfort aléatoire dans le combat en cours.',
+        glo_fx_necro_name: '💀 Invocation (Nécromancien)',
+        glo_fx_necro_desc: 'Invoque périodiquement un squelette au rang avant.',
+        glo_class_skills_title: '⚔ Compétences de Classe',
+        glo_cs_crushing_name: '🔨 Crushing Blow (Guerrier)',
+        glo_cs_crushing_desc: 'Passif : réduit la DEF ennemie à chaque touche (cumulatif). Niveau augmente en méta.',
+        glo_cs_secondsouffle_name: '💚 Second Souffle (Guerrier)',
+        glo_cs_secondsouffle_desc: 'Passif : soin sur coup parfait (×1.2). Quantité augmente en méta.',
+        glo_cs_volley_name: '🏹 Volée (Archer)',
+        glo_cs_volley_desc: 'Frappe plusieurs ennemis d\'un rang. Utilise l\'action du round.',
+        glo_cs_zap_name: '⚡ Zap (Mage)',
+        glo_cs_zap_desc: 'Dégâts magiques sur une cible. Ignore la protection.',
+        glo_cs_freeze_name: '❄ Freeze (Mage)',
+        glo_cs_freeze_desc: 'Bloque tous les ennemis pendant X rounds (ne peuvent pas attaquer).',
+        glo_cs_curse_name: '💀 Malédiction (Aventurier)',
+        glo_cs_curse_desc: 'Réduit l\'ATK de tous les ennemis pendant X rounds.',
+        glo_cs_distorsion_name: '⏳ Distorsion Temporelle',
+        glo_cs_distorsion_desc: 'Compétence méta : frappe tous les ennemis pour (3 + niveau) dégâts. Utilise l\'action du round.',
+
+        // ── Tutoriel ──
+        tut_step: 'ÉTAPE',
+        tut_skip: 'Passer',
+        tut_next: 'Suivant ▶',
+        tut_finish: 'Commencer ✓',
+        tut_1_title: 'Bienvenue à Chronocity',
+        tut_1_body: '<p>Tu diriges une cité menacée par la <b>Horde</b>. Tu as <b>10 tours</b> par saison pour la préparer.</p><div class="ct-rule r-battle"><span class="ct-rule-ic">⚔</span><div>Au <b>tour 10</b>, la Horde attaque ta ville. Si tu perds, tu recommences (avec des bonus méta).</div></div><div class="ct-rule r-free"><span class="ct-rule-ic">🗺</span><div>Chaque saison : explore des tuiles, construis des bâtiments, recrute des troupes et envoie ton avatar en donjon.</div></div>',
+        tut_2_title: 'Le rythme d\'un tour',
+        tut_2_body: '<div class="ct-rule r-action"><span class="ct-rule-ic">🟡</span><div>Chaque tour, choisis <b>1 action principale</b> :<br>· <b>❖ Révéler</b> une tuile · <b>⚒︎ Construire</b> un bâtiment · <b>🛒 Caravane</b><br><span style="color:#ffb040">· À partir de la <b>Saison 5</b> : <b>Recruter</b> devient aussi une action principale.</span></div></div><div class="ct-rule r-free"><span class="ct-rule-ic">🔵</span><div>Les <b>actions libres</b> ne coûtent pas de tour : <b>équiper</b> l\'avatar, <b>acheter</b> dans les bâtiments, <b>donjon</b>, et en S1–S4 <b>recruter</b> aussi.</div></div><p style="font-size:12px;color:#9a8a6a">Le bandeau du haut indique : <b>🟡 action dispo / prise</b> et les options 🔵 libres.</p>',
+        tut_3_title: 'Les Conjonctions ⭐',
+        tut_3_body: '<div class="ct-rule r-action" style="border-color:#e0a020;background:rgba(58,42,0,0.4)"><span class="ct-rule-ic">⭐</span><div><em style="color:#e0c060">\"Les caravanes n\'osent traverser les steppes qu\'au temps des Conjonctions, lorsque les anciennes routes reviennent dans le cours du monde.\"</em></div></div><p>Aux tours <b>2, 4, 6 et 8</b>, une Conjonction s\'ouvre. Envoie une caravane ce tour pour récupérer <b>×2 ressources</b> (or, mana, population).</p><p style="font-size:12px;color:#9a8a6a">Les ressources ne sont <b>pas récoltées automatiquement</b> : c\'est à toi d\'envoyer la caravane pour en profiter !</p>',
+        tut_4_title: 'Ce que tu construis sert au combat',
+        tut_4_body: '<p>Chaque <b>tuile révélée</b> rejoint ta ville et offre des emplacements de bâtiments.</p><p>Les <b>bâtiments</b> donnent : ressources, fortifications, ou débloquent le recrutement (Caserne → troupes, Académie → élite).</p><p>Au tour 10, <b>ton armée + tes fortifications</b> affrontent la Horde.</p><div class="ct-rule r-battle"><span class="ct-rule-ic">👁</span><div>La composition de la Horde se <b>révèle au tour 5</b>. Adapte ta stratégie en conséquence.</div></div>',
+        tut_5_title: 'Les Donjons 🏚🕳💀',
+        tut_5_body: '<p>Ton avatar peut explorer un donjon chaque tour — <b>action libre</b>, sans consommer ton tour principal.</p><div class="ct-rule r-free"><span class="ct-rule-ic">🕳</span><div>Choisis ton niveau de risque :<br>· <b>🏚 Tour Abandonnée</b> — tier -1, butin ×0.75<br>· <b>🕳 Grotte Mystérieuse</b> — tier normal, butin ×1<br>· <b>💀 Catacombes Maudites</b> — tier +1, butin ×1.25</div></div><div class="ct-rule r-battle"><span class="ct-rule-ic">💀</span><div>Au <b>tour 9 dans les Catacombes</b>, une récompense permanente est offerte si tu vaincs le boss : +ATK, +Dégâts, ressources, ou <b>Projection</b> (l\'avatar combat la horde ET reste dispo ce tour).</div></div><p style="font-size:12px;color:#9a8a6a">En <b>S4, S8, S12…</b> l\'<b>🐍 Aire d\'Ouroboros</b> apparaît (tier +2, ×2 butin). La vaincre donne une <b>🥚 Coquille</b> — une seule fois par occurrence dans la méta.</p>',
+        tut_6_title: 'L\'Avatar & ses Classes 🗡',
+        tut_6_body: '<p>Ton avatar explore les donjons et peut rejoindre la <b>défense de la horde</b> (son ATK renforce ta puissance).</p><div class="ct-rule r-free"><span class="ct-rule-ic">⚔</span><div>Équipe-le avec armes, armure, bijoux, <b>glyphes</b> (sorts à usage) et <b>potions</b>. Le butin des donjons alimente directement tes ressources.</div></div><div class="ct-rule r-action" style="border-color:#c080ff;background:rgba(30,10,50,0.4)"><span class="ct-rule-ic">🪞</span><div>Le <b>Palais des Miroirs</b> (bâtiment légendaire — 1 🥚) débloque une <b>classe permanente</b> : <b>Archer, Guerrier, Mage</b> ou <b>Aventurier</b>. Chaque classe ajoute des compétences uniques en combat.</div></div><p style="font-size:12px;color:#9a8a6a">Sans classe, l\'avatar combat en généraliste. Avec une classe, des boutons de compétences apparaissent pendant les combats en donjon.</p>',
+        tut_7_title: 'Saison 5+ : Le Recrutement change 🔁',
+        tut_7_body: '<p>En <b>Saison 1–4</b>, recruter est une action libre : tu peux le faire autant que tu veux sans consommer ton tour.</p><div class="ct-rule r-battle"><span class="ct-rule-ic">⚠</span><div>À partir de la <b>Saison 5</b>, recruter devient une <b>action principale</b>. Chaque session de recrutement consomme ton tour — mais tu peux recruter <b>plusieurs unités</b> en une seule action.</div></div><div class="ct-rule r-free"><span class="ct-rule-ic">💡</span><div>Planifie à l\'avance : construis ta Caserne et ton Académie <b>avant la S5</b> pour profiter du recrutement libre les premières saisons.</div></div>',
+        tut_8_title: 'Poussière du Temps & Méta-progression ✨',
+        tut_8_body: '<p>À chaque fin de partie tu gagnes de la <b>✨ Poussière du Temps</b>. Elle persiste et permet d\'acheter des <b>améliorations permanentes</b> : or de départ, avatar plus fort, bâtiments bonus…</p><div class="ct-rule r-free"><span class="ct-rule-ic">🥚</span><div>Les <b>Coquilles d\'Œuf du Temps</b> se gagnent en donjon (boss hivernal tour 9, Ouroboros S4/S8…). Elles débloquent des <b>bâtiments légendaires</b> : Grande Tour, Arbre Elfique, Forteresse Naine, Sanctuaire, <b>Palais des Miroirs</b>.</div></div><p style="font-size:12px;color:#9a8a6a">Menu <b>≡</b> en haut à droite pour la méta-progression. Chaque run te rend plus fort !</p>',
+        lang_select_title: '🌐 Choisir la langue',
+        lang_fr: '🇫🇷 Français',
+        lang_en: '🇬🇧 English',
+    },
+    en: {
+        // Tiles
+        tile_Prairie: 'Grassland', tile_Collines: 'Hills', tile_Montagne: 'Mountain',
+        tile_Lac: 'Lake', tile_Foret: 'Forest', tile_Ville: 'City',
+        tile_Prairie_desc: '+2 building slots',
+        tile_Collines_desc: '+10 Gold/turn | +1 slot',
+        tile_Montagne_desc: '+30 Mana | +5 Mana/turn | +5 Gold/turn',
+        tile_Lac_desc: '+10 Pop | +5 Pop/turn | +1 slot',
+        tile_Foret_desc: '+1 Fortification | +1 slot',
+        tile_Collines_bonus_Mine: '+10 Gold/turn',
+        tile_Lac_bonus_Ferme: '+5 Pop/turn',
+        tile_Foret_bonus_Caserne: '+1 Fortification',
+
+        // Enemies
+        enemy_Gobelin: 'Goblin', enemy_Orc: 'Orc', enemy_Squelette: 'Skeleton',
+        enemy_GoblinSoldat: 'Goblin Soldier', enemy_OrcElite: 'Elite Orc',
+        enemy_SqueletteArme: 'Armed Skeleton', enemy_Araignee: 'Spider',
+        enemy_Troll: 'Troll', enemy_ArcherGobelin: 'Goblin Archer',
+        enemy_Vampire: 'Vampire', enemy_Demon: 'Demon',
+        enemy_SeigneurGobelin: 'Goblin Lord', enemy_Necromancien: 'Necromancer',
+        enemy_OrcBriseur: 'Orc Crusher', enemy_GoblinBoss: 'Goblin Boss',
+        enemy_AraigneeGeante: 'Giant Spider', enemy_LicheMineure: 'Minor Lich',
+        enemy_DemonArcaniste: 'Arcane Demon', enemy_SqueletteAncien: 'Ancient Skeleton',
+        enemy_TrollAbysses: 'Abyss Troll',
+        // Bosses
+        enemy_OrcCapitaine: 'Orc Captain', enemy_SqueletteRoyal: 'Royal Skeleton',
+        enemy_OrcBoss: 'Orc Boss', enemy_Liche: 'Lich',
+        enemy_DragonNoir: 'Black Dragon', enemy_LicheAncienne: 'Ancient Lich',
+        enemy_DemonMajeur: 'Greater Demon',
+
+        // Turn events
+        event_Exploration: 'Exploration',
+        event_Exploration_desc: 'You will be able to explore a dungeon this turn!',
+        event_Conjonction: 'Conjunction',
+        event_Conjonction_desc: 'The perfect time to send a caravan — the conjunction doubles all resources gathered!',
+        event_RapportEclaireurs: "Scouts' Report",
+        event_RapportEclaireurs_desc: 'Check the horde composition in the Horde panel — it has just been updated.',
+        event_HordeAttaque: 'The Horde Attacks!',
+        event_HordeAttaque_desc: 'Recruit your last units, equip your avatar, then click ⚔ in the timeline to start combat.',
+        tl_Explore: 'Explore', tl_Conjonction: 'Conjunct.', tl_Eclaireurs: 'Scouts', tl_COMBAT: 'COMBAT',
+
+        // Classes
+        class_archer: 'Archer', class_archer_desc: 'Ranged, +1 hit threshold. Robes or light armor.',
+        class_warrior: 'Warrior', class_warrior_desc: 'All armors, +10 HP.',
+        class_mage: 'Mage', class_mage_desc: 'Robes only, free wand, magical damage.',
+        class_adventurer: 'Adventurer', class_adventurer_desc: 'Horde scout, trap immunity. Robes or light.',
+        // Class skills
+        skill_volley: 'Arrow Volley', skill_volley_desc: 'Damage to an entire column',
+        skill_explosive: 'Explosive Arrow', skill_explosive_desc: '(Passive) Damages adjacent enemies on hit',
+        skill_piercing: 'Piercing Arrow', skill_piercing_desc: 'Ignores protection. Uses = 1 + level. Free.',
+        skill_vampiric: 'Vampiric Shot', skill_vampiric_desc: 'Next shot heals the damage dealt. Uses = 2 + level. Free.',
+        skill_warcry: 'War Cry', skill_warcry_desc: 'Enemy ATK ÷2 this round',
+        skill_stun: 'Stun', skill_stun_desc: 'Blocks 1 enemy for 2 turns (hits on 2+)',
+        skill_crushing: 'Crushing Blow', skill_crushing_desc: '(Passive) -1 DEF per hit',
+        skill_perfect_heal: 'Second Wind', skill_perfect_heal_desc: '(Passive) Perfect hit (×1.2) → +1 HP (+1 per level)',
+        skill_shield: 'Mana Armor', skill_shield_desc: 'Active: adds temporary HP absorbed before real HP.',
+        skill_zap: 'Zap', skill_zap_desc: 'X magical damage, 1 target',
+        skill_freeze: 'Freeze', skill_freeze_desc: 'Freezes enemies 3 rounds (cancelled if damaged)',
+        skill_arcane: 'Arcane', skill_arcane_desc: '(Passive) Wand/staff damage +1 per level.',
+        skill_rewind: 'Rewind', skill_rewind_desc: 'Recharges abilities (costs HP). Action.',
+        skill_poison_cloud: 'Poison Cloud', skill_poison_cloud_desc: '-1+lvl HP/turn on all monsters.',
+        skill_blade_trap: 'Blade Trap', skill_blade_trap_desc: 'Dmg+lvl damage to a column (protection applies).',
+        skill_curse: 'Curse', skill_curse_desc: '-1+lvl ATK on all for 3+lvl rounds.',
+        skill_mirror: 'Mirror Images', skill_mirror_desc: 'Absorbs (lvl+1)×2 damage/attack for 3+lvl rounds.',
+        skill_ScoutHorde: 'Scout', skill_ScoutHorde_desc: '+1 horde unit revealed per level on scouts turn.',
+
+        // Legendary buildings
+        leg_grandeTour: 'Great Tower', leg_grandeTour_desc: 'Powerful in-game spells.',
+        leg_arbreElfique: 'Elven Tree', leg_arbreElfique_desc: 'Elven units and options.',
+        leg_forteresseNaine: 'Dwarven Fortress', leg_forteresseNaine_desc: 'Dwarven units and options.',
+        leg_sanctuaire: 'Sanctuary', leg_sanctuaire_desc: 'Blessings and inquisitors.',
+        leg_palaisMiroirs: 'Mirror Palace', leg_palaisMiroirs_desc: 'Permanent class for your avatar.',
+        leg_opt_gt_boostAtk: 'ATK Boost', leg_opt_gt_boostAtk_desc: '+1 ATK to all city units',
+        leg_opt_gt_modifTerrain: 'Terrain Modification', leg_opt_gt_modifTerrain_desc: 'Transform a revealed tile into another type',
+        leg_opt_gt_boostTraits: 'Trait Reinforcement', leg_opt_gt_boostTraits_desc: '+1 to all traits of city units',
+        leg_opt_ae_eclaireurs: 'Scouts', leg_opt_ae_eclaireurs_desc: '+1 horde visibility (purchasable multiple times)',
+        leg_opt_ae_fabricant: 'Bowyer', leg_opt_ae_fabricant_desc: 'Archers +1 ATK and +1 anti-flying (max 3)',
+        leg_opt_ae_druidique: 'Druidic Circle', leg_opt_ae_druidique_desc: 'Unlocks Dryad recruitment (ATK 6, elite)',
+        leg_opt_fn_forgeron: 'Blacksmith', leg_opt_fn_forgeron_desc: 'Infantry +1 ATK (renewable)',
+        leg_opt_fn_runes: 'Runemaster', leg_opt_fn_runes_desc: 'Buy anti-demon or anti-undead rune',
+        leg_opt_fn_ingenieurs: 'Engineers', leg_opt_fn_ingenieurs_desc: 'Unlocks Engineer (ATK 4, anti-sapper II)',
+        leg_opt_sa_aura: 'Aura of Purity', leg_opt_sa_aura_desc: 'Elites gain anti-undead',
+        leg_opt_sa_inquisiteurs: 'Inquisitors', leg_opt_sa_inquisiteurs_desc: 'Unlocks Inquisitor (ATK 6, anti-demon III)',
+        leg_opt_sa_benediction: 'Blessing', leg_opt_sa_benediction_desc: 'Plains/Hills/Lakes +5 Gold +5 Pop/harvest',
+
+        // UI — Home screen
+        ui_load_game: '📂 Load Game',
+        ui_new_game: '✦ Start a Game',
+        ui_glossary: '📖 Glossary',
+        ui_feedback: '📧 Feedback / Bug',
+        ui_back: '← Back',
+        ui_leaderboard: '🏆 Leaderboard',
+        ui_language: '🌐 Language',
+
+        // UI — Menu
+        menu_title: '☰ Menu',
+        menu_refresh: '🔄', menu_close: '✕',
+        menu_glossary: '📖 Glossary',
+        menu_new_run: '▶ Start a new run',
+        menu_reset_run: '↺ Reset run',
+        menu_reset_all: '⚠ Reset run+meta',
+        menu_confirm_new_run: 'Start a new run? The current game will be lost.',
+        menu_save_btn: '☰ Menu',
+        slot_empty: 'Empty',
+        slot_label: 'Slot',
+
+        // UI — General
+        ui_cancel: 'Cancel',
+        ui_confirm: 'Confirm',
+        ui_continue: 'Continue',
+        ui_close: 'Close',
+        ui_buy: '🥚 Buy',
+        ui_season: 'Season',
+        ui_turn: 'Turn',
+
+        // Language selector
+
+        // ── Glossary — Tab labels ──
+        glo_tab_terrains: '❖ Terrains', glo_tab_batiments: '⌂ Buildings',
+        glo_tab_traits: '⚜ Traits', glo_tab_monstres: '⛧ Monsters', glo_tab_combat: '🎯 Combat',
+
+        // ── Glossary — Terrain ──
+        glo_terrains_title: '❖ Terrains — Reveal & bonuses',
+        glo_tile_slots: 'slot(s)',
+        glo_tile_Ville_slots: 'meta slots',
+        glo_tile_Ville_desc: 'Slots unlocked via meta-progression (City tab → Space +1).',
+        glo_tile_nobuilding: 'No construction possible.',
+
+        // ── Glossary — Buildings ──
+        glo_batiments_title_t1: '⌂ Buildings — Tier I',
+        glo_batiments_title_t2: '⌂ Buildings — Tier II',
+        glo_batiments_title_t3: '⌂ Buildings — Tier III',
+        glo_batiments_title_t4: '⌂ Buildings — Tier IV (Unique)',
+        glo_units_title: '⚔ Defensive Units',
+        glo_req: 'Requires:',
+        glo_unlocks: 'Unlocks:',
+        glo_unique: 'Unique',
+        glo_elite: 'Elite',
+        glo_trait_label: 'Trait:',
+        glo_traits_label: 'Traits:',
+        bld_Ferme_desc: 'The farm feeds and attracts new inhabitants.',
+        bld_Mine_desc: 'Miners extract precious ore.',
+        bld_Caserne_desc: 'New recruits strengthen your army.',
+        bld_TourMana_desc: 'Captures ambient arcane flows.',
+        bld_Eglise_desc: 'Prayer heals body and soul.',
+        bld_TourGarde_desc: 'Guards watch over the ramparts.',
+        bld_Archerie_desc: 'Archers train every dawn.',
+        bld_EcoleMagie_desc: 'The arcane arts are taught here.',
+        bld_PlaceMarche_desc: 'Caravans stop here willingly.',
+        bld_Academie_desc: 'The military elite is trained here.',
+        bld_Temple_desc: 'A place of prayer and power.',
+        bld_TourMagie_desc: 'Amplifies surrounding mana flows.',
+        bld_Caravanserail_desc: 'Merchants rest safely here.',
+        bld_Cathedrale_desc: 'A bastion of light against the dark.',
+        bld_AutelGuerre_desc: 'The call to arms rings constantly.',
+        bld_MonolitheVigie_desc: 'Its eye surveys the Horde\'s forces.',
+        unit_Milicien_desc: 'Protects the city from raiders. No prerequisites.',
+        unit_Soldat_desc: 'Solid basic infantry.',
+        unit_Lancier_desc: 'Breaks cavalry charges.',
+        unit_Garde_desc: 'Heavy infantry, anti-raider.',
+        unit_Archer_desc: 'Strikes flying creatures. Can target back rank.',
+        unit_Elementaire_desc: 'Summoned. Magic infantry.',
+        unit_Hallebardier_desc: 'Elite anti-cavalry infantry.',
+        unit_Arbaletrier_desc: 'Improved anti-flying, long range.',
+        unit_SoldatPavois_desc: 'Neutralizes ranged attacks.',
+        unit_Pretre_desc: 'Repels demonic forces.',
+        unit_ElementaireAir_desc: 'Anti-flying, summoned.',
+        unit_ElementaireTerre_desc: 'Anti-ranged, summoned.',
+        unit_ElementaireEau_desc: 'Anti-raider, summoned.',
+        unit_ElementaireFeu_desc: 'Anti-cavalry, summoned.',
+        unit_Paladin_desc: 'Elite: anti-cavalry and anti-undead.',
+        unit_Dryade_desc: 'Summoned elven elite. Requires Druidic Circle.',
+        unit_Ingenieur_desc: 'Anti-sapper II, anti-ranged II.',
+        unit_Inquisiteur_desc: 'ATK 6, Anti-Demon III.',
+
+        // ── Glossary — Traits ──
+        glo_traits_title: '⚜ Horde Traits — Counter System',
+        glo_traits_intro1: 'Each horde trait is countered by the matching trait on your units. If the net value (horde traits − city anti-traits) is ≤ 0: effect neutralized. If > 0: the effect applies with the strongest units.',
+        glo_traits_intro2: 'Double traits (Cavalry II, Flying II, etc.) count as 2 weight — you need more anti-traits to neutralize them.',
+        trait_cavalerie_name: '🐴 Cavalry — countered by: anti-cavalry',
+        trait_cavalerie_desc: 'If not countered: ATK ×2.',
+        trait_distance_name: '🏹 Ranged — countered by: anti-ranged',
+        trait_distance_desc: 'If not countered: ATK ×2.',
+        trait_vol_name: '🐲 Flying — countered by: anti-flying',
+        trait_vol_desc: 'If not countered: destroys your strongest city unit before combat.',
+        trait_pillard_name: '🔥 Raider — countered by: anti-raider',
+        trait_pillard_desc: 'If not countered: destroys 1 building even if the horde is repelled.',
+        trait_sapeur_name: '⛏ Sapper — countered by: anti-sapper',
+        trait_sapeur_desc: 'If not countered: -1 fortification per sapper trait (minimum 1 fortification).',
+        trait_mortVivant_name: '💀 Undead — countered by: anti-undead',
+        trait_mortVivant_desc: 'If at least 1 passes: destroys a random unit from your army.',
+        trait_demon_name: '😈 Demon — countered by: anti-demon',
+        trait_demon_desc: 'If at least 1 passes: all your infantry does not count for this battle.',
+
+        // ── Glossary — Monsters ──
+        glo_horde_title: '⚔ Horde — Units by Season',
+        glo_dungeon_normal_title: '👹 Dungeon — Normal Monsters',
+        glo_dungeon_elite_title: '👹 Dungeon — Tier 5-6 Monsters',
+        glo_boss_title: '💀 Dungeon Bosses',
+        glo_boss_intro: 'From S2 onwards, bosses are accompanied by allies (1 in S2-3, 2 in S4-6, 3 in S7+).',
+        glo_back_rank: 'back rank',
+        edesc_Gobelin: 'Calls for reinforcements every 5 rounds.',
+        edesc_Orc: 'On a 6: passive Crush Armor (reduces hero DEF, cumulative).',
+        edesc_Squelette: 'On a 6: reduces hero ATK by -1 (cumulative).',
+        edesc_GoblinSoldat: 'Calls for reinforcements every 5 rounds.',
+        edesc_OrcElite: 'On a 6: Crush Armor.',
+        edesc_SqueletteArme: 'On a 6: reduces hero ATK.',
+        edesc_Araignee: 'Cumulative poison: each hit adds 1 stack (-1 HP/round for 3 rounds).',
+        edesc_Troll: 'On a 6: Stun (attacks again).',
+        edesc_ArcherGobelin: 'Calls for reinforcements. Back rank.',
+        edesc_Vampire: 'Life drain: regenerates from damage dealt.',
+        edesc_Demon: 'On a 6: demonic Zap (magic damage ignores protection).',
+        edesc_SeigneurGobelin: 'Calls for reinforcements every 5 rounds.',
+        edesc_Necromancien: 'Periodically summons skeletons. Back rank.',
+        edesc_OrcBriseur: 'Reinforced Crush Armor (tier scales with season).',
+        edesc_GoblinBoss: 'Calls for reinforcements every 5 rounds.',
+        edesc_AraigneeGeante: 'Reinforced cumulative poison.',
+        edesc_LicheMineure: 'Reduces hero ATK. Back rank.',
+        edesc_DemonArcaniste: 'On a 6: powerful demonic Zap (tier scales with season). Back rank.',
+        edesc_SqueletteAncien: 'Reduces hero ATK on a 6.',
+        edesc_TrollAbysses: 'Reinforced Stun.',
+        edesc_OrcCapitaine: 'No special effect.',
+        edesc_SqueletteRoyal: 'Reduces hero ATK.',
+        edesc_OrcBoss: 'No special effect.',
+        edesc_Liche: 'Reduces hero ATK on each hit (cumulative). Countered by Blessed Necklace.',
+        edesc_DragonNoir: 'Breathes every 4 rounds (ignores protection). Normal attack otherwise.',
+        edesc_LicheAncienne: 'Amplified ATK reduction.',
+        edesc_DemonMajeur: 'Demonic Zap on a 6.',
+
+        // ── Glossary — Combat ──
+        glo_combat_title: '🎯 Combat System — Dungeon',
+        glo_combat_jauge_name: 'Attack gauge',
+        glo_combat_jauge_desc: 'Click at the right moment: ×0 Miss | ×0.5 Weak | ×1 Hit | ×1.2 Perfect. The zone changes based on enemy ATK and DEF.',
+        glo_combat_actions_name: 'Actions per round',
+        glo_combat_actions_desc: 'The player performs their actions (attacks or active skills). Then each living enemy attacks in turn. End of round: duration effects (poison, rage…) are applied.',
+        glo_combat_rang_name: 'Front / back rank',
+        glo_combat_rang_desc: 'Back rank enemies can only be targeted with a ranged weapon or the Volley skill.',
+        glo_combat_skills_name: 'Active skills',
+        glo_combat_skills_desc: 'Use the round action (1× per combat except Heal). Trigger the enemy phase after use.',
+        glo_combat_glyphs_name: 'Glyphs',
+        glo_combat_glyphs_desc: 'Distortion (all enemies), Rage (×2 damage), Blessing (enlarges the perfect zone). Obtained via Scrolls — dungeon tier influences which one is offered.',
+        glo_combat_potions_name: 'Potions',
+        glo_combat_potions_desc: 'Heal (+3 HP), Anti-Poison (removes all poison stacks). Usable outside of action.',
+        glo_fx_title: '☠ Enemy Special Effects',
+        glo_fx_poison_name: '☠ Poison (Spider)',
+        glo_fx_poison_desc: 'Each hit adds 1 stack: -1 HP/round for 3 rounds. Multiple spiders or hits = cumulative stacks. Countered by Anti-Poison Potion.',
+        glo_fx_stun_name: '💫 Stun (Troll)',
+        glo_fx_stun_desc: 'On a 6: attacks a second time in the same round.',
+        glo_fx_lifesteal_name: '🧛 Life Drain (Vampire)',
+        glo_fx_lifesteal_desc: 'Regenerates from the damage it deals (recovers lost HP).',
+        glo_fx_breath_name: '🔥 Breath (Dragon)',
+        glo_fx_breath_desc: 'Every 4 rounds: automatic attack that ignores protection. Normal attack otherwise.',
+        glo_fx_atkred_name: '💀 ATK Curse (Lich)',
+        glo_fx_atkred_desc: 'Each hit reduces hero ATK by -1 (cumulative). Countered by Blessed Necklace.',
+        glo_fx_zap_name: '⚡ Passive Zap (Demon)',
+        glo_fx_zap_desc: 'On a 6: magic strike that ignores protection. Damage scales with season.',
+        glo_fx_crush_name: '🔨 Crush Armor (Orc)',
+        glo_fx_crush_desc: 'On a 6: reduces hero DEF (cumulative). Intensity scales with season.',
+        glo_fx_call_name: '🔔 Call for Help (Goblin)',
+        glo_fx_call_desc: 'Every 5 rounds: summons a random reinforcement into the ongoing combat.',
+        glo_fx_necro_name: '💀 Summoning (Necromancer)',
+        glo_fx_necro_desc: 'Periodically summons a skeleton to the front rank.',
+        glo_class_skills_title: '⚔ Class Skills',
+        glo_cs_crushing_name: '🔨 Crushing Blow (Warrior)',
+        glo_cs_crushing_desc: 'Passive: reduces enemy DEF on each hit (cumulative). Level increases with meta.',
+        glo_cs_secondsouffle_name: '💚 Second Wind (Warrior)',
+        glo_cs_secondsouffle_desc: 'Passive: heals on perfect hit (×1.2). Amount increases with meta.',
+        glo_cs_volley_name: '🏹 Volley (Archer)',
+        glo_cs_volley_desc: 'Strikes multiple enemies in a rank. Uses the round action.',
+        glo_cs_zap_name: '⚡ Zap (Mage)',
+        glo_cs_zap_desc: 'Magic damage on one target. Ignores protection.',
+        glo_cs_freeze_name: '❄ Freeze (Mage)',
+        glo_cs_freeze_desc: 'Freezes all enemies for X rounds (they cannot attack).',
+        glo_cs_curse_name: '💀 Curse (Adventurer)',
+        glo_cs_curse_desc: 'Reduces ATK of all enemies for X rounds.',
+        glo_cs_distorsion_name: '⏳ Time Distortion',
+        glo_cs_distorsion_desc: 'Meta skill: strikes all enemies for (3 + level) damage. Uses the round action.',
+
+        // ── Tutorial ──
+        tut_step: 'STEP',
+        tut_skip: 'Skip',
+        tut_next: 'Next ▶',
+        tut_finish: 'Start ✓',
+        tut_1_title: 'Welcome to Chronocity',
+        tut_1_body: '<p>You lead a city threatened by the <b>Horde</b>. You have <b>10 turns</b> per season to prepare it.</p><div class="ct-rule r-battle"><span class="ct-rule-ic">⚔</span><div>On <b>turn 10</b>, the Horde attacks your city. If you lose, you start again (with meta bonuses).</div></div><div class="ct-rule r-free"><span class="ct-rule-ic">🗺</span><div>Each season: explore tiles, build structures, recruit troops and send your avatar into dungeons.</div></div>',
+        tut_2_title: 'The Turn Rhythm',
+        tut_2_body: '<div class="ct-rule r-action"><span class="ct-rule-ic">🟡</span><div>Each turn, choose <b>1 main action</b>:<br>· <b>❖ Reveal</b> a tile · <b>⚒︎ Build</b> a building · <b>🛒 Caravan</b><br><span style="color:#ffb040">· From <b>Season 5</b> onwards: <b>Recruit</b> also becomes a main action.</span></div></div><div class="ct-rule r-free"><span class="ct-rule-ic">🔵</span><div><b>Free actions</b> don\'t cost a turn: <b>equip</b> your avatar, <b>buy</b> from buildings, <b>dungeon</b>, and in S1–S4 <b>recruit</b> too.</div></div><p style="font-size:12px;color:#9a8a6a">The top banner shows: <b>🟡 action available / taken</b> and 🔵 free options.</p>',
+        tut_3_title: 'Conjunctions ⭐',
+        tut_3_body: '<div class="ct-rule r-action" style="border-color:#e0a020;background:rgba(58,42,0,0.4)"><span class="ct-rule-ic">⭐</span><div><em style="color:#e0c060">\"Caravans dare not cross the steppes except at the time of the Conjunctions, when the ancient roads return to the flow of the world.\"</em></div></div><p>On turns <b>2, 4, 6 and 8</b>, a Conjunction opens. Send a caravan that turn to collect <b>×2 resources</b> (gold, mana, population).</p><p style="font-size:12px;color:#9a8a6a">Resources are <b>not collected automatically</b>: you must send the caravan to benefit!</p>',
+        tut_4_title: 'What You Build Matters in Combat',
+        tut_4_body: '<p>Each <b>revealed tile</b> joins your city and provides building slots.</p><p><b>Buildings</b> give: resources, fortifications, or unlock recruitment (Barracks → troops, Academy → elite).</p><p>On turn 10, <b>your army + fortifications</b> face the Horde.</p><div class="ct-rule r-battle"><span class="ct-rule-ic">👁</span><div>The Horde\'s composition is <b>revealed on turn 5</b>. Adapt your strategy accordingly.</div></div>',
+        tut_5_title: 'Dungeons 🏚🕳💀',
+        tut_5_body: '<p>Your avatar can explore a dungeon each turn — a <b>free action</b>, no main turn cost.</p><div class="ct-rule r-free"><span class="ct-rule-ic">🕳</span><div>Choose your risk level:<br>· <b>🏚 Abandoned Tower</b> — tier -1, loot ×0.75<br>· <b>🕳 Mysterious Cave</b> — normal tier, loot ×1<br>· <b>💀 Cursed Catacombs</b> — tier +1, loot ×1.25</div></div><div class="ct-rule r-battle"><span class="ct-rule-ic">💀</span><div>On <b>turn 9 in the Catacombs</b>, a permanent reward is offered if you defeat the boss: +ATK, +Damage, resources, or <b>Projection</b> (the avatar fights the horde AND remains available that turn).</div></div><p style="font-size:12px;color:#9a8a6a">In <b>S4, S8, S12…</b> the <b>🐍 Ouroboros Lair</b> appears (tier +2, ×2 loot). Defeating it grants a <b>🥚 Shell</b> — once per occurrence in the meta.</p>',
+        tut_6_title: 'Your Avatar & Classes 🗡',
+        tut_6_body: '<p>Your avatar explores dungeons and can join the <b>horde defense</b> (their ATK boosts your power).</p><div class="ct-rule r-free"><span class="ct-rule-ic">⚔</span><div>Equip them with weapons, armor, jewelry, <b>glyphs</b> (single-use spells) and <b>potions</b>. Dungeon loot directly feeds your resources.</div></div><div class="ct-rule r-action" style="border-color:#c080ff;background:rgba(30,10,50,0.4)"><span class="ct-rule-ic">🪞</span><div>The <b>Mirror Palace</b> (legendary building — 1 🥚) unlocks a <b>permanent class</b>: <b>Archer, Warrior, Mage</b> or <b>Adventurer</b>. Each class adds unique skills in combat.</div></div><p style="font-size:12px;color:#9a8a6a">Without a class, the avatar fights as a generalist. With a class, skill buttons appear during dungeon combat.</p>',
+        tut_7_title: 'Season 5+: Recruitment Changes 🔁',
+        tut_7_body: '<p>In <b>Seasons 1–4</b>, recruiting is a free action: you can do it as often as you like without spending your turn.</p><div class="ct-rule r-battle"><span class="ct-rule-ic">⚠</span><div>From <b>Season 5</b>, recruiting becomes a <b>main action</b>. Each recruitment session costs your turn — but you can recruit <b>multiple units</b> in one action.</div></div><div class="ct-rule r-free"><span class="ct-rule-ic">💡</span><div>Plan ahead: build your Barracks and Academy <b>before S5</b> to enjoy free recruitment in the early seasons.</div></div>',
+        tut_8_title: 'Time Dust & Meta-Progression ✨',
+        tut_8_body: '<p>At the end of each run you earn <b>✨ Time Dust</b>. It persists and lets you buy <b>permanent upgrades</b>: starting gold, stronger avatar, bonus buildings…</p><div class="ct-rule r-free"><span class="ct-rule-ic">🥚</span><div><b>Time Egg Shells</b> are earned in dungeons (winter boss turn 9, Ouroboros S4/S8…). They unlock <b>legendary buildings</b>: Great Tower, Elven Tree, Dwarven Fortress, Sanctuary, <b>Mirror Palace</b>.</div></div><p style="font-size:12px;color:#9a8a6a">Menu <b>≡</b> top-right for meta-progression. Each run makes you stronger!</p>',
+        lang_select_title: '🌐 Choose Language',
+        lang_fr: '🇫🇷 Français',
+        lang_en: '🇬🇧 English',
+    }
+};
+
+// Langue courante (défaut : FR)
+let _currentLang = 'fr';
+const IS_DEV = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+
+function t(key) {
+    const val = LANGS[_currentLang] && LANGS[_currentLang][key];
+    if (val !== undefined) return val;
+    if (_currentLang !== 'fr') {
+        const fallback = LANGS['fr'][key];
+        if (fallback !== undefined) {
+            if (IS_DEV) console.warn('[i18n] Clé manquante en "' + _currentLang + '" : ' + key);
+            return fallback;
+        }
+    }
+    if (IS_DEV) console.warn('[i18n] Clé introuvable : ' + key);
+    return key;
+}
+
+async function setLang(lang) {
+    if (!LANGS[lang]) return;
+    _currentLang = lang;
+    // Sauvegarder en Firebase si connecté
+    if (window._fbUser && window._fbSetDoc && window._fbDb && window._fbDoc) {
+        try {
+            const ref = window._fbDoc(window._fbDb, 'users', window._fbUser.uid, 'prefs', 'data');
+            await window._fbSetDoc(ref, { lang: lang });
+        } catch(e) { console.warn('[i18n] Impossible de sauvegarder la langue :', e); }
+    }
+    applyLangToUI();
+}
+
+async function loadLang() {
+    if (window._fbUser && window._fbGetDoc && window._fbDb && window._fbDoc) {
+        try {
+            const ref = window._fbDoc(window._fbDb, 'users', window._fbUser.uid, 'prefs', 'data');
+            const snap = await window._fbGetDoc(ref);
+            if (snap && snap.exists && snap.exists()) {
+                const saved = snap.data().lang;
+                if (saved && LANGS[saved]) { _currentLang = saved; }
+            }
+        } catch(e) { /* silencieux */ }
+    }
+    applyLangToUI();
+}
+
+function applyLangToUI() {
+    // Bouton menu dans la timeline
+    const menuBtn = document.getElementById('main-menu-btn');
+    if (menuBtn) menuBtn.textContent = t('menu_save_btn');
+    // Titre du menu
+    const menuTitle = document.getElementById('save-menu-title');
+    if (menuTitle) menuTitle.textContent = t('menu_title');
+    // Boutons du menu
+    const btnNewRun = document.getElementById('menu-new-run-btn');
+    if (btnNewRun) btnNewRun.textContent = t('menu_new_run');
+    const btnGlo = document.getElementById('menu-glossary-btn');
+    if (btnGlo) btnGlo.textContent = t('menu_glossary');
+    const btnResetRun = document.getElementById('menu-reset-run-btn');
+    if (btnResetRun) btnResetRun.textContent = t('menu_reset_run');
+    const btnResetAll = document.getElementById('menu-reset-all-btn');
+    if (btnResetAll) btnResetAll.textContent = t('menu_reset_all');
+    // Écran d'accueil
+    const btnLoad = document.getElementById('home-btn-load');
+    if (btnLoad) btnLoad.textContent = t('ui_load_game');
+    const btnNew = document.getElementById('home-btn-new');
+    if (btnNew) btnNew.textContent = t('ui_new_game');
+    const btnGloHome = document.getElementById('home-btn-glossary');
+    if (btnGloHome) btnGloHome.textContent = t('ui_glossary');
+    const btnLadder = document.getElementById('home-btn-ladder');
+    if (btnLadder) btnLadder.textContent = t('ui_leaderboard');
+    const btnLang = document.getElementById('home-btn-lang');
+    if (btnLang) btnLang.textContent = t('ui_language');
+    // Timeline saison
+    const tlSeason = document.getElementById('timeline-season');
+    if (tlSeason && window.currentSeason !== undefined) {
+        tlSeason.textContent = t('ui_season') + ' ' + (window.currentSeason || 1);
+    }
+}
+
+function openLangSelector() {
+    const existing = document.getElementById('lang-selector-modal');
+    if (existing) { existing.remove(); return; }
+    const modal = document.createElement('div');
+    modal.id = 'lang-selector-modal';
+    modal.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.75);z-index:99998;display:flex;align-items:center;justify-content:center';
+    const inner = document.createElement('div');
+    inner.style.cssText = 'background:#0a0818;border:1px solid #3a2a5a;border-radius:12px;padding:20px 24px;min-width:220px;display:flex;flex-direction:column;gap:10px;box-shadow:0 0 40px rgba(80,40,120,0.5)';
+    const title = document.createElement('div');
+    title.style.cssText = 'font-family:Cinzel,serif;font-size:14px;color:#c0a060;text-align:center;margin-bottom:4px';
+    title.textContent = t('lang_select_title');
+    inner.appendChild(title);
+    ['fr','en'].forEach(function(l) {
+        const active = _currentLang === l;
+        const btn = document.createElement('button');
+        btn.style.cssText = 'padding:10px 0;font-family:Cinzel,serif;font-size:13px;cursor:pointer;border-radius:7px;'
+            + 'background:' + (active ? 'linear-gradient(135deg,#1a1030,#2a1a40)' : '#0c0818') + ';'
+            + 'color:' + (active ? '#c080ff' : '#9a8a6a') + ';'
+            + 'border:1px solid ' + (active ? '#5040a0' : '#2a1a3a');
+        btn.textContent = t('lang_' + l);
+        btn.onclick = function() { setLang(l); modal.remove(); };
+        inner.appendChild(btn);
+    });
+    const cancelBtn = document.createElement('button');
+    cancelBtn.style.cssText = 'background:none;border:none;color:#4a3a5a;cursor:pointer;font-size:11px;margin-top:2px';
+    cancelBtn.textContent = t('ui_cancel');
+    cancelBtn.onclick = function() { modal.remove(); };
+    inner.appendChild(cancelBtn);
+    modal.appendChild(inner);
+    document.body.appendChild(modal);
+}
+
+
+// ═══════════════════════════════════════════════════════════
+
 const TILE_TYPES = {
-    Prairie:  { slots:2, color:'#2d5a1b', emoji:'🌾', desc:'+2 emplacements',
+    Prairie:  { slots:2, color:'#2d5a1b', emoji:'🌾', get desc(){ return t('tile_Prairie_desc'); },
                 bonuses:{} },
-    Collines: { slots:1, color:'#7a6040', emoji:'⛰', desc:'+10 Or/tour | +1 emplacement',
-                bonuses:{ Mine:'+10 Or/tour' } },
-    Montagne: { slots:0, color:'#5a5060', emoji:'🏔', desc:'+30 Mana | +5 Mana/tour | +5 Or/tour',
+    Collines: { slots:1, color:'#7a6040', emoji:'⛰', get desc(){ return t('tile_Collines_desc'); },
+                bonuses:{ get Mine(){ return t('tile_Collines_bonus_Mine'); } } },
+    Montagne: { slots:0, color:'#5a5060', emoji:'🏔', get desc(){ return t('tile_Montagne_desc'); },
                 bonuses:{} },
-    Lac:      { slots:1, color:'#1a4a6a', emoji:'💧', desc:'+10 Pop | +5 Pop/tour | +1 emplacement',
-                bonuses:{ Ferme:'+5 Pop/tour' } },
-    Forêt:    { slots:1, color:'#1a4a1a', emoji:'🌲', desc:'+1 Fortification | +1 emplacement',
-                bonuses:{ Caserne:'+1 Fortification' } },
+    Lac:      { slots:1, color:'#1a4a6a', emoji:'💧', get desc(){ return t('tile_Lac_desc'); },
+                bonuses:{ get Ferme(){ return t('tile_Lac_bonus_Ferme'); } } },
+    Forêt:    { slots:1, color:'#1a4a1a', emoji:'🌲', get desc(){ return t('tile_Foret_desc'); },
+                bonuses:{ get Caserne(){ return t('tile_Foret_bonus_Caserne'); } } },
 };
 
 // State des tuiles
@@ -2037,7 +2769,7 @@ function showCityPanel() {
                     (canRebuild?'':'disabled')+'>'+
                     '🔨 Reconstruire ('+REBUILD_COST+'🪙)</button>'+
             '</div>'+
-            '<div style="font-size:10px;color:#7a6a50;margin-top:4px"Perdues lors d\'une défaite. Coût : '+REBUILD_COST+' Or / fort.</div>'+
+            '<div style="font-size:10px;color:#7a6a50;margin-top:4px">Perdues lors d\'une défaite. Coût : '+REBUILD_COST+' Or / fort.</div>'+
             '</div>'+
 
             (function(){
@@ -2171,16 +2903,16 @@ function addLog(message) {
 // Animation changement de tour
 const turnEvents = [
     null,
-    { icon: '❖', name: 'Exploration', desc: 'Vous allez pouvoir explorer un donjon pendant ce tour !', color: '#1a3a5a', border: '#4a90d9' },
-    { icon: '⭐', name: 'Conjonction',  desc: 'Le bon moment pour envoyer une caravane, la conjonction vous permet de doubler les ressources récoltées !', color: '#3a2a00', border: '#e0a020' },
-    { icon: '❖', name: 'Exploration', desc: 'Vous allez pouvoir explorer un donjon pendant ce tour !', color: '#1a3a5a', border: '#4a90d9' },
-    { icon: '⭐', name: 'Conjonction',  desc: 'Le bon moment pour envoyer une caravane, la conjonction vous permet de doubler les ressources récoltées !', color: '#3a2a00', border: '#e0a020' },
-    { icon: '🔭', name: 'Rapport des éclaireurs', desc: 'Consultez la composition de la horde dans le panneau Horde — elle vient d\'être mise à jour.', color: '#3a1a3a', border: '#c060c0' },
-    { icon: '⭐', name: 'Conjonction',  desc: 'Le bon moment pour envoyer une caravane, la conjonction vous permet de doubler les ressources récoltées !', color: '#3a2a00', border: '#e0a020' },
-    { icon: '❖', name: 'Exploration', desc: 'Vous allez pouvoir explorer un donjon pendant ce tour !', color: '#1a3a5a', border: '#4a90d9' },
-    { icon: '⭐', name: 'Conjonction',  desc: 'Le bon moment pour envoyer une caravane, la conjonction vous permet de doubler les ressources récoltées !', color: '#3a2a00', border: '#e0a020' },
-    { icon: '❖', name: 'Exploration', desc: 'Vous allez pouvoir explorer un donjon pendant ce tour !', color: '#1a3a5a', border: '#4a90d9' },
-    { icon: '⚔',  name: 'La Horde attaque !', desc: 'Recrutez vos dernières unités, équipez votre avatar, puis cliquez ⚔ dans la frise pour lancer le combat.', color: '#3a0a0a', border: '#e05050', isBattleTurn: true },
+    { icon: '❖', get name(){ return t('event_Exploration'); }, get desc(){ return t('event_Exploration_desc'); }, color: '#1a3a5a', border: '#4a90d9' },
+    { icon: '⭐', get name(){ return t('event_Conjonction'); },  get desc(){ return t('event_Conjonction_desc'); }, color: '#3a2a00', border: '#e0a020' },
+    { icon: '❖', get name(){ return t('event_Exploration'); }, get desc(){ return t('event_Exploration_desc'); }, color: '#1a3a5a', border: '#4a90d9' },
+    { icon: '⭐', get name(){ return t('event_Conjonction'); },  get desc(){ return t('event_Conjonction_desc'); }, color: '#3a2a00', border: '#e0a020' },
+    { icon: '🔭', get name(){ return t('event_RapportEclaireurs'); }, get desc(){ return t('event_RapportEclaireurs_desc'); }, color: '#3a1a3a', border: '#c060c0' },
+    { icon: '⭐', get name(){ return t('event_Conjonction'); },  get desc(){ return t('event_Conjonction_desc'); }, color: '#3a2a00', border: '#e0a020' },
+    { icon: '❖', get name(){ return t('event_Exploration'); }, get desc(){ return t('event_Exploration_desc'); }, color: '#1a3a5a', border: '#4a90d9' },
+    { icon: '⭐', get name(){ return t('event_Conjonction'); },  get desc(){ return t('event_Conjonction_desc'); }, color: '#3a2a00', border: '#e0a020' },
+    { icon: '❖', get name(){ return t('event_Exploration'); }, get desc(){ return t('event_Exploration_desc'); }, color: '#1a3a5a', border: '#4a90d9' },
+    { icon: '⚔',  get name(){ return t('event_HordeAttaque'); }, get desc(){ return t('event_HordeAttaque_desc'); }, color: '#3a0a0a', border: '#e05050', isBattleTurn: true },
 ];
 const seasonNames = ['Printemps', 'Été', 'Automne', 'Hiver'];
 const seasonColors = ['#1a5a1a', '#5a3a00', '#5a2a00', '#1a1a5a'];
@@ -2458,20 +3190,21 @@ function updateRecruitMode(endTurnVisible) {
 function updateTimeline() {
     const container = document.getElementById('timeline-steps');
     const seasonNames = ['Printemps', 'Été', 'Automne', 'Hiver'];
+    window.currentSeason = currentSeason;
     document.getElementById('timeline-season').textContent =
-        'Saison ' + currentSeason + ' — ' + (seasonNames[(currentSeason - 1) % 4] || 'Saison ' + currentSeason);
+        t('ui_season') + ' ' + currentSeason + ' — ' + (seasonNames[(currentSeason - 1) % 4] || t('ui_season') + ' ' + currentSeason);
 
     const stepInfos = [
-        { num: 1,  label: 'Explore',  type: 'explore' },
-        { num: 2,  label: 'Conjonction',  type: 'collect' },
-        { num: 3,  label: 'Explore',  type: 'explore' },
-        { num: 4,  label: 'Conjonction',  type: 'collect' },
-        { num: 5,  label: 'Éclaireurs', type: 'scout' },
-        { num: 6,  label: 'Conjonction',  type: 'collect' },
-        { num: 7,  label: 'Explore',  type: 'explore' },
-        { num: 8,  label: 'Conjonction',  type: 'collect' },
-        { num: 9,  label: 'Explore',  type: 'explore' },
-        { num: 10, label: 'COMBAT',   type: 'battle'  },
+        { num: 1,  get label(){ return t('tl_Explore'); },  type: 'explore' },
+        { num: 2,  get label(){ return t('tl_Conjonction'); },  type: 'collect' },
+        { num: 3,  get label(){ return t('tl_Explore'); },  type: 'explore' },
+        { num: 4,  get label(){ return t('tl_Conjonction'); },  type: 'collect' },
+        { num: 5,  get label(){ return t('tl_Eclaireurs'); }, type: 'scout' },
+        { num: 6,  get label(){ return t('tl_Conjonction'); },  type: 'collect' },
+        { num: 7,  get label(){ return t('tl_Explore'); },  type: 'explore' },
+        { num: 8,  get label(){ return t('tl_Conjonction'); },  type: 'collect' },
+        { num: 9,  get label(){ return t('tl_Explore'); },  type: 'explore' },
+        { num: 10, get label(){ return t('tl_COMBAT'); },   type: 'battle'  },
     ];
 
     let html = '';
@@ -2926,54 +3659,54 @@ function getMonsterImg(name) {
 // Pool de monstres organisé par tier et saison
 const MONSTER_POOL = [
     // ===== TIER 1 (S1-S2) =====
-    { name:'Gobelin',         tier:1, emoji:'👺', atk:2, dmg:1, def:2, protection:0, hp:6,  maxHp:6,  rank:'front',
+    { get name(){ return t('enemy_Gobelin'); },         tier:1, emoji:'👺', atk:2, dmg:1, def:2, protection:0, hp:6,  maxHp:6,  rank:'front',
       loot:()=>{ gold+=5;  dust += 1; return '+5 Or, +1 Poussière'; },  lootDesc:'Quelques pièces volées.' },
-    { name:'Orc',             tier:1, emoji:'👊', atk:3, dmg:2, def:2, protection:0, hp:8,  maxHp:8,  rank:'front',
+    { get name(){ return t('enemy_Orc'); },             tier:1, emoji:'👊', atk:3, dmg:2, def:2, protection:0, hp:8,  maxHp:8,  rank:'front',
       loot:()=>{ gold+=8;  dust += 1; return '+8 Or, +1 Poussière'; },  lootDesc:'Trophée de guerre orcien.' },
-    { name:'Squelette',       tier:1, emoji:'💀', atk:2, dmg:1, def:2, protection:0, hp:6,  maxHp:6,  rank:'front',
+    { get name(){ return t('enemy_Squelette'); },       tier:1, emoji:'💀', atk:2, dmg:1, def:2, protection:0, hp:6,  maxHp:6,  rank:'front',
       loot:()=>{ gold+=6;  dust += 1; return '+6 Or, +1 Poussière'; },  lootDesc:'Des os qui tombent en pièces.' },
     // ===== TIER 2 (S2-S3) =====
-    { name:'Gobelin Soldat',  tier:2, emoji:'👺', atk:3, dmg:2, def:3, protection:1, hp:9,  maxHp:9,  rank:'front',
+    { get name(){ return t('enemy_GoblinSoldat'); },  tier:2, emoji:'👺', atk:3, dmg:2, def:3, protection:1, hp:9,  maxHp:9,  rank:'front',
       loot:()=>{ gold+=12; dust += 1; return '+12 Or, +1 Poussière'; }, lootDesc:'Une vieille épée rouillée.' },
-    { name:'Orc Élite',       tier:2, emoji:'👊', atk:4, dmg:3, def:3, protection:1, hp:12, maxHp:12, rank:'front',
+    { get name(){ return t('enemy_OrcElite'); },       tier:2, emoji:'👊', atk:4, dmg:3, def:3, protection:1, hp:12, maxHp:12, rank:'front',
       loot:()=>{ gold+=15; dust += 1; return '+15 Or, +1 Poussière'; }, lootDesc:'Armure orcienne.' },
-    { name:'Squelette Armé',  tier:2, emoji:'💀', atk:3, dmg:2, def:3, protection:1, hp:9,  maxHp:9,  rank:'front',
+    { get name(){ return t('enemy_SqueletteArme'); },  tier:2, emoji:'💀', atk:3, dmg:2, def:3, protection:1, hp:9,  maxHp:9,  rank:'front',
       loot:()=>{ gold+=10; mana+=5; dust += 1; return '+10 Or, +5 Mana, +1 Poussière'; }, lootDesc:'Armure brisée.' },
-    { name:'Araignée',        tier:2, emoji:'🕷', atk:3, dmg:1, def:1, protection:0, hp:8,  maxHp:8,  rank:'front',
+    { get name(){ return t('enemy_Araignee'); },        tier:2, emoji:'🕷', atk:3, dmg:1, def:1, protection:0, hp:8,  maxHp:8,  rank:'front',
       special:'poison',
       loot:()=>{ mana+=15; dust += 1; return '+15 Mana, +1 Poussière'; }, lootDesc:'Une glande magique.' },
     // ===== TIER 3 (S3-S4) =====
-    { name:'Troll',           tier:3, emoji:'👹', atk:3, dmg:2, def:3, protection:1, hp:12, maxHp:12, rank:'front',
+    { get name(){ return t('enemy_Troll'); },           tier:3, emoji:'👹', atk:3, dmg:2, def:3, protection:1, hp:12, maxHp:12, rank:'front',
       special:'stun',
       loot:()=>{ gold+=15; mana+=15; dust += 1; return '+15 Or, +15 Mana, +1 Poussière'; }, lootDesc:'Un trésor de troll.' },
-    { name:'Archer Gobelin',  tier:3, emoji:'🏹', atk:4, dmg:2, def:1, protection:0, hp:7,  maxHp:7,  rank:'back', isRanged:true,
+    { get name(){ return t('enemy_ArcherGobelin'); },  tier:3, emoji:'🏹', atk:4, dmg:2, def:1, protection:0, hp:7,  maxHp:7,  rank:'back', isRanged:true,
       loot:()=>{ gold+=12; dust += 1; return '+12 Or, +1 Poussière'; }, lootDesc:'Un arc court.' },
-    { name:'Vampire',         tier:3, emoji:'🧛', atk:4, dmg:2, def:3, protection:1, hp:10, maxHp:10, rank:'front',
+    { get name(){ return t('enemy_Vampire'); },         tier:3, emoji:'🧛', atk:4, dmg:2, def:3, protection:1, hp:10, maxHp:10, rank:'front',
       special:'lifesteal',
       loot:()=>{ const healed=Math.min(3,dungeonState.avatarMaxHp-dungeonState.avatarHp); dungeonState.avatarHp=Math.min(dungeonState.avatarMaxHp,dungeonState.avatarHp+3); avatarHp=dungeonState.avatarHp; dust += 1; document.getElementById('dng-avatar-hp-text').textContent='HP: '+dungeonState.avatarHp+'/'+dungeonState.avatarMaxHp; dungeonUpdateHpBar('avatar',dungeonState.avatarHp,dungeonState.avatarMaxHp); return '+'+healed+' HP, +1 Poussière'; },
       lootDesc:'Sang régénérateur.' },
     // ===== TIER 4 (S4+) =====
-    { name:'Démon',           tier:4, emoji:'😈', atk:4, dmg:3, def:3, protection:2, hp:14, maxHp:14, rank:'front',
+    { get name(){ return t('enemy_Demon'); },           tier:4, emoji:'😈', atk:4, dmg:3, def:3, protection:2, hp:14, maxHp:14, rank:'front',
       loot:()=>{ gold+=20; dust += 1; return '+20 Or, +1 Poussière'; }, lootDesc:'Orbe démoniaque.' },
-    { name:'Seigneur Gobelin',tier:4, emoji:'👺', atk:4, dmg:3, def:3, protection:2, hp:14, maxHp:14, rank:'front',
+    { get name(){ return t('enemy_SeigneurGobelin'); },tier:4, emoji:'👺', atk:4, dmg:3, def:3, protection:2, hp:14, maxHp:14, rank:'front',
       loot:()=>{ gold+=18; dust += 1; return '+18 Or, +1 Poussière'; }, lootDesc:'Couronne de chef.' },
-    { name:'Nécromancien',    tier:4, emoji:'🧙', atk:3, dmg:2, def:4, protection:1, hp:12, maxHp:12, rank:'back', isRanged:true, special:'necromancer',
+    { get name(){ return t('enemy_Necromancien'); },    tier:4, emoji:'🧙', atk:3, dmg:2, def:4, protection:1, hp:12, maxHp:12, rank:'back', isRanged:true, special:'necromancer',
       loot:()=>{ mana+=30; dust += 1; return '+30 Mana, +1 Poussière'; }, lootDesc:'Grimoire nécromantique.' },
     // ===== TIER 5 (S5+) =====
-    { name:'Orc Briseur',      tier:5, emoji:'👊', atk:5, dmg:4, def:4, protection:2, hp:16, maxHp:16, rank:'front', special:'crush_passive',
+    { get name(){ return t('enemy_OrcBriseur'); },      tier:5, emoji:'👊', atk:5, dmg:4, def:4, protection:2, hp:16, maxHp:16, rank:'front', special:'crush_passive',
       loot:()=>{ gold+=22; dust+=2; return '+22 Or, +2 Poussière'; }, lootDesc:'Épaulière brisée.' },
-    { name:'Gobelin Boss',     tier:5, emoji:'👺', atk:4, dmg:3, def:3, protection:2, hp:15, maxHp:15, rank:'front', special:'goblincall',
+    { get name(){ return t('enemy_GoblinBoss'); },     tier:5, emoji:'👺', atk:4, dmg:3, def:3, protection:2, hp:15, maxHp:15, rank:'front', special:'goblincall',
       loot:()=>{ gold+=20; dust+=2; return '+20 Or, +2 Poussière'; }, lootDesc:'Sceptre de chef gobelin.' },
-    { name:'Araignée Géante',  tier:5, emoji:'🕷', atk:4, dmg:2, def:2, protection:1, hp:14, maxHp:14, rank:'front', special:'poison',
+    { get name(){ return t('enemy_AraigneeGeante'); },  tier:5, emoji:'🕷', atk:4, dmg:2, def:2, protection:1, hp:14, maxHp:14, rank:'front', special:'poison',
       loot:()=>{ mana+=25; dust+=2; return '+25 Mana, +2 Poussière'; }, lootDesc:'Glande venimeuse géante.' },
-    { name:'Liche Mineure',    tier:5, emoji:'💀', atk:4, dmg:3, def:4, protection:2, hp:13, maxHp:13, rank:'back', isRanged:true, special:'atkreduction',
+    { get name(){ return t('enemy_LicheMineure'); },    tier:5, emoji:'💀', atk:4, dmg:3, def:4, protection:2, hp:13, maxHp:13, rank:'back', isRanged:true, special:'atkreduction',
       loot:()=>{ mana+=28; dust+=2; return '+28 Mana, +2 Poussière'; }, lootDesc:'Fragment de phylactère.' },
     // ===== TIER 6 (S7+) =====
-    { name:'Démon Arcaniste',  tier:6, emoji:'😈', atk:5, dmg:4, def:4, protection:3, hp:18, maxHp:18, rank:'back', isRanged:true, special:'zap_passive',
+    { get name(){ return t('enemy_DemonArcaniste'); },  tier:6, emoji:'😈', atk:5, dmg:4, def:4, protection:3, hp:18, maxHp:18, rank:'back', isRanged:true, special:'zap_passive',
       loot:()=>{ gold+=28; mana+=14; dust+=3; return '+28 Or, +14 Mana, +3 Poussière'; }, lootDesc:'Cristal démoniaque.' },
-    { name:'Squelette Ancien', tier:6, emoji:'💀', atk:5, dmg:4, def:5, protection:2, hp:17, maxHp:17, rank:'front', special:'atkreduction',
+    { get name(){ return t('enemy_SqueletteAncien'); }, tier:6, emoji:'💀', atk:5, dmg:4, def:5, protection:2, hp:17, maxHp:17, rank:'front', special:'atkreduction',
       loot:()=>{ mana+=30; dust+=3; return '+30 Mana, +3 Poussière'; }, lootDesc:'Os millénaire.' },
-    { name:'Troll des Abysses',tier:6, emoji:'👹', atk:5, dmg:4, def:4, protection:2, hp:20, maxHp:20, rank:'front', special:'stun',
+    { get name(){ return t('enemy_TrollAbysses'); },tier:6, emoji:'👹', atk:5, dmg:4, def:4, protection:2, hp:20, maxHp:20, rank:'front', special:'stun',
       loot:()=>{ gold+=30; dust+=3; return '+30 Or, +3 Poussière'; }, lootDesc:'Pierre trollesque.' },
 ];
 
@@ -3025,32 +3758,32 @@ function generateMonsterGroup(season) {
 // Pools de boss par tier (saison détermine le tier disponible)
 const BOSS_POOLS = {
     1: [ // S1 : boss faibles
-        { name:'Orc Capitaine', emoji:'👊', atk:3, dmg:2, def:3, protection:1, hp:14, maxHp:14, isBoss:true,
+        { get name(){ return t('enemy_OrcCapitaine'); }, emoji:'👊', atk:3, dmg:2, def:3, protection:1, hp:14, maxHp:14, isBoss:true,
           loot:()=>{ gold+=20; const bd=4+currentSeason; dust+=bd; return '+20 Or, +'+bd+' Poussière'; },
           lootDesc:'Armure de capitaine.' },
-        { name:'Squelette Royal', emoji:'💀', atk:3, dmg:2, def:3, protection:1, hp:12, maxHp:12, isBoss:true,
+        { get name(){ return t('enemy_SqueletteRoyal'); }, emoji:'💀', atk:3, dmg:2, def:3, protection:1, hp:12, maxHp:12, isBoss:true,
           loot:()=>{ mana+=20; const bd=4+currentSeason; dust+=bd; return '+20 Mana, +'+bd+' Poussière'; },
           lootDesc:'Couronne osseuse.' },
     ],
     2: [ // S2 : boss intermédiaires
-        { name:'Orc Boss',    emoji:'👾', atk:4, dmg:3, def:4, protection:2, hp:18, maxHp:18, isBoss:true,
+        { get name(){ return t('enemy_OrcBoss'); },    emoji:'👾', atk:4, dmg:3, def:4, protection:2, hp:18, maxHp:18, isBoss:true,
           loot:()=>{ gold+=25; const bd=4+currentSeason; dust+=bd; return '+25 Or, +'+bd+' Poussière'; },
           lootDesc:"Trophée de l'Orc Boss." },
-        { name:'Liche',       emoji:'💀', atk:4, dmg:3, def:5, protection:2, hp:16, maxHp:16, isBoss:true,
+        { get name(){ return t('enemy_Liche'); },       emoji:'💀', atk:4, dmg:3, def:5, protection:2, hp:16, maxHp:16, isBoss:true,
           special:'atkreduction',
           loot:()=>{ mana+=50; const bd=4+currentSeason; dust+=bd; return '+50 Mana, +'+bd+' Poussière'; },
           lootDesc:'Le grimoire de la Liche.' },
     ],
     3: [ // S3-S4 : boss puissants
-        { name:'Dragon Noir', emoji:'🐉', atk:5, dmg:4, def:4, protection:3, hp:22, maxHp:22, isBoss:true,
+        { get name(){ return t('enemy_DragonNoir'); }, emoji:'🐉', atk:5, dmg:4, def:4, protection:3, hp:22, maxHp:22, isBoss:true,
           special:'breath',
           loot:()=>{ gold+=35; const bd=4+currentSeason; dust+=bd; return '+35 Or, +'+bd+' Poussière'; },
           lootDesc:'Une écaille du dragon.' },
-        { name:'Liche Ancienne', emoji:'💀', atk:5, dmg:4, def:6, protection:3, hp:20, maxHp:20, isBoss:true,
+        { get name(){ return t('enemy_LicheAncienne'); }, emoji:'💀', atk:5, dmg:4, def:6, protection:3, hp:20, maxHp:20, isBoss:true,
           special:'atkreduction',
           loot:()=>{ mana+=60; const bd=4+currentSeason; dust+=bd; return '+60 Mana, +'+bd+' Poussière'; },
           lootDesc:'Grimoire ancien.' },
-        { name:'Démon Majeur', emoji:'😈', atk:5, dmg:4, def:5, protection:3, hp:24, maxHp:24, isBoss:true,
+        { get name(){ return t('enemy_DemonMajeur'); }, emoji:'😈', atk:5, dmg:4, def:5, protection:3, hp:24, maxHp:24, isBoss:true,
           loot:()=>{ gold+=40; const bd=4+currentSeason; dust+=bd; return '+40 Or, +'+bd+' Poussière'; },
           lootDesc:'Orbe démoniaque.' },
     ],
@@ -5829,18 +6562,18 @@ const UNIT_CATALOG = [
 // Catalogue de la horde par saison
 const HORDE_UNITS = {
     // ── Tier 1 ──
-    gobelin:   { name:'Gobelin',           icon:'👺', atk:2, atkMag:0, traits:['infanterie'],                      tier:1 },
-    orc:       { name:'Orc',               icon:'👊', atk:3, atkMag:0, traits:['infanterie'],                      tier:1 },
+    gobelin:   { get name(){ return t('enemy_Gobelin'); },           icon:'👺', atk:2, atkMag:0, traits:['infanterie'],                      tier:1 },
+    orc:       { get name(){ return t('enemy_Orc'); },               icon:'👊', atk:3, atkMag:0, traits:['infanterie'],                      tier:1 },
     // ── Tier 2 ──
     pillard:   { name:'Pillard',           icon:'🔥', atk:2, atkMag:0, traits:['pillard'],                         tier:2 },
     cavalier:  { name:'Cavalier Orc',      icon:'🐴', atk:4, atkMag:0, traits:['cavalerie'],                       tier:2 },
     // ── Tier 3 ──
-    archerGob: { name:'Archer Gobelin',    icon:'🏹', atk:3, atkMag:0, traits:['distance'],                        tier:3 },
+    archerGob: { get name(){ return t('enemy_ArcherGobelin'); },    icon:'🏹', atk:3, atkMag:0, traits:['distance'],                        tier:3 },
     vouivre:   { name:'Vouivre',           icon:'🐲', atk:4, atkMag:0, traits:['vol'],                             tier:3 },
     sapeur:    { name:'Sapeur Gobelin',    icon:'⛏', atk:2, atkMag:0, traits:['sapeur'],                          tier:3 },
     // ── Tier 4 ──
-    squelette: { name:'Squelette',         icon:'💀', atk:2, atkMag:0, traits:['mort-vivant'],                     tier:4 },
-    demon:     { name:'Démon',             icon:'😈', atk:3, atkMag:4, traits:['demon'],                           tier:4 },
+    squelette: { get name(){ return t('enemy_Squelette'); },         icon:'💀', atk:2, atkMag:0, traits:['mort-vivant'],                     tier:4 },
+    demon:     { get name(){ return t('enemy_Demon'); },             icon:'😈', atk:3, atkMag:4, traits:['demon'],                           tier:4 },
     // ── Tier 5 (S6+) ──
     cavVet:    { name:'Cavaliers Vétérans',icon:'🐴', atk:6, atkMag:0, traits:['cavalerie','cavalerie'],           tier:5 },
     vouivreEss:{ name:'Vouivres en Essaim',icon:'🐲', atk:6, atkMag:0, traits:['vol','vol'],                       tier:5 },
@@ -9277,10 +10010,10 @@ function homeLoad() {
                 const _clsIcons = { warrior:'🗡', archer:'🏹', mage:'✨', adventurer:'📜' };
             const _clsIcon = info.cls ? (_clsIcons[info.cls] || '⚔') : '';
             const _dustStr = info.totalDust ? ' · ✦'+info.totalDust : '';
-            div.innerHTML = '<div style="font-size:24px">💾</div><div class="home-slot-info"><div class="home-slot-name">Slot '+(i+1)+'</div><div>Saison '+info.season+' · Tour '+info.turn+(_clsIcon?' · '+_clsIcon:'')+ _dustStr+'</div><div style="font-size:10px;color:#4a3a5a">'+info.date+'</div></div>';
+            div.innerHTML = '<div style="font-size:24px">💾</div><div class="home-slot-info"><div class="home-slot-name">'+t('slot_label')+' '+(i+1)+'</div><div>'+t('ui_season')+' '+info.season+' · '+t('ui_turn')+' '+info.turn+(_clsIcon?' · '+_clsIcon:'')+ _dustStr+'</div><div style="font-size:10px;color:#4a3a5a">'+info.date+'</div></div>';
                 div.onclick = (function(slot){ return function(){ loadFromSlot(slot); hideHomeScreen(); }; })(i);
             } else {
-                div.innerHTML = '<div style="font-size:24px;opacity:.3">💾</div><div class="home-slot-info"><div class="home-slot-name" style="color:#3a2a4a">Slot '+(i+1)+'</div><div class="home-slot-empty">Vide</div></div>';
+                div.innerHTML = '<div style="font-size:24px;opacity:.3">💾</div><div class="home-slot-info"><div class="home-slot-name" style="color:#3a2a4a">'+t('slot_label')+' '+(i+1)+'</div><div class="home-slot-empty">'+t('slot_empty')+'</div></div>';
                 div.style.cursor='default'; div.style.opacity='0.5';
             }
             slotsEl.appendChild(div);
@@ -9335,147 +10068,293 @@ function gloTab(tab) {
     });
     const el = document.getElementById('glossary-content');
     if (!el) return;
-    el.innerHTML = (typeof GLO_DATA !== 'undefined' && GLO_DATA[tab]) ? GLO_DATA[tab] : '<p style="color:#6a5a8a">Contenu à venir.</p>';
+    const data = buildGloData();
+    el.innerHTML = data[tab] || '<p style="color:#6a5a8a">Contenu à venir.</p>';
+    // Mettre à jour les labels des onglets
+    const tabMap = {terrains:'glo_tab_terrains',batiments:'glo_tab_batiments',
+                    traits:'glo_tab_traits',monstres:'glo_tab_monstres',combat:'glo_tab_combat'};
+    document.querySelectorAll('.glo-tab').forEach(function(el) {
+        const fn = el.getAttribute('onclick') || '';
+        const m = fn.match(/'(\w+)'/);
+        if (m && tabMap[m[1]]) el.textContent = t(tabMap[m[1]]);
+    });
 }
 
 
-const GLO_DATA = {
-    terrains:`<div class="glo-section"><div class="glo-title">❖ Terrains — Révélation et bonus</div>
-<div class="glo-entry"><div class="glo-entry-name">🌾 Prairie — 2 emplacements</div><div class="glo-entry-desc">Révélation : +2 emplacements de construction.</div></div>
-<div class="glo-entry"><div class="glo-entry-name">⛰ Collines — 1 emplacement</div><div class="glo-entry-desc">Révélation : +10 Or/tour. Bonus Mine : +10 Or/tour supplémentaire.</div></div>
-<div class="glo-entry"><div class="glo-entry-name">🏔 Montagne — 0 emplacement</div><div class="glo-entry-desc">Révélation : +30 Mana, +5 Mana/tour, +5 Or/tour. Pas de construction possible.</div></div>
-<div class="glo-entry"><div class="glo-entry-name">💧 Lac — 1 emplacement</div><div class="glo-entry-desc">Révélation : +10 Pop, +5 Pop/tour. Bonus Ferme : +5 Pop/tour.</div></div>
-<div class="glo-entry"><div class="glo-entry-name">🌲 Forêt — 1 emplacement</div><div class="glo-entry-desc">Révélation : +1 Fortification. Bonus Caserne : +1 Fortification.</div></div>
-<div class="glo-entry"><div class="glo-entry-name">🏙 Ville — emplacements méta</div><div class="glo-entry-desc">Emplacements débloqués via méta-progression (onglet Ville → Espace +1).</div></div>
-</div>`,
+// ═══════════════════════════════════════════════════════════
+// GLOSSAIRE — Données générées dynamiquement depuis les sources
+// ═══════════════════════════════════════════════════════════
 
-    batiments:`<div class="glo-section"><div class="glo-title">⌂ Bâtiments — Tier I</div>
-<div class="glo-entry"><div class="glo-entry-name">🌾 Ferme — 30 Or</div><div class="glo-entry-desc">+10 Pop immédiat, +5 Pop/tour. Bonus Lac : +5 Pop/tour supplémentaire.</div></div>
-<div class="glo-entry"><div class="glo-entry-name">⛏ Mine — 20 Pop</div><div class="glo-entry-desc">+20 Or immédiat, +10 Or/tour. Bonus Collines : +10 Or/tour supplémentaire.</div></div>
-<div class="glo-entry"><div class="glo-entry-name">💧 Tour de Mana — 40 Or, 5 Pop, 20 Mana</div><div class="glo-entry-desc">+20 Mana immédiat, +10 Mana/tour. Bonus Montagne : +10 Mana/tour supplémentaire.</div></div>
-<div class="glo-entry"><div class="glo-entry-name">⚔ Caserne — 110 Or, 10 Pop</div><div class="glo-entry-desc">+2 Conscriptions. Bonus Forêt : +1 Fortification. Débloque : Soldat, Lancier.</div></div>
-<div class="glo-entry"><div class="glo-entry-name">⛪ Église — 70 Or, 5 Pop, 20 Mana</div><div class="glo-entry-desc">Soin héro (30 Or + 20 Mana). Débloque : Prêtre.</div></div>
-</div>
-<div class="glo-section"><div class="glo-title">⌂ Bâtiments — Tier II</div>
-<div class="glo-entry"><div class="glo-entry-name">🗼 Tour de Garde — 90 Or, 10 Pop</div><div class="glo-entry-desc">+2 Conscr., +2 Fortifications. Prérequis : 1 Caserne. Débloque : Gardes.</div></div>
-<div class="glo-entry"><div class="glo-entry-name">🏹 Archerie — 90 Or, 10 Pop</div><div class="glo-entry-desc">+2 Conscr. Prérequis : 1 Caserne. Débloque : Archers.</div></div>
-<div class="glo-entry"><div class="glo-entry-name">🔮 École de Magie — 80 Or, 10 Pop, 30 Mana</div><div class="glo-entry-desc">+2 Conscr. Prérequis : 1 Tour de Mana. Débloque : Élémentaires.</div></div>
-<div class="glo-entry"><div class="glo-entry-name">🏪 Place du Marché — 60 Or, 10 Pop</div><div class="glo-entry-desc">Caravane +20%. Prérequis : 1 Mine + 1 Ferme + 1 Tour de Mana.</div></div>
-</div>
-<div class="glo-section"><div class="glo-title">⌂ Bâtiments — Tier III</div>
-<div class="glo-entry"><div class="glo-entry-name">🏛 Académie militaire — 160 Or, 30 Pop, 40 Mana</div><div class="glo-entry-desc">+4 Conscr. Prérequis : 1 Caserne + 1 Tour de Garde + 1 Archerie. Débloque : Hallebardier, Arbalétrier, Pavois.</div></div>
-<div class="glo-entry"><div class="glo-entry-name">🛕 Temple — 130 Or, 20 Pop, 40 Mana</div><div class="glo-entry-desc">Prérequis : 1 Église. Débloque : Prêtres renforcés.</div></div>
-<div class="glo-entry"><div class="glo-entry-name">✨ Tour de Magie — 120 Or, 20 Pop, 60 Mana</div><div class="glo-entry-desc">+10 Mana/tour supplémentaire. Prérequis : 1 École de Magie. Débloque : Élémentaires Majeurs.</div></div>
-<div class="glo-entry"><div class="glo-entry-name">🏕 Caravansérail — 100 Or, 20 Pop</div><div class="glo-entry-desc">Caravane +50%. Prérequis : 1 Place du Marché.</div></div>
-</div>
-<div class="glo-section"><div class="glo-title">⌂ Bâtiments — Tier IV (Uniques)</div>
-<div class="glo-entry"><div class="glo-entry-name">⛩ Cathédrale — 200 Or, 30 Pop, 80 Mana</div><div class="glo-entry-desc">Wards (40 Or + 30 Mana), Paladin. Prérequis : 1 Temple.</div></div>
-<div class="glo-entry"><div class="glo-entry-name">⚔ Autel de Guerre — 180 Or, 30 Pop</div><div class="glo-entry-desc">+6 Conscr., achat Conscrit, Hallebardier. Prérequis : 1 Académie.</div></div>
-<div class="glo-entry"><div class="glo-entry-name">🔭 Monolithe de Vigie — 250 Or, 50 Pop, 100 Mana</div><div class="glo-entry-desc">Révèle la horde (150 Or + 100 Mana). Prérequis : 1 Archerie + 1 Caravansérail + 1 Tour de Magie.</div></div>
-</div>
-<div class="glo-section"><div class="glo-title">⚔ Unités défensives</div>
-<div class="glo-entry"><div class="glo-entry-name">🪚 Milicien (15 Or, 3 Pop)</div><div class="glo-entry-desc">ATK 1 | Trait : Anti-Pillard. Aucun prérequis.</div></div>
-<div class="glo-entry"><div class="glo-entry-name">🗡 Soldat (30 Or, 5 Pop) — Caserne</div><div class="glo-entry-desc">ATK 3 | Trait : Infanterie.</div></div>
-<div class="glo-entry"><div class="glo-entry-name">⚔ Lancier (30 Or, 5 Pop) — Caserne</div><div class="glo-entry-desc">ATK 2 | Trait : Anti-Cavalerie.</div></div>
-<div class="glo-entry"><div class="glo-entry-name">🪖 Hallebardier (40 Or, 8 Pop) — Académie</div><div class="glo-entry-desc">ATK 4 | Traits : Infanterie, Anti-Cavalerie II.</div></div>
-<div class="glo-entry"><div class="glo-entry-name">🏹 Archer (25 Or, 5 Pop) — Archerie</div><div class="glo-entry-desc">ATK 2 | Traits : Anti-Vol, Distance.</div></div>
-<div class="glo-entry"><div class="glo-entry-name">🏹 Arbalétrier (40 Or, 6 Pop) — Archerie</div><div class="glo-entry-desc">ATK 3 | Traits : Anti-Vol, Anti-Distance.</div></div>
-<div class="glo-entry"><div class="glo-entry-name">✝ Prêtre (25 Or, 5 Pop, 15 Mana) — Église</div><div class="glo-entry-desc">ATK 1, ATKMag 3 | Trait : Anti-Démon.</div></div>
-<div class="glo-entry"><div class="glo-entry-name">⚜ Paladin (55 Or, 10 Pop, 10 Mana) — Académie + Temple</div><div class="glo-entry-desc">ATK 4, ATKMag 2 | Traits : Anti-Cavalerie, Anti-Mort-Vivant.</div></div>
-</div>`,
+function _gloEntry(name, desc) {
+    return '<div class="glo-entry"><div class="glo-entry-name">' + name + '</div>'
+         + (desc ? '<div class="glo-entry-desc">' + desc + '</div>' : '')
+         + '</div>';
+}
+function _gloSection(title, body) {
+    return '<div class="glo-section"><div class="glo-title">' + title + '</div>' + body + '</div>';
+}
+function _gloP(txt, style) {
+    return '<p style="font-size:11px;color:#7a6a8a;margin-bottom:10px' + (style||'') + '">' + txt + '</p>';
+}
 
-    traits:`<div class="glo-section"><div class="glo-title">⚜ Traits de la Horde — Système de contrage</div>
-<p style="font-size:11px;color:#7a6a8a;margin-bottom:10px">Chaque trait de la horde est contré par le trait correspondant de tes unités. Si le net (traits horde − anti-traits ville) est ≤ 0 : effet neutralisé. Si > 0 : l'effet passe avec les unités les plus puissantes.</p>
-<p style="font-size:11px;color:#7a6a8a;margin-bottom:10px">Les traits doubles (Cavalerie II, Vol II, etc.) comptent pour 2 poids — il faut plus d'anti-traits pour les neutraliser.</p>
-<div class="glo-entry"><div class="glo-entry-name">🐴 Cavalerie — contré : anti-cavalerie</div><div class="glo-entry-desc">Si non contré : ATK ×2.</div></div>
-<div class="glo-entry"><div class="glo-entry-name">🏹 Distance — contré : anti-distance</div><div class="glo-entry-desc">Si non contré : ATK ×2.</div></div>
-<div class="glo-entry"><div class="glo-entry-name">🐲 Vol — contré : anti-vol</div><div class="glo-entry-desc">Si non contré : détruit l&#39;unité ville la plus forte avant le combat.</div></div>
-<div class="glo-entry"><div class="glo-entry-name">🔥 Pillard — contré : anti-pillard</div><div class="glo-entry-desc">Si non contré : détruit 1 bâtiment même si la horde est repoussée.</div></div>
-<div class="glo-entry"><div class="glo-entry-name">⛏ Sapeur — contré : anti-sapeur</div><div class="glo-entry-desc">Si non contré : -1 fortification par trait sapeur (minimum 1 fortification).</div></div>
-<div class="glo-entry"><div class="glo-entry-name">💀 Mort-Vivant — contré : anti-mort-vivant</div><div class="glo-entry-desc">Si au moins 1 passe : détruit une unité aléatoire de ton armée.</div></div>
-<div class="glo-entry"><div class="glo-entry-name">😈 Démon — contré : anti-démon</div><div class="glo-entry-desc">Si au moins 1 passe : toute ton infanterie ne compte pas pour ce combat.</div></div>
-</div>`,
-
-    monstres:`<div class="glo-section"><div class="glo-title">⚔ Horde — Unités par saison</div>
-<div style="font-size:10px;color:#4a3a5a;margin:4px 0">— Tier 1 (S1+) —</div>
-<div class="glo-entry"><div class="glo-entry-name">👺 Gobelin ATK 2 | 👊 Orc ATK 3</div><div class="glo-entry-desc">Infanterie de base.</div></div>
-<div style="font-size:10px;color:#4a3a5a;margin:4px 0">— Tier 2 (S2+) —</div>
-<div class="glo-entry"><div class="glo-entry-name">🔥 Pillard ATK 2 (Pillard) | 🐴 Cavalier Orc ATK 4 (Cavalerie)</div></div>
-<div style="font-size:10px;color:#4a3a5a;margin:4px 0">— Tier 3 (S3+) —</div>
-<div class="glo-entry"><div class="glo-entry-name">🏹 Archer Gobelin ATK 3 (Distance) | 🐲 Vouivre ATK 4 (Vol) | ⛏ Sapeur ATK 2 (Sapeur)</div></div>
-<div style="font-size:10px;color:#4a3a5a;margin:4px 0">— Tier 4 (S4+) —</div>
-<div class="glo-entry"><div class="glo-entry-name">💀 Squelette ATK 2 (Mort-Vivant) | 😈 Démon ATK 3 + 4 Mag (Démon)</div></div>
-<div style="font-size:10px;color:#4a3a5a;margin:4px 0">— Tier 5 (S6+) —</div>
-<div class="glo-entry"><div class="glo-entry-name">🐴 Cavaliers Vétérans ATK 6 (Cavalerie II) | 🐲 Vouivres en Essaim ATK 6 (Vol II) | 💀 Légion Squelette ATK 5 (Mort-Vivant II + Distance)</div></div>
-<div style="font-size:10px;color:#4a3a5a;margin:4px 0">— Tier 6 (S8+) —</div>
-<div class="glo-entry"><div class="glo-entry-name">😈 Horde des Abysses ATK 7+2Mag (Démon II + Pillard) | 🐴 Cavalcade Infernale ATK 8 (Cavalerie II + Vol) | ⛏ Corps de Siège Maudit ATK 6 (Mort-Vivant II + Sapeur II)</div></div>
-<div style="font-size:10px;color:#4a3a5a;margin:4px 0">— Tier 7 (S10+) —</div>
-<div class="glo-entry"><div class="glo-entry-name">😈 Garde des Abysses ATK 10 (Démon III + Cavalerie) | 💀 Nuée Nécromantique ATK 8+3Mag (Mort-Vivant III + Vol II) | ⛏ Vague de Siège ATK 9 (Pillard II + Sapeur II + Cavalerie)</div></div>
-</div>
-<div class="glo-section"><div class="glo-title">👹 Donjon — Monstres normaux</div>
-<div class="glo-entry"><div class="glo-entry-name">👺 Gobelin — ATK 2, DEF 2, HP 6</div><div class="glo-entry-desc">Appelle des renforts tous les 5 rounds. Loot : +5 Or, +1 ✦.</div></div>
-<div class="glo-entry"><div class="glo-entry-name">👊 Orc — ATK 3, DEF 2, HP 8</div><div class="glo-entry-desc">Sur un 6 : Crush Armor passif (réduit DEF héro, cumulatif). Loot : +8 Or, +1 ✦.</div></div>
-<div class="glo-entry"><div class="glo-entry-name">💀 Squelette — ATK 2, DEF 2, HP 6</div><div class="glo-entry-desc">Sur un 6 : réduit ATK héro de -1 (cumulatif). Loot : +6 Or, +1 ✦.</div></div>
-<div class="glo-entry"><div class="glo-entry-name">👺 Gobelin Soldat — ATK 3, DEF 3, Prot 1, HP 9</div><div class="glo-entry-desc">Appelle des renforts tous les 5 rounds. Loot : +12 Or, +1 ✦.</div></div>
-<div class="glo-entry"><div class="glo-entry-name">👊 Orc Élite — ATK 4, DEF 3, Prot 1, HP 12</div><div class="glo-entry-desc">Sur un 6 : Crush Armor. Loot : +15 Or, +1 ✦.</div></div>
-<div class="glo-entry"><div class="glo-entry-name">💀 Squelette Armé — ATK 3, DEF 3, Prot 1, HP 9</div><div class="glo-entry-desc">Sur un 6 : réduit ATK héro. Loot : +10 Or, +5 Mana, +1 ✦.</div></div>
-<div class="glo-entry"><div class="glo-entry-name">🕷 Araignée — ATK 3, DEF 1, HP 8</div><div class="glo-entry-desc">Poison cumulatif : chaque touche ajoute 1 stack (-1 HP/round pendant 3 rounds). Loot : +15 Mana, +1 ✦.</div></div>
-<div class="glo-entry"><div class="glo-entry-name">👹 Troll — ATK 3, DEF 3, Prot 1, HP 12</div><div class="glo-entry-desc">Sur un 6 : Stun (attaque à nouveau). Loot : +15 Or, +15 Mana, +1 ✦.</div></div>
-<div class="glo-entry"><div class="glo-entry-name">🏹 Archer Gobelin — ATK 4, DEF 1, HP 7 (rang arrière)</div><div class="glo-entry-desc">Appelle des renforts. Loot : +12 Or, +1 ✦.</div></div>
-<div class="glo-entry"><div class="glo-entry-name">🧛 Vampire — ATK 4, DEF 3, Prot 1, HP 10</div><div class="glo-entry-desc">Drain vital : se régénère des dégâts infligés. Loot : +3 HP, +1 ✦.</div></div>
-<div class="glo-entry"><div class="glo-entry-name">😈 Démon — ATK 4, DEF 3, Prot 2, HP 14</div><div class="glo-entry-desc">Sur un 6 : Zap démoniaque (dégâts magiques ignore protection). Loot : +20 Or, +1 ✦.</div></div>
-<div class="glo-entry"><div class="glo-entry-name">👺 Seigneur Gobelin — ATK 4, DEF 3, Prot 2, HP 14</div><div class="glo-entry-desc">Appelle des renforts tous les 5 rounds. Loot : +18 Or, +1 ✦.</div></div>
-<div class="glo-entry"><div class="glo-entry-name">🧙 Nécromancien — ATK 3, DEF 4, Prot 1, HP 12 (rang arrière)</div><div class="glo-entry-desc">Invoque des squelettes périodiquement. Loot : +30 Mana, +1 ✦.</div></div>
-</div>
-<div class="glo-section"><div class="glo-title">👹 Donjon — Monstres Tier 5-6</div>
-<div class="glo-entry"><div class="glo-entry-name">👊 Orc Briseur — ATK 5, DEF 4, Prot 2, HP 16</div><div class="glo-entry-desc">Crush Armor renforcé (tier monte avec saison). Loot : +22 Or, +2 ✦.</div></div>
-<div class="glo-entry"><div class="glo-entry-name">👺 Gobelin Boss — ATK 4, DEF 3, Prot 2, HP 15</div><div class="glo-entry-desc">Appelle des renforts tous les 5 rounds. Loot : +20 Or, +2 ✦.</div></div>
-<div class="glo-entry"><div class="glo-entry-name">🕷 Araignée Géante — ATK 4, DEF 2, Prot 1, HP 14</div><div class="glo-entry-desc">Poison cumulatif renforcé. Loot : +25 Mana, +2 ✦.</div></div>
-<div class="glo-entry"><div class="glo-entry-name">💀 Liche Mineure — ATK 4, DEF 4, Prot 2, HP 13 (rang arrière)</div><div class="glo-entry-desc">Réduit ATK héro. Loot : +28 Mana, +2 ✦.</div></div>
-<div class="glo-entry"><div class="glo-entry-name">😈 Démon Arcaniste — ATK 5, DEF 4, Prot 3, HP 18 (rang arrière)</div><div class="glo-entry-desc">Sur un 6 : Zap démoniaque puissant (tier monte avec saison). Loot : +28 Or, +14 Mana, +3 ✦.</div></div>
-<div class="glo-entry"><div class="glo-entry-name">💀 Squelette Ancien — ATK 5, DEF 5, Prot 2, HP 17</div><div class="glo-entry-desc">Réduit ATK héro sur 6. Loot : +30 Mana, +3 ✦.</div></div>
-<div class="glo-entry"><div class="glo-entry-name">👹 Troll des Abysses — ATK 5, DEF 4, Prot 2, HP 20</div><div class="glo-entry-desc">Stun renforcé. Loot : +30 Or, +3 ✦.</div></div>
-</div>
-<div class="glo-section"><div class="glo-title">💀 Boss de Donjon</div>
-<p style="font-size:11px;color:#7a6a8a;margin-bottom:8px">À partir de S2, les boss sont accompagnés d'alliés (1 en S2-3, 2 en S4-6, 3 en S7+).</p>
-<div class="glo-entry"><div class="glo-entry-name">👊 Orc Capitaine (S1) — ATK 3, HP 14</div><div class="glo-entry-desc">Loot : +20 Or, +4+S ✦.</div></div>
-<div class="glo-entry"><div class="glo-entry-name">💀 Squelette Royal (S1) — ATK 3, HP 12</div><div class="glo-entry-desc">Réduit ATK héro. Loot : +20 Mana, +4+S ✦.</div></div>
-<div class="glo-entry"><div class="glo-entry-name">👾 Orc Boss (S2-3) — ATK 4, HP 18</div><div class="glo-entry-desc">Loot : +25 Or, +4+S ✦.</div></div>
-<div class="glo-entry"><div class="glo-entry-name">💀 Liche (S2-3) — ATK 4, HP 16</div><div class="glo-entry-desc">Réduit ATK héro à chaque touche (cumulatif). Contré par Collier béni. Loot : +50 Mana, +4+S ✦.</div></div>
-<div class="glo-entry"><div class="glo-entry-name">🐉 Dragon Noir (S4+) — ATK 5, HP 22</div><div class="glo-entry-desc">Souffle tous les 4 rounds (ignore protection). Attaque normalement les autres rounds. Loot : +35 Or, +4+S ✦.</div></div>
-<div class="glo-entry"><div class="glo-entry-name">💀 Liche Ancienne (S4+) — ATK 5, HP 20</div><div class="glo-entry-desc">Réduction ATK amplifiée. Loot : +60 Mana, +4+S ✦.</div></div>
-<div class="glo-entry"><div class="glo-entry-name">😈 Démon Majeur (S4+) — ATK 5, HP 24</div><div class="glo-entry-desc">Zap démoniaque sur 6. Loot : +40 Or, +4+S ✦.</div></div>
-</div>`,
-
-    combat:`<div class="glo-section"><div class="glo-title">🎯 Système de Combat — Donjon</div>
-<div class="glo-entry"><div class="glo-entry-name">Jauge d&#39;attaque</div><div class="glo-entry-desc">Cliquez au bon moment : ×0 Raté | ×0.5 Faible | ×1 Touché | ×1.2 Parfait. La zone change selon ATK et DEF des ennemis.</div></div>
-<div class="glo-entry"><div class="glo-entry-name">Actions par round</div><div class="glo-entry-desc">Le joueur effectue ses actions (attaques ou compétences actives). Puis chaque ennemi vivant attaque à son tour. Fin du round : effets de durée (poison, rage…) sont appliqués.</div></div>
-<div class="glo-entry"><div class="glo-entry-name">Rang avant / arrière</div><div class="glo-entry-desc">Les ennemis au rang arrière ne peuvent être ciblés qu&#39;avec une arme à distance ou la compétence Volée.</div></div>
-<div class="glo-entry"><div class="glo-entry-name">Compétences actives</div><div class="glo-entry-desc">Utilisent l&#39;action du round (1× par combat sauf Soin). Déclenchent la phase ennemie après usage.</div></div>
-<div class="glo-entry"><div class="glo-entry-name">Glyphes</div><div class="glo-entry-desc">Distorsion (tous ennemis), Rage (×2 dégâts), Bénédiction (agrandit la zone parfait). Obtenus via Parchemin — tier du donjon influence lequel est proposé.</div></div>
-<div class="glo-entry"><div class="glo-entry-name">Potions</div><div class="glo-entry-desc">Soin (+3 HP), Anti-Poison (retire tous les stacks de poison). Utilisables hors action.</div></div>
-</div>
-<div class="glo-section"><div class="glo-title">☠ Effets Spéciaux Ennemis</div>
-<div class="glo-entry"><div class="glo-entry-name">☠ Poison (Araignée)</div><div class="glo-entry-desc">Chaque touche ajoute 1 stack : -1 HP/round pendant 3 rounds. Plusieurs araignées ou plusieurs touches = stacks cumulatifs. Contré par Potion Anti-Poison.</div></div>
-<div class="glo-entry"><div class="glo-entry-name">💫 Stun (Troll)</div><div class="glo-entry-desc">Sur un 6 : attaque une deuxième fois dans le même round.</div></div>
-<div class="glo-entry"><div class="glo-entry-name">🧛 Drain Vital (Vampire)</div><div class="glo-entry-desc">Se régénère des dégâts infligés (récupère les HP perdus).</div></div>
-<div class="glo-entry"><div class="glo-entry-name">🔥 Souffle (Dragon)</div><div class="glo-entry-desc">Tous les 4 rounds : attaque automatique qui ignore la protection. Les autres rounds : attaque normale.</div></div>
-<div class="glo-entry"><div class="glo-entry-name">💀 Malédiction ATK (Liche)</div><div class="glo-entry-desc">Chaque touche réduit l&#39;ATK du héro de -1 (cumulatif). Contré par Collier béni.</div></div>
-<div class="glo-entry"><div class="glo-entry-name">⚡ Zap Passif (Démon)</div><div class="glo-entry-desc">Sur un 6 : frappe magique qui ignore la protection. Dégâts augmentent avec la saison.</div></div>
-<div class="glo-entry"><div class="glo-entry-name">🔨 Crush Armor (Orc)</div><div class="glo-entry-desc">Sur un 6 : réduit la DEF du héro (cumulatif). Intensité augmente avec la saison.</div></div>
-<div class="glo-entry"><div class="glo-entry-name">🔔 Appel à l&#39;aide (Gobelin)</div><div class="glo-entry-desc">Tous les 5 rounds : invoque un renfort aléatoire dans le combat en cours.</div></div>
-<div class="glo-entry"><div class="glo-entry-name">💀 Invocation (Nécromancien)</div><div class="glo-entry-desc">Invoque périodiquement un squelette au rang avant.</div></div>
-</div>
-<div class="glo-section"><div class="glo-title">⚔ Compétences de Classe</div>
-<div class="glo-entry"><div class="glo-entry-name">🔨 Crushing Blow (Guerrier)</div><div class="glo-entry-desc">Passif : réduit la DEF ennemie à chaque touche (cumulatif). Niveau augmente en méta.</div></div>
-<div class="glo-entry"><div class="glo-entry-name">💚 Second Souffle (Guerrier)</div><div class="glo-entry-desc">Passif : soin sur coup parfait (×1.2). Quantité augmente en méta.</div></div>
-<div class="glo-entry"><div class="glo-entry-name">🏹 Volée (Archer)</div><div class="glo-entry-desc">Frappe plusieurs ennemis d&#39;un rang. Utilise l&#39;action du round.</div></div>
-<div class="glo-entry"><div class="glo-entry-name">⚡ Zap (Mage)</div><div class="glo-entry-desc">Dégâts magiques sur une cible. Ignore la protection.</div></div>
-<div class="glo-entry"><div class="glo-entry-name">❄ Freeze (Mage)</div><div class="glo-entry-desc">Bloque tous les ennemis pendant X rounds (ne peuvent pas attaquer).</div></div>
-<div class="glo-entry"><div class="glo-entry-name">💀 Malédiction (Aventurier)</div><div class="glo-entry-desc">Réduit l&#39;ATK de tous les ennemis pendant X rounds.</div></div>
-<div class="glo-entry"><div class="glo-entry-name">⏳ Distorsion Temporelle</div><div class="glo-entry-desc">Compétence méta : frappe tous les ennemis pour (3 + niveau) dégâts. Utilise l&#39;action du round.</div></div>
-</div>`
+// Mapping bâtiment → description traduite
+const BLD_DESC_KEYS = {
+    'Ferme':'bld_Ferme_desc','Mine':'bld_Mine_desc','Caserne':'bld_Caserne_desc',
+    'Tour de Mana':'bld_TourMana_desc','Église':'bld_Eglise_desc',
+    'Tour de Garde':'bld_TourGarde_desc','Archerie':'bld_Archerie_desc',
+    'École de Magie':'bld_EcoleMagie_desc','Place du Marché':'bld_PlaceMarche_desc',
+    'Académie militaire':'bld_Academie_desc','Temple':'bld_Temple_desc',
+    'Tour de Magie':'bld_TourMagie_desc','Caravansérail':'bld_Caravanserail_desc',
+    'Cathédrale':'bld_Cathedrale_desc','Autel de Guerre':'bld_AutelGuerre_desc',
+    'Monolithe de Vigie':'bld_MonolitheVigie_desc',
 };
+
+// Mapping unité → clé description
+const UNIT_DESC_KEYS = {
+    'Milicien':'unit_Milicien_desc','Soldat':'unit_Soldat_desc','Lancier':'unit_Lancier_desc',
+    'Garde':'unit_Garde_desc','Archer':'unit_Archer_desc','Élémentaire':'unit_Elementaire_desc',
+    'Hallebardier':'unit_Hallebardier_desc','Arbalétrier':'unit_Arbaletrier_desc',
+    'Soldat Pavois':'unit_SoldatPavois_desc','Prêtre':'unit_Pretre_desc',
+    'Élémentaire d\'Air':'unit_ElementaireAir_desc','Élémentaire de Terre':'unit_ElementaireTerre_desc',
+    'Élémentaire d\'Eau':'unit_ElementaireEau_desc','Élémentaire de Feu':'unit_ElementaireFeu_desc',
+    'Paladin':'unit_Paladin_desc','Dryade':'unit_Dryade_desc',
+    'Ingénieur':'unit_Ingenieur_desc','Inquisiteur':'unit_Inquisiteur_desc',
+};
+
+// Mapping ennemi id → clé edesc
+const ENEMY_DESC_KEYS = {
+    'enemy_Gobelin':'edesc_Gobelin','enemy_Orc':'edesc_Orc','enemy_Squelette':'edesc_Squelette',
+    'enemy_GoblinSoldat':'edesc_GoblinSoldat','enemy_OrcElite':'edesc_OrcElite',
+    'enemy_SqueletteArme':'edesc_SqueletteArme','enemy_Araignee':'edesc_Araignee',
+    'enemy_Troll':'edesc_Troll','enemy_ArcherGobelin':'edesc_ArcherGobelin',
+    'enemy_Vampire':'edesc_Vampire','enemy_Demon':'edesc_Demon',
+    'enemy_SeigneurGobelin':'edesc_SeigneurGobelin','enemy_Necromancien':'edesc_Necromancien',
+    'enemy_OrcBriseur':'edesc_OrcBriseur','enemy_GoblinBoss':'edesc_GoblinBoss',
+    'enemy_AraigneeGeante':'edesc_AraigneeGeante','enemy_LicheMineure':'edesc_LicheMineure',
+    'enemy_DemonArcaniste':'edesc_DemonArcaniste','enemy_SqueletteAncien':'edesc_SqueletteAncien',
+    'enemy_TrollAbysses':'edesc_TrollAbysses',
+    'enemy_OrcCapitaine':'edesc_OrcCapitaine','enemy_SqueletteRoyal':'edesc_SqueletteRoyal',
+    'enemy_OrcBoss':'edesc_OrcBoss','enemy_Liche':'edesc_Liche',
+    'enemy_DragonNoir':'edesc_DragonNoir','enemy_LicheAncienne':'edesc_LicheAncienne',
+    'enemy_DemonMajeur':'edesc_DemonMajeur',
+};
+
+function _enemyDescFromPool(enemy) {
+    // Retrouver la clé de description à partir du nom
+    for (var nameKey in ENEMY_DESC_KEYS) {
+        if (t(nameKey) === enemy.name) return t(ENEMY_DESC_KEYS[nameKey]);
+    }
+    return '';
+}
+
+function buildGloData() {
+    // ── TERRAINS ──
+    var terHtml = '';
+    Object.entries(TILE_TYPES).forEach(function(e) {
+        var key = e[0], tt = e[1];
+        var tName = t('tile_' + (key === 'Forêt' ? 'Foret' : key));
+        var slots = key === 'Montagne' ? t('glo_tile_nobuilding') : tt.slots + ' ' + t('glo_tile_slots');
+        terHtml += _gloEntry(tt.emoji + ' ' + tName + ' — ' + slots, tt.desc);
+    });
+    terHtml += _gloEntry('🏙 ' + t('tile_Ville') + ' — ' + t('glo_tile_Ville_slots'), t('glo_tile_Ville_desc'));
+    var terrains = _gloSection(t('glo_terrains_title'), terHtml);
+
+    // ── BÂTIMENTS ──
+    var bldList = [
+        { name:'Ferme',             tab:'eco', tier:1, gold:30,  pop:0,  mana:0,   icon:'🌾', bonus:'+10 Pop | +5/Conj' },
+        { name:'Mine',              tab:'eco', tier:1, gold:0,   pop:20, mana:0,   icon:'⛏',  bonus:'+20 Or | +10/Conj' },
+        { name:'Tour de Mana',      tab:'eco', tier:1, gold:40,  pop:5,  mana:20,  icon:'💧', bonus:'+10 Mana/Conj' },
+        { name:'Caserne',           tab:'mil', tier:1, gold:110, pop:10, mana:0,   icon:'⚔',  bonus:'+2 Conscription' },
+        { name:'Église',            tab:'mag', tier:1, gold:70,  pop:5,  mana:20,  icon:'⛪', bonus:'Soin héro' },
+        { name:'Tour de Garde',     tab:'mil', tier:2, gold:90,  pop:10, mana:0,   icon:'🗼', bonus:'+2 Conscr. | +2 Fort.', req:'1 Caserne' },
+        { name:'Archerie',          tab:'mil', tier:2, gold:90,  pop:10, mana:0,   icon:'🏹', bonus:'+2 Conscr. | Archers', req:'1 Caserne' },
+        { name:'École de Magie',    tab:'mag', tier:2, gold:80,  pop:10, mana:30,  icon:'🔮', bonus:'+2 Conscr. | Élémentaires', req:'1 Tour de Mana' },
+        { name:'Place du Marché',   tab:'eco', tier:2, gold:60,  pop:10, mana:0,   icon:'🏪', bonus:'Caravane +20%', req:'1 Mine + 1 Ferme + 1 Tour de Mana' },
+        { name:'Académie militaire',tab:'mil', tier:3, gold:160, pop:30, mana:40,  icon:'🏛', bonus:'+4 Conscr.', req:'1 Caserne + 1 Tour de Garde + 1 Archerie' },
+        { name:'Temple',            tab:'mag', tier:3, gold:130, pop:20, mana:40,  icon:'🛕', bonus:'Prêtres', req:'1 Église' },
+        { name:'Tour de Magie',     tab:'mag', tier:3, gold:120, pop:20, mana:60,  icon:'✨', bonus:'+10 Mana/tour', req:'1 École de Magie' },
+        { name:'Caravansérail',     tab:'eco', tier:3, gold:100, pop:20, mana:0,   icon:'🏕', bonus:'Caravane +50%', req:'1 Place du Marché' },
+        { name:'Cathédrale',        tab:'mag', tier:4, gold:200, pop:30, mana:80,  icon:'⛩', bonus:'Wards | Paladin', req:'1 Temple', unique:true },
+        { name:'Autel de Guerre',   tab:'mil', tier:4, gold:180, pop:30, mana:0,   icon:'⚔', bonus:'+6 Conscr. | Hallebardier', req:'1 Académie militaire', unique:true },
+        { name:'Monolithe de Vigie',tab:'mag', tier:4, gold:250, pop:50, mana:100, icon:'🔭', bonus:'Révèle horde', req:'1 Archerie + 1 Caravansérail + 1 Tour de Magie', unique:true },
+    ];
+
+    function costStr(b) {
+        var parts = [];
+        if (b.gold)  parts.push(b.gold + ' Or');
+        if (b.pop)   parts.push(b.pop + ' Pop');
+        if (b.mana)  parts.push(b.mana + ' Mana');
+        return parts.join(', ');
+    }
+
+    var byTier = {1:[],2:[],3:[],4:[]};
+    bldList.forEach(function(b){ byTier[b.tier].push(b); });
+    var bldHtml = '';
+    [1,2,3,4].forEach(function(tier) {
+        bldHtml += '<div class="glo-title" style="margin-top:10px">' + t('glo_batiments_title_t'+tier) + '</div>';
+        byTier[tier].forEach(function(b) {
+            var descKey = BLD_DESC_KEYS[b.name];
+            var desc = descKey ? t(descKey) : '';
+            if (b.req) desc += (desc?' ':'')+t('glo_req')+' '+b.req+'.';
+            if (b.unique) desc += ' ('+t('glo_unique')+')';
+            bldHtml += _gloEntry(b.icon + ' ' + b.name + ' — ' + costStr(b), desc);
+        });
+    });
+
+    // Unités
+    var unitDefs = typeof window._unitDefs !== 'undefined' ? window._unitDefs : [];
+    // On réutilise directement les données statiques pour le glossaire
+    var staticUnits = [
+        { name:'Milicien',icon:'🪚',atk:1,atkMag:0,traits:['anti-pillard'],gold:15,pop:3,mana:0,req:null },
+        { name:'Soldat',icon:'🗡',atk:3,atkMag:0,traits:['infanterie'],gold:30,pop:5,mana:0,req:'Caserne' },
+        { name:'Lancier',icon:'⚔',atk:2,atkMag:0,traits:['anti-cavalerie'],gold:30,pop:5,mana:0,req:'Caserne' },
+        { name:'Garde',icon:'🛡',atk:4,atkMag:0,traits:['infanterie','anti-pillard'],gold:15,pop:3,mana:0,req:'Tour de Garde' },
+        { name:'Archer',icon:'🏹',atk:2,atkMag:0,traits:['anti-vol','distance'],gold:25,pop:5,mana:0,req:'Archerie' },
+        { name:'Élémentaire',icon:'✨',atk:2,atkMag:0,traits:['infanterie','invocation'],gold:0,pop:10,mana:40,req:'École de Magie' },
+        { name:'Hallebardier',icon:'🪖',atk:4,atkMag:0,traits:['infanterie','anti-cavalerie (×2)'],gold:40,pop:8,mana:0,req:'Académie militaire',elite:true },
+        { name:'Arbalétrier',icon:'🏹',atk:3,atkMag:0,traits:['anti-vol (×2)','distance'],gold:40,pop:6,mana:0,req:'Académie militaire' },
+        { name:'Soldat Pavois',icon:'🛡',atk:2,atkMag:0,traits:['anti-distance'],gold:35,pop:8,mana:0,req:'Académie militaire' },
+        { name:'Prêtre',icon:'✝',atk:1,atkMag:3,traits:['anti-demon'],gold:25,pop:5,mana:15,req:'Temple' },
+        { name:'Élémentaire d\'Air',icon:'💨',atk:3,atkMag:0,traits:['anti-vol','invocation'],gold:0,pop:15,mana:50,req:'Tour de Magie' },
+        { name:'Élémentaire de Terre',icon:'🪨',atk:3,atkMag:0,traits:['anti-distance','invocation'],gold:0,pop:15,mana:50,req:'Tour de Magie' },
+        { name:'Élémentaire d\'Eau',icon:'💧',atk:3,atkMag:0,traits:['anti-pillard','invocation'],gold:0,pop:15,mana:50,req:'Tour de Magie' },
+        { name:'Élémentaire de Feu',icon:'🔥',atk:3,atkMag:0,traits:['anti-cavalerie','invocation'],gold:0,pop:15,mana:50,req:'Tour de Magie' },
+        { name:'Paladin',icon:'⚜',atk:4,atkMag:2,traits:['anti-cavalerie','anti-mort-vivant'],gold:55,pop:10,mana:10,req:'Cathédrale',elite:true },
+        { name:'Dryade',icon:'🌿',atk:6,atkMag:0,traits:['infanterie','élite','invocation'],gold:0,pop:30,mana:80,req:'Cercle Druidique',elite:true },
+        { name:'Ingénieur',icon:'⚙',atk:4,atkMag:0,traits:['anti-sapeur (×2)','anti-distance (×2)'],gold:80,pop:20,mana:30,req:'Ingénieurs',elite:true },
+        { name:'Inquisiteur',icon:'⚜',atk:6,atkMag:0,traits:['anti-demon (×3)'],gold:120,pop:25,mana:60,req:'Inquisiteurs',elite:true },
+    ];
+    var uHtml = '';
+    staticUnits.forEach(function(u) {
+        var descKey = UNIT_DESC_KEYS[u.name];
+        var desc = descKey ? t(descKey) : u.name;
+        var traitCount = u.traits.length;
+        var traitLabel = traitCount === 1 ? t('glo_trait_label') : t('glo_traits_label');
+        var costParts = [];
+        if (u.gold) costParts.push(u.gold+' Or'); if (u.pop) costParts.push(u.pop+' Pop'); if (u.mana) costParts.push(u.mana+' Mana');
+        var atk = 'ATK '+u.atk+(u.atkMag?' | ATKMag '+u.atkMag:'');
+        var info = atk+' | '+traitLabel+' '+u.traits.join(', ')+(u.req?(' | '+t('glo_req')+' '+u.req):'');
+        if (u.elite) info += ' | '+t('glo_elite');
+        uHtml += _gloEntry(u.icon+' '+u.name+(costParts.length?' ('+costParts.join(', ')+')':''), info+'. '+desc);
+    });
+    bldHtml += _gloSection(t('glo_units_title'), uHtml);
+    var batiments = '<div class="glo-section">'+bldHtml+'</div>';
+
+    // ── TRAITS ──
+    var trHtml = _gloP(t('glo_traits_intro1')) + _gloP(t('glo_traits_intro2'));
+    var traitDefs = [
+        {nk:'trait_cavalerie_name', dk:'trait_cavalerie_desc'},
+        {nk:'trait_distance_name',  dk:'trait_distance_desc'},
+        {nk:'trait_vol_name',       dk:'trait_vol_desc'},
+        {nk:'trait_pillard_name',   dk:'trait_pillard_desc'},
+        {nk:'trait_sapeur_name',    dk:'trait_sapeur_desc'},
+        {nk:'trait_mortVivant_name',dk:'trait_mortVivant_desc'},
+        {nk:'trait_demon_name',     dk:'trait_demon_desc'},
+    ];
+    traitDefs.forEach(function(td){ trHtml += _gloEntry(t(td.nk), t(td.dk)); });
+    var traits = _gloSection(t('glo_traits_title'), trHtml);
+
+    // ── MONSTRES ──
+    // Horde par tier
+    var hordeHtml = '';
+    var tierLabels = {
+        1:'— Tier 1 (S1+) —', 2:'— Tier 2 (S2+) —', 3:'— Tier 3 (S3+) —',
+        4:'— Tier 4 (S4+) —', 5:'— Tier 5 (S6+) —', 6:'— Tier 6 (S8+) —', 7:'— Tier 7 (S10+) —'
+    };
+    var hordeByTier = {};
+    Object.values(HORDE_UNITS).forEach(function(u) {
+        var tier = u.tier;
+        if (!hordeByTier[tier]) hordeByTier[tier] = [];
+        hordeByTier[tier].push(u);
+    });
+    Object.keys(hordeByTier).sort(function(a,b){return a-b;}).forEach(function(tier) {
+        hordeHtml += '<div style="font-size:10px;color:#4a3a5a;margin:4px 0">'+tierLabels[tier]+'</div>';
+        var entries = hordeByTier[tier].map(function(u) {
+            var traits = u.traits.join(', ');
+            return u.icon+' '+u.name+' ATK '+u.atk+(u.atkMag?' +'+u.atkMag+'Mag':'')+' ('+traits+')';
+        });
+        hordeHtml += _gloEntry(entries.join(' | '));
+    });
+    var monsHtml = _gloSection(t('glo_horde_title'), hordeHtml);
+
+    // Monstres donjon — normaux (tier 1-4)
+    var normPool = MONSTER_POOL.filter(function(m){ return m.tier <= 4; });
+    var normHtml = normPool.map(function(m) {
+        var rank = m.isRanged ? ' ('+t('glo_back_rank')+')' : '';
+        var header = m.emoji+' '+m.name+' — ATK '+m.atk+', DEF '+m.def+(m.protection?', Prot '+m.protection:'')+', HP '+m.hp+rank;
+        var desc = _enemyDescFromPool(m) + ' Loot : '+m.lootDesc;
+        return _gloEntry(header, desc);
+    }).join('');
+    monsHtml += _gloSection(t('glo_dungeon_normal_title'), normHtml);
+
+    // Monstres donjon — élite (tier 5-6)
+    var elitePool = MONSTER_POOL.filter(function(m){ return m.tier >= 5; });
+    var eliteHtml = elitePool.map(function(m) {
+        var rank = m.isRanged ? ' ('+t('glo_back_rank')+')' : '';
+        var header = m.emoji+' '+m.name+' — ATK '+m.atk+', DEF '+m.def+(m.protection?', Prot '+m.protection:'')+', HP '+m.hp+rank;
+        var desc = _enemyDescFromPool(m) + ' Loot : '+m.lootDesc;
+        return _gloEntry(header, desc);
+    }).join('');
+    monsHtml += _gloSection(t('glo_dungeon_elite_title'), eliteHtml);
+
+    // Boss
+    var bossHtml = _gloP(t('glo_boss_intro'));
+    var bossSeasons = [[1,'S1'],[2,'S2-3'],[3,'S4+']];
+    bossSeasons.forEach(function(bs) {
+        var pool = BOSS_POOLS[bs[0]];
+        pool.forEach(function(b) {
+            var header = b.emoji+' '+b.name+' ('+bs[1]+') — ATK '+b.atk+', HP '+b.hp;
+            var descKey = null;
+            for (var nk in ENEMY_DESC_KEYS) {
+                if (t(nk) === b.name) { descKey = ENEMY_DESC_KEYS[nk]; break; }
+            }
+            var desc = (descKey ? t(descKey) : '') + ' Loot : '+b.lootDesc;
+            bossHtml += _gloEntry(header, desc);
+        });
+    });
+    monsHtml += _gloSection(t('glo_boss_title'), bossHtml);
+    var monstres = monsHtml;
+
+    // ── COMBAT ──
+    var combatDefs = [
+        {nk:'glo_combat_jauge_name',  dk:'glo_combat_jauge_desc'},
+        {nk:'glo_combat_actions_name',dk:'glo_combat_actions_desc'},
+        {nk:'glo_combat_rang_name',   dk:'glo_combat_rang_desc'},
+        {nk:'glo_combat_skills_name', dk:'glo_combat_skills_desc'},
+        {nk:'glo_combat_glyphs_name', dk:'glo_combat_glyphs_desc'},
+        {nk:'glo_combat_potions_name',dk:'glo_combat_potions_desc'},
+    ];
+    var combHtml = combatDefs.map(function(d){ return _gloEntry(t(d.nk), t(d.dk)); }).join('');
+    var fxDefs = [
+        {nk:'glo_fx_poison_name',dk:'glo_fx_poison_desc'},
+        {nk:'glo_fx_stun_name',  dk:'glo_fx_stun_desc'},
+        {nk:'glo_fx_lifesteal_name',dk:'glo_fx_lifesteal_desc'},
+        {nk:'glo_fx_breath_name',dk:'glo_fx_breath_desc'},
+        {nk:'glo_fx_atkred_name',dk:'glo_fx_atkred_desc'},
+        {nk:'glo_fx_zap_name',   dk:'glo_fx_zap_desc'},
+        {nk:'glo_fx_crush_name', dk:'glo_fx_crush_desc'},
+        {nk:'glo_fx_call_name',  dk:'glo_fx_call_desc'},
+        {nk:'glo_fx_necro_name', dk:'glo_fx_necro_desc'},
+    ];
+    var fxHtml = fxDefs.map(function(d){ return _gloEntry(t(d.nk), t(d.dk)); }).join('');
+    var skillDefs = [
+        {nk:'glo_cs_crushing_name',dk:'glo_cs_crushing_desc'},
+        {nk:'glo_cs_secondsouffle_name',dk:'glo_cs_secondsouffle_desc'},
+        {nk:'glo_cs_volley_name',dk:'glo_cs_volley_desc'},
+        {nk:'glo_cs_zap_name',dk:'glo_cs_zap_desc'},
+        {nk:'glo_cs_freeze_name',dk:'glo_cs_freeze_desc'},
+        {nk:'glo_cs_curse_name',dk:'glo_cs_curse_desc'},
+        {nk:'glo_cs_distorsion_name',dk:'glo_cs_distorsion_desc'},
+    ];
+    var csHtml = skillDefs.map(function(d){ return _gloEntry(t(d.nk), t(d.dk)); }).join('');
+    var combat = _gloSection(t('glo_combat_title'), combHtml)
+               + _gloSection(t('glo_fx_title'), fxHtml)
+               + _gloSection(t('glo_class_skills_title'), csHtml);
+
+    return { terrains, batiments, traits, monstres, combat };
+}
+
+
 
 
 function recalcBuildingEffects() {
@@ -9843,11 +10722,11 @@ function renderMetaLegendary() {
     const opts = m.legendaryOptions || {};
 
     const BUILDINGS = [
-        { key:'grandeTour',     icon:'🗼', name:'Grande Tour',       desc:'Sorts puissants en jeu.' },
-        { key:'arbreElfique',   icon:'🌳', name:'Arbre Elfique',     desc:'Unites et options elfiques.' },
-        { key:'forteresseNaine',icon:'⚒',  name:'Forteresse Naine', desc:'Unites et options naines.' },
-        { key:'sanctuaire',     icon:'✨', name:'Sanctuaire',        desc:'Benedictions et inquisiteurs.' },
-        { key:'palaisMiroirs',  icon:'🪞', name:'Palais des Miroirs',desc:'Classe permanente pour votre avatar.' },
+        { key:'grandeTour',     icon:'🗼', get name(){ return t('leg_grandeTour'); }, get desc(){ return t('leg_grandeTour_desc'); } },
+        { key:'arbreElfique',   icon:'🌳', get name(){ return t('leg_arbreElfique'); }, get desc(){ return t('leg_arbreElfique_desc'); } },
+        { key:'forteresseNaine',icon:'⚒',  get name(){ return t('leg_forteresseNaine'); }, get desc(){ return t('leg_forteresseNaine_desc'); } },
+        { key:'sanctuaire',     icon:'✨', get name(){ return t('leg_sanctuaire'); }, get desc(){ return t('leg_sanctuaire_desc'); } },
+        { key:'palaisMiroirs',  icon:'🪞', get name(){ return t('leg_palaisMiroirs'); }, get desc(){ return t('leg_palaisMiroirs_desc'); } },
     ];
 
     el.innerHTML = '';
@@ -9967,32 +10846,34 @@ function buyLegendaryBuilding(key) {
 
 const LEGENDARY_OPTIONS = {
     grandeTour: [
-        { key:'gt_boostAtk',    name:'Boost ATK',           desc:'+1 ATK a toutes les unites ville',             gold:150, mana:50,  pop:0  },
-        { key:'gt_modifTerrain',name:'Modification Terrain',desc:'Transforme une tuile revelee en autre type',    gold:300, mana:100, pop:0  },
-        { key:'gt_boostTraits', name:'Renforcement Traits',  desc:'+1 a tous les traits des unites ville',        gold:200, mana:100, pop:50 },
+        { key:'gt_boostAtk',    get name(){ return t('leg_opt_gt_boostAtk'); }, get desc(){ return t('leg_opt_gt_boostAtk_desc'); }, gold:150, mana:50,  pop:0  },
+        { key:'gt_modifTerrain', get name(){ return t('leg_opt_gt_modifTerrain'); }, get desc(){ return t('leg_opt_gt_modifTerrain_desc'); }, gold:300, mana:100, pop:0  },
+        { key:'gt_boostTraits', get name(){ return t('leg_opt_gt_boostTraits'); }, get desc(){ return t('leg_opt_gt_boostTraits_desc'); }, gold:200, mana:100, pop:50 },
     ],
     arbreElfique: [
-        { key:'ae_eclaireurs',  name:'Éclaireurs',           desc:'+1 visibilité horde (achetable plusieurs fois)', gold:80,  mana:0, pop:20, renewable:true },
-        { key:'ae_fabricant',   name:'Fabricant d\'arc',     desc:'Archers +1 ATK et +1 anti-vol (max 3)',        gold:120, mana:0,   pop:30, renewable:true, maxLevel:3 },
-        { key:'ae_druidique',   name:'Cercle Druidique',     desc:'Debloque recrutement Dryade (ATK 6, elite)',   gold:150, mana:80,  pop:0  },
+        { key:'ae_eclaireurs',  get name(){ return t('leg_opt_ae_eclaireurs'); }, get desc(){ return t('leg_opt_ae_eclaireurs_desc'); }, gold:80,  mana:0, pop:20, renewable:true },
+        { key:'ae_fabricant',   get name(){ return t('leg_opt_ae_fabricant'); }, get desc(){ return t('leg_opt_ae_fabricant_desc'); }, gold:120, mana:0,   pop:30, renewable:true, maxLevel:3 },
+        { key:'ae_druidique',   get name(){ return t('leg_opt_ae_druidique'); }, get desc(){ return t('leg_opt_ae_druidique_desc'); }, gold:150, mana:80,  pop:0  },
     ],
     forteresseNaine: [
-        { key:'fn_forgeron',    name:'Forgeron',             desc:'Infanterie +1 ATK (renouvelable)',             gold:100, mana:50,  pop:30 },
-        { key:'fn_runes',       name:'Maitre des Runes',     desc:'Acheter rune anti-demon ou anti-mort-vivant',  gold:80,  mana:80,  pop:0  },
-        { key:'fn_ingenieurs',  name:'Ingenieurs',           desc:'Debloque Ingenieur (ATK 4, anti-sapeur II)',   gold:130, mana:60,  pop:0  },
+        { key:'fn_forgeron',    get name(){ return t('leg_opt_fn_forgeron'); }, get desc(){ return t('leg_opt_fn_forgeron_desc'); }, gold:100, mana:50,  pop:30 },
+        { key:'fn_runes',       get name(){ return t('leg_opt_fn_runes'); }, get desc(){ return t('leg_opt_fn_runes_desc'); }, gold:80,  mana:80,  pop:0  },
+        { key:'fn_ingenieurs',  get name(){ return t('leg_opt_fn_ingenieurs'); }, get desc(){ return t('leg_opt_fn_ingenieurs_desc'); }, gold:130, mana:60,  pop:0  },
     ],
     sanctuaire: [
-        { key:'sa_aura',        name:'Aura de Purete',       desc:'Elites gagnent anti-mort-vivant',             gold:100, mana:150, pop:50 },
-        { key:'sa_inquisiteurs',name:'Inquisiteurs',         desc:'Debloque Inquisiteur (ATK 6, anti-demon III)', gold:200, mana:100, pop:0  },
-        { key:'sa_benediction', name:'Benediction',          desc:'Plaines/Collines/Lacs +5 Or +5 Pop/recolte',  gold:0,   mana:300, pop:0  },
+        { key:'sa_aura',        get name(){ return t('leg_opt_sa_aura'); }, get desc(){ return t('leg_opt_sa_aura_desc'); }, gold:100, mana:150, pop:50 },
+        { key:'sa_inquisiteurs', get name(){ return t('leg_opt_sa_inquisiteurs'); }, get desc(){ return t('leg_opt_sa_inquisiteurs_desc'); }, gold:200, mana:100, pop:0  },
+        { key:'sa_benediction', get name(){ return t('leg_opt_sa_benediction'); }, get desc(){ return t('leg_opt_sa_benediction_desc'); }, gold:0,   mana:300, pop:0  },
     ],
     palaisMiroirs: [],  // Choix de classe géré dans la méta
 };
 
 const LEGENDARY_NAMES = {
-    grandeTour:'🗼 Grande Tour', arbreElfique:'🌳 Arbre Elfique',
-    forteresseNaine:'⚒ Forteresse Naine', sanctuaire:'✨ Sanctuaire',
-    palaisMiroirs:'🪞 Palais des Miroirs'
+    get grandeTour(){ return '🗼 ' + t('leg_grandeTour'); },
+    get arbreElfique(){ return '🌳 ' + t('leg_arbreElfique'); },
+    get forteresseNaine(){ return '⚒ ' + t('leg_forteresseNaine'); },
+    get sanctuaire(){ return '✨ ' + t('leg_sanctuaire'); },
+    get palaisMiroirs(){ return '🪞 ' + t('leg_palaisMiroirs'); }
 };
 
 function renderLegendaryBuildingPanel(container) {
@@ -10324,53 +11205,53 @@ function confirmTerrainMod(newType) {
 
 const CLASS_DATA = {
     archer: {
-        name: 'Archer', icon: '🏹',
-        desc: 'Distance, +1 seuil toucher. Robe ou armure légère.',
+        get name(){ return t('class_archer'); }, icon: '🏹',
+        get desc(){ return t('class_archer_desc'); },
         color: '#40c080',
         bonuses: { atk:1 },
         skills: [
-            { id:'volley',    name:'Volée de flèches', icon:'🏹', desc:'Dégâts sur toute une colonne', color:'#40c080' },
-            { id:'explosive', name:'Flèche explosive',  icon:'💥', desc:'(Passif) Dégâts aux ennemis adjacents si touche', color:'#ff8040', passive:true },
-            { id:'piercing',  name:'Flèche perçante',   icon:'🎯', desc:'Ignore la protection. Utilisations = 1 + niveau. Gratuit.', color:'#40ffaa', free:true, dynamicUses:true },
-            { id:'vampiric',  name:'Tir vampirique',    icon:'🧛', desc:'Prochain tir soigne les dégâts infligés. Utilisations = 2 + niveau. Gratuit.', color:'#ff60a0', free:true, dynamicUses:true, baseUses:2 },
+            { id:'volley',    get name(){ return t('skill_volley'); }, icon:'🏹', get desc(){ return t('skill_volley_desc'); }, color:'#40c080' },
+            { id:'explosive', get name(){ return t('skill_explosive'); }, icon:'💥', get desc(){ return t('skill_explosive_desc'); }, color:'#ff8040', passive:true },
+            { id:'piercing',  get name(){ return t('skill_piercing'); }, icon:'🎯', get desc(){ return t('skill_piercing_desc'); }, color:'#40ffaa', free:true, dynamicUses:true },
+            { id:'vampiric',  get name(){ return t('skill_vampiric'); }, icon:'🧛', get desc(){ return t('skill_vampiric_desc'); }, color:'#ff60a0', free:true, dynamicUses:true, baseUses:2 },
         ]
     },
     warrior: {
-        name: 'Guerrier', icon: '⚔',
-        desc: 'Toutes armures, +10 HP.',
+        get name(){ return t('class_warrior'); }, icon: '⚔',
+        get desc(){ return t('class_warrior_desc'); },
         color: '#ff8040',
         bonuses: { hpFlat:10, prot:3 },
         skills: [
-            { id:'warcry',    name:'Cri de guerre',   icon:'📣', desc:'ATK ennemis ÷2 ce round', color:'#ff8040' },
-            { id:'stun',      name:'Stun',             icon:'💫', desc:'Bloque 1 ennemi 2 tours (touche sur 2+)', color:'#ffd060' },
-            { id:'crushing',  name:'Crushing Blow',    icon:'🔨', desc:'(Passif) -1 DEF ennemi par touche', color:'#ff6060', passive:true },
-            { id:'perfect_heal', name:'Second Souffle', icon:'💚', desc:'(Passif) Coup parfait (×1.2) → +1 HP (+1 par niveau)', color:'#4cffaa', passive:true },
+            { id:'warcry',    get name(){ return t('skill_warcry'); }, icon:'📣', get desc(){ return t('skill_warcry_desc'); }, color:'#ff8040' },
+            { id:'stun',      get name(){ return t('skill_stun'); }, icon:'💫', get desc(){ return t('skill_stun_desc'); }, color:'#ffd060' },
+            { id:'crushing',  get name(){ return t('skill_crushing'); }, icon:'🔨', get desc(){ return t('skill_crushing_desc'); }, color:'#ff6060', passive:true },
+            { id:'perfect_heal', get name(){ return t('skill_perfect_heal'); }, icon:'💚', get desc(){ return t('skill_perfect_heal_desc'); }, color:'#4cffaa', passive:true },
         ]
     },
     mage: {
-        name: 'Mage', icon: '🔮',
-        desc: 'Robe uniquement, baguette gratuite, dégâts magiques.',
+        get name(){ return t('class_mage'); }, icon: '🔮',
+        get desc(){ return t('class_mage_desc'); },
         color: '#c080ff',
         bonuses: { freeBaguette:true },
         skills: [
-            { id:'shield',    name:'Armure de mana',   icon:'🔷', desc:'Active : ajoute des PV temporaires absorbés avant les PV réels. Relancer remet au max.', color:'#c080ff' },
-            { id:'zap',       name:'Zap',               icon:'⚡', desc:'X dégâts magiques, 1 cible',        color:'#ffd060' },
-            { id:'freeze',    name:'Freeze',             icon:'❄', desc:'Bloque ennemis 3 rounds (annulé si dégâts)', color:'#80c0ff' },
-            { id:'arcane',    name:'Arcane',              icon:'🔮', desc:'(Passif) Dégâts de baguette/bâton +1 par niveau.', color:'#c080ff', passive:true },
-            { id:'rewind',    name:'Rewind',             icon:'⏪', desc:'Recharge les compétences (coûte HP). Action. Utilisations = 1 + niveau.', color:'#ff80c0', dynamicUses:true },
+            { id:'shield',    get name(){ return t('skill_shield'); }, icon:'🔷', get desc(){ return t('skill_shield_desc'); }, color:'#c080ff' },
+            { id:'zap',       get name(){ return t('skill_zap'); }, icon:'⚡', get desc(){ return t('skill_zap_desc'); }, color:'#ffd060' },
+            { id:'freeze',    get name(){ return t('skill_freeze'); }, icon:'❄', get desc(){ return t('skill_freeze_desc'); }, color:'#80c0ff' },
+            { id:'arcane',    get name(){ return t('skill_arcane'); }, icon:'🔮', get desc(){ return t('skill_arcane_desc'); }, color:'#c080ff', passive:true },
+            { id:'rewind',    get name(){ return t('skill_rewind'); }, icon:'⏪', get desc(){ return t('skill_rewind_desc'); }, color:'#ff80c0', dynamicUses:true },
         ]
     },
     adventurer: {
-        name: 'Aventurier', icon: '❖',
-        desc: 'Scout horde, immunité pièges. Robe ou légère.',
+        get name(){ return t('class_adventurer'); }, icon: '❖',
+        get desc(){ return t('class_adventurer_desc'); },
         color: '#ffd060',
         bonuses: { scoutHorde:true, trapImmune:true },
         skills: [
-            { id:'poison_cloud',name:'Nuage de poison', icon:'☁', desc:'-1+niv HP/tour sur tous les monstres. 1+⌊niv/2⌋ casts.', color:'#80ff80' },
-            { id:'blade_trap',  name:'Pièges de lames', icon:'⚙', desc:'Dmg+niv dégâts sur une colonne (prot. appliquée). 1+⌊niv/2⌋ casts.', color:'#ffd060', dynamicUses:true },
-            { id:'curse',       name:'Malédiction',      icon:'💀', desc:'-1+niv ATK sur tous pendant 3+niv rounds. 1+⌊niv/2⌋ casts.', color:'#c080ff' },
-            { id:'mirror',      name:'Images miroir',    icon:'🪞', desc:'Absorbe (niv+1)×2 dégâts/attaque pendant 3+niv rounds. 1+⌊niv/2⌋ casts.', color:'#80c0ff', dynamicUses:true },
-            { id:'ScoutHorde',  name:'Scout',           icon:'👁', desc:'+1 unité horde révélée par niveau au tour des éclaireurs (🔭)', color:'#a0c8e8', metaOnly:true, passive:true },
+            { id:'poison_cloud', get name(){ return t('skill_poison_cloud'); }, icon:'☁', get desc(){ return t('skill_poison_cloud_desc'); }, color:'#80ff80' },
+            { id:'blade_trap',  get name(){ return t('skill_blade_trap'); }, icon:'⚙', get desc(){ return t('skill_blade_trap_desc'); }, color:'#ffd060', dynamicUses:true },
+            { id:'curse',       get name(){ return t('skill_curse'); }, icon:'💀', get desc(){ return t('skill_curse_desc'); }, color:'#c080ff' },
+            { id:'mirror',      get name(){ return t('skill_mirror'); }, icon:'🪞', get desc(){ return t('skill_mirror_desc'); }, color:'#80c0ff', dynamicUses:true },
+            { id:'ScoutHorde',  get name(){ return t('skill_ScoutHorde'); }, icon:'👁', get desc(){ return t('skill_ScoutHorde_desc'); }, color:'#a0c8e8', metaOnly:true, passive:true },
         ]
     }
 };
@@ -13141,117 +14022,14 @@ body.clarity-on #clarity-resbar {
 
     // ---------- tutorial ----------
     const TUTORIAL_STEPS = [
-        {
-            title: 'Bienvenue à Chronocity',
-            body: `
-                <p>Tu diriges une cité menacée par la <b>Horde</b>. Tu as <b>10 tours</b> par saison pour la préparer.</p>
-                <div class="ct-rule r-battle">
-                    <span class="ct-rule-ic">⚔</span>
-                    <div>Au <b>tour 10</b>, la Horde attaque ta ville. Si tu perds, tu recommences (avec des bonus méta).</div>
-                </div>
-                <div class="ct-rule r-free">
-                    <span class="ct-rule-ic">🗺</span>
-                    <div>Chaque saison : explore des tuiles, construis des bâtiments, recrute des troupes et envoie ton avatar en donjon.</div>
-                </div>
-            `,
-        },
-        {
-            title: 'Le rythme d\'un tour',
-            body: `
-                <div class="ct-rule r-action">
-                    <span class="ct-rule-ic">🟡</span>
-                    <div>Chaque tour, choisis <b>1 action principale</b> :<br>
-                    · <b>❖ Révéler</b> une tuile · <b>⚒︎ Construire</b> un bâtiment · <b>🛒 Caravane</b><br>
-                    <span style="color:#ffb040">· À partir de la <b>Saison 5</b> : <b>Recruter</b> devient aussi une action principale.</span></div>
-                </div>
-                <div class="ct-rule r-free">
-                    <span class="ct-rule-ic">🔵</span>
-                    <div>Les <b>actions libres</b> ne coûtent pas de tour : <b>équiper</b> l’avatar, <b>acheter</b> dans les bâtiments, <b>donjon</b>, et en S1–S4 <b>recruter</b> aussi.</div>
-                </div>
-                <p style="font-size:12px;color:#9a8a6a">Le bandeau du haut indique : <b>🟡 action dispo / prise</b> et les options 🔵 libres.</p>
-            `,
-        },
-        {
-            title: 'Les Conjonctions ⭐',
-            body: `
-                <div class="ct-rule r-action" style="border-color:#e0a020;background:rgba(58,42,0,0.4)">
-                    <span class="ct-rule-ic">⭐</span>
-                    <div><em style="color:#e0c060">\"Les caravanes n’osent traverser les steppes qu’au temps des Conjonctions, lorsque les anciennes routes reviennent dans le cours du monde.\"</em></div>
-                </div>
-                <p>Aux tours <b>2, 4, 6 et 8</b>, une Conjonction s’ouvre. Envoie une caravane ce tour pour récupérer <b>×2 ressources</b> (or, mana, population).</p>
-                <p style="font-size:12px;color:#9a8a6a">Les ressources ne sont <b>pas récoltées automatiquement</b> : c’est à toi d’envoyer la caravane pour en profiter !</p>
-            `,
-        },
-        {
-            title: 'Ce que tu construis sert au combat',
-            body: `
-                <p>Chaque <b>tuile révélée</b> rejoint ta ville et offre des emplacements de bâtiments.</p>
-                <p>Les <b>bâtiments</b> donnent : ressources, fortifications, ou débloquent le recrutement (Caserne → troupes, Académie → élite).</p>
-                <p>Au tour 10, <b>ton armée + tes fortifications</b> affrontent la Horde.</p>
-                <div class="ct-rule r-battle">
-                    <span class="ct-rule-ic">👁</span>
-                    <div>La composition de la Horde se <b>révèle au tour 5</b>. Adapte ta stratégie en conséquence.</div>
-                </div>
-            `,
-        },
-        {
-            title: 'Les Donjons 🏚🕳💀',
-            body: `
-                <p>Ton avatar peut explorer un donjon chaque tour — <b>action libre</b>, sans consommer ton tour principal.</p>
-                <div class="ct-rule r-free">
-                    <span class="ct-rule-ic">🕳</span>
-                    <div>Choisis ton niveau de risque :<br>
-                    · <b>🏚 Tour Abandonnée</b> — tier -1, butin ×0.75<br>
-                    · <b>🕳 Grotte Mystérieuse</b> — tier normal, butin ×1<br>
-                    · <b>💀 Catacombes Maudites</b> — tier +1, butin ×1.25</div>
-                </div>
-                <div class="ct-rule r-battle">
-                    <span class="ct-rule-ic">💀</span>
-                    <div>Au <b>tour 9 dans les Catacombes</b>, une récompense permanente est offerte si tu vaincs le boss : +ATK, +Dégâts, ressources, ou <b>Projection</b> (l’avatar combat la horde ET reste dispo ce tour).</div>
-                </div>
-                <p style="font-size:12px;color:#9a8a6a">En <b>S4, S8, S12…</b> l’<b>🐍 Aire d’Ouroboros</b> apparaît (tier +2, ×2 butin). La vaincre donne une <b>🥚 Coquille</b> — une seule fois par occurrence dans la méta.</p>
-            `,
-        },
-        {
-            title: 'L\'Avatar & ses Classes 🗡',
-            body: `
-                <p>Ton avatar explore les donjons et peut rejoindre la <b>défense de la horde</b> (son ATK renforce ta puissance).</p>
-                <div class="ct-rule r-free">
-                    <span class="ct-rule-ic">⚔</span>
-                    <div>Équipe-le avec armes, armure, bijoux, <b>glyphes</b> (sorts à usage) et <b>potions</b>. Le butin des donjons alimente directement tes ressources.</div>
-                </div>
-                <div class="ct-rule r-action" style="border-color:#c080ff;background:rgba(30,10,50,0.4)">
-                    <span class="ct-rule-ic">🪞</span>
-                    <div>Le <b>Palais des Miroirs</b> (bâtiment légendaire — 1 🥚) débloque une <b>classe permanente</b> : <b>Archer, Guerrier, Mage</b> ou <b>Aventurier</b>. Chaque classe ajoute des compétences uniques en combat.</div>
-                </div>
-                <p style="font-size:12px;color:#9a8a6a">Sans classe, l’avatar combat en généraliste. Avec une classe, des boutons de compétences apparaissent pendant les combats en donjon.</p>
-            `,
-        },
-        {
-            title: 'Saison 5+ : Le Recrutement change 🔁',
-            body: `
-                <p>En <b>Saison 1–4</b>, recruter est une action libre : tu peux le faire autant que tu veux sans consommer ton tour.</p>
-                <div class="ct-rule r-battle">
-                    <span class="ct-rule-ic">⚠</span>
-                    <div>À partir de la <b>Saison 5</b>, recruter devient une <b>action principale</b>. Chaque session de recrutement consomme ton tour — mais tu peux recruter <b>plusieurs unités</b> en une seule action.</div>
-                </div>
-                <div class="ct-rule r-free">
-                    <span class="ct-rule-ic">💡</span>
-                    <div>Planifie à l’avance : construis ta Caserne et ton Académie <b>avant la S5</b> pour profiter du recrutement libre les premières saisons.</div>
-                </div>
-            `,
-        },
-        {
-            title: 'Poussière du Temps & Méta-progression ✨',
-            body: `
-                <p>À chaque fin de partie tu gagnes de la <b>✨ Poussière du Temps</b>. Elle persiste et permet d’acheter des <b>améliorations permanentes</b> : or de départ, avatar plus fort, bâtiments bonus…</p>
-                <div class="ct-rule r-free">
-                    <span class="ct-rule-ic">🥚</span>
-                    <div>Les <b>Coquilles d’Œuf du Temps</b> se gagnent en donjon (boss hivernal tour 9, Ouroboros S4/S8…). Elles débloquent des <b>bâtiments légendaires</b> : Grande Tour, Arbre Elfique, Forteresse Naine, Sanctuaire, <b>Palais des Miroirs</b>.</div>
-                </div>
-                <p style="font-size:12px;color:#9a8a6a">Menu <b>≡</b> en haut à droite pour la méta-progression. Chaque run te rend plus fort !</p>
-            `,
-        },
+        { get title(){ return t('tut_1_title'); }, get body(){ return t('tut_1_body'); } },
+        { get title(){ return t('tut_2_title'); }, get body(){ return t('tut_2_body'); } },
+        { get title(){ return t('tut_3_title'); }, get body(){ return t('tut_3_body'); } },
+        { get title(){ return t('tut_4_title'); }, get body(){ return t('tut_4_body'); } },
+        { get title(){ return t('tut_5_title'); }, get body(){ return t('tut_5_body'); } },
+        { get title(){ return t('tut_6_title'); }, get body(){ return t('tut_6_body'); } },
+        { get title(){ return t('tut_7_title'); }, get body(){ return t('tut_7_body'); } },
+        { get title(){ return t('tut_8_title'); }, get body(){ return t('tut_8_body'); } },
     ];
 
     let tutStep = 0;
@@ -13266,17 +14044,19 @@ body.clarity-on #clarity-resbar {
                 <div class="ct-title" id="ct-title"></div>
                 <div class="ct-body" id="ct-body"></div>
                 <div class="ct-actions">
-                    <button class="ct-btn secondary" id="ct-skip">Passer</button>
+                    <button class="ct-btn secondary" id="ct-skip"></button>
                     <div class="ct-dots" id="ct-dots"></div>
-                    <button class="ct-btn" id="ct-next">Suivant ▶</button>
+                    <button class="ct-btn" id="ct-next"></button>
                 </div>
             </div>
         `;
         document.body.appendChild(overlay);
 
         const renderStep = () => {
+            overlay.querySelector('#ct-skip').textContent = t('tut_skip');
+            overlay.querySelector('#ct-next').textContent = tutStep === TUTORIAL_STEPS.length - 1 ? t('tut_finish') : t('tut_next');
             const s = TUTORIAL_STEPS[tutStep];
-            overlay.querySelector('#ct-step-label').textContent = `ÉTAPE ${tutStep+1} / ${TUTORIAL_STEPS.length}`;
+            overlay.querySelector('#ct-step-label').textContent = t('tut_step')+' '+(tutStep+1)+' / '+TUTORIAL_STEPS.length;
             overlay.querySelector('#ct-title').textContent = s.title;
             overlay.querySelector('#ct-body').innerHTML = s.body;
             const dots = overlay.querySelector('#ct-dots');
@@ -13284,7 +14064,7 @@ body.clarity-on #clarity-resbar {
                 `<div class="ct-dot ${i === tutStep ? 'active' : ''}"></div>`
             ).join('');
             overlay.querySelector('#ct-next').textContent =
-                tutStep === TUTORIAL_STEPS.length - 1 ? 'Commencer ✓' : 'Suivant ▶';
+                tutStep === TUTORIAL_STEPS.length - 1 ? t('tut_finish') : t('tut_next');
         };
 
         const close = () => {
