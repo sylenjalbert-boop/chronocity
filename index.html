@@ -2607,56 +2607,56 @@ function applyLangToUI() {
     }
 
     // ── Re-rendu des panels dynamiques actifs ──
-    // On re-déclenche silencieusement tout ce qui est visible
-    try {
-        // Timeline (labels Explore, Conjonction, etc.)
-        if (typeof updateTimeline === 'function') updateTimeline();
+    // Timeline (labels Explore, Conjonction, etc.)
+    if (typeof updateTimeline === 'function') updateTimeline();
 
-        // Panel bâtiments / légendaires
-        if (typeof renderBuildPanelList === 'function') renderBuildPanelList();
+    // Panel bâtiments / légendaires (toujours visible en jeu)
+    if (typeof renderBuildPanelList === 'function') renderBuildPanelList();
 
-        // Panel recrutement (si ouvert)
-        if (typeof renderRecruitList === 'function') {
-            const rp = document.getElementById('recruit-panel');
-            if (rp && rp.style.display !== 'none') renderRecruitList();
+    // Panel armée / horde (re-rend l'onglet actif)
+    if (typeof armyTab === 'function') {
+        const activeArmyTab = document.querySelector('.army-tab.active');
+        if (activeArmyTab) {
+            const tabId = activeArmyTab.id === 'tab-horde' ? 'horde' : 'city';
+            armyTab(tabId);
         }
+    }
 
-        // Panel équipement avatar
-        if (typeof renderActionEquipTab === 'function') {
-            const ep = document.getElementById('action-equip-tab');
-            if (ep && ep.style.display !== 'none') renderActionEquipTab();
-        }
+    // Panel recrutement (si ouvert)
+    if (typeof renderRecruitList === 'function') {
+        const rp = document.getElementById('recruit-list-action');
+        if (rp && rp.offsetParent !== null) renderRecruitList();
+    }
 
-        // Panel horde / armée (re-rend l'onglet actif)
-        if (typeof armyTab === 'function') {
-            const activeArmyTab = document.querySelector('.army-tab.active');
-            if (activeArmyTab) {
-                const tabId = activeArmyTab.id === 'tab-horde' ? 'horde' : 'city';
-                armyTab(tabId);
+    // Panel équipement avatar (si ouvert)
+    if (typeof renderActionEquipTab === 'function') {
+        const ep = document.getElementById('equip-tab-equip');
+        if (ep && ep.style.display !== 'none') renderActionEquipTab();
+    }
+
+    // Glossaire (si ouvert — id réel : glossary-screen)
+    if (typeof gloTab === 'function') {
+        const glo = document.getElementById('glossary-screen');
+        if (glo && glo.style.display !== 'none') gloTab(window.currentGloTab || 'terrains');
+    }
+
+    // Menu ☰ (si ouvert)
+    if (typeof renderSaveMenu === 'function') {
+        const sm = document.getElementById('save-menu');
+        if (sm && sm.style.display !== 'none') renderSaveMenu();
+    }
+
+    // Méta / écran fin de run (endScreen)
+    if (typeof metaTab === 'function') {
+        const mt = document.getElementById('endScreen');
+        if (mt && mt.style.display !== 'none') {
+            const activeMetaTab = document.querySelector('.meta-tab.active');
+            if (activeMetaTab) {
+                const tabId = activeMetaTab.id.replace('mtab-', '');
+                metaTab(tabId);
             }
         }
-
-        // Glossaire (si ouvert, re-rend l'onglet actif)
-        if (typeof gloTab === 'function') {
-            const glo = document.getElementById('glossary-overlay');
-            if (glo && glo.style.display !== 'none') gloTab(window.currentGloTab || 'terrains');
-        }
-
-        // Menu save (si ouvert, re-rend les slots)
-        if (typeof renderSaveMenu === 'function') {
-            const sm = document.getElementById('save-menu');
-            if (sm && sm.style.display !== 'none') renderSaveMenu();
-        }
-
-        // Méta (si ouvert)
-        if (typeof metaTab === 'function') {
-            const mt = document.getElementById('meta-overlay');
-            if (mt && mt.style.display !== 'none') {
-                const activeMetaTab = document.querySelector('.meta-tab.active');
-                if (activeMetaTab) metaTab(activeMetaTab.dataset.tab || 'hero');
-            }
-        }
-    } catch(e) { /* re-rendu silencieux */ }
+    }
 }
 
 function openLangSelector() {
