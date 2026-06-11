@@ -1840,6 +1840,8 @@ document.addEventListener('DOMContentLoaded', () => {
     renderBuildPanelList();
     renderActionEquipTab();
     equipTab('equip');
+    // Appliquer la langue chargée (après que tous les panels sont prêts)
+    if (typeof applyLangToUI === 'function') applyLangToUI();
     // Afficher le popup du premier tour
     showTurnAnimation(1, 1, () => {});
 });
@@ -2373,6 +2375,7 @@ const LANGS = {
         log_batiment_detruit: '💥 Bâtiment détruit : ',
         log_shell_obtenue: '🥚 Coquille obtenue ! Total : ',
         log_rune_gravee: '⚒ Rune gravée sur toutes les unités !',
+        eq_tab_army:'🛡 Armée', eq_tab_equip:'⚔ Équip',
         lang_select_title: '🌐 Choisir la langue',
         lang_fr: '🇫🇷 Français',
         lang_en: '🇬🇧 English',
@@ -2830,6 +2833,25 @@ const LANGS = {
         log_batiment_detruit: '💥 Building destroyed: ',
         log_shell_obtenue: '🥚 Shell obtained! Total: ',
         log_rune_gravee: '⚒ Rune engraved on all units!',
+
+        // ── Building names ──
+        bld_Ferme_name:'Farm', bld_Mine_name:'Mine', bld_TourMana_name:'Mana Tower',
+        bld_Caserne_name:'Barracks', bld_Eglise_name:'Church', bld_TourGarde_name:'Guard Tower',
+        bld_Archerie_name:'Archery Range', bld_EcoleMagie_name:'Magic School',
+        bld_PlaceMarche_name:'Market Square', bld_Academie_name:'Military Academy',
+        bld_Temple_name:'Temple', bld_TourMagie_name:'Magic Tower',
+        bld_Caravanserail_name:'Caravanserai', bld_Cathedrale_name:'Cathedral',
+        bld_AutelGuerre_name:'War Altar', bld_MonolitheVigie_name:'Watchtower Monolith',
+        // ── Unit names ──
+        unit_Milicien_name:'Militia', unit_Soldat_name:'Soldier', unit_Lancier_name:'Spearman',
+        unit_Garde_name:'Guard', unit_Archer_name:'Archer', unit_Elementaire_name:'Elemental',
+        unit_Hallebardier_name:'Halberdier', unit_Arbaletrier_name:'Crossbowman',
+        unit_SoldatPavois_name:'Pavise Soldier', unit_Pretre_name:'Priest',
+        unit_ElementaireAir_name:'Air Elemental', unit_ElementaireTerre_name:'Earth Elemental',
+        unit_ElementaireEau_name:'Water Elemental', unit_ElementaireFeu_name:'Fire Elemental',
+        unit_Paladin_name:'Paladin', unit_Dryade_name:'Dryad',
+        unit_Ingenieur_name:'Engineer', unit_Inquisiteur_name:'Inquisitor',
+        eq_tab_army:'🛡 Army', eq_tab_equip:'⚔ Equip',
         lang_select_title: '🌐 Choose Language',
         lang_fr: '🇫🇷 Français',
         lang_en: '🇬🇧 English',
@@ -2878,7 +2900,11 @@ async function loadLang() {
             }
         } catch(e) { /* silencieux */ }
     }
+    // Appliquer immédiatement pour les éléments statiques,
+    // puis de nouveau après 300ms et 1s pour attraper les panels dynamiques
     applyLangToUI();
+    setTimeout(applyLangToUI, 300);
+    setTimeout(applyLangToUI, 1000);
 }
 
 function applyLangToUI() {
@@ -2953,6 +2979,12 @@ function applyLangToUI() {
         const sm = document.getElementById('save-menu');
         if (sm && sm.style.display !== 'none') renderSaveMenu();
     }
+
+    // Onglets équipement
+    const etabArmy = document.getElementById('etab-army');
+    if (etabArmy) etabArmy.textContent = '🛡 ' + t('army_tab_city').replace('⚔ ','');
+    const etabEquip = document.getElementById('etab-equip');
+    if (etabEquip) etabEquip.textContent = t('equip_title');
 
     // Méta / écran fin de run (endScreen)
     if (typeof metaTab === 'function') {
@@ -3539,11 +3571,7 @@ function updateRecruitMode(endTurnVisible) {
     // Mettre à jour le texte d'instruction
     const instr = document.querySelector('.cb-instr');
     if (instr) {
-        if (isS5) {
-            instr.innerHTML = 'Choisis <b>1 action principale</b> ce tour (Révéler · Construire · Caravane · <span style="color:#ffb040">Recruter</span>). Les actions <b style="color:#80c0ff">libres</b> (équiper, sort, donjon) ne consomment pas ton tour.';
-        } else {
-            instr.innerHTML = 'Choisis <b>1 action principale</b> ce tour (Révéler · Construire · Caravane). Les actions <b style="color:#80c0ff">libres</b> (recruter, équiper, sort, donjon) ne consomment pas ton tour.';
-        }
+        instr.innerHTML = isS5 ? t('action_hint_s5') : t('action_hint_early');
     }
 }
 
@@ -6701,128 +6729,128 @@ let glyphBless      = 0;
 
 const EQUIPMENT_CATALOG = [
     // ── Armes 1 main ──
-    { id:'Epee',        name:'Épée en fer',      slot:'weapon_main', gold:90,  mana:0,  pop:0, req:null,
-      icon:'⚔', desc:'ATK +1, Dmg +1',
+    { id:'Epee',        get name(){ return t('eq_Epee'); },      slot:'weapon_main', gold:90,  mana:0,  pop:0, req:null,
+      icon:'⚔', get desc(){ return t('eq_Epee_desc'); },
       apply: () => { atk+=1; avatarDmg+=1; },
       remove: () => { atk-=1; avatarDmg-=1; } },
-    { id:'Dague',       name:'Dague acérée',     slot:'weapon_main', gold:75,  mana:0,  pop:0, req:null,
-      icon:'🗡', desc:'ATK +2, Dmg +1',
+    { id:'Dague',       get name(){ return t('eq_Dague'); },     slot:'weapon_main', gold:75,  mana:0,  pop:0, req:null,
+      icon:'🗡', get desc(){ return t('eq_Dague_desc'); },
       apply: () => { atk+=2; avatarDmg+=1; },
       remove: () => { atk-=2; avatarDmg-=1; } },
-    { id:'EpeeRunique', name:'Épée runique',     slot:'weapon_main', gold:240,  mana:60, pop:0, req:'tourmagie',
-      icon:'✨', desc:'ATK +2, Dmg +2, Magique',
+    { id:'EpeeRunique', get name(){ return t('eq_Epee'); },     slot:'weapon_main', gold:240,  mana:60, pop:0, req:'tourmagie',
+      icon:'✨', get desc(){ return t('eq_EpeeRunique_desc'); },
       apply: () => { atk+=2; avatarDmg+=2; avatarMagicWeapon=true; },
       remove: () => { atk-=2; avatarDmg-=2; avatarMagicWeapon=false; } },
     // ── Armes 2 mains ──
-    { id:'Hache', is2h:true, is2h:true,       name:'Hache de guerre',  slot:'weapon_main', gold:120,  mana:0,  pop:0, req:null,
-      icon:'🪓', desc:'Dmg +2, ATK -1',
+    { id:'Hache', is2h:true, is2h:true,       get name(){ return t('eq_EpeeRunique'); },  slot:'weapon_main', gold:120,  mana:0,  pop:0, req:null,
+      icon:'🪓', get desc(){ return t('eq_Hache_desc'); },
       apply: () => { avatarDmg+=2; atk-=1; },
       remove: () => { avatarDmg-=2; atk+=1; } },
-    { id:'Arc', is2h:true, name:'Arc elfique', slot:'weapon_main', gold:150, mana:0, pop:0, req:'archerie', classReq:'archer',
-      icon:'🏹', desc:'ATK +2, Dmg +2, Distance. Planche de dégâts +0.5.',
+    { id:'Arc', is2h:true, get name(){ return t('eq_Dague'); }, slot:'weapon_main', gold:150, mana:0, pop:0, req:'archerie', classReq:'archer',
+      icon:'🏹', get desc(){ return t('eq_Arc_desc'); },
       apply: () => { atk+=2; avatarDmg+=2; avatarRanged=true; window._arcElfique=true; },
       remove: () => { atk-=2; avatarDmg-=2; avatarRanged=false; window._arcElfique=false; } },
-    { id:'Arbalete', is2h:true, is2h:true,    name:'Arbalète lourde',  slot:'weapon_main', gold:210,  mana:0,  pop:0, req:'archerie',
-      icon:'🏹', desc:'ATK +2, Dmg +2, Distance, Perçant',
+    { id:'Arbalete', is2h:true, is2h:true,    get name(){ return t('eq_Arc'); },  slot:'weapon_main', gold:210,  mana:0,  pop:0, req:'archerie',
+      icon:'🏹', get desc(){ return t('eq_Arbalete_desc'); },
       apply: () => { atk+=2; avatarDmg+=2; avatarRanged=true; avatarPiercing=true; },
       remove: () => { atk-=2; avatarDmg-=2; avatarRanged=false; avatarPiercing=false; } },
-    { id:'Faux', is2h:true, is2h:true,        name:'Faux de guerre',   slot:'weapon_main', gold:195,  mana:0,  pop:0, req:null,
-      icon:'⚰', desc:'ATK -1, Dmg +1, Frappe toute la colonne avant',
+    { id:'Faux', is2h:true, is2h:true,        get name(){ return t('eq_Faux'); },   slot:'weapon_main', gold:195,  mana:0,  pop:0, req:null,
+      icon:'⚰', get desc(){ return t('eq_Faux_desc'); },
       apply: () => { atk-=1; avatarDmg+=1; avatarScythe=true; },
       remove: () => { atk+=1; avatarDmg-=1; avatarScythe=false; } },
     // ── Boucliers / Arme secondaire ──
-    { id:'Bouclier',    name:'Bouclier léger',   slot:'weapon_off', gold:120,  mana:0,  pop:0, req:null,
-      icon:'🛡', desc:'Protection +1',
+    { id:'Bouclier',    get name(){ return t('eq_Bouclier'); },   slot:'weapon_off', gold:120,  mana:0,  pop:0, req:null,
+      icon:'🛡', get desc(){ return t('eq_Bouclier_desc'); },
       apply: () => { protection+=1; },
       remove: () => { protection-=1; } },
-    { id:'Pavois',      name:'Pavois',            slot:'weapon_off', gold:165,  mana:0,  pop:0, req:'caserne',
-      icon:'🛡', desc:'Protection +1, +3 vs Distance',
+    { id:'Pavois',      get name(){ return t('eq_Pavois'); },            slot:'weapon_off', gold:165,  mana:0,  pop:0, req:'caserne',
+      icon:'🛡', get desc(){ return t('eq_Pavois_desc'); },
       apply: () => { protection+=1; avatarAntiRange=true; },
       remove: () => { protection-=1; avatarAntiRange=false; } },
     // ── Armures ──
-    { id:'Cuir',        name:'Armure de cuir',   slot:'armor', armorType:'light', gold:105,  mana:0,  pop:0, req:null,
-      icon:'🥋', desc:'DEF +1, HP max +3',
+    { id:'Cuir',        get name(){ return t('eq_Cuir'); },   slot:'armor', armorType:'light', gold:105,  mana:0,  pop:0, req:null,
+      icon:'🥋', get desc(){ return t('eq_Cuir_desc'); },
       apply: () => { def+=1; avatarMaxHp+=3; avatarHp=Math.min(avatarHp+3,avatarMaxHp); avatarArmorType='light'; },
       remove: () => { def-=1; avatarMaxHp=Math.max(1,avatarMaxHp-3); avatarHp=Math.min(avatarHp,avatarMaxHp); avatarArmorType=null; } },
-    { id:'Mailles',     name:'Cotte de mailles', slot:'armor', armorType:'light', gold:180,  mana:0,  pop:0, req:'caserne',
-      icon:'⛓', desc:'DEF +2, Protection +1, HP max +3',
+    { id:'Mailles',     get name(){ return t('eq_Mailles'); }, slot:'armor', armorType:'light', gold:180,  mana:0,  pop:0, req:'caserne',
+      icon:'⛓', get desc(){ return t('eq_Mailles_desc'); },
       apply: () => { def+=2; protection+=1; avatarMaxHp+=3; avatarHp=Math.min(avatarHp+3,avatarMaxHp); avatarArmorType='light'; },
       remove: () => { def-=2; protection-=1; avatarMaxHp=Math.max(1,avatarMaxHp-3); avatarHp=Math.min(avatarHp,avatarMaxHp); avatarArmorType=null; } },
-    { id:'BouclierR',   name:'Bouclier runique', slot:'weapon_off', gold:270,  mana:90, pop:0, req:'tourmagie',
-      icon:'🔮', desc:'Prot +2, bonus timing ×0.5→×1',
+    { id:'BouclierR',   get name(){ return t('eq_BouclierR'); }, slot:'weapon_off', gold:270,  mana:90, pop:0, req:'tourmagie',
+      icon:'🔮', get desc(){ return t('eq_BouclierR_desc'); },
       apply: () => { protection+=2; timingHalfBonus=true; },
       remove: () => { protection-=2; timingHalfBonus=false; } },
     // ── Colliers ──
-    { id:'CollierDef',  name:'Collier de défense',   slot:'necklace', gold:120, mana:0, pop:0, req:null,
-      icon:'📿', desc:'DEF +1',
+    { id:'CollierDef',  get name(){ return t('eq_CollierDef'); },   slot:'necklace', gold:120, mana:0, pop:0, req:null,
+      icon:'📿', get desc(){ return t('eq_CollierDef_desc'); },
       apply: () => { def+=1; }, remove: () => { def-=1; } },
     { id:'CollierAtk',  name:"Collier d'attaque",   slot:'necklace', gold:120, mana:0, pop:0, req:null,
-      icon:'📿', desc:'ATK +1',
+      icon:'📿', get desc(){ return t('eq_CollierAtk_desc'); },
       apply: () => { atk+=1; }, remove: () => { atk-=1; } },
-    { id:'CollierProt', name:'Collier de protection',slot:'necklace', gold:120, mana:0, pop:0, req:null,
-      icon:'📿', desc:'Protection +1',
+    { id:'CollierProt', get name(){ return t('eq_EpeeRunique'); },slot:'necklace', gold:120, mana:0, pop:0, req:null,
+      icon:'📿', get desc(){ return t('eq_CollierProt_desc'); },
       apply: () => { protection+=1; }, remove: () => { protection-=1; } },
-    { id:'CollierBeni', name:'Collier béni',         slot:'necklace', gold:210, mana:90, pop:0, req:'eglise',
-      icon:'✝', desc:'Immunité baisse ATK (Liche)',
+    { id:'CollierBeni', get name(){ return t('eq_Hache'); },         slot:'necklace', gold:210, mana:90, pop:0, req:'eglise',
+      icon:'✝', get desc(){ return t('eq_CollierBeni_desc'); },
       apply: () => { avatarBlessedNecklace=true; }, remove: () => { avatarBlessedNecklace=false; } },
     // ── Ceintures ──
-    { id:'CeintureHP',     name:'Ceinture de vigueur',  slot:'belt', gold:105, mana:0, pop:0, req:null,
-      icon:'🪢', desc:'HP max +3',
+    { id:'CeintureHP',     get name(){ return t('eq_CollierAtk'); },  slot:'belt', gold:105, mana:0, pop:0, req:null,
+      icon:'🪢', get desc(){ return t('eq_CeintureHP_desc'); },
       apply: () => { avatarMaxHp+=3; avatarHp=Math.min(avatarHp+3,avatarMaxHp); },
       remove: () => { avatarMaxHp=Math.max(1,avatarMaxHp-3); avatarHp=Math.min(avatarHp,avatarMaxHp); } },
-    { id:'CeinturePoison', name:'Ceinture anti-poison',  slot:'belt', gold:150, mana:0, pop:0, req:null,
-      icon:'🪢', desc:'Immunité poison (araignée, trappe)',
+    { id:'CeinturePoison', get name(){ return t('eq_Arc'); },  slot:'belt', gold:150, mana:0, pop:0, req:null,
+      icon:'🪢', get desc(){ return t('eq_CeinturePoison_desc'); },
       apply: () => { avatarImmunePoison=true; }, remove: () => { avatarImmunePoison=false; } },
-    { id:'CeintureStun',   name:'Ceinture anti-stun',    slot:'belt', gold:150, mana:0, pop:0, req:null,
-      icon:'🪢', desc:'Immunité stun (troll)',
+    { id:'CeintureStun',   get name(){ return t('eq_CeinturePoison'); },    slot:'belt', gold:150, mana:0, pop:0, req:null,
+      icon:'🪢', get desc(){ return t('eq_CeintureStun_desc'); },
       apply: () => { avatarImmuneStun=true; }, remove: () => { avatarImmuneStun=false; } },
 
     // ── Armures — Robe ──
-    { id:'Robe',        name:'Robe de mage',       slot:'armor', armorType:'robe',  gold:80,  mana:30, pop:0, req:'tourmagie',
-      icon:'👘', desc:'DEF +1 — réservée Mage et Aventurier',
+    { id:'Robe',        get name(){ return t('eq_Robe'); },       slot:'armor', armorType:'robe',  gold:80,  mana:30, pop:0, req:'tourmagie',
+      icon:'👘', get desc(){ return t('eq_Robe_desc'); },
       apply:  function(){ def+=1; avatarArmorType='robe'; },
       remove: function(){ def-=1; avatarArmorType=null; } },
     // ── Armures — Légères ──
-    { id:'CuirLeger',   name:'Armure légère',      slot:'armor', armorType:'light', gold:120, mana:0,  pop:0, req:null,
-      icon:'🥋', desc:'DEF +1, HP max +2',
+    { id:'CuirLeger',   get name(){ return t('eq_CuirLeger'); },      slot:'armor', armorType:'light', gold:120, mana:0,  pop:0, req:null,
+      icon:'🥋', get desc(){ return t('eq_CuirLeger_desc'); },
       apply:  function(){ def+=1; avatarMaxHp+=2; avatarHp=Math.min(avatarHp+2,avatarMaxHp); avatarArmorType='light'; },
       remove: function(){ def-=1; avatarMaxHp=Math.max(1,avatarMaxHp-2); avatarHp=Math.min(avatarHp,avatarMaxHp); avatarArmorType=null; } },
     // ── Armures — Lourdes ──
-    { id:'CuirLourd',   name:'Armure lourde',      slot:'armor', armorType:'heavy', gold:200, mana:0,  pop:0, req:'caserne',
-      icon:'⛓', desc:'DEF +3, Prot +1, HP max +4',
+    { id:'CuirLourd',   get name(){ return t('eq_CuirLourd'); },      slot:'armor', armorType:'heavy', gold:200, mana:0,  pop:0, req:'caserne',
+      icon:'⛓', get desc(){ return t('eq_CuirLourd_desc'); },
       apply:  function(){ def+=3; protection+=1; avatarMaxHp+=4; avatarHp=Math.min(avatarHp+4,avatarMaxHp); avatarArmorType='heavy'; },
       remove: function(){ def-=3; protection-=1; avatarMaxHp=Math.max(1,avatarMaxHp-4); avatarHp=Math.min(avatarHp,avatarMaxHp); avatarArmorType=null; } },
     // ── Armes magiques (Mage + Aventurier) ──
-    { id:'Baguette',    name:'Baguette magique',   slot:'weapon_main', gold:100, mana:60, pop:0, req:'tourmagie',
-      icon:'🪄', desc:'Dégâts fixes 2 (ignore armure), Distance',
+    { id:'Baguette',    get name(){ return t('eq_Baguette'); },   slot:'weapon_main', gold:100, mana:60, pop:0, req:'tourmagie',
+      icon:'🪄', get desc(){ return t('eq_Baguette_desc'); },
       isMagicWand:true,
       apply:  function(){ avatarMagicDmg=2; avatarRanged=true; },
       remove: function(){ avatarMagicDmg=0; avatarRanged=false; } },
-    { id:'Baton',       name:'Bâton magique',      slot:'weapon_main', gold:180, mana:100, pop:0, req:'tourmagie',
-      icon:'🪄', desc:'Dégâts fixes 4 (ignore armure), Distance',
+    { id:'Baton',       get name(){ return t('eq_Baton'); },      slot:'weapon_main', gold:180, mana:100, pop:0, req:'tourmagie',
+      icon:'🪄', get desc(){ return t('eq_Baton_desc'); },
       isMagicWand:true,
       apply:  function(){ avatarMagicDmg=4; avatarRanged=true; },
       remove: function(){ avatarMagicDmg=0; avatarRanged=false; } },
     // ── Glyphes ──
-    { id:'Fireball',    name:'Glyphe de Distorsion', slot:'glyph', gold:150,  mana:60, pop:0, req:null,
-      icon:'⏳', desc:'Distorsion — dégâts sur tous les ennemis',
+    { id:'Fireball',    get name(){ return t('eq_Fireball'); }, slot:'glyph', gold:150,  mana:60, pop:0, req:null,
+      icon:'⏳', get desc(){ return t('eq_Fireball_desc'); },
       apply: () => { glyphFireball++; }, isGlyph:true },
-    { id:'Rage',        name:'Glyphe de Rage',          slot:'glyph', gold:135,  mana:0,  pop:0, req:'caserne',
-      icon:'💢', desc:'Dégâts ×2 pendant 2 rounds',
+    { id:'Rage',        get name(){ return t('eq_Rage'); },          slot:'glyph', gold:135,  mana:0,  pop:0, req:'caserne',
+      icon:'💢', get desc(){ return t('eq_Rage_desc'); },
       apply: () => { glyphRage++; }, isGlyph:true },
-    { id:'PotionSoin',  name:'Potion de Soin',     slot:'potion', gold:90, mana:0, pop:0, req:null,
-      icon:'🧪', desc:'+3 HP en combat, hors action',
+    { id:'PotionSoin',  get name(){ return t('eq_PotionSoin'); },     slot:'potion', gold:90, mana:0, pop:0, req:null,
+      icon:'🧪', get desc(){ return t('eq_PotionSoin_desc'); },
       apply: () => { potionHeal++; }, isPotion:true },
-    { id:'PotionPoison', name:'Potion Anti-Poison',  slot:'potion', gold:120, mana:0, pop:0, req:null,
-      icon:'🟢', desc:'Annule le poison actif, hors action',
+    { id:'PotionPoison', get name(){ return t('eq_Arbalete'); },  slot:'potion', gold:120, mana:0, pop:0, req:null,
+      icon:'🟢', get desc(){ return t('eq_PotionPoison_desc'); },
       apply: () => { potionAntiPoison++; }, isPotion:true },
-    { id:'Bless',       name:'Glyphe de Bénédiction',   slot:'glyph', gold:180,  mana:90, pop:0, req:'eglise',
-      icon:'🌟', desc:'Zone ×1→×1.5',
+    { id:'Bless',       get name(){ return t('eq_PotionPoison'); },   slot:'glyph', gold:180,  mana:90, pop:0, req:'eglise',
+      icon:'🌟', get desc(){ return t('eq_Bless_desc'); },
       apply: () => { glyphBless++; }, isGlyph:true },
 ];
 
 function buyEquipment(name, costGold, costMana=0, costPop=0) {
-    const item = EQUIPMENT_CATALOG.find(x => x.name === name);
+    const item = EQUIPMENT_CATALOG.find(x => x.id === name || x.name === name);
     if (!item) { addLog('Équipement inconnu : ' + name); return; }
     if (gold < costGold || mana < costMana || population < costPop) {
         addLog('Ressources insuffisantes pour acheter ' + name + '.'); return;
@@ -7443,10 +7471,10 @@ function renderRecruitList() {
     const maxRecruitsPerAction = cityLvl + 1;
     if (!window._recruitsThisAction) window._recruitsThisAction = 0;
     if (isS5recruit) {
-        conscrHeader.textContent = '⚔ Conscription : '+conscrit+' — Recrues ce tour : '+window._recruitsThisAction+'/'+maxRecruitsPerAction;
+        conscrHeader.textContent = t('recruit_conscrit_s5').replace('{c}',conscrit).replace('{n}',window._recruitsThisAction).replace('{max}',maxRecruitsPerAction);
         conscrHeader.style.cssText = 'font-size:12px;color:#ffb040;margin-bottom:4px;padding:4px 8px;background:#2a1800;border-radius:6px';
     } else {
-        conscrHeader.textContent = '⚔ Conscription disponible : '+conscrit;
+        conscrHeader.textContent = t('recruit_conscrit_free').replace('{c}',conscrit);
     }
     el.appendChild(conscrHeader);
     // Barre de puissance ville vs horde
@@ -7463,7 +7491,7 @@ function renderRecruitList() {
     el.appendChild(powerDiv);
     if (!hasCaserne) {
         const p = document.createElement('p'); p.style.cssText='color:#9a8a6a;font-size:12px;font-style:italic';
-        p.textContent='Construisez une Caserne pour recruter des soldats.'; el.appendChild(p);
+        p.textContent=t('recruit_need_caserne'); el.appendChild(p);
     }
     el.innerHTML = '';
     UNIT_CATALOG.filter(u => !u.special).forEach(u => {
@@ -7483,7 +7511,7 @@ function renderRecruitList() {
         if (available && canAfford) {
             card.onclick = () => recruitUnit(u);
         } else if (!available) {
-            card.title = 'Nécessite '+(u.req==='academie'?'une Académie militaire':'une Caserne');
+            card.title = u.req==='academie' ? t('recruit_need_academie') : t('recruit_need_caserne2');
         }
         el.appendChild(card);
     });
@@ -8101,15 +8129,15 @@ function updateResPanel() {
 
 // ===== HELPER PRÉREQUIS BÂTIMENTS =====
 const EQ_REQ_LABELS = {
-    caserne:          'Caserne',
-    tourmagie:        'Tour de Magie',
-    archerie:         'Archerie',
-    eglise:           'Église',
-    temple:           'Temple',
-    academie:         'Académie militaire',
-    caserne_mine:     'Caserne + Mine',
-    tourmagie_eglise: 'Tour de Magie + Église',
-    academie_temple:  'Académie + Temple',
+    get caserne(){          return t('eq_req_caserne'); },
+    get tourmagie(){        return t('eq_req_tourmagie'); },
+    get archerie(){         return t('eq_req_archerie'); },
+    get eglise(){           return t('eq_req_eglise'); },
+    get temple(){           return t('eq_req_temple'); },
+    get academie(){         return t('eq_req_academie'); },
+    get caserne_mine(){     return t('eq_req_caserne_mine'); },
+    get tourmagie_eglise(){ return t('eq_req_tourmagie_eglise'); },
+    get academie_temple(){  return t('eq_req_academie_temple'); },
 };
 
 function showEnemySheet(e) {
@@ -8300,15 +8328,15 @@ function renderActionEquipTab() {
     const el = document.getElementById('equip-tab-equip');
     if (!el) return;
     const categories = [
-        { label:'⚔ Armes 1 main',    ids:['Epee','Dague','EpeeRunique'] },
-        { label:'⚔ Armes 2 mains',   ids:['Hache','Faux'] },
-        { label:'🏹 Distance',        ids:['Arc','Arbalete'] },
-        { label:'🛡 Boucliers',       ids:['Bouclier','Pavois','BouclierR'] },
-        { label:'🥋 Armures',         ids:['Cuir','Mailles'] },
-        { label:'📿 Colliers',        ids:['CollierDef','CollierAtk','CollierProt','CollierBeni'] },
-        { label:'🪢 Ceintures',       ids:['CeintureHP','CeinturePoison','CeintureStun'] },
-        { label:'🔮 Glyphes',         ids:['Fireball','Rage','Bless'] },
-        { label:'🧪 Potions',         ids:['PotionSoin','PotionPoison'] },
+        { get label(){ return t('eq_cat_arme1'); },    ids:['Epee','Dague','EpeeRunique'] },
+        { get label(){ return t('eq_cat_arme2'); },    ids:['Hache','Faux'] },
+        { get label(){ return t('eq_cat_distance'); }, ids:['Arc','Arbalete'] },
+        { get label(){ return t('eq_cat_boucliers'); },ids:['Bouclier','Pavois','BouclierR'] },
+        { get label(){ return t('eq_cat_armures'); },  ids:['Cuir','Mailles'] },
+        { get label(){ return t('eq_cat_colliers'); }, ids:['CollierDef','CollierAtk','CollierProt','CollierBeni'] },
+        { get label(){ return t('eq_cat_ceintures'); },ids:['CeintureHP','CeinturePoison','CeintureStun'] },
+        { get label(){ return t('eq_cat_glyphes'); },  ids:['Fireball','Rage','Bless'] },
+        { get label(){ return t('eq_cat_potions'); },  ids:['PotionSoin','PotionPoison'] },
     ];
     const ICONS = '⚔🪓🗡✨🏹🛡🥋⛓🔮🔥🌟💢💊'.split('');
     el.innerHTML = '';
@@ -8340,7 +8368,7 @@ function renderActionEquipTab() {
                 (showReq?'<div style="font-size:9px;color:#e07820">🏗 '+reqLabel+'</div>':'')+
                 '<div style="font-size:9px;color:#a09070">'+
                     (item.gold?'🪙'+item.gold+' ':'')+(item.mana?'✨'+item.mana+' ':'')+(item.pop?'👥'+item.pop:'')+'</div>';
-            if (ok) card.onclick = (function(it){ return () => { buyEquipment(it.name,it.gold,it.mana,it.pop); renderActionEquipTab(); }; })(item);
+            if (ok) card.onclick = (function(it){ return () => { buyEquipment(it.id,it.gold,it.mana,it.pop); renderActionEquipTab(); }; })(item);
             el.appendChild(card);
         });
     });
@@ -8520,10 +8548,10 @@ function renderRecruitListIn(el) {
     const maxRecruitsPerAction = cityLvl + 1;
     if (!window._recruitsThisAction) window._recruitsThisAction = 0;
     if (isS5recruit) {
-        conscrHeader.textContent = '⚔ Conscription : '+conscrit+' — Recrues ce tour : '+window._recruitsThisAction+'/'+maxRecruitsPerAction;
+        conscrHeader.textContent = t('recruit_conscrit_s5').replace('{c}',conscrit).replace('{n}',window._recruitsThisAction).replace('{max}',maxRecruitsPerAction);
         conscrHeader.style.cssText = 'font-size:12px;color:#ffb040;margin-bottom:4px;padding:4px 8px;background:#2a1800;border-radius:6px';
     } else {
-        conscrHeader.textContent = '⚔ Conscription disponible : '+conscrit;
+        conscrHeader.textContent = t('recruit_conscrit_free').replace('{c}',conscrit);
     }
     stickyHeader.appendChild(conscrHeader);
     // Barre de puissance
@@ -10861,6 +10889,7 @@ function initNewRun() {
     setTimeout(function() {
         if (typeof updateDungeonButtonExternal === 'function') updateDungeonButtonExternal();
     }, 200);
+    if (typeof applyLangToUI === 'function') applyLangToUI();
 }
 
 
