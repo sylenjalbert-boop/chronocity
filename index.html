@@ -1559,7 +1559,7 @@
     <div style="display:flex;gap:0;margin-bottom:16px;border-bottom:1px solid #333">
       <button class="army-tab active" id="tab-city"  onclick="armyTab('city')" >'+t('army_tab_city')+'</button>
       <button class="army-tab"        id="tab-horde" onclick="armyTab('horde')">'+t('army_tab_horde')+'</button>
-      <button class="army-tab"        id="tab-result"onclick="armyTab('result')">📊 Résultat prévu</button>
+      <button class="army-tab"        id="tab-result"onclick="armyTab('result')"id="tab-result-btn">📊 Résultat prévu</button>
     </div>
     <div id="army-tab-city"></div>
     <div id="army-tab-horde"  style="display:none"></div>
@@ -1656,7 +1656,7 @@
 
             <!-- Section TUILE -->
             <div class="action-section" id="sec-tile" style="display:flex;flex-direction:column;">
-                <div class="action-section-title">❖ Tuile</div>
+                <div class="action-section-title" id="sec-title-tuile">❖ Tuile</div>
                 <div id="tile-preview-card"></div>
                 <button class="action-main-btn" id="btn-reveal-tile" onclick="doRevealTile()">Révéler</button>
                 <div id="tile-action-hint" class="action-hint" style="flex:1"></div>
@@ -1664,19 +1664,19 @@
 
             <!-- Section CONSTRUIRE -->
             <div class="action-section" id="sec-build" style="flex:2;min-width:0">
-                <div class="action-section-title">⚒︎ Construire</div>
+                <div class="action-section-title" id="sec-title-construire">⚒︎ Construire</div>
                 <div id="build-list"></div>
             </div>
 
             <!-- Section IMPÔTS -->
             <div class="action-section" id="sec-tax" style="display:flex;flex-direction:column;gap:4px">
-                <div class="action-section-title"><svg viewBox="0 0 64 48" width="1.4em" height="1em" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-0.15em"><path d="M8 32Q8 6 32 6T56 32"/><line x1="18" y1="9" x2="18" y2="32"/><line x1="32" y1="6" x2="32" y2="32"/><line x1="46" y1="9" x2="46" y2="32"/><line x1="6" y1="32" x2="58" y2="32"/><circle cx="16" cy="40" r="5"/><circle cx="48" cy="40" r="5"/></svg> Caravane</div>
+                <div class="action-section-title" id="sec-title-caravane"><svg viewBox="0 0 64 48" width="1.4em" height="1em" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-0.15em"><path d="M8 32Q8 6 32 6T56 32"/><line x1="18" y1="9" x2="18" y2="32"/><line x1="32" y1="6" x2="32" y2="32"/><line x1="46" y1="9" x2="46" y2="32"/><line x1="6" y1="32" x2="58" y2="32"/><circle cx="16" cy="40" r="5"/><circle cx="48" cy="40" r="5"/></svg> Caravane</div>
                 <div id="tax-resources" style="flex:1;overflow-y:auto"></div>
-                <button id="btn-tax" onclick="doTaxAndClose()" style="margin-top:4px;padding:5px 10px;font-family:Cinzel,serif;font-size:10px;font-weight:600;letter-spacing:0.5px;border-radius:6px;border:1px solid #4a7a2a;background:#0a1a06;color:#80c060;cursor:pointer;width:100%;transition:all 0.15s">↝ Envoyer la caravane</button>
+                <button id="btn-tax" onclick="doTaxAndClose()" style="margin-top:4px;padding:5px 10px;font-family:Cinzel,serif;font-size:10px;font-weight:600;letter-spacing:0.5px;border-radius:6px;border:1px solid #4a7a2a;background:#0a1a06;color:#80c060;cursor:pointer;width:100%;transition:all 0.15s"id="btn-send-caravan">↝ Envoyer la caravane</button>
             </div>
 
             <div class="action-section" id="sec-recruit" style="display:flex;flex-direction:column;gap:4px">
-                <div class="action-section-title">⚔ Recruter</div>
+                <div class="action-section-title" id="sec-title-recruter">⚔ Recruter</div>
                 <div id="recruit-list-action" style="flex:1;overflow-y:auto;position:relative"></div>
             </div>
 
@@ -1688,8 +1688,8 @@
         <!-- Grille des tuiles -->
         <div id="game-area">
             <div id="tile-place-banner">
-                ⚒︎ <span id="tile-place-name"></span> — Cliquez une tuile verte pour placer
-                <button onclick="cancelTilePlacement()" style="margin-left:10px;padding:2px 8px;border:none;border-radius:4px;background:#1a1a2a;color:#9a8a6a;cursor:pointer;font-size:10px">✕ Annuler</button>
+                <span id="tile-place-banner-text">⚒︎ </span><span id="tile-place-name"></span><span id="tile-place-banner-suffix"> — Cliquez une tuile verte pour placer</span>
+                <button onclick="cancelTilePlacement()" id="btn-cancel-placement" style="margin-left:10px;padding:2px 8px;border:none;border-radius:4px;background:#1a1a2a;color:#9a8a6a;cursor:pointer;font-size:10px">✕ Annuler</button>
             </div>
             <div id="tile-grid"></div>
         </div>
@@ -2376,6 +2376,21 @@ const LANGS = {
         log_shell_obtenue: '🥚 Coquille obtenue ! Total : ',
         log_rune_gravee: '⚒ Rune gravée sur toutes les unités !',
         eq_tab_army:'🛡 Armée', eq_tab_equip:'⚔ Équip',
+
+        // ── Labels statiques HTML ──
+        sec_tuile: '❖ Tuile', sec_construire: '⚒︎ Construire',
+        sec_caravane_label: 'Caravane', sec_recruter: '⚔ Recruter',
+        sec_envoyer_caravane: '↝ Envoyer la caravane',
+        btn_reveler: 'Révéler',
+        res_or: 'Or', res_mana: 'Mana', res_pop: 'Population',
+        res_fort: 'Fortifications', res_meta_title: '✦ Méta',
+        tab_eco: '💰 Économie', tab_mil: '⚔ Militaire', tab_mag: '✨ Magie',
+        res_tour: 'Tour', res_titre_avatar: 'Avatar',
+        placement_banner: '⚒︎ {name} — Cliquez une tuile verte pour placer',
+        placement_cancel: '✕ Annuler',
+        army_tab_result: '📊 Résultat prévu',
+        army_fermer: 'Fermer',
+        panel_actions_title: 'Actions',
         lang_select_title: '🌐 Choisir la langue',
         lang_fr: '🇫🇷 Français',
         lang_en: '🇬🇧 English',
@@ -2852,6 +2867,21 @@ const LANGS = {
         unit_Paladin_name:'Paladin', unit_Dryade_name:'Dryad',
         unit_Ingenieur_name:'Engineer', unit_Inquisiteur_name:'Inquisitor',
         eq_tab_army:'🛡 Army', eq_tab_equip:'⚔ Equip',
+
+        // ── Static HTML labels ──
+        sec_tuile: '❖ Tile', sec_construire: '⚒︎ Build',
+        sec_caravane_label: 'Caravan', sec_recruter: '⚔ Recruit',
+        sec_envoyer_caravane: '↝ Send caravan',
+        btn_reveler: 'Reveal',
+        res_or: 'Gold', res_mana: 'Mana', res_pop: 'Population',
+        res_fort: 'Fortifications', res_meta_title: '✦ Meta',
+        tab_eco: '💰 Economy', tab_mil: '⚔ Military', tab_mag: '✨ Magic',
+        res_tour: 'Turn', res_titre_avatar: 'Avatar',
+        placement_banner: '⚒︎ {name} — Click a green tile to place',
+        placement_cancel: '✕ Cancel',
+        army_tab_result: '📊 Projected result',
+        army_fermer: 'Close',
+        panel_actions_title: 'Actions',
         lang_select_title: '🌐 Choose Language',
         lang_fr: '🇫🇷 Français',
         lang_en: '🇬🇧 English',
@@ -2985,6 +3015,38 @@ function applyLangToUI() {
     if (etabArmy) etabArmy.textContent = '🛡 ' + t('army_tab_city').replace('⚔ ','');
     const etabEquip = document.getElementById('etab-equip');
     if (etabEquip) etabEquip.textContent = t('equip_title');
+
+    // Section titles (HTML static)
+    const secTuile = document.getElementById('sec-title-tuile');
+    if (secTuile) secTuile.textContent = t('sec_tuile');
+    const secBuild = document.getElementById('sec-title-construire');
+    if (secBuild) secBuild.textContent = t('sec_construire');
+    const secRecruit = document.getElementById('sec-title-recruter');
+    if (secRecruit) secRecruit.textContent = t('sec_recruter');
+    const secCaravane = document.getElementById('sec-title-caravane');
+    if (secCaravane) {
+        // Keep the SVG, only update text after it
+        const svg = secCaravane.querySelector('svg');
+        if (svg) secCaravane.innerHTML = svg.outerHTML + ' ' + t('sec_caravane_label');
+    }
+    const btnReveal = document.getElementById('btn-reveal-tile');
+    if (btnReveal) btnReveal.textContent = t('btn_reveler');
+    const btnCaravan = document.getElementById('btn-send-caravan');
+    if (btnCaravan) btnCaravan.textContent = t('sec_envoyer_caravane');
+    const bannerSuffix = document.getElementById('tile-place-banner-suffix');
+    if (bannerSuffix) bannerSuffix.textContent = ' — ' + t('ui_placement_hint');
+    const btnCancelPlace = document.getElementById('btn-cancel-placement');
+    if (btnCancelPlace) btnCancelPlace.textContent = t('placement_cancel');
+    const tabResultBtn = document.getElementById('tab-result-btn');
+    if (tabResultBtn) tabResultBtn.textContent = t('army_tab_result');
+
+    // Build tabs (Économie / Militaire / Magie)
+    document.querySelectorAll('.build-tab').forEach(function(btn) {
+        const tab = btn.dataset && btn.dataset.tab;
+        if (tab === 'eco') btn.textContent = t('tab_eco');
+        else if (tab === 'mil') btn.textContent = t('tab_mil');
+        else if (tab === 'mag') btn.textContent = t('tab_mag');
+    });
 
     // Méta / écran fin de run (endScreen)
     if (typeof metaTab === 'function') {
