@@ -1251,11 +1251,11 @@
             <img id="ew-avatar-img" src="" style="width:76px;height:76px;object-fit:cover;border-radius:8px;border:2px solid #2a1a3a;display:block;margin:0 auto 6px">
             <div id="ew-stats" style="background:#0a0812;border:1px solid #1a1228;border-radius:6px;padding:5px 7px;font-size:10px;line-height:1.8;margin-bottom:4px"></div>
             <div style="font-size:9px;color:#4a3a5a;letter-spacing:1px;margin:2px 0">ÉQUIPEMENT</div>
-            <div class="ew-slot" id="slot-weapon_main" onclick="ewSelectSlot('weapon_main')">🗡 Arme princ.<span class="ew-slot-item"></span></div>
+            <div class="ew-slot" id="slot-weapon_main" onclick="ewSelectSlot('weapon_main')">🗡 <span data-i18n="ew_slot_weapon">Arme princ.</span><span class="ew-slot-item"></span></div>
             <div class="ew-slot" id="slot-weapon_off"  onclick="ewSelectSlot('weapon_off')">🛡 Arme/Bouclier<span class="ew-slot-item"></span></div>
-            <div class="ew-slot" id="slot-armor"       onclick="ewSelectSlot('armor')">🥋 Armure<span class="ew-slot-item"></span></div>
-            <div class="ew-slot" id="slot-necklace"    onclick="ewSelectSlot('necklace')">📿 Collier<span class="ew-slot-item"></span></div>
-            <div class="ew-slot" id="slot-belt"        onclick="ewSelectSlot('belt')">🪢 Ceinture<span class="ew-slot-item"></span></div>
+            <div class="ew-slot" id="slot-armor"       onclick="ewSelectSlot('armor')">🥋 <span data-i18n="ew_slot_armor">Armure</span><span class="ew-slot-item"></span></div>
+            <div class="ew-slot" id="slot-necklace"    onclick="ewSelectSlot('necklace')">📿 <span data-i18n="ew_slot_necklace">Collier</span><span class="ew-slot-item"></span></div>
+            <div class="ew-slot" id="slot-belt"        onclick="ewSelectSlot('belt')">🪢 <span data-i18n="ew_slot_belt">Ceinture</span><span class="ew-slot-item"></span></div>
             <div style="font-size:9px;color:#4a3a5a;letter-spacing:1px;margin:4px 0 2px">ACTIFS</div>
             <div id="ew-glyph-slots"></div>
             <div id="ew-potion-slots" style="margin-top:2px"></div>
@@ -1557,8 +1557,8 @@
   <div style="background:#0e0c0a;border-radius:10px;padding:20px;max-width:580px;border:1px solid #2e2518;width:92%;
               color:#ddd;max-height:85vh;overflow-y:auto">
     <div style="display:flex;gap:0;margin-bottom:16px;border-bottom:1px solid #333">
-      <button class="army-tab active" id="tab-city"  onclick="armyTab('city')" >'+t('army_tab_city')+'</button>
-      <button class="army-tab"        id="tab-horde" onclick="armyTab('horde')">'+t('army_tab_horde')+'</button>
+      <button class="army-tab active" id="tab-city"  onclick="armyTab('city')"  data-i18n="army_tab_city_label">⚔ Armée</button>
+      <button class="army-tab"        id="tab-horde" onclick="armyTab('horde')" data-i18n="army_tab_horde_label">👹 Horde</button>
       <button class="army-tab"        id="tab-result"onclick="armyTab('result')"id="tab-result-btn">📊 Résultat prévu</button>
     </div>
     <div id="army-tab-city"></div>
@@ -1672,7 +1672,7 @@
             <div class="action-section" id="sec-tax" style="display:flex;flex-direction:column;gap:4px">
                 <div class="action-section-title" id="sec-title-caravane"><svg viewBox="0 0 64 48" width="1.4em" height="1em" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-0.15em"><path d="M8 32Q8 6 32 6T56 32"/><line x1="18" y1="9" x2="18" y2="32"/><line x1="32" y1="6" x2="32" y2="32"/><line x1="46" y1="9" x2="46" y2="32"/><line x1="6" y1="32" x2="58" y2="32"/><circle cx="16" cy="40" r="5"/><circle cx="48" cy="40" r="5"/></svg> Caravane</div>
                 <div id="tax-resources" style="flex:1;overflow-y:auto"></div>
-                <button id="btn-tax" onclick="doTaxAndClose()" style="margin-top:4px;padding:5px 10px;font-family:Cinzel,serif;font-size:10px;font-weight:600;letter-spacing:0.5px;border-radius:6px;border:1px solid #4a7a2a;background:#0a1a06;color:#80c060;cursor:pointer;width:100%;transition:all 0.15s"id="btn-send-caravan">↝ Envoyer la caravane</button>
+                <button id="btn-send-caravan" onclick="doTaxAndClose()" style="margin-top:4px;padding:5px 10px;font-family:Cinzel,serif;font-size:10px;font-weight:600;letter-spacing:0.5px;border-radius:6px;border:1px solid #4a7a2a;background:#0a1a06;color:#80c060;cursor:pointer;width:100%;transition:all 0.15s" data-i18n="btn_send_caravan_action">↝ Envoyer la caravane</button>
             </div>
 
             <div class="action-section" id="sec-recruit" style="display:flex;flex-direction:column;gap:4px">
@@ -2694,6 +2694,22 @@ const LANGS = {
         dng_log_vampire_regen: '🧛 Vampire se régénère : +{n} HP',
         dng_log_ward_expired: '⛩ {n} Ward(s) expirée(s) (fin de saison {s}).',
         dng_continue_reset: 'Continuer ▶',
+        btn_end_turn: '▶ Fin du tour',
+        btn_end_turn_spent: '▶ Fin du tour',
+        btn_explore_dungeon: '🗝 Explorer le donjon',
+        btn_send_caravan_action: '↝ Envoyer la caravane',
+        dng_log_enemy_miss: '{name} : dé {die} ({thr}+) ✗ raté',
+        dng_log_timing_slow: '⏱ Trop lent — raté !',
+        army_tab_city_label: '⚔ Armée',
+        army_tab_horde_label: '👹 Horde',
+        turn_popup_title: 'Tour {n}',
+        req_caserne_txt: 'Caserne requise',
+        req_academie_txt: 'Académie requise',
+        meta_already_owned: 'Déjà possédé.',
+        ew_slot_weapon:'Arme princ.', ew_slot_armor:'Armure', ew_slot_necklace:'Collier', ew_slot_belt:'Ceinture',
+        ui_turn_label:'Tour',
+        turn_perturbed_desc:'Le chef de la horde perturbe les flux temporels ! Le bonus de caravane n\'est plus que de \u00d71.5.\nRessources disponibles : Or +{g} | Mana +{m} | Pop +{p}',
+        turn_resources_avail:'Ressources disponibles : Or +{g} | Mana +{m} | Pop +{p}',
         lang_select_title: '🌐 Choisir la langue',
         lang_fr: '🇫🇷 Français',
         lang_en: '🇬🇧 English',
@@ -3488,6 +3504,22 @@ const LANGS = {
         dng_log_vampire_regen: '🧛 Vampire regenerates: +{n} HP',
         dng_log_ward_expired: '⛩ {n} Ward(s) expired (end of season {s}).',
         dng_continue_reset: 'Continue ▶',
+        btn_end_turn: '▶ End turn',
+        btn_end_turn_spent: '▶ End turn',
+        btn_explore_dungeon: '🗝 Explore dungeon',
+        btn_send_caravan_action: '↝ Send caravan',
+        dng_log_enemy_miss: '{name}: die {die} ({thr}+) ✗ missed',
+        dng_log_timing_slow: '⏱ Too slow — missed!',
+        army_tab_city_label: '⚔ Army',
+        army_tab_horde_label: '👹 Horde',
+        turn_popup_title: 'Turn {n}',
+        req_caserne_txt: 'Barracks required',
+        req_academie_txt: 'Academy required',
+        meta_already_owned: 'Already owned.',
+        ew_slot_weapon:'Main weapon', ew_slot_armor:'Armor', ew_slot_necklace:'Necklace', ew_slot_belt:'Belt',
+        ui_turn_label:'Turn',
+        turn_perturbed_desc:'The horde chief disrupts temporal flows! Caravan bonus \u00d71.5.\nAvailable resources: Gold +{g} | Mana +{m} | Pop +{p}',
+        turn_resources_avail:'Available resources: Gold +{g} | Mana +{m} | Pop +{p}',
         lang_select_title: '🌐 Choose Language',
         lang_fr: '🇫🇷 Français',
         lang_en: '🇬🇧 English',
@@ -4008,7 +4040,7 @@ function showTurnAnimation(turnNum, season, callback) {
     card.style.background = ev.color;
     card.style.borderColor = ev.border;
 
-    document.getElementById('turn-number').textContent     = `Tour ${turnNum} · Saison ${season}`;
+    document.getElementById('turn-number').textContent     = t('ui_turn_label')+' '+turnNum+' · '+t('ui_season')+' '+season;
     document.getElementById('turn-event-icon').textContent = ev.icon;
     document.getElementById('turn-event-name').style.color = ev.border;
     document.getElementById('turn-event-name').textContent = ev.name;
@@ -4024,10 +4056,10 @@ function showTurnAnimation(turnNum, season, callback) {
             if (card2) { card2.style.background = '#2a1500'; card2.style.borderColor = '#ff8c00'; }
             document.getElementById('turn-event-icon').textContent = '🌀';
             document.getElementById('turn-event-name').style.color = '#ff8c00';
-            document.getElementById('turn-event-name').textContent = 'Conjonction Perturbée';
+            document.getElementById('turn-event-name').textContent = t('ui_conjunction_perturbed');
             desc = 'Le chef de la horde perturbe les flux temporels ! Le bonus de caravane n\'est plus que de ×1.5.\nRessources disponibles : Or +'+goldperturn+' | Mana +'+manaperturn+' | Pop +'+populationperturn;
         } else {
-            desc = ev.desc + `\nRessources disponibles : Or +${goldperturn} | Mana +${manaperturn} | Pop +${populationperturn}`;
+            desc = ev.desc + '\n'+t('turn_resources_avail').replace('{g}',goldperturn).replace('{m}',manaperturn).replace('{p}',populationperturn);
         }
     }
     document.getElementById('turn-event-desc').textContent  = desc;
@@ -4049,7 +4081,7 @@ function showTurnAnimation(turnNum, season, callback) {
         bar.style.transition = 'none';
         // Ajouter bouton "Fermer" pour revenir au jeu
         const btnClose = document.createElement('button');
-        btnClose.textContent = 'Retour au jeu — préparez vos défenses';
+        btnClose.textContent = t('ui_preparing_defenses');
         btnClose.style.cssText = 'margin-top:16px;padding:10px 24px;border:none;border-radius:10px;background:#5a1a1a;color:#ffd0d0;font-size:13px;font-weight:bold;cursor:pointer';
         btnClose.onclick = () => {
             overlay.classList.remove('show');
@@ -5547,7 +5579,7 @@ function dngStartAnim() {
 function dngAutoMiss() {
     // Timeout : le joueur n'a pas cliqué → raté
     const rb=document.getElementById('dng-result');
-    if(rb){rb.className='dng-r-miss';rb.textContent='⏱ Trop lent — raté !';}
+    if(rb){rb.className='dng-r-miss';rb.textContent=t('dng_log_timing_slow');}
     dngPushHist(dngTiming.histPlayer,'—',null);
     dngRenderHist();
     dngFlashBar('#400000');
@@ -6359,7 +6391,7 @@ function enemyAttack(room) {
         }
 
     } else {
-        dngLog(room.name+' : dé '+er+' ('+et+'+) ✗ raté','dlog-info');
+        dngLog(t('dng_log_enemy_miss').replace('{name}',room.name).replace('{die}',er).replace('{thr}',et),'dlog-info');
     }
 }
 
@@ -7423,20 +7455,20 @@ const EQUIPMENT_CATALOG = [
       icon:'🗡', get desc(){ return t('eq_Dague_desc'); },
       apply: () => { atk+=2; avatarDmg+=1; },
       remove: () => { atk-=2; avatarDmg-=1; } },
-    { id:'EpeeRunique', get name(){ return t('eq_Epee'); },     slot:'weapon_main', gold:240,  mana:60, pop:0, req:'tourmagie',
+    { id:'EpeeRunique', get name(){ return t('eq_EpeeRunique'); },     slot:'weapon_main', gold:240,  mana:60, pop:0, req:'tourmagie',
       icon:'✨', get desc(){ return t('eq_EpeeRunique_desc'); },
       apply: () => { atk+=2; avatarDmg+=2; avatarMagicWeapon=true; },
       remove: () => { atk-=2; avatarDmg-=2; avatarMagicWeapon=false; } },
     // ── Armes 2 mains ──
-    { id:'Hache', is2h:true, is2h:true,       get name(){ return t('eq_EpeeRunique'); },  slot:'weapon_main', gold:120,  mana:0,  pop:0, req:null,
+    { id:'Hache', is2h:true, is2h:true,       get name(){ return t('eq_Hache'); },  slot:'weapon_main', gold:120,  mana:0,  pop:0, req:null,
       icon:'🪓', get desc(){ return t('eq_Hache_desc'); },
       apply: () => { avatarDmg+=2; atk-=1; },
       remove: () => { avatarDmg-=2; atk+=1; } },
-    { id:'Arc', is2h:true, get name(){ return t('eq_Dague'); }, slot:'weapon_main', gold:150, mana:0, pop:0, req:'archerie', classReq:'archer',
+    { id:'Arc', is2h:true, get name(){ return t('eq_Arc'); }, slot:'weapon_main', gold:150, mana:0, pop:0, req:'archerie', classReq:'archer',
       icon:'🏹', get desc(){ return t('eq_Arc_desc'); },
       apply: () => { atk+=2; avatarDmg+=2; avatarRanged=true; window._arcElfique=true; },
       remove: () => { atk-=2; avatarDmg-=2; avatarRanged=false; window._arcElfique=false; } },
-    { id:'Arbalete', is2h:true, is2h:true,    get name(){ return t('eq_Arc'); },  slot:'weapon_main', gold:210,  mana:0,  pop:0, req:'archerie',
+    { id:'Arbalete', is2h:true, is2h:true,    get name(){ return t('eq_Arbalete'); },  slot:'weapon_main', gold:210,  mana:0,  pop:0, req:'archerie',
       icon:'🏹', get desc(){ return t('eq_Arbalete_desc'); },
       apply: () => { atk+=2; avatarDmg+=2; avatarRanged=true; avatarPiercing=true; },
       remove: () => { atk-=2; avatarDmg-=2; avatarRanged=false; avatarPiercing=false; } },
@@ -7470,17 +7502,17 @@ const EQUIPMENT_CATALOG = [
     { id:'CollierDef',  get name(){ return t('eq_CollierDef'); },   slot:'necklace', gold:120, mana:0, pop:0, req:null,
       icon:'📿', get desc(){ return t('eq_CollierDef_desc'); },
       apply: () => { def+=1; }, remove: () => { def-=1; } },
-    { id:'CollierAtk',  name:"Collier d'attaque",   slot:'necklace', gold:120, mana:0, pop:0, req:null,
+    { id:'CollierAtk',  get name(){ return t('eq_CollierAtk'); },   slot:'necklace', gold:120, mana:0, pop:0, req:null,
       icon:'📿', get desc(){ return t('eq_CollierAtk_desc'); },
       apply: () => { atk+=1; }, remove: () => { atk-=1; } },
-    { id:'CollierProt', get name(){ return t('eq_EpeeRunique'); },slot:'necklace', gold:120, mana:0, pop:0, req:null,
+    { id:'CollierProt', get name(){ return t('eq_CollierProt'); },slot:'necklace', gold:120, mana:0, pop:0, req:null,
       icon:'📿', get desc(){ return t('eq_CollierProt_desc'); },
       apply: () => { protection+=1; }, remove: () => { protection-=1; } },
-    { id:'CollierBeni', get name(){ return t('eq_Hache'); },         slot:'necklace', gold:210, mana:90, pop:0, req:'eglise',
+    { id:'CollierBeni', get name(){ return t('eq_CollierBeni'); },         slot:'necklace', gold:210, mana:90, pop:0, req:'eglise',
       icon:'✝', get desc(){ return t('eq_CollierBeni_desc'); },
       apply: () => { avatarBlessedNecklace=true; }, remove: () => { avatarBlessedNecklace=false; } },
     // ── Ceintures ──
-    { id:'CeintureHP',     get name(){ return t('eq_CollierAtk'); },  slot:'belt', gold:105, mana:0, pop:0, req:null,
+    { id:'CeintureHP',     get name(){ return t('eq_CeintureHP'); },  slot:'belt', gold:105, mana:0, pop:0, req:null,
       icon:'🪢', get desc(){ return t('eq_CeintureHP_desc'); },
       apply: () => { avatarMaxHp+=3; avatarHp=Math.min(avatarHp+3,avatarMaxHp); },
       remove: () => { avatarMaxHp=Math.max(1,avatarMaxHp-3); avatarHp=Math.min(avatarHp,avatarMaxHp); } },
@@ -11929,7 +11961,7 @@ function buyLegendaryBuilding(key) {
     const m = getMeta();
     if ((m.shells||0) < 1) { addLog('❌ Pas assez de coquilles.'); return; }
     if (!m.legendary) m.legendary = {};
-    if (m.legendary[key]) { addLog('Déjà possédé.'); return; }
+    if (m.legendary[key]) { addLog(t('meta_already_owned')); return; }
     m.shells--;
     m.shellsSpent = (m.shellsSpent||0) + 1;
     m.legendary[key] = true;
@@ -15032,7 +15064,7 @@ body.clarity-on #clarity-resbar {
                     endBtn.id = 'cad-endturn-btn';
                     endBtn.className = 'cad-btn';
                     endBtn.style.cssText = 'flex:1;background:linear-gradient(135deg,#1a3a1a,#0a2a0a);border-color:#4cffaa;color:#4cffaa;font-size:15px;font-weight:bold;letter-spacing:1px';
-                    endBtn.innerHTML = '▶ Fin du tour';
+                    endBtn.innerHTML = t('btn_end_turn');
                     endBtn.addEventListener('click', endTurn);
                     dock.appendChild(endBtn);
                 }
