@@ -1223,12 +1223,12 @@
 
 <div id="pre-dungeon-window" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.82);z-index:10001;align-items:center;justify-content:center;overflow-y:auto">
 <div style="background:#080810;border:1px solid #3a2a3a;border-radius:14px;width:min(96vw,480px);max-height:90vh;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:8px;box-shadow:0 0 40px rgba(100,30,60,0.4);margin:auto">
-    <div style="font-family:Cinzel,serif;font-size:17px;color:#c0a060;text-align:center;letter-spacing:2px">⚔ Partir en Donjon</div>
-    <div style="font-size:12px;color:#7a6a8a;text-align:center">Préparez votre avatar et choisissez votre destination.</div>
+    <div style="font-family:Cinzel,serif;font-size:17px;color:#c0a060;text-align:center;letter-spacing:2px" id="predng-title" data-i18n="predng_window_title">⚔ Partir en Donjon</div>
+    <div style="font-size:12px;color:#7a6a8a;text-align:center" id="predng-subtitle" data-i18n="predng_window_sub">Préparez votre avatar et choisissez votre destination.</div>
     <div id="predng-stats" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px"></div>
     <div id="predng-equip" style="font-size:11px;color:#9a8a6a;background:#0a0812;border-radius:8px;padding:8px;line-height:1.9"></div>
-    <button onclick="openEquipWindow(true)" style="background:linear-gradient(135deg,#1a1030,#2a1a40);border:1px solid #5040a0;color:#c080ff;border-radius:8px;padding:10px 0;font-family:Cinzel,serif;font-size:12px;cursor:pointer;width:100%">⚔ S&#39;équiper</button>
-    <div style="font-size:10px;color:#4a3a5a;letter-spacing:1px;margin-top:2px">CHOISIR LE DONJON</div>
+    <button onclick="openEquipWindow(true)" id="predng-equip-btn" data-i18n="predng_equip_btn" style="background:linear-gradient(135deg,#1a1030,#2a1a40);border:1px solid #5040a0;color:#c080ff;border-radius:8px;padding:10px 0;font-family:Cinzel,serif;font-size:12px;cursor:pointer;width:100%">⚔ S'équiper</button>
+    <div style="font-size:10px;color:#4a3a5a;letter-spacing:1px;margin-top:2px" data-i18n="predng_choose_label">CHOISIR LE DONJON</div>
     <div id="predng-dungeon-choices" style="display:flex;flex-direction:column;gap:5px"></div>
     <div style="display:flex;gap:8px;margin-top:4px">
     </div>
@@ -1293,7 +1293,7 @@
     </div>
     <div class="hp-result" id="hp-result"></div>
     <div class="hp-sub" id="hp-sub"></div>
-    <button class="hp-close" id="hp-close" onclick="closeHordePopup()">Continuer</button>
+    <button class="hp-close" id="hp-close" onclick="closeHordePopup()" data-i18n="hp_close_btn">Continuer</button>
 </div>
 
 <!-- Popup : envoyer l'avatar explorer -->
@@ -1303,7 +1303,7 @@
      color:#cfffd5; min-width:300px; max-width:400px;">
     <div style="font-size:40px;margin-bottom:8px">🧭</div>
     <div style="font-size:17px;font-weight:bold;color:#4cffaa;margin-bottom:8px">Envoyer l'avatar explorer ?</div>
-    <div style="font-size:13px;color:#aaddaa;margin-bottom:16px">Il peut découvrir une fontaine, une forge ou tomber sur des ennemis...</div>
+    <div style="font-size:13px;color:#aaddaa;margin-bottom:16px" id="predng-flavor-text">Il peut découvrir une fontaine, une forge ou tomber sur des ennemis...</div>
     <div style="display:flex;gap:12px;justify-content:center">
         <button onclick="avatarExplore(true)"
             style="padding:8px 22px;background:#2e6e3e;color:#cfffd5;border:none;border-radius:8px;cursor:pointer;font-size:13px;font-weight:bold">
@@ -1364,7 +1364,7 @@
         </div>
     </div>
     <div id="ci-boss-badge" style="display:none;margin-top:20px;padding:6px 20px;background:#6a1a1a;border-radius:20px;color:#ffb0b0;font-size:14px;font-weight:bold;letter-spacing:2px">⚠ BOSS</div>
-    <div style="margin-top:24px;color:#9a8a6a;font-size:12px">Cliquez pour commencer</div>
+    <div style="margin-top:24px;color:#9a8a6a;font-size:12px" data-i18n="ci_click_to_start">Cliquez pour commencer</div>
 </div>
 
 <div id="horde-chief-overlay"><div id="horde-chief-card"><div id="horde-chief-icon">💀</div><div id="horde-chief-title">LE CHEF DE LA HORDE INTERVIENT</div><div id="horde-chief-subtitle">Les flux temporels sont perturbés !</div><div id="horde-chief-text"></div><button id="horde-chief-btn" onclick="closeHordeChief()">Faire face au destin</button></div></div>
@@ -1450,8 +1450,8 @@
             <div id="dr-shell" style="display:none;margin:6px 0;font-size:14px;color:#e0c080;font-family:Cinzel,serif">🥚 Coquille d'Oeuf du Temps acquise !</div>
             <div class="reward-desc" id="dr-desc"></div>
             <div style="display:flex;gap:10px;justify-content:center;margin-top:4px">
-                <button class="dng-btn dng-btn-attack" id="dr-continue" onclick="dungeonNextRoom()">Continuer ▶</button>
-                <button class="dng-btn dng-btn-flee" id="dr-flee" onclick="dungeonFlee()">Fuir avec butin</button>
+                <button class="dng-btn dng-btn-attack" id="dr-continue" onclick="dungeonNextRoom()" id="dr-continue-btn" data-i18n="dng_continue">Continuer ▶</button>
+                <button class="dng-btn dng-btn-flee" id="dr-flee" onclick="dungeonFlee()" id="dr-flee-btn" data-i18n="dng_flee_loot">Fuir avec butin</button>
             </div>
         </div>
     </div>
@@ -1468,7 +1468,7 @@
 
         <!-- Ligne 1 : Attaquer + Fuir -->
         <div style="display:flex;gap:8px;justify-content:center">
-            <button class="dng-btn dng-btn-attack" id="dng-btn-attack" onclick="dungeonStartAttack(event)" style="flex:1;font-size:14px;padding:10px 0">⚔ Attaquer</button>
+            <button class="dng-btn dng-btn-attack" id="dng-btn-attack" onclick="dungeonStartAttack(event)" style="flex:1;font-size:14px;padding:10px 0" id="dng-btn-attack-lbl" data-i18n="dng_btn_attack">⚔ Attaquer</button>
             <div id="dng-timing-wrap" style="display:none;flex:1">
         <div id="dng-timing-label" style="display:none"></div>
         <div id="dng-bar" style="position:relative;width:100%;height:48px;background:#111;border-radius:10px;overflow:hidden;cursor:crosshair;border:2px solid #5a5a8a;transition:border-color .2s">
@@ -1495,19 +1495,19 @@
             <div id="dng-flash" style="position:absolute;top:0;left:0;width:100%;height:100%;border-radius:8px;opacity:0;pointer-events:none;z-index:1"></div>
         </div>
     </div>
-            <button class="dng-btn dng-btn-attack" id="dng-btn-attack-mobile" onclick="dungeonStartAttack(event)" style="display:none;flex:1;font-size:13px;padding:8px 0">⚔ Attaquer</button>
-            <button class="dng-btn dng-btn-flee" id="dng-btn-flee" onclick="dungeonFlee()" style="min-width:80px">🏃 Fuir</button>
+            <button class="dng-btn dng-btn-attack" id="dng-btn-attack-mobile" onclick="dungeonStartAttack(event)" style="display:none;flex:1;font-size:13px;padding:8px 0" id="dng-btn-attack-mobile-lbl" data-i18n="dng_btn_attack">⚔ Attaquer</button>
+            <button class="dng-btn dng-btn-flee" id="dng-btn-flee" onclick="dungeonFlee()" style="min-width:80px" id="dng-btn-flee-lbl" data-i18n="dng_btn_flee_combat">🏃 Fuir</button>
         </div>
 
         <!-- Ligne 2 : Compétences (utilisent l'action — remplacent Attaquer) -->
         <div id="dng-skills-row" style="display:none;flex-direction:column;gap:4px">
-            <div style="font-size:9px;color:#c49220;text-align:center;letter-spacing:1px;font-family:Cinzel,serif;padding:2px 0">⚡ COMPÉTENCES — utilise l'action</div>
+            <div style="font-size:9px;color:#c49220;text-align:center;letter-spacing:1px;font-family:Cinzel,serif;padding:2px 0" id="dng-skills-label" data-i18n="dng_skills_label">⚡ COMPÉTENCES — utilise l'action</div>
             <div id="class-skill-btns" style="display:flex;gap:6px;justify-content:center;flex-wrap:wrap"></div>
         </div>
 
         <!-- Ligne 3 : Glyphes + Potions (hors action — dynamique) -->
         <div id="dng-glyphs-row" style="display:none;flex-direction:column;gap:4px">
-            <div style="font-size:9px;color:#8888ff;text-align:center;letter-spacing:1px;font-family:Cinzel,serif;padding:2px 0">✦ GLYPHES &amp; POTIONS — hors action</div>
+            <div style="font-size:9px;color:#8888ff;text-align:center;letter-spacing:1px;font-family:Cinzel,serif;padding:2px 0" id="dng-glyphs-label" data-i18n="dng_glyphs_label">✦ GLYPHES &amp; POTIONS — hors action</div>
             <div id="dng-actifs-row" style="display:flex;gap:6px;justify-content:center;flex-wrap:wrap"></div>
         </div>
         <div id="dng-potions-row" style="display:none"></div>
@@ -1611,10 +1611,10 @@
 
         <!-- Onglets -->
         <div style="display:flex;background:#060610;border-bottom:1px solid #1a1a2e">
-            <button class="meta-tab active" id="mtab-hero"  onclick="metaTab('hero')">⚔ '+t('meta_tab_hero').slice(2)+'</button>
-            <button class="meta-tab"        id="mtab-city"  onclick="metaTab('city')">🏰 '+t('meta_tab_city').slice(2)+'</button>
-            <button class="meta-tab"        id="mtab-level"     onclick="metaTab('level')">△ '+t('meta_tab_level').slice(2)+'</button>
-            <button class="meta-tab"        id="mtab-legendary" onclick="metaTab('legendary')">🥚 '+t('meta_tab_legendary').slice(2)+'</button>
+            <button class="meta-tab active" id="mtab-hero"  onclick="metaTab('hero')" id="mtab-lbl-hero" data-i18n="mtab_hero">⚔ Avatar</button>
+            <button class="meta-tab"        id="mtab-city"  onclick="metaTab('city')" id="mtab-lbl-city" data-i18n="mtab_city">🏰 Ville</button>
+            <button class="meta-tab"        id="mtab-level"     onclick="metaTab('level')" id="mtab-lbl-level" data-i18n="mtab_level">△ Niveau</button>
+            <button class="meta-tab"        id="mtab-legendary" onclick="metaTab('legendary')" id="mtab-lbl-legendary" data-i18n="mtab_legendary">🥚 Légendaire</button>
         </div>
 
         <!-- Contenu onglets -->
@@ -1656,7 +1656,7 @@
 
             <!-- Section TUILE -->
             <div class="action-section" id="sec-tile" style="display:flex;flex-direction:column;">
-                <div class="action-section-title" id="sec-title-tuile">❖ Tuile</div>
+                <div class="action-section-title" id="sec-title-tuile" data-i18n="sec_tuile">❖ Tuile</div>
                 <div id="tile-preview-card"></div>
                 <button class="action-main-btn" id="btn-reveal-tile" onclick="doRevealTile()">Révéler</button>
                 <div id="tile-action-hint" class="action-hint" style="flex:1"></div>
@@ -1664,7 +1664,7 @@
 
             <!-- Section CONSTRUIRE -->
             <div class="action-section" id="sec-build" style="flex:2;min-width:0">
-                <div class="action-section-title" id="sec-title-construire">⚒︎ Construire</div>
+                <div class="action-section-title" id="sec-title-construire" data-i18n="sec_construire">⚒︎ Construire</div>
                 <div id="build-list"></div>
             </div>
 
@@ -1676,7 +1676,7 @@
             </div>
 
             <div class="action-section" id="sec-recruit" style="display:flex;flex-direction:column;gap:4px">
-                <div class="action-section-title" id="sec-title-recruter">⚔ Recruter</div>
+                <div class="action-section-title" id="sec-title-recruter" data-i18n="sec_recruter">⚔ Recruter</div>
                 <div id="recruit-list-action" style="flex:1;overflow-y:auto;position:relative"></div>
             </div>
 
@@ -2440,6 +2440,260 @@ const LANGS = {
         threat_sub_lose: 'Tu vas perdre. Recrute, construis, prie.',
         threat_sub_unknown: 'La compo de la horde sera dévoilée au tour 5.',
         threat_ta_defense: 'Ta défense',
+
+        // ── Méta — onglets HTML ──
+        mtab_hero: '⚔ Avatar', mtab_city: '🏰 Ville',
+        mtab_level: '△ Niveau', mtab_legendary: '🥚 Légendaire',
+        // ── Méta — Hero stats ──
+        meta_stats_permanentes: 'Stats permanentes',
+        meta_max_par_stat: '(max {n} par stat)',
+        meta_tier_locked: '🔒 Tier {n}',
+        meta_stat_atk: '⚔ ATK +1', meta_stat_atk_desc: 'Attaque permanente +1',
+        meta_stat_hp: '❤ HP Max +3', meta_stat_hp_desc: 'Points de vie max +3',
+        meta_stat_dmg: '🗡 Dégâts +1', meta_stat_dmg_desc: 'Dégâts de base +1',
+        meta_stat_prot: '🛡 Protection +1', meta_stat_prot_desc: 'Absorbe 1 dégât par coup',
+        meta_stat_def: '🔰 DEF +1', meta_stat_def_desc: 'Défense permanente +1',
+        // ── Méta — Compétences ──
+        meta_skills_title: 'Compétences de départ',
+        meta_skills_replaced: '🪞 Remplacées par les compétences de classe.',
+        meta_skills_locked_msg: '🔒 Augmentez le Niveau Héros (onglet Niveau) pour débloquer des compétences.',
+        meta_skill_soin: 'Soin mineur',
+        meta_skill_soin_desc: '+{n} HP par combat (Niv.{lvl})',
+        meta_skill_fireball: 'Distortion Temporelle',
+        meta_skill_fireball_desc: '{n} dégâts directs, ignore armure (Niv.{lvl})',
+        meta_skill_rage: 'Rage de bataille',
+        meta_skill_rage_desc: 'Dégâts x{n} pendant {r} rounds (Niv.{lvl})',
+        meta_skill_benediction: 'Bénédiction',
+        meta_skill_benediction_desc: 'Zone ×1 → ×{n} timing (Niv.{lvl})',
+        meta_debloquer: 'Débloquer',
+        meta_upgrade_niv: '↑ Niv.{n}',
+        // ── Méta — City ──
+        meta_city_title: 'Améliorations permanentes de la ville',
+        meta_city_or: '🪙 Or de départ +25',
+        meta_city_mana: '✨ Mana de départ +25',
+        meta_city_space: '▦ Emplacement de ville +1',
+        meta_city_recruit: 'Capacité de recrutement +1',
+        meta_city_niv_req: '🔒 Niv.ville {n}',
+        // ── Méta — Level ──
+        meta_level_title: 'Niveaux — débloquent stats et compétences',
+        meta_level_dust_info: 'Gagnées en battant le boss hivernal (S4, S8, …)',
+        meta_level_hero_title: '⚔ Niveau Héros {n}',
+        meta_level_hero_desc_prefix: 'Débloque: +',
+        meta_level_hero_stat: 'stat',
+        meta_level_hero_skill: 'compétence',
+        meta_level_hero_tier: 'tier',
+        meta_level_city_title: '🏰 Niveau Ville {n}',
+        meta_level_city_desc: 'Débloque: +1 emplacement ville, +{n} recrutement/tour',
+        meta_level_niv_req: 'Niv.héros {n} requis',
+        // ── Méta — tabs static button ──
+        meta_nouveau_run_btn: '▶ Nouveau Run',
+
+        tile_exploration_hint: 'Tour exploration — donjon disponible après révélation',
+        tile_all_revealed: 'Toutes les tuiles révélées',
+        tile_Donjon_name: 'Donjon', tile_Donjon_rooms: 'salles | Butin rare',
+        tile_Donjon_flavor: 'Des flambeaux illuminent un couloir sombre...',
+
+        // ── Donjon — fenêtre ──
+        dng_title_intro: 'Donjon — {n} salles vous attendent',
+        dng_title_room: 'Salle {done}/{total} — Choisissez votre porte',
+        dng_poison_status: '☠ Poison x{n} : -{n} HP/round',
+        dng_curse_status: '🔮 Malédiction : ATK -1',
+        dng_door_badge: 'Porte {label}',
+        dng_door_locked: '🔒 VERROUILLÉE',
+        dng_door_boss: '⚠ BOSS',
+        dng_door_boss_locked_text: 'Terminez les autres salles d\'abord',
+        dng_door_boss_guaranteed: 'Combat de Boss garanti',
+        dng_door_a_main: '⚔ Combat (70%)',
+        dng_door_a_sec: '✨ Bonus (20%) · ⚠ Piège (10%)',
+        dng_door_b_main: '✨ Bonus (70%)',
+        dng_door_b_sec: '⚔ Combat (20%) · ⚠ Piège (10%)',
+        dng_flee_loot: 'Fuir avec butin',
+        dng_flee: '🏃 Fuir',
+        dng_continue: 'Continuer ▶',
+        dng_ouroboros_name: '🐍 Aire d\'Ouroboros',
+        dng_room_fontaine: 'Fontaine de soin',
+        dng_room_forge: 'Forge oubliée',
+        dng_room_tresor: 'Salle au trésor',
+        dng_piege_fuite: 'Fuite bloquée (prochaine salle)',
+
+        // ── Pré-donjon ──
+        predng_stat_dist_oui: 'Oui', predng_stat_dist_non: 'Non',
+        predng_glyph_label: '✨ Glyphes', predng_potion_label: '🧪 Potions',
+        predng_glyph_distorsion: 'Distorsion', predng_glyph_rage: 'Rage', predng_glyph_bene: 'Bénédiction',
+        predng_potion_soin: 'Soin', predng_potion_antipoison: 'Anti-Poison',
+        predng_diff_facile: 'Facile', predng_diff_normale: 'Normale',
+        predng_diff_difficile: 'Difficile', predng_diff_legendaire: 'Légendaire',
+        predng_tour_name: '🏚 Tour Abandonnée', predng_tour_note: 'Ennemis moins coriaces — butin réduit',
+        predng_grotte_name: '🕳 Grotte Mystérieuse', predng_grotte_note: 'Difficulté standard de la saison',
+        predng_cata_name: '💀 Catacombes Maudites', predng_cata_note_reward: 'Récompense de carac. disponible !',
+        predng_cata_note_loot: 'Butin amélioré ×1.25',
+        predng_ouro_name: "🐍 Aire d\'Ouroboros", predng_diff_legendaire2: 'Légendaire',
+        predng_ouro_done: 'Déjà conquis cette saison',
+        predng_ouro_locked: '⏳ Disponible au tour 9 uniquement',
+        predng_ouro_available: "🥚 Coquille d\'Oeuf du Temps en jeu !",
+        predng_flavor: 'Il peut découvrir une fontaine, une forge ou tomber sur des ennemis...',
+        predng_window_title: '⚔ Partir en Donjon', predng_window_sub: 'Préparez votre avatar et choisissez votre destination.', predng_equip_btn: "⚔ S\'équiper",
+
+        // ── Combat intro ──
+        ci_multi_enemies: '{n} ennemis !',
+        ci_front_rank: '⚔ Rang avant : ',
+        ci_back_rank: ' | 🎯 Arrière : ',
+        ci_tap_to_start: 'Appuyez pour commencer',
+        // ── SPECIAL_DESCS ──
+        spec_poison: '☠︎ Venin : empoisonne au contact (-1 HP/round, persiste)',
+        spec_stun: '⊛ Assommeur : sur un 6, stun + attaque supplémentaire',
+        spec_lifesteal: '⥁ Drain vital : se régénère des dégâts infligés',
+        spec_breath: '🔥 Souffle : dégâts automatiques tous les 4 rounds',
+        spec_atkreduction: '⚡ Malédiction : réduit votre ATK à chaque frappe',
+        // ── Équipement window ──
+        ew_glyph_header: '✨ Glyphes',
+        ew_potion_header: '🧪 Potions',
+        ew_dist_oui: 'Oui', ew_dist_non: 'Non',
+        ew_faux_oui: 'Oui',
+        ew_glyph_distorsion: 'Distorsion', ew_glyph_rage: 'Rage', ew_glyph_bene: 'Bénédiction',
+        ew_btn_enter: '▶ Entrer dans le donjon',
+        // ── Oury ──
+        oury_surge_title: '✦ OURY INTERVIENT ✦',
+        oury_surge_body: '*surgit des ombres dans un éclair violet* 🐍⚡<br><br><strong>"ASSEZ !"</strong><br><br>Oury frappe <em>{name}</em> avec une précision foudroyante !<br><span style="color:#c080ff">La mort peut attendre...</span>',
+        oury_horde_decree_title: '✦ DÉCRET SERPENTIN ✦',
+        oury_horde_decree_body: '*s\'élance entre les deux armées dans un tourbillon d\'écailles* 🐍✨<br><br><strong>"HALTE À TOUS !"</strong><br><br>Par décision divine serpentine, ce combat est déclaré...<br><span style="color:#ffd060;font-size:15px;font-family:Cinzel,serif">⚖ ÉGALITÉ ⚖</span><br><span style="color:#6a5a7a;font-size:11px">La horde recule. Pour cette fois.</span>',
+        oury_horde_null_log: '🐍 Oury intervient ! Le combat de horde est déclaré NUL — la horde recule !',
+        oury_dng_save_log: '🐍 Oury surgit et terrasse {name} ! ({dmg} dégâts)',
+        oury_horde_warn_1: '*sssserre les écailles* Attention ! La horde est plus forte de {diff} point(s) ! Recrute une unité si tu peux ! 🐍⚠️',
+        oury_horde_warn_2: "*agite la queue nerveusement* C\'essst très sssserré ! {diff} point(s) d\'écart... Vérifie ton armée et équipe l\'avatar ! 🐍",
+        oury_horde_warn_3: "*siffle d\'inquiétude* Sssssi proche ! La horde mène de {diff}... Envoie ton avatar en renfort ! 💜🐍",
+        oury_horde_warn_4: '*se dresse en alerte* SSSSTOPP ! {diff} point(s) de différence ! Dernier moment pour recruter ! 🐍⚔️',
+        oury_ouro_warn_1: "*se dresse en alerte maximale* 🐍⚡ TOUR 9 ! L\'Aire d\'Ouroboros est OUVERTE ! C\'essst legendaire mais BRUTAL — prepare bien ton avatar avant d\'y aller !",
+        oury_ouro_warn_2: "*fremit d\'excitation* 🐍🥚 C\'essst le moment ! L\'Ouroboros t\'attend au tour 9 ! Une Coquille d\'Oeuf en jeu... mais assssure-toi d\'etre au mieux de ta forme !",
+        oury_ouro_warn_3: "*siffle intensement* ⚡🐍 L\'OUROBOROS ! Maissss attention — c\'essst le donjon le plus dangereux ! Equipe-toi BIEN avant d\'y mettre un pied !",
+        oury_ouro_warn_4: "*s\'enroule nerveusement* 🥚🐍 Ssss... l\'Aire d\'Ouroboros est disponible ! Une coquille t\'attend... massss l\'Ouroboros ne fait pas de cadeaux. Sssois pret·e !",
+        dng_btn_attack: '⚔ Attaquer', dng_btn_flee_combat: '🏃 Fuir',
+        dng_skills_label: '⚡ COMPÉTENCES — utilise l\'action',
+        dng_glyphs_label: '✦ GLYPHES & POTIONS — hors action',
+
+        // ── Victoire / Défaite donjon ──
+        dng_complete_log: 'Donjon complété ! +20 Or.',
+        dng_complete_dng: '🏆 Donjon entièrement exploré ! +20 Or.',
+        dng_complete_loot: '🏆 Donjon complété !',
+        dng_complete_addlog: 'Donjon complété ! Butin : {loot}',
+        dng_flee_addlog: 'Donjon : fuite. Butin : {loot}',
+        dng_loot_none: 'aucun',
+        dng_reward_log: '💰 Récompense : {loot}',
+        dng_shell_win: '🥚 Coquille d\'Oeuf du Temps ! Ouroboros vaincu !',
+        // ── Salles spéciales ──
+        dng_forge_log: '⚒ Forge : {result}',
+        dng_fontaine_log: '💧 Fontaine : +{n} HP restaurés !',
+        dng_piege_lames: '🗡 Piège lames ! -{n} HP',
+        // ── Skills boutons ──
+        skill_not_bought: 'Non acheté dans la méta',
+        skill_gratuit: 'gratuit',
+        skill_exhaust: 'Compétence épuisée pour ce combat.',
+        skill_already_used: 'Compétence déjà utilisée ce combat.',
+        skill_passif_label: '(passif actif)',
+        // Skills noms (méta) ──
+        skill_Fireball_label: 'Distortion Temporelle',
+        skill_Benediction_label: 'Bénédiction',
+        skill_Rage_label: 'Rage',
+        skill_Soin_label: 'Soin',
+        // ── Combat logs visibles ──
+        dng_log_stun_player: '💫 Stun ! Votre tour est annulé — phase ennemis !',
+        dng_log_stun_resist: '💫 Stun résisté ! (immunité anti-stun)',
+        dng_log_stun_on: '💫 {name} est stun et ne peut pas attaquer ! ({n} tour(s) restant)',
+        dng_log_stun_off: '💫 Stun terminé sur {name} !',
+        dng_log_front_empty: '⚠ Rang avant vide — le rang arrière avance !',
+        dng_log_advance: '{emoji} {name} avance au rang avant !',
+        dng_log_curse_atk: '☋ Malédiction : ATK {name} -{n} ({eff} effectif)',
+        dng_log_liche_curse: '💀 Malédiction Liche ! ATK héro : {n}',
+        dng_log_armor_break: '🔨 {name} brise l\'armure ! DEF -{n} (héro DEF : {d})',
+        dng_log_collier_beni: '📿 Collier béni résiste à la réduction ATK !',
+        dng_log_atk_drain: '💀 {name} draine l\'ATK ! ATK héro : {n}',
+        dng_log_zap: '⚡ {name} Zap démoniaque ! -{n} HP (magie)',
+        dng_log_mana_absorb: '🔷 Armure de mana absorbe {n} dégâts !',
+        dng_log_mana_break: '🔷 Armure de mana brisée !',
+        dng_log_freeze: '❄ Attaque ratée — les ennemis gelés ne ripostent pas !',
+        dng_log_frozen: '❄ {name} est gelé et ne peut pas attaquer !',
+        dng_log_rage_end: '💢 Rage épuisée.',
+        dng_log_bless_end: '🌟 Bénédiction expirée.',
+        dng_log_distortion: '⏳ Distortion Temporelle ! -{n} HP à tous les ennemis !',
+        dng_log_bless_cast: '🌟 Bénédiction (Niv.{lvl}) ! Zone ×1 → ×1.2 pendant {n} rounds.',
+        dng_log_rage_cast: '💢 Rage (Niv.{lvl}) ! Dégâts ×2 pendant {n} rounds.',
+        dng_log_heal_cast: '💊 Soin (Niv.{lvl}) ! +{n} HP.',
+        dng_log_volley: '🏹 Volée ! -{n} HP à {c} cible(s)',
+        dng_log_volley_fx: 'VOLÉE !',
+        dng_log_piercing: '🎯 Flèche perçante : prochain tir ignore la protection.',
+        dng_log_rage_glyph: '💢 Glyphe de Rage : +ATK pendant 3 rounds',
+        dng_log_rewind: '⏪ Rewind ! Compétences rechargées (-{n} HP directs).',
+        dng_enemy_defeated: '{name} vaincu !',
+        dng_loot_none2: 'Rien',
+        dng_exit_victory: '🏆 Sortir victorieux',
+        predng_choose_label: 'CHOISIR LE DONJON',
+        loot_desc_pieces: 'Quelques pièces volées.',
+        loot_dust: 'Poussière', loot_or: 'Or', loot_mana: 'Mana', loot_pop: 'Population',
+        // ── LootDesc ──
+        ld_goblin: 'Les gobelins battus, vous récupérez leur maigre trésor.',
+        ld_pieces: 'Quelques pièces volées.',
+        ld_orc: 'Trophée de guerre orcien.',
+        ld_bones: 'Des os qui tombent en pièces.',
+        ld_rusty_sword: 'Une vieille épée rouillée.',
+        ld_orc_armor: 'Armure orcienne.',
+        ld_broken_armor: 'Armure brisée.',
+        ld_magic_gland: 'Une glande magique.',
+        ld_troll_loot: 'Un trésor de troll.',
+        ld_short_bow: 'Un arc court.',
+        ld_blood: 'Sang régénérateur.',
+        ld_demon_orb: 'Orbe démoniaque.',
+        ld_crown: 'Couronne de chef.',
+        ld_necro_tome: 'Grimoire nécromantique.',
+        ld_pauldron: 'Épaulière brisée.',
+        ld_goblin_scepter: 'Sceptre de chef gobelin.',
+        ld_venom_gland: 'Glande venimeuse géante.',
+        ld_phylactery: 'Fragment de phylactère.',
+        ld_demon_crystal: 'Cristal démoniaque.',
+        ld_old_bone: 'Os millénaire.',
+        ld_troll_stone: 'Pierre trollesque.',
+        ld_captain_armor: 'Armure de capitaine.',
+        ld_bone_crown: 'Couronne osseuse.',
+        ld_orc_boss: 'Trophée de l\'Orc Boss.',
+        ld_lich_tome: 'Le grimoire de la Liche.',
+        ld_dragon_scale: 'Une écaille du dragon.',
+        ld_ancient_tome: 'Grimoire ancien.',
+
+        ci_click_to_start: 'Cliquez pour commencer',
+        hp_close_btn: 'Continuer',
+        log_tile_bonus: 'Bonus tuile : {bonus} ({bld} sur {tile})',
+        log_fortif_rebuilt: '🔨 Fortification reconstruite ! ({cost} Or) — Fort. : {n}',
+        log_conscrit_bought: '⚔ Conscrit acheté ! ({total} total, prochain : {next}🪙)',
+        log_conjonction_caravan: '🌟 Conjonction ! Caravane ×2{bonus} — +{g} Or, +{m} Mana, +{p} Population !',
+        log_caravan: 'Caravane{bonus} — +{g} Or, +{m} Mana, +{p} Population.',
+        log_avatar_available: "L\'avatar est à nouveau disponible pour explorer.",
+        log_horde_incoming: '⚔ La horde approche ! Préparez vos défenses et cliquez ⚔ dans la frise quand vous êtes prêt.',
+        log_combat_over: 'Combat terminé. Vous pouvez continuer votre exploration.',
+        log_dungeon_found: "L\'avatar découvre l\'entrée d\'un donjon !",
+        log_horde_win: 'Victoire contre la horde ! +5 XP, +{or} Or',
+        log_horde_defeat: 'Défaite ! -{n} fortifications. Restant : {r}',
+        log_hidden_units: '⚠ Les unités cachées rejoignent la horde ({n} unités).',
+        log_avatar_joins: "L\'avatar rejoint la défense ! Son ATK ({atk}) s\'ajoute à la puissance.",
+        log_dungeon_gen: 'Donjon généré : {n} salles ({nb} + 1 boss)',
+        dng_log_hesitation: 'Vous hésitez trop — attaque ratée !',
+        dng_log_miss: 'Vous : timing raté — 0 dégât',
+        dng_log_half: 'Vous : ×0.5 → -{n} HP',
+        dng_log_hit: 'Vous : ×1 → -{n} HP',
+        dng_log_perfect_dmg: 'Vous : {mult} PARFAIT → -{n} HP !',
+        dng_log_second_wind: '⚔ Second Souffle ! +{n} HP',
+        dng_log_back_rank: '⚠ Cible au rang arrière — arme à distance requise !',
+        dng_log_freeze_broken: "❄ Freeze brisé par les dégâts ! L\'ennemi peut contre-attaquer.",
+        dng_log_vampiric: '🧛 Tir vampirique : +{n} HP !',
+        dng_log_splash: '💥 Explosion ! -{n} HP aux {c} ennemi(s) adjacent(s) !',
+        dng_log_scythe: '⚰ Faux : {name} -{n} HP',
+        dng_log_piercing_hit: '🏹 Perçant : {name} -{n} HP',
+        dng_log_freeze_end: '❄ Freeze terminé ! Les ennemis sont libres.',
+        dng_log_breath: '🔥 {name} souffle ! -{n} HP (ignore protection)',
+        dng_log_breath_countdown: '🔥 Souffle dans {n} round(s)...',
+        dng_log_enemy_hit: '{name} : dé {die} ({thr}+) ✓ → -{n} dégâts',
+        dng_log_venom: '🕷 Venin ! +1 stack poison ({n} dégât(s)/round)',
+        dng_log_vampire_regen: '🧛 Vampire se régénère : +{n} HP',
+        dng_log_ward_expired: '⛩ {n} Ward(s) expirée(s) (fin de saison {s}).',
+        dng_continue_reset: 'Continuer ▶',
         lang_select_title: '🌐 Choisir la langue',
         lang_fr: '🇫🇷 Français',
         lang_en: '🇬🇧 English',
@@ -2980,6 +3234,260 @@ const LANGS = {
         threat_sub_lose: "You will lose. Recruit, build, pray.",
         threat_sub_unknown: 'The horde composition will be revealed at turn 5.',
         threat_ta_defense: 'Your defense',
+
+        // ── Meta — HTML tabs ──
+        mtab_hero: '⚔ Avatar', mtab_city: '🏰 City',
+        mtab_level: '△ Level', mtab_legendary: '🥚 Legendary',
+        // ── Meta — Hero stats ──
+        meta_stats_permanentes: 'Permanent stats',
+        meta_max_par_stat: '(max {n} per stat)',
+        meta_tier_locked: '🔒 Tier {n}',
+        meta_stat_atk: '⚔ ATK +1', meta_stat_atk_desc: 'Permanent attack +1',
+        meta_stat_hp: '❤ HP Max +3', meta_stat_hp_desc: 'Max hit points +3',
+        meta_stat_dmg: '🗡 Damage +1', meta_stat_dmg_desc: 'Base damage +1',
+        meta_stat_prot: '🛡 Protection +1', meta_stat_prot_desc: 'Absorbs 1 damage per hit',
+        meta_stat_def: '🔰 DEF +1', meta_stat_def_desc: 'Permanent defense +1',
+        // ── Meta — Skills ──
+        meta_skills_title: 'Starting skills',
+        meta_skills_replaced: '🪞 Replaced by class skills.',
+        meta_skills_locked_msg: '🔒 Raise your Hero Level (Level tab) to unlock skills.',
+        meta_skill_soin: 'Minor Heal',
+        meta_skill_soin_desc: '+{n} HP per combat (Lv.{lvl})',
+        meta_skill_fireball: 'Temporal Distortion',
+        meta_skill_fireball_desc: '{n} direct damage, ignores armor (Lv.{lvl})',
+        meta_skill_rage: 'Battle Rage',
+        meta_skill_rage_desc: 'Damage x{n} for {r} rounds (Lv.{lvl})',
+        meta_skill_benediction: 'Blessing',
+        meta_skill_benediction_desc: 'Zone ×1 → ×{n} timing (Lv.{lvl})',
+        meta_debloquer: 'Unlock',
+        meta_upgrade_niv: '↑ Lv.{n}',
+        // ── Meta — City ──
+        meta_city_title: 'Permanent city upgrades',
+        meta_city_or: '🪙 Starting Gold +25',
+        meta_city_mana: '✨ Starting Mana +25',
+        meta_city_space: '▦ City slot +1',
+        meta_city_recruit: 'Recruitment capacity +1',
+        meta_city_niv_req: '🔒 City lv.{n}',
+        // ── Meta — Level ──
+        meta_level_title: 'Levels — unlock stats and skills',
+        meta_level_dust_info: 'Earned by defeating the winter boss (S4, S8, …)',
+        meta_level_hero_title: '⚔ Hero Level {n}',
+        meta_level_hero_desc_prefix: 'Unlocks: +',
+        meta_level_hero_stat: 'stat',
+        meta_level_hero_skill: 'skill',
+        meta_level_hero_tier: 'tier',
+        meta_level_city_title: '🏰 City Level {n}',
+        meta_level_city_desc: 'Unlocks: +1 city slot, +{n} recruitment/turn',
+        meta_level_niv_req: 'Hero lv.{n} required',
+        // ── Meta — tabs button ──
+        meta_nouveau_run_btn: '▶ New Run',
+
+        tile_exploration_hint: 'Exploration turn — dungeon available after reveal',
+        tile_all_revealed: 'All tiles revealed',
+        tile_Donjon_name: 'Dungeon', tile_Donjon_rooms: 'rooms | Rare loot',
+        tile_Donjon_flavor: 'Torches illuminate a dark corridor...',
+
+        // ── Dungeon — window ──
+        dng_title_intro: 'Dungeon — {n} rooms await you',
+        dng_title_room: 'Room {done}/{total} — Choose your door',
+        dng_poison_status: '☠ Poison x{n} : -{n} HP/round',
+        dng_curse_status: '🔮 Curse: ATK -1',
+        dng_door_badge: 'Door {label}',
+        dng_door_locked: '🔒 LOCKED',
+        dng_door_boss: '⚠ BOSS',
+        dng_door_boss_locked_text: 'Complete the other rooms first',
+        dng_door_boss_guaranteed: 'Boss battle guaranteed',
+        dng_door_a_main: '⚔ Combat (70%)',
+        dng_door_a_sec: '✨ Bonus (20%) · ⚠ Trap (10%)',
+        dng_door_b_main: '✨ Bonus (70%)',
+        dng_door_b_sec: '⚔ Combat (20%) · ⚠ Trap (10%)',
+        dng_flee_loot: 'Flee with loot',
+        dng_flee: '🏃 Flee',
+        dng_continue: 'Continue ▶',
+        dng_ouroboros_name: '🐍 Ouroboros Lair',
+        dng_room_fontaine: 'Healing Fountain',
+        dng_room_forge: 'Forgotten Forge',
+        dng_room_tresor: 'Treasure Room',
+        dng_piege_fuite: 'Flee blocked (next room)',
+
+        // ── Pre-dungeon ──
+        predng_stat_dist_oui: 'Yes', predng_stat_dist_non: 'No',
+        predng_glyph_label: '✨ Glyphs', predng_potion_label: '🧪 Potions',
+        predng_glyph_distorsion: 'Distortion', predng_glyph_rage: 'Rage', predng_glyph_bene: 'Blessing',
+        predng_potion_soin: 'Heal', predng_potion_antipoison: 'Anti-Poison',
+        predng_diff_facile: 'Easy', predng_diff_normale: 'Normal',
+        predng_diff_difficile: 'Hard', predng_diff_legendaire: 'Legendary',
+        predng_tour_name: '🏚 Abandoned Tower', predng_tour_note: 'Weaker enemies — reduced loot',
+        predng_grotte_name: '🕳 Mysterious Cave', predng_grotte_note: 'Standard difficulty for the season',
+        predng_cata_name: '💀 Cursed Catacombs', predng_cata_note_reward: 'Stat reward available!',
+        predng_cata_note_loot: 'Improved loot ×1.25',
+        predng_ouro_name: '🐍 Ouroboros Lair', predng_diff_legendaire2: 'Legendary',
+        predng_ouro_done: 'Already conquered this season',
+        predng_ouro_locked: '⏳ Available at turn 9 only',
+        predng_ouro_available: '🥚 Time Egg Shell in play!',
+        predng_flavor: 'It can find a fountain, a forge, or encounter enemies...',
+        predng_window_title: '⚔ Enter Dungeon', predng_window_sub: 'Prepare your avatar and choose your destination.', predng_equip_btn: '⚔ Equip',
+
+        // ── Combat intro ──
+        ci_multi_enemies: '{n} enemies!',
+        ci_front_rank: '⚔ Front rank: ',
+        ci_back_rank: ' | 🎯 Back: ',
+        ci_tap_to_start: 'Tap to start',
+        // ── SPECIAL_DESCS ──
+        spec_poison: '☠︎ Venom: poisons on contact (-1 HP/round, persists)',
+        spec_stun: '⊛ Stunner: on a 6, stun + bonus attack',
+        spec_lifesteal: '⥁ Life drain: regenerates from damage dealt',
+        spec_breath: '🔥 Breath: automatic damage every 4 rounds',
+        spec_atkreduction: '⚡ Curse: reduces your ATK on each hit',
+        // ── Equipment window ──
+        ew_glyph_header: '✨ Glyphs',
+        ew_potion_header: '🧪 Potions',
+        ew_dist_oui: 'Yes', ew_dist_non: 'No',
+        ew_faux_oui: 'Yes',
+        ew_glyph_distorsion: 'Distortion', ew_glyph_rage: 'Rage', ew_glyph_bene: 'Blessing',
+        ew_btn_enter: '▶ Enter dungeon',
+        // ── Oury ──
+        oury_surge_title: '✦ OURY INTERVENES ✦',
+        oury_surge_body: '*erupts from the shadows in a violet flash* 🐍⚡<br><br><strong>"ENOUGH!"</strong><br><br>Oury strikes <em>{name}</em> with lightning precision!<br><span style="color:#c080ff">Death can wait...</span>',
+        oury_horde_decree_title: '✦ SERPENT DECREE ✦',
+        oury_horde_decree_body: '*leaps between the two armies in a whirl of scales* 🐍✨<br><br><strong>"EVERYONE HALT!"</strong><br><br>By divine serpentine decree, this battle is declared...<br><span style="color:#ffd060;font-size:15px;font-family:Cinzel,serif">⚖ A DRAW ⚖</span><br><span style="color:#6a5a7a;font-size:11px">The horde retreats. For now.</span>',
+        oury_horde_null_log: '🐍 Oury intervenes! The horde battle is declared a DRAW — the horde retreats!',
+        oury_dng_save_log: '🐍 Oury strikes down {name}! ({dmg} damage)',
+        oury_horde_warn_1: '*tightens scales* Watch out! The horde is stronger by {diff} point(s)! Recruit a unit if you can! 🐍⚠️',
+        oury_horde_warn_2: '*nervously wags tail* It\'sss very clossse! {diff} point(s) gap... Check your army and equip the avatar! 🐍',
+        oury_horde_warn_3: '*whistles with worry* Sssso close! The horde leads by {diff}... Send your avatar as backup! 💜🐍',
+        oury_horde_warn_4: '*rises in alarm* SSSTOP! {diff} point(s) difference! Last chance to recruit! 🐍⚔️',
+        oury_ouro_warn_1: "*rises to maximum alert* 🐍⚡ TURN 9! The Ouroboros Lair is OPEN! It\'sss legendary but BRUTAL — prepare your avatar well before going!",
+        oury_ouro_warn_2: "*trembles with excitement* 🐍🥚 It\'sss time! Ouroboros awaits at turn 9! A Shell in play... but make sssure you\'re at your best!",
+        oury_ouro_warn_3: "*hisses intensely* ⚡🐍 OUROBOROS! Buttt beware — it\'sss the most dangerous dungeon! Equip yourself WELL before stepping in!",
+        oury_ouro_warn_4: "*coils nervously* 🥚🐍 Ssss... the Ouroboros Lair is available! A shell awaitsss... buttt Ouroboros shows no mercy. Be ready!",
+        dng_btn_attack: '⚔ Attack', dng_btn_flee_combat: '🏃 Flee',
+        dng_skills_label: '⚡ SKILLS — uses action',
+        dng_glyphs_label: '✦ GLYPHS & POTIONS — free action',
+
+        // ── Victory / Defeat dungeon ──
+        dng_complete_log: 'Dungeon complete! +20 Gold.',
+        dng_complete_dng: '🏆 Dungeon fully explored! +20 Gold.',
+        dng_complete_loot: '🏆 Dungeon complete!',
+        dng_complete_addlog: 'Dungeon complete! Loot: {loot}',
+        dng_flee_addlog: 'Dungeon: fled. Loot: {loot}',
+        dng_loot_none: 'none',
+        dng_reward_log: '💰 Reward: {loot}',
+        dng_shell_win: '🥚 Time Egg Shell! Ouroboros defeated!',
+        // ── Special rooms ──
+        dng_forge_log: '⚒ Forge: {result}',
+        dng_fontaine_log: '💧 Fountain: +{n} HP restored!',
+        dng_piege_lames: '🗡 Blade trap! -{n} HP',
+        // ── Skill buttons ──
+        skill_not_bought: 'Not bought in meta',
+        skill_gratuit: 'free',
+        skill_exhaust: 'Skill exhausted for this combat.',
+        skill_already_used: 'Skill already used this combat.',
+        skill_passif_label: '(passive active)',
+        // Skill names (meta) ──
+        skill_Fireball_label: 'Temporal Distortion',
+        skill_Benediction_label: 'Blessing',
+        skill_Rage_label: 'Rage',
+        skill_Soin_label: 'Heal',
+        // ── Combat logs ──
+        dng_log_stun_player: '💫 Stunned! Your turn is cancelled — enemy phase!',
+        dng_log_stun_resist: '💫 Stun resisted! (anti-stun immunity)',
+        dng_log_stun_on: '💫 {name} is stunned and cannot attack! ({n} turn(s) remaining)',
+        dng_log_stun_off: '💫 Stun ended on {name}!',
+        dng_log_front_empty: '⚠ Front rank empty — back rank advances!',
+        dng_log_advance: '{emoji} {name} moves to front rank!',
+        dng_log_curse_atk: '☋ Curse: {name} ATK -{n} ({eff} effective)',
+        dng_log_liche_curse: '💀 Lich Curse! Avatar ATK: {n}',
+        dng_log_armor_break: '🔨 {name} shatters armor! DEF -{n} (avatar DEF: {d})',
+        dng_log_collier_beni: '📿 Blessed necklace resists ATK reduction!',
+        dng_log_atk_drain: '💀 {name} drains ATK! Avatar ATK: {n}',
+        dng_log_zap: '⚡ {name} Demonic Zap! -{n} HP (magic)',
+        dng_log_mana_absorb: '🔷 Mana armor absorbs {n} damage!',
+        dng_log_mana_break: '🔷 Mana armor shattered!',
+        dng_log_freeze: '❄ Attack missed — frozen enemies cannot retaliate!',
+        dng_log_frozen: '❄ {name} is frozen and cannot attack!',
+        dng_log_rage_end: '💢 Rage exhausted.',
+        dng_log_bless_end: '🌟 Blessing expired.',
+        dng_log_distortion: '⏳ Temporal Distortion! -{n} HP to all enemies!',
+        dng_log_bless_cast: '🌟 Blessing (Lv.{lvl})! Zone ×1 → ×1.2 for {n} rounds.',
+        dng_log_rage_cast: '💢 Rage (Lv.{lvl})! Damage ×2 for {n} rounds.',
+        dng_log_heal_cast: '💊 Heal (Lv.{lvl})! +{n} HP.',
+        dng_log_volley: '🏹 Volley! -{n} HP to {c} target(s)',
+        dng_log_volley_fx: 'VOLLEY!',
+        dng_log_piercing: '🎯 Piercing arrow: next shot ignores protection.',
+        dng_log_rage_glyph: '💢 Rage Glyph: +ATK for 3 rounds',
+        dng_log_rewind: '⏪ Rewind! Skills recharged (-{n} direct HP).',
+        dng_enemy_defeated: '{name} defeated!',
+        dng_loot_none2: 'Nothing',
+        dng_exit_victory: '🏆 Exit victorious',
+        predng_choose_label: 'CHOOSE DUNGEON',
+        loot_desc_pieces: 'A few stolen coins.',
+        loot_dust: 'Dust', loot_or: 'Gold', loot_mana: 'Mana', loot_pop: 'Population',
+        // ── LootDesc ──
+        ld_goblin: 'Defeated goblins, you recover their meager loot.',
+        ld_pieces: 'A few stolen coins.',
+        ld_orc: 'Orcish war trophy.',
+        ld_bones: 'Bones crumbling to pieces.',
+        ld_rusty_sword: 'An old rusty sword.',
+        ld_orc_armor: 'Orcish armor.',
+        ld_broken_armor: 'Broken armor.',
+        ld_magic_gland: 'A magical gland.',
+        ld_troll_loot: 'A troll\'s hoard.',
+        ld_short_bow: 'A short bow.',
+        ld_blood: 'Regenerating blood.',
+        ld_demon_orb: 'Demonic orb.',
+        ld_crown: 'Chief\'s crown.',
+        ld_necro_tome: 'Necromantic grimoire.',
+        ld_pauldron: 'Broken pauldron.',
+        ld_goblin_scepter: 'Goblin chief\'s scepter.',
+        ld_venom_gland: 'Giant venom gland.',
+        ld_phylactery: 'Phylactery fragment.',
+        ld_demon_crystal: 'Demonic crystal.',
+        ld_old_bone: 'Ancient bone.',
+        ld_troll_stone: 'Trollish stone.',
+        ld_captain_armor: 'Captain\'s armor.',
+        ld_bone_crown: 'Bone crown.',
+        ld_orc_boss: 'Orc Boss trophy.',
+        ld_lich_tome: 'The Lich\'s grimoire.',
+        ld_dragon_scale: 'A dragon scale.',
+        ld_ancient_tome: 'Ancient grimoire.',
+
+        ci_click_to_start: 'Click to start',
+        hp_close_btn: 'Continue',
+        log_tile_bonus: 'Tile bonus: {bonus} ({bld} on {tile})',
+        log_fortif_rebuilt: '🔨 Fortification rebuilt! ({cost} Gold) — Fort.: {n}',
+        log_conscrit_bought: '⚔ Conscript bought! ({total} total, next: {next}🪙)',
+        log_conjonction_caravan: '🌟 Conjunction! Caravan ×2{bonus} — +{g} Gold, +{m} Mana, +{p} Population!',
+        log_caravan: 'Caravan{bonus} — +{g} Gold, +{m} Mana, +{p} Population.',
+        log_avatar_available: 'The avatar is available to explore again.',
+        log_horde_incoming: '⚔ The horde approaches! Prepare your defenses and click ⚔ in the timeline when ready.',
+        log_combat_over: 'Combat over. You may continue your exploration.',
+        log_dungeon_found: 'The avatar discovers a dungeon entrance!',
+        log_horde_win: 'Victory against the horde! +5 XP, +{or} Gold',
+        log_horde_defeat: 'Defeat! -{n} fortifications. Remaining: {r}',
+        log_hidden_units: '⚠ Hidden units join the horde ({n} units).',
+        log_avatar_joins: 'The avatar joins the defense! Their ATK ({atk}) adds to power.',
+        log_dungeon_gen: 'Dungeon generated: {n} rooms ({nb} + 1 boss)',
+        dng_log_hesitation: 'You hesitate too long — attack missed!',
+        dng_log_miss: 'You: timing failed — 0 damage',
+        dng_log_half: 'You: ×0.5 → -{n} HP',
+        dng_log_hit: 'You: ×1 → -{n} HP',
+        dng_log_perfect_dmg: 'You: {mult} PERFECT → -{n} HP!',
+        dng_log_second_wind: '⚔ Second Wind! +{n} HP',
+        dng_log_back_rank: '⚠ Target in back rank — ranged weapon required!',
+        dng_log_freeze_broken: '❄ Freeze broken by damage! Enemy can counter-attack.',
+        dng_log_vampiric: '🧛 Vampiric shot: +{n} HP!',
+        dng_log_splash: '💥 Explosion! -{n} HP to {c} adjacent enemy(ies)!',
+        dng_log_scythe: '⚰ Scythe: {name} -{n} HP',
+        dng_log_piercing_hit: '🏹 Piercing: {name} -{n} HP',
+        dng_log_freeze_end: '❄ Freeze ended! Enemies are free.',
+        dng_log_breath: '🔥 {name} breathes! -{n} HP (ignores protection)',
+        dng_log_breath_countdown: '🔥 Breath in {n} round(s)...',
+        dng_log_enemy_hit: '{name}: die {die} ({thr}+) ✓ → -{n} damage',
+        dng_log_venom: '🕷 Venom! +1 poison stack ({n} damage/round)',
+        dng_log_vampire_regen: '🧛 Vampire regenerates: +{n} HP',
+        dng_log_ward_expired: '⛩ {n} Ward(s) expired (end of season {s}).',
+        dng_continue_reset: 'Continue ▶',
         lang_select_title: '🌐 Choose Language',
         lang_fr: '🇫🇷 Français',
         lang_en: '🇬🇧 English',
@@ -3045,6 +3553,15 @@ function applyLangToUI() {
     // Boutons du menu
     const btnNewRun = document.getElementById('menu-new-run-btn');
     if (btnNewRun) btnNewRun.textContent = t('menu_new_run');
+    // Meta tabs
+    const mtabHero = document.getElementById('mtab-hero');
+    if (mtabHero) mtabHero.textContent = t('meta_tab_hero');
+    const mtabCity = document.getElementById('mtab-city');
+    if (mtabCity) mtabCity.textContent = t('meta_tab_city');
+    const mtabLevel = document.getElementById('mtab-level');
+    if (mtabLevel) mtabLevel.textContent = t('meta_tab_level');
+    const mtabLeg = document.getElementById('mtab-legendary');
+    if (mtabLeg) mtabLeg.textContent = t('meta_tab_legendary');
     const btnGlo = document.getElementById('menu-glossary-btn');
     if (btnGlo) btnGlo.textContent = t('menu_glossary');
     const btnResetRun = document.getElementById('menu-reset-run-btn');
@@ -3114,83 +3631,42 @@ function applyLangToUI() {
     const etabEquip = document.getElementById('etab-equip');
     if (etabEquip) etabEquip.textContent = t('equip_title');
 
-    // Section titles (HTML static)
-    const secTuile = document.getElementById('sec-title-tuile');
-    if (secTuile) secTuile.textContent = t('sec_tuile');
-    const secBuild = document.getElementById('sec-title-construire');
-    if (secBuild) secBuild.textContent = t('sec_construire');
-    const secRecruit = document.getElementById('sec-title-recruter');
-    if (secRecruit) secRecruit.textContent = t('sec_recruter');
+    // ── data-i18n: all static HTML elements in one pass ──
+    document.querySelectorAll('[data-i18n]').forEach(function(el) {
+        el.textContent = t(el.getAttribute('data-i18n'));
+    });
+    // SVG caravane (innerHTML needed)
     const secCaravane = document.getElementById('sec-title-caravane');
     if (secCaravane) {
-        // Keep the SVG, only update text after it
         const svg = secCaravane.querySelector('svg');
         if (svg) secCaravane.innerHTML = svg.outerHTML + ' ' + t('sec_caravane_label');
     }
-    const btnReveal = document.getElementById('btn-reveal-tile');
-    if (btnReveal) btnReveal.textContent = t('btn_reveler');
-    const btnCaravan = document.getElementById('btn-send-caravan');
-    if (btnCaravan) btnCaravan.textContent = t('sec_envoyer_caravane');
-    const bannerSuffix = document.getElementById('tile-place-banner-suffix');
-    if (bannerSuffix) bannerSuffix.textContent = ' — ' + t('ui_placement_hint');
-    const btnCancelPlace = document.getElementById('btn-cancel-placement');
-    if (btnCancelPlace) btnCancelPlace.textContent = t('placement_cancel');
-    const tabResultBtn = document.getElementById('tab-result-btn');
-    if (tabResultBtn) tabResultBtn.textContent = t('army_tab_result');
+    const btnCaravan    = document.getElementById('btn-send-caravan');
+    if (btnCaravan)    btnCaravan.textContent = t('sec_envoyer_caravane');
+    const bannerSuffix  = document.getElementById('tile-place-banner-suffix');
+    if (bannerSuffix)  bannerSuffix.textContent = ' — ' + t('ui_placement_hint');
+    const tabResultBtn  = document.getElementById('tab-result-btn');
+    if (tabResultBtn)  tabResultBtn.textContent = t('army_tab_result');
+    const predngFlavor  = document.getElementById('predng-flavor-text');
+    if (predngFlavor)  predngFlavor.textContent = t('predng_flavor');
+    const ciTap         = document.getElementById('ci-tap-hint');
+    if (ciTap)         ciTap.textContent = t('ci_tap_to_start');
+    const btnCancelPl   = document.getElementById('btn-cancel-placement');
+    if (btnCancelPl)   btnCancelPl.textContent = t('placement_cancel');
+    // Clarity
+    if (typeof window.rebuildClarityLabels === 'function') {
+        window.rebuildClarityLabels();
+    }
 
-    // Build tabs (Économie / Militaire / Magie)
-    document.querySelectorAll('.build-tab').forEach(function(btn) {
-        const tab = btn.dataset && btn.dataset.tab;
-        if (tab === 'eco') btn.textContent = t('tab_eco');
-        else if (tab === 'mil') btn.textContent = t('tab_mil');
-        else if (tab === 'mag') btn.textContent = t('tab_mag');
+    // Meta tab button labels
+    const metaTabMap = {
+        'mtab-lbl-hero': 'mtab_hero', 'mtab-lbl-city': 'mtab_city',
+        'mtab-lbl-level': 'mtab_level', 'mtab-lbl-legendary': 'mtab_legendary'
+    };
+    Object.keys(metaTabMap).forEach(function(id) {
+        const el = document.getElementById(id);
+        if (el) el.textContent = t(metaTabMap[id]);
     });
-
-    // Clarity — re-render dynamic labels after language change
-    (function() {
-        const isS5 = (typeof currentSeason !== 'undefined') && currentSeason >= 5;
-        // Banner instruction
-        const instrEl = document.getElementById('cb-instr-span');
-        if (instrEl) instrEl.innerHTML = isS5 ? t('cb_instr_s5') : t('cb_instr_early');
-        // Dock labels
-        ['tile','build','tax','recruit'].forEach(function(k) {
-            const el = document.getElementById('cad-lbl-'+k);
-            if (el) el.textContent = t('cad_'+(['tile','build','tax','recruit'].indexOf(k) >= 0 ? ({'tile':'reveler','build':'construire','tax':'caravane','recruit':'recruter'}[k]) : k));
-        });
-        // Free rail labels
-        const railMap = {
-            'cfr-lbl-libre':'cfr_libre', 'cfr-lbl-recruter':'cfr_recruter',
-            'cfr-lbl-donjon':'cfr_donjon', 'cfr-lbl-equiper':'cfr_equiper',
-            'cfr-lbl-armee':'cfr_mon_armee', 'cfr-lbl-horde':'cfr_la_horde',
-            'cfr-toggle-text':'cfr_clarte_on', 'cfr-monolith-label':'cfr_scouter',
-            'cfr-heal-label':'cfr_soin_hero'
-        };
-        Object.keys(railMap).forEach(function(id) {
-            const el = document.getElementById(id);
-            if (el) el.textContent = t(railMap[id]);
-        });
-        // Resbar labels
-        const resMap = {
-            'crb-lbl-eco':'crb_eco', 'crb-lbl-cite':'crb_cite', 'crb-lbl-avatar':'crb_avatar',
-            'crb-name-or':'crb_or', 'crb-name-mana':'crb_mana', 'crb-name-pop':'crb_pop',
-            'crb-name-fort':'crb_fort', 'crb-name-cons':'crb_conscrit',
-            'crb-name-slots':'crb_slots', 'crb-name-hp':'crb_pv',
-            'crb-name-atk':'crb_attaque', 'crb-name-def':'crb_defense'
-        };
-        Object.keys(resMap).forEach(function(id) {
-            const el = document.getElementById(id);
-            if (el) el.textContent = t(resMap[id]);
-        });
-        // Cap close title
-        const capClose = document.getElementById('cap-close-btn');
-        if (capClose) capClose.title = t('cap_close_title');
-        // Re-render chips
-        document.querySelectorAll('.clarity-chip.cc-action').forEach(function(c) {
-            c.textContent = t('chip_action');
-        });
-        // Threat pill
-        if (typeof renderThreat === 'function') try { renderThreat(); } catch(e) {}
-    })();
 
     // Méta / écran fin de run (endScreen)
     if (typeof metaTab === 'function') {
@@ -3241,15 +3717,20 @@ function openLangSelector() {
 // ═══════════════════════════════════════════════════════════
 
 const TILE_TYPES = {
-    Prairie:  { slots:2, color:'#2d5a1b', emoji:'🌾', get desc(){ return t('tile_Prairie_desc'); },
+    Prairie:  { slots:2, color:'#2d5a1b', emoji:'🌾',
+                get name(){ return t('tile_Prairie'); }, get desc(){ return t('tile_Prairie_desc'); },
                 bonuses:{} },
-    Collines: { slots:1, color:'#7a6040', emoji:'⛰', get desc(){ return t('tile_Collines_desc'); },
+    Collines: { slots:1, color:'#7a6040', emoji:'⛰',
+                get name(){ return t('tile_Collines'); }, get desc(){ return t('tile_Collines_desc'); },
                 bonuses:{ get Mine(){ return t('tile_Collines_bonus_Mine'); } } },
-    Montagne: { slots:0, color:'#5a5060', emoji:'🏔', get desc(){ return t('tile_Montagne_desc'); },
+    Montagne: { slots:0, color:'#5a5060', emoji:'🏔',
+                get name(){ return t('tile_Montagne'); }, get desc(){ return t('tile_Montagne_desc'); },
                 bonuses:{} },
-    Lac:      { slots:1, color:'#1a4a6a', emoji:'💧', get desc(){ return t('tile_Lac_desc'); },
+    Lac:      { slots:1, color:'#1a4a6a', emoji:'💧',
+                get name(){ return t('tile_Lac'); }, get desc(){ return t('tile_Lac_desc'); },
                 bonuses:{ get Ferme(){ return t('tile_Lac_bonus_Ferme'); } } },
-    Forêt:    { slots:1, color:'#1a4a1a', emoji:'🌲', get desc(){ return t('tile_Foret_desc'); },
+    Forêt:    { slots:1, color:'#1a4a1a', emoji:'🌲',
+                get name(){ return t('tile_Foret'); }, get desc(){ return t('tile_Foret_desc'); },
                 bonuses:{ get Caserne(){ return t('tile_Foret_bonus_Caserne'); } } },
 };
 
@@ -3297,16 +3778,16 @@ function applyTileBonus(tileType, buildingName) {
     if (!bonus) return;
     if (bonus.includes('Pop/tour')) {
         const n = parseInt(bonus); populationperturn += n;
-        addLog('Bonus tuile : '+bonus+' ('+buildingName+' sur '+tileType+')');
+        addLog(t('log_tile_bonus').replace('{bonus}',bonus).replace('{bld}',buildingName).replace('{tile}',tileType));
     } else if (bonus.includes('Or/tour')) {
         const n = parseInt(bonus); goldperturn += n;
-        addLog('Bonus tuile : '+bonus+' ('+buildingName+' sur '+tileType+')');
+        addLog(t('log_tile_bonus').replace('{bonus}',bonus).replace('{bld}',buildingName).replace('{tile}',tileType));
     } else if (bonus.includes('Mana/tour')) {
         const n = parseInt(bonus); manaperturn += n;
-        addLog('Bonus tuile : '+bonus+' ('+buildingName+' sur '+tileType+')');
+        addLog(t('log_tile_bonus').replace('{bonus}',bonus).replace('{bld}',buildingName).replace('{tile}',tileType));
     } else if (bonus.includes('Fortification')) {
         fortifications += 1;
-        addLog('Bonus tuile : '+bonus+' ('+buildingName+' sur '+tileType+')');
+        addLog(t('log_tile_bonus').replace('{bonus}',bonus).replace('{bld}',buildingName).replace('{tile}',tileType));
     }
 }
 // ===== FIN SYSTÈME TUILES =====
@@ -3425,7 +3906,7 @@ function showCityPanel() {
         if (gold < REBUILD_COST || fortifications >= maxFort) return;
         gold -= REBUILD_COST;
         fortifications++;
-        addLog('🔨 Fortification reconstruite ! ('+REBUILD_COST+' Or) — Fort. : '+fortifications);
+        addLog(t('log_fortif_rebuilt').replace('{cost}',REBUILD_COST).replace('{n}',fortifications));
         updateStats();
         renderPanel();
     };
@@ -3436,7 +3917,7 @@ function showCityPanel() {
         gold -= cost;
         conscrit++;
         window._conscritBuyCount++;
-        addLog('⚔ Conscrit acheté ! ('+conscrit+' total, prochain : '+(cost*2)+'🪙)');
+        addLog(t('log_conscrit_bought').replace('{total}',conscrit).replace('{next}',cost*2));
         updateStats();
         renderPanel();
     };
@@ -3490,10 +3971,10 @@ function addLog(message) {
             if (isDisrupted) {
                 addLog(t('caravane_perturb')+bonusLabel+' — +' + Math.floor(goldperturn*mult) + ' Or, +' + Math.floor(manaperturn*mult) + ' Mana, +' + Math.floor(populationperturn*mult) + ' Population !');
             } else {
-                addLog('🌟 Conjonction ! Caravane ×2'+bonusLabel+' — +' + Math.floor(goldperturn*mult) + ' Or, +' + Math.floor(manaperturn*mult) + ' Mana, +' + Math.floor(populationperturn*mult) + ' Population !');
+                addLog(t('log_conjonction_caravan').replace('{bonus}',bonusLabel).replace('{g}',Math.floor(goldperturn*mult)).replace('{m}',Math.floor(manaperturn*mult)).replace('{p}',Math.floor(populationperturn*mult)));
             }
         } else {
-            addLog('Caravane'+bonusLabel+' — +'+Math.floor(goldperturn*mult)+' Or, +'+Math.floor(manaperturn*mult)+' Mana, +'+Math.floor(populationperturn*mult)+' Population.');
+            addLog(t('log_caravan').replace('{bonus}',bonusLabel).replace('{g}',Math.floor(goldperturn*mult)).replace('{m}',Math.floor(manaperturn*mult)).replace('{p}',Math.floor(populationperturn*mult)));
         }
 	}
 
@@ -3622,16 +4103,11 @@ function showTurnAnimation(turnNum, season, callback) {
         if (currentTurn === 1 && window.avatarBlocked && currentSeason > avatarBlockedSeason) {
             window.avatarBlocked = false;
             avatarBlockedSeason = -1;
-            addLog("L'avatar est à nouveau disponible pour explorer.");
+            addLog(t('log_avatar_available'));
         }
         // Oury avertit au tour 9 d'une saison Ouroboros
         if (currentTurn === 9 && currentSeason % 4 === 0 && typeof isOuroborosDone === 'function' && !isOuroborosDone()) {
-            const ouroWarnings = [
-                "*se dresse en alerte maximale* 🐍⚡ TOUR 9 ! L'Aire d'Ouroboros est OUVERTE ! C'essst legendaire mais BRUTAL — prepare bien ton avatar avant d'y aller !",
-                "*fremit d'excitation* 🐍🥚 C'essst le moment ! L'Ouroboros t'attend au tour 9 ! Une Coquille d'Oeuf en jeu... mais assssure-toi d'etre au mieux de ta forme !",
-                "*siffle intensement* ⚡🐍 L'OUROBOROS ! Maissss attention — c'essst le donjon le plus dangereux ! Equipe-toi BIEN avant d'y mettre un pied !",
-                "*s'enroule nerveusement* 🥚🐍 Ssss... l'Aire d'Ouroboros est disponible ! Une coquille t'attend... massss l'Ouroboros ne fait pas de cadeaux. Sssois pret·e !",
-            ];
+            const ouroWarnings = [t('oury_ouro_warn_1'), t('oury_ouro_warn_2'), t('oury_ouro_warn_3'), t('oury_ouro_warn_4')];
             setTimeout(function() {
                 if (typeof ouryShowBubble === 'function') {
                     ouryShowBubble(ouroWarnings[Math.floor(Math.random() * ouroWarnings.length)], 8000);
@@ -3668,7 +4144,7 @@ function showTurnAnimation(turnNum, season, callback) {
             updateArmyPanels();
         }
         if (currentTurn === 10) {
-            addLog('⚔ La horde approche ! Préparez vos défenses et cliquez ⚔ dans la frise quand vous êtes prêt.');
+            addLog(t('log_horde_incoming'));
         }
         updateStats();
         tileRevealedThisTurn = false;
@@ -3686,7 +4162,7 @@ function showTurnAnimation(turnNum, season, callback) {
             if (expired.length > 0) {
                 cityArmy = cityArmy.filter(u => !((u.id === 'Ward' || u.id === 'WardMV') && u._wardSeason < currentSeason));
                 window._wards = (window._wards || []).filter(w => w.season >= currentSeason);
-                addLog('⛩ '+expired.length+' Ward(s) expirée(s) (fin de saison '+prevSeason+').');
+                addLog(t('dng_log_ward_expired').replace('{n}',expired.length).replace('{s}',prevSeason));
             }
         }
         autoSave();
@@ -3727,7 +4203,7 @@ function openGoblinFight() {
     dungeonState.pendingAfterDungeon = () => {
         // Après le combat, révéler la récompense de tuile
         revealProtectedTile();
-        addLog('Combat terminé. Vous pouvez continuer votre exploration.');
+        addLog(t('log_combat_over'));
         nextTurn();
     };
     dungeonState.collectedLoot = [];
@@ -3740,8 +4216,8 @@ function openGoblinFight() {
         kind: 'monster',
         data: { name:'Gobelins', emoji:'👺', atk:2, dmg:1, def:2, protection:0,
                 hp:6, maxHp:6, isBoss:false,
-                loot:()=>{ gold+=5; dust += 1; return '+5 Or, +1 Poussière'; },
-                lootDesc:'Les gobelins battus, vous récupérez leur maigre trésor.' }
+                loot:()=>{ gold+=5; dust += 1; return '+5 '+t('crb_or')+', +1 '+t('meta_dust').replace('✨ ','').replace(' disponible',''); },
+                get lootDesc(){return t('ld_goblin');} }
     }];
     dungeonState.visitedRooms = [false];
     dungeonState._isGoblinFight = true;
@@ -3846,7 +4322,7 @@ let pendingTileAfterAvatar = null;
 function avatarExplore(yes) {
     document.getElementById('avatar-explore-prompt').style.display = 'none';
     if (yes) {
-        addLog("L'avatar découvre l'entrée d'un donjon !");
+        addLog(t('log_dungeon_found'));
         showExplorePopup('Donjon', `${3 + currentTurn - 1}+ salles | Butin rare`, "Des flambeaux illuminent un couloir sombre...");
         setTimeout(() => {
             openDungeon(function(){ nextTurn(); }, 'grotte');
@@ -3888,7 +4364,7 @@ function showHordeBattleScreen(hordeAtk, cityAtk, diff, hordeLog, cityLog) {
         res.style.background = '#0a2a0a'; res.style.color = '#4cffaa';
         res.textContent = t('combat_victoire')+(diff)+t('combat_victoire_recule');
         dust += 5; gold += diff * 2;
-        addLog('Victoire contre la horde ! +5 XP, +'+(diff*2)+' Or');
+        addLog(t('log_horde_win').replace('{or}',diff*2));
         btn.style.background = '#2e6e3e'; btn.style.color = '#cfffd5';
     } else if (draw) {
         res.style.background = '#1a1a0a'; res.style.color = '#ffff80';
@@ -3901,7 +4377,7 @@ function showHordeBattleScreen(hordeAtk, cityAtk, diff, hordeLog, cityLog) {
         res.style.background = '#2a0a0a'; res.style.color = '#ff6060';
         res.textContent = t('combat_defaite')+dmg+' dégât(s) — Fortifications : '+fortifications;
         eff.textContent = fortifications <= 0 ? 'Plus aucune fortification — la ville est tombée !' : '';
-        addLog('Défaite ! -'+dmg+' fortifications. Restant : '+fortifications);
+        addLog(t('log_horde_defeat').replace('{n}',dmg).replace('{r}',fortifications));
         btn.style.background = '#5a1a1a'; btn.style.color = '#ffd0d0';
         if (fortifications <= 0) {
             btn.textContent = 'Défaite...';
@@ -3909,7 +4385,7 @@ function showHordeBattleScreen(hordeAtk, cityAtk, diff, hordeLog, cityLog) {
             return;
         }
     }
-    btn.textContent = 'Continuer';
+    btn.textContent = t('ui_continue');
     btn.onclick = closeHordeBattle;
     // Mettre à jour le leaderboard après chaque combat de horde
     if (typeof updateLeaderboardScore === 'function') updateLeaderboardScore(won);
@@ -3928,7 +4404,7 @@ function closeHordeBattle() {
     // Les unités cachées rejoignent la horde pour la prochaine saison
     if (hordeHiddenUnits && hordeHiddenUnits.length > 0) {
         hordeArmy.push(...hordeHiddenUnits);
-        addLog('⚠ Les unités cachées rejoignent la horde (' + hordeHiddenUnits.length + ' unités).');
+        addLog(t('log_hidden_units').replace('{n}',hordeHiddenUnits.length));
     }
     hordeHiddenUnits = [];
     hordeHiddenCount = 0;
@@ -3966,7 +4442,7 @@ function avatarJoinHorde(yes) {
     document.getElementById('avatar-horde-prompt').style.display = 'none';
     avatarSentToHorde = yes;
     if (yes) {
-        addLog("L'avatar rejoint la défense ! Son ATK (" + atk + ") s'ajoute à la puissance.");
+        addLog(t('log_avatar_joins').replace('{atk}',atk));
         // Projection : l'avatar participe mais reste disponible ce tour
         if (window._catacombsProjection) {
             window._catacombsProjection = false; // consommé
@@ -4257,54 +4733,54 @@ function getMonsterImg(name) {
 const MONSTER_POOL = [
     // ===== TIER 1 (S1-S2) =====
     { get name(){ return t('enemy_Gobelin'); },         tier:1, emoji:'👺', atk:2, dmg:1, def:2, protection:0, hp:6,  maxHp:6,  rank:'front',
-      loot:()=>{ gold+=5;  dust += 1; return '+5 Or, +1 Poussière'; },  lootDesc:'Quelques pièces volées.' },
+      loot:()=>{ gold+=5;  dust += 1; return '+5 '+t('crb_or')+', +1 '+t('meta_dust').replace('✨ ','').replace(' disponible',''); },  get lootDesc(){return t('ld_pieces');} },
     { get name(){ return t('enemy_Orc'); },             tier:1, emoji:'👊', atk:3, dmg:2, def:2, protection:0, hp:8,  maxHp:8,  rank:'front',
-      loot:()=>{ gold+=8;  dust += 1; return '+8 Or, +1 Poussière'; },  lootDesc:'Trophée de guerre orcien.' },
+      loot:()=>{ gold+=8;  dust += 1; return '+8 '+t('crb_or')+', +1 '+t('loot_dust'); },  get lootDesc(){return t('ld_orc');} },
     { get name(){ return t('enemy_Squelette'); },       tier:1, emoji:'💀', atk:2, dmg:1, def:2, protection:0, hp:6,  maxHp:6,  rank:'front',
-      loot:()=>{ gold+=6;  dust += 1; return '+6 Or, +1 Poussière'; },  lootDesc:'Des os qui tombent en pièces.' },
+      loot:()=>{ gold+=6;  dust += 1; return '+6 '+t('crb_or')+', +1 '+t('loot_dust'); },  get lootDesc(){return t('ld_bones');} },
     // ===== TIER 2 (S2-S3) =====
     { get name(){ return t('enemy_GoblinSoldat'); },  tier:2, emoji:'👺', atk:3, dmg:2, def:3, protection:1, hp:9,  maxHp:9,  rank:'front',
-      loot:()=>{ gold+=12; dust += 1; return '+12 Or, +1 Poussière'; }, lootDesc:'Une vieille épée rouillée.' },
+      loot:()=>{ gold+=12; dust += 1; return '+12 '+t('crb_or')+', +1 '+t('loot_dust'); }, get lootDesc(){return t('ld_rusty_sword');} },
     { get name(){ return t('enemy_OrcElite'); },       tier:2, emoji:'👊', atk:4, dmg:3, def:3, protection:1, hp:12, maxHp:12, rank:'front',
-      loot:()=>{ gold+=15; dust += 1; return '+15 Or, +1 Poussière'; }, lootDesc:'Armure orcienne.' },
+      loot:()=>{ gold+=15; dust += 1; return '+15 '+t('crb_or')+', +1 '+t('loot_dust'); }, get lootDesc(){return t('ld_orc_armor');} },
     { get name(){ return t('enemy_SqueletteArme'); },  tier:2, emoji:'💀', atk:3, dmg:2, def:3, protection:1, hp:9,  maxHp:9,  rank:'front',
-      loot:()=>{ gold+=10; mana+=5; dust += 1; return '+10 Or, +5 Mana, +1 Poussière'; }, lootDesc:'Armure brisée.' },
+      loot:()=>{ gold+=10; mana+=5; dust += 1; return '+10 '+t('crb_or')+', +5 '+t('crb_mana')+', +1 '+t('loot_dust'); }, get lootDesc(){return t('ld_broken_armor');} },
     { get name(){ return t('enemy_Araignee'); },        tier:2, emoji:'🕷', atk:3, dmg:1, def:1, protection:0, hp:8,  maxHp:8,  rank:'front',
       special:'poison',
-      loot:()=>{ mana+=15; dust += 1; return '+15 Mana, +1 Poussière'; }, lootDesc:'Une glande magique.' },
+      loot:()=>{ mana+=15; dust += 1; return '+15 '+t('crb_mana')+', +1 '+t('loot_dust'); }, get lootDesc(){return t('ld_magic_gland');} },
     // ===== TIER 3 (S3-S4) =====
     { get name(){ return t('enemy_Troll'); },           tier:3, emoji:'👹', atk:3, dmg:2, def:3, protection:1, hp:12, maxHp:12, rank:'front',
       special:'stun',
-      loot:()=>{ gold+=15; mana+=15; dust += 1; return '+15 Or, +15 Mana, +1 Poussière'; }, lootDesc:'Un trésor de troll.' },
+      loot:()=>{ gold+=15; mana+=15; dust += 1; return '+15 '+t('crb_or')+', +15 '+t('crb_mana')+', +1 '+t('loot_dust'); }, get lootDesc(){return t('ld_troll_loot');} },
     { get name(){ return t('enemy_ArcherGobelin'); },  tier:3, emoji:'🏹', atk:4, dmg:2, def:1, protection:0, hp:7,  maxHp:7,  rank:'back', isRanged:true,
-      loot:()=>{ gold+=12; dust += 1; return '+12 Or, +1 Poussière'; }, lootDesc:'Un arc court.' },
+      loot:()=>{ gold+=12; dust += 1; return '+12 '+t('crb_or')+', +1 '+t('loot_dust'); }, get lootDesc(){return t('ld_short_bow');} },
     { get name(){ return t('enemy_Vampire'); },         tier:3, emoji:'🧛', atk:4, dmg:2, def:3, protection:1, hp:10, maxHp:10, rank:'front',
       special:'lifesteal',
       loot:()=>{ const healed=Math.min(3,dungeonState.avatarMaxHp-dungeonState.avatarHp); dungeonState.avatarHp=Math.min(dungeonState.avatarMaxHp,dungeonState.avatarHp+3); avatarHp=dungeonState.avatarHp; dust += 1; document.getElementById('dng-avatar-hp-text').textContent='HP: '+dungeonState.avatarHp+'/'+dungeonState.avatarMaxHp; dungeonUpdateHpBar('avatar',dungeonState.avatarHp,dungeonState.avatarMaxHp); return '+'+healed+' HP, +1 Poussière'; },
-      lootDesc:'Sang régénérateur.' },
+      get lootDesc(){return t('ld_blood');} },
     // ===== TIER 4 (S4+) =====
     { get name(){ return t('enemy_Demon'); },           tier:4, emoji:'😈', atk:4, dmg:3, def:3, protection:2, hp:14, maxHp:14, rank:'front',
-      loot:()=>{ gold+=20; dust += 1; return '+20 Or, +1 Poussière'; }, lootDesc:'Orbe démoniaque.' },
+      loot:()=>{ gold+=20; dust += 1; return '+20 '+t('crb_or')+', +1 '+t('loot_dust'); }, get lootDesc(){return t('ld_demon_orb');} },
     { get name(){ return t('enemy_SeigneurGobelin'); },tier:4, emoji:'👺', atk:4, dmg:3, def:3, protection:2, hp:14, maxHp:14, rank:'front',
-      loot:()=>{ gold+=18; dust += 1; return '+18 Or, +1 Poussière'; }, lootDesc:'Couronne de chef.' },
+      loot:()=>{ gold+=18; dust += 1; return '+18 '+t('crb_or')+', +1 '+t('loot_dust'); }, get lootDesc(){return t('ld_crown');} },
     { get name(){ return t('enemy_Necromancien'); },    tier:4, emoji:'🧙', atk:3, dmg:2, def:4, protection:1, hp:12, maxHp:12, rank:'back', isRanged:true, special:'necromancer',
-      loot:()=>{ mana+=30; dust += 1; return '+30 Mana, +1 Poussière'; }, lootDesc:'Grimoire nécromantique.' },
+      loot:()=>{ mana+=30; dust += 1; return '+30 '+t('crb_mana')+', +1 '+t('loot_dust'); }, get lootDesc(){return t('ld_necro_tome');} },
     // ===== TIER 5 (S5+) =====
     { get name(){ return t('enemy_OrcBriseur'); },      tier:5, emoji:'👊', atk:5, dmg:4, def:4, protection:2, hp:16, maxHp:16, rank:'front', special:'crush_passive',
-      loot:()=>{ gold+=22; dust+=2; return '+22 Or, +2 Poussière'; }, lootDesc:'Épaulière brisée.' },
+      loot:()=>{ gold+=22; dust+=2; return '+22 '+t('crb_or')+', +2 '+t('loot_dust'); }, get lootDesc(){return t('ld_pauldron');} },
     { get name(){ return t('enemy_GoblinBoss'); },     tier:5, emoji:'👺', atk:4, dmg:3, def:3, protection:2, hp:15, maxHp:15, rank:'front', special:'goblincall',
-      loot:()=>{ gold+=20; dust+=2; return '+20 Or, +2 Poussière'; }, lootDesc:'Sceptre de chef gobelin.' },
+      loot:()=>{ gold+=20; dust+=2; return '+20 '+t('crb_or')+', +2 '+t('loot_dust'); }, get lootDesc(){return t('ld_goblin_scepter');} },
     { get name(){ return t('enemy_AraigneeGeante'); },  tier:5, emoji:'🕷', atk:4, dmg:2, def:2, protection:1, hp:14, maxHp:14, rank:'front', special:'poison',
-      loot:()=>{ mana+=25; dust+=2; return '+25 Mana, +2 Poussière'; }, lootDesc:'Glande venimeuse géante.' },
+      loot:()=>{ mana+=25; dust+=2; return '+25 '+t('crb_mana')+', +2 '+t('loot_dust'); }, get lootDesc(){return t('ld_venom_gland');} },
     { get name(){ return t('enemy_LicheMineure'); },    tier:5, emoji:'💀', atk:4, dmg:3, def:4, protection:2, hp:13, maxHp:13, rank:'back', isRanged:true, special:'atkreduction',
-      loot:()=>{ mana+=28; dust+=2; return '+28 Mana, +2 Poussière'; }, lootDesc:'Fragment de phylactère.' },
+      loot:()=>{ mana+=28; dust+=2; return '+28 '+t('crb_mana')+', +2 '+t('loot_dust'); }, get lootDesc(){return t('ld_phylactery');} },
     // ===== TIER 6 (S7+) =====
     { get name(){ return t('enemy_DemonArcaniste'); },  tier:6, emoji:'😈', atk:5, dmg:4, def:4, protection:3, hp:18, maxHp:18, rank:'back', isRanged:true, special:'zap_passive',
-      loot:()=>{ gold+=28; mana+=14; dust+=3; return '+28 Or, +14 Mana, +3 Poussière'; }, lootDesc:'Cristal démoniaque.' },
+      loot:()=>{ gold+=28; mana+=14; dust+=3; return '+28 '+t('crb_or')+', +14 '+t('crb_mana')+', +3 '+t('loot_dust'); }, get lootDesc(){return t('ld_demon_crystal');} },
     { get name(){ return t('enemy_SqueletteAncien'); }, tier:6, emoji:'💀', atk:5, dmg:4, def:5, protection:2, hp:17, maxHp:17, rank:'front', special:'atkreduction',
-      loot:()=>{ mana+=30; dust+=3; return '+30 Mana, +3 Poussière'; }, lootDesc:'Os millénaire.' },
+      loot:()=>{ mana+=30; dust+=3; return '+30 '+t('crb_mana')+', +3 '+t('loot_dust'); }, get lootDesc(){return t('ld_old_bone');} },
     { get name(){ return t('enemy_TrollAbysses'); },tier:6, emoji:'👹', atk:5, dmg:4, def:4, protection:2, hp:20, maxHp:20, rank:'front', special:'stun',
-      loot:()=>{ gold+=30; dust+=3; return '+30 Or, +3 Poussière'; }, lootDesc:'Pierre trollesque.' },
+      loot:()=>{ gold+=30; dust+=3; return '+30 '+t('crb_or')+', +3 '+t('loot_dust'); }, get lootDesc(){return t('ld_troll_stone');} },
 ];
 
 // Retourne le pool de monstres disponibles selon la saison
@@ -4357,32 +4833,32 @@ const BOSS_POOLS = {
     1: [ // S1 : boss faibles
         { get name(){ return t('enemy_OrcCapitaine'); }, emoji:'👊', atk:3, dmg:2, def:3, protection:1, hp:14, maxHp:14, isBoss:true,
           loot:()=>{ gold+=20; const bd=4+currentSeason; dust+=bd; return '+20 Or, +'+bd+' Poussière'; },
-          lootDesc:'Armure de capitaine.' },
+          get lootDesc(){return t('ld_captain_armor');} },
         { get name(){ return t('enemy_SqueletteRoyal'); }, emoji:'💀', atk:3, dmg:2, def:3, protection:1, hp:12, maxHp:12, isBoss:true,
           loot:()=>{ mana+=20; const bd=4+currentSeason; dust+=bd; return '+20 Mana, +'+bd+' Poussière'; },
-          lootDesc:'Couronne osseuse.' },
+          get lootDesc(){return t('ld_bone_crown');} },
     ],
     2: [ // S2 : boss intermédiaires
         { get name(){ return t('enemy_OrcBoss'); },    emoji:'👾', atk:4, dmg:3, def:4, protection:2, hp:18, maxHp:18, isBoss:true,
           loot:()=>{ gold+=25; const bd=4+currentSeason; dust+=bd; return '+25 Or, +'+bd+' Poussière'; },
-          lootDesc:"Trophée de l'Orc Boss." },
+          get lootDesc(){return t('ld_orc_boss');} },
         { get name(){ return t('enemy_Liche'); },       emoji:'💀', atk:4, dmg:3, def:5, protection:2, hp:16, maxHp:16, isBoss:true,
           special:'atkreduction',
           loot:()=>{ mana+=50; const bd=4+currentSeason; dust+=bd; return '+50 Mana, +'+bd+' Poussière'; },
-          lootDesc:'Le grimoire de la Liche.' },
+          get lootDesc(){return t('ld_lich_tome');} },
     ],
     3: [ // S3-S4 : boss puissants
         { get name(){ return t('enemy_DragonNoir'); }, emoji:'🐉', atk:5, dmg:4, def:4, protection:3, hp:22, maxHp:22, isBoss:true,
           special:'breath',
           loot:()=>{ gold+=35; const bd=4+currentSeason; dust+=bd; return '+35 Or, +'+bd+' Poussière'; },
-          lootDesc:'Une écaille du dragon.' },
+          get lootDesc(){return t('ld_dragon_scale');} },
         { get name(){ return t('enemy_LicheAncienne'); }, emoji:'💀', atk:5, dmg:4, def:6, protection:3, hp:20, maxHp:20, isBoss:true,
           special:'atkreduction',
           loot:()=>{ mana+=60; const bd=4+currentSeason; dust+=bd; return '+60 Mana, +'+bd+' Poussière'; },
-          lootDesc:'Grimoire ancien.' },
+          get lootDesc(){return t('ld_ancient_tome');} },
         { get name(){ return t('enemy_DemonMajeur'); }, emoji:'😈', atk:5, dmg:4, def:5, protection:3, hp:24, maxHp:24, isBoss:true,
           loot:()=>{ gold+=40; const bd=4+currentSeason; dust+=bd; return '+40 Or, +'+bd+' Poussière'; },
-          lootDesc:'Orbe démoniaque.' },
+          get lootDesc(){return t('ld_demon_orb');} },
     ],
 };
 
@@ -4396,15 +4872,15 @@ function getBossPool(overrideSeason) {
 
 // Salles bonus (porte B majoritaire)
 const BONUS_ROOMS = [
-    { type:'fontaine', emoji:'💧', name:'Fontaine de soin',
+    { type:'fontaine', emoji:'💧', get name(){ return t('dng_room_fontaine'); },
       desc:"Une eau cristalline scintille dans l'obscurité.",
       resolve: () => {
           const h = avatarMaxHp - avatarHp; avatarHp = avatarMaxHp;
           dungeonState.avatarHp = avatarMaxHp;
-          dngLog('💧 Fontaine : +'+h+' HP restaurés !', 'dlog-good');
+          dngLog(t('dng_fontaine_log').replace('{n}', h), 'dlog-good');
           return h > 0 ? '+'+h+' HP restaurés' : 'HP déjà au max';
       }},
-    { type:'forge', emoji:'⚒', name:'Forge oubliée',
+    { type:'forge', emoji:'⚒', get name(){ return t('dng_room_forge'); },
       desc:'Des outils anciens jonchent le sol poussiéreux.',
       choices: [
           { label:'+1 ATK', apply:()=>{ atk+=1; dungeonTempAtk+=1; return 'ATK +1 (donjon)'; } },
@@ -4412,7 +4888,7 @@ const BONUS_ROOMS = [
           { label:'+1 Prot',apply:()=>{ protection+=1; dungeonTempProt+=1; return 'Protection +1 (donjon)'; } },
           { label:'+3 HP max',apply:()=>{ avatarMaxHp+=3; dungeonTempHp+=3; avatarHp=Math.min(avatarHp+3,avatarMaxHp); dungeonState.avatarMaxHp=avatarMaxHp; dungeonState.avatarHp=avatarHp; return 'HP max +3 (donjon)'; } },
       ]},
-    { type:'tresor', emoji:'💰', name:'Salle au trésor',
+    { type:'tresor', emoji:'💰', get name(){ return t('dng_room_tresor'); },
       desc:'Des coffres débordent de richesses oubliées.',
       resolve: () => { gold+=15; return '+15 Or'; } },
     { type:'bibliotheque', emoji:'📜', name:'Bibliothèque arcane',
@@ -4439,7 +4915,7 @@ const TRAP_ROOMS = [
       resolve: () => {
           const dmg=2; dungeonState.avatarHp=Math.max(1,dungeonState.avatarHp-dmg);
           avatarHp=dungeonState.avatarHp;
-          dngLog('🗡 Piège lames ! -'+dmg+' HP', 'dlog-bad');
+          dngLog(t('dng_piege_lames').replace('{n}', dmg), 'dlog-bad');
           return '-'+dmg+' HP';
       }},
     { type:'piege_malediction', emoji:'🔮', name:'Piège — Malédiction',
@@ -4450,7 +4926,7 @@ const TRAP_ROOMS = [
       resolve: () => { dungeonState.poisonStacks.push({roundsLeft:3}); return '-1 HP/round pendant 3 rounds'; } },
     { type:'piege_effondrement', emoji:'🪨', name:'Piège — Effondrement',
       desc:'Des pierres bloquent la sortie derrière vous !',
-      resolve: () => { dungeonState.noFleeNext=true; return 'Fuite bloquée (prochaine salle)'; } },
+      resolve: () => { dungeonState.noFleeNext=true; return t('dng_piege_fuite'); } },
     { type:'piege_miroir', emoji:'🪞', name:'Piège — Miroir maudit',
       desc:'Votre reflet vous attaque ! Vous perdez confiance.',
       resolve: () => { avatarDmg=Math.max(1,avatarDmg-1); return 'Dmg -1 (donjon)'; } },
@@ -4492,7 +4968,7 @@ function generateDungeonRooms(totalTurns, overrideTier) {
         }
     }
     pool.push({ kind:'boss', data: boss, bossAllies: bossAllies });
-    addLog('Donjon généré : '+numRooms+' salles ('+nonBossCount+' + 1 boss)');
+    addLog(t('log_dungeon_gen').replace('{n}',numRooms).replace('{nb}',nonBossCount));
     return pool;
 }
 
@@ -4584,7 +5060,7 @@ function openDungeon(afterCallback, dungeonType) {
     dungeonState.avatarMaxHp = avatarMaxHp;
     document.getElementById('dungeon-log').innerHTML = '';
     document.getElementById('dungeon-screen')?.classList.add('show');
-    const _dungeonNames = { tour:t('dungeon_tour_abandonee'), grotte:t('dungeon_grotte'), catacombes:t('dungeon_catacombes'), ouroboros:'🐍 Aire d\'Ouroboros' };
+    const _dungeonNames = { tour:t('dungeon_tour_abandonee'), grotte:t('dungeon_grotte'), catacombes:t('dungeon_catacombes'), ouroboros:t('dng_ouroboros_name') };
     document.getElementById('dungeon-title').textContent = _dungeonNames[_type] || '🏰 Donjon';
     showDoorChoice();
 }
@@ -4606,11 +5082,12 @@ function showDoorChoice() {
     const done = pool.length - remaining.length;
 
     document.getElementById('door-title').textContent = done === 0
-        ? `Donjon — ${pool.length} salles vous attendent`
-        : `Salle ${done+1}/${pool.length} — Choisissez votre porte`;
+        ? t('dng_title_intro').replace('{n}', pool.length)
+        : t('dng_title_room').replace('{done}', done+1).replace('{total}', pool.length);
     document.getElementById('door-subtitle').textContent =
-        dungeonState.poisonStacks && dungeonState.poisonStacks.length > 0 ? '☠ Poison x'+dungeonState.poisonStacks.length+' : -'+dungeonState.poisonStacks.length+' HP/round' :
-        dungeonState.curseActive  ? '🔮 Malédiction : ATK -1' : '';
+        dungeonState.poisonStacks && dungeonState.poisonStacks.length > 0
+            ? t('dng_poison_status').replace(/\{n\}/g, dungeonState.poisonStacks.length)
+            : dungeonState.curseActive ? t('dng_curse_status') : '';
 
     if (remaining.length === 0) {
         // Toutes les salles complétées — bonus final
@@ -4657,13 +5134,13 @@ function showDoorChoice() {
             const boss = pickedRoom.r.data;
             const imgSrc = DOOR_IMAGES.porte_boss;
             card.innerHTML =
-                '<div class="door-badge">'+(locked ? '🔒 VERROUILLÉE' : '⚠ BOSS')+'</div>'+
+                '<div class="door-badge">'+(locked ? t('dng_door_locked') : t('dng_door_boss'))+'</div>'+
                 '<img src="'+imgSrc+'" style="width:90px;height:90px;object-fit:cover;border-radius:8px;margin:4px 0;'+(locked?'filter:grayscale(80%) brightness(0.5)':'')+'">'+
                 '<div class="door-label">'+boss.name+'</div>'+
                 '<div class="door-proba">'+
                 (locked
-                    ? '<span style="color:#6a4a4a;font-size:10px">Terminez les autres salles d&#39;abord</span>'
-                    : '<span style="color:#ff6060;font-weight:bold">Combat de Boss garanti</span><span style="color:#9a8a6a;font-size:9px">ATK '+boss.atk+' | DEF '+boss.def+' | '+boss.hp+' HP</span>'
+                    ? '<span style="color:#6a4a4a;font-size:10px">'+t('dng_door_boss_locked_text')+'</span>'
+                    : '<span style="color:#ff6060;font-weight:bold">'+t('dng_door_boss_guaranteed')+'</span><span style="color:#9a8a6a;font-size:9px">ATK '+boss.atk+' | DEF '+boss.def+' | '+boss.hp+' HP</span>'
                 )+
                 '</div>';
         } else {
@@ -4671,11 +5148,11 @@ function showDoorChoice() {
             const isA = door.label === 'A';
             const imgSrc = isA ? DOOR_IMAGES.porte_a : DOOR_IMAGES.porte_b;
             card.innerHTML =
-                '<div class="door-badge">Porte '+door.label+'</div>'+
+                '<div class="door-badge">'+t('dng_door_badge').replace('{label}', door.label)+'</div>'+
                 '<img src="'+imgSrc+'" style="width:90px;height:90px;object-fit:cover;border-radius:8px;margin:4px 0">'+
-                '<div class="door-label">'+(isA ? '⚔ Combat (70%)' : '✨ Bonus (70%)')+'</div>'+
+                '<div class="door-label">'+(isA ? t('dng_door_a_main') : t('dng_door_b_main'))+'</div>'+
                 '<div class="door-proba">'+
-                    '<span class="p-sec">'+(isA ? '✨ Bonus (20%) · ⚠ Piège (10%)' : '⚔ Combat (20%) · ⚠ Piège (10%)')+'</span>'+
+                    '<span class="p-sec">'+(isA ? t('dng_door_a_sec') : t('dng_door_b_sec'))+'</span>'+
                 '</div>';
         }
 
@@ -4786,7 +5263,7 @@ function enterRoom(roomEntry) {
         dungeonState.pendingLootEnemies = []; // reset loot par salle
         dungeonState.roundCounter = 0; // reset compteur rounds par salle
         renderEnemyPanel();
-        dngLog('— Combat : '+getAllEnemyNames()+' —', dungeonState.enemy.isBoss?'dlog-loot':'dlog-info');
+        dngLog('— '+getAllEnemyNames()+' —', dungeonState.enemy.isBoss?'dlog-loot':'dlog-info');
         document.getElementById('dungeon-body').style.visibility = 'hidden';
         showCombatIntro(dungeonState.enemy, () => {
             document.getElementById('dungeon-body').style.visibility = '';
@@ -4832,7 +5309,7 @@ function showSpecialRoom(spec) {
                 updateStats();
                 document.getElementById('rs-bonus').textContent = result;
                 document.getElementById('rs-choices').innerHTML = '';
-                dngLog(`⚒ Forge : ${result}`, 'dlog-good');
+                dngLog(t('dng_forge_log').replace('{result}', result), 'dlog-good');
                 setTimeout(() => {
                     document.getElementById('room-special').classList.remove('show');
                     showDoorChoice();
@@ -4878,8 +5355,8 @@ function dungeonComplete() {
     dungeonState.poisonStacks = [];
     gold += 20;
     updateStats();
-    addLog('Donjon complété ! +20 Or.');
-    dngLog('🏆 Donjon entièrement exploré ! +20 Or.', 'dlog-loot');
+    addLog(t('dng_complete_log'));
+    dngLog(t('dng_complete_dng'), 'dlog-loot');
     setTimeout(() => closeDungeon(), 2000);
 }
 
@@ -5074,7 +5551,7 @@ function dngAutoMiss() {
     dngPushHist(dngTiming.histPlayer,'—',null);
     dngRenderHist();
     dngFlashBar('#400000');
-    dngLog('Vous hésitez trop — attaque ratée !','dlog-info');
+    dngLog(t('dng_log_hesitation'),'dlog-info');
     setTimeout(()=>{
         dungeonState.playerActionsLeft = Math.max(0, (dungeonState.playerActionsLeft || 1) - 1);
         if (dungeonState.playerActionsLeft > 0) {
@@ -5185,27 +5662,27 @@ function dungeonBarClick() {
     let dmg=0,badge='',bcls='',fc='',zlabel='';
     if(zone==='miss'){
         badge='0 — timing manqué !';bcls='dng-r-miss';fc='#400000';zlabel='0';
-        dngLog('Vous : timing raté — 0 dégât','dlog-info');
+        dngLog(t('dng_log_miss'),'dlog-info');
     } else if(zone==='half'){
         dmg=Math.max(1,Math.floor(base*.5));
         badge=`×0.5 — ${dmg} dégât`;bcls='dng-r-half';fc='#3a2000';zlabel='×0.5';
-        dngLog(`Vous : ×0.5 → -${dmg} HP`,'dlog-good');
+        dngLog(t('dng_log_half').replace('{n}',dmg),'dlog-good');
     } else if(zone==='normal'){
         dmg=base;
         badge=`×1 — ${dmg} dégât`;bcls='dng-r-norm';fc='#1a3000';zlabel='×1';
-        dngLog(`Vous : ×1 → -${dmg} HP`,'dlog-good');
+        dngLog(t('dng_log_hit').replace('{n}',dmg),'dlog-good');
     } else {
         dmg=Math.ceil(base*zoneMult);
         const multLabel = '×'+zoneMult.toFixed(1);
         badge=`✦ ${multLabel} — ${dmg} dégâts !`;bcls='dng-r-perf';fc='#003820';zlabel=multLabel;
-        dngLog(`Vous : ${multLabel} PARFAIT → -${dmg} HP !`,'dlog-good');
+        dngLog(t('dng_log_perfect_dmg').replace('{mult}',multLabel).replace('{n}',dmg),'dlog-good');
         // Guerrier passif : soin sur coup parfait
         if (avatarClass === 'warrior') {
             const healLvl = typeof getClassSkillLevel === 'function' ? (getClassSkillLevel('perfect_heal')||0) : 0;
             const healAmt = 1 + healLvl;
             dungeonState.avatarHp = Math.min(dungeonState.avatarMaxHp, dungeonState.avatarHp + healAmt);
             avatarHp = dungeonState.avatarHp;
-            dngLog('⚔ Second Souffle ! +'+healAmt+' HP', 'dlog-good');
+            dngLog(t('dng_log_second_wind').replace('{n}',healAmt), 'dlog-good');
             dngShowEffect('💚', '+'+healAmt+' HP', '#4cffaa', 'dng-avatar-side');
         }
     }
@@ -5217,7 +5694,7 @@ function dungeonBarClick() {
                           dungeonState.enemies.back.indexOf(dungeonState.enemy) !== -1;
     // Bloquer rang arrière seulement si le rang avant n'est pas vide ET pas de distance
     if (_targetIsBack && _front.length > 0 && !avatarRanged) {
-        dngLog('⚠ Cible au rang arrière — arme à distance requise !', 'dlog-bad');
+        dngLog(t('dng_log_back_rank'), 'dlog-bad');
         dungeonState.playerActionsLeft = Math.max(0, (dungeonState.playerActionsLeft||1) - 1);
         if (dungeonState.playerActionsLeft > 0) { dngShowAttackBtn(true); updateGlyphButtons(); return; }
         startEnemyPhase(); return;
@@ -5235,7 +5712,7 @@ function dungeonBarClick() {
                 const allE2 = getAllLivingEnemies ? getAllLivingEnemies() : [];
                 allE2.forEach(function(e){ e._frozen = false; });
             }
-            dngLog('❄ Freeze brisé par les dégâts ! L\'ennemi peut contre-attaquer.', 'dlog-bad');
+            dngLog(t('dng_log_freeze_broken'), 'dlog-bad');
         }
 
         // ── Crushing Blow (Guerrier passif) : réduit DEF/Prot par touche selon niveau ──
@@ -5262,7 +5739,7 @@ function dungeonBarClick() {
             dungeonState.avatarHp = Math.min(avatarMaxHp, dungeonState.avatarHp + heal);
             avatarHp = dungeonState.avatarHp;
             if (typeof applyHpUpdate === 'function') applyHpUpdate();
-            dngLog('🧛 Tir vampirique : +' + heal + ' HP !', 'dlog-good');
+            dngLog(t('dng_log_vampiric').replace('{n}',heal), 'dlog-good');
         }
 
         // ── Flèche explosive (Archer passif) : dégâts aux ennemis adjacents par index ──
@@ -5291,7 +5768,7 @@ function dungeonBarClick() {
 
                 if (_splashTargets.size > 0) {
                     _splashTargets.forEach(function(e) { dealDamageToEnemy(e, splashDmg, '#ff6040'); });
-                    dngLog('💥 Explosion ! -'+splashDmg+' HP aux '+_splashTargets.size+' ennemi(s) adjacent(s) !', 'dlog-good');
+                    dngLog(t('dng_log_splash').replace('{n}',splashDmg).replace('{c}',_splashTargets.size), 'dlog-good');
                     dngShowEffect('💥', 'EXPLOSION !', '#ff6040', document.querySelector('#dng-enemies-zone'));
                 }
             }
@@ -5302,7 +5779,7 @@ function dungeonBarClick() {
             dungeonState.enemies.front.forEach(function(e) {
                 if (e === dungeonState.enemy || e.hp <= 0) return;
                 dealDamageToEnemy(e, dmg, '#ff8040');
-                dngLog('⚰ Faux : ' + e.name + ' -' + dmg + ' HP', 'dlog-good');
+                dngLog(t('dng_log_scythe').replace('{name}',e.name).replace('{n}',dmg), 'dlog-good');
             });
         }
 
@@ -5315,7 +5792,7 @@ function dungeonBarClick() {
                 if (behind && behind.hp > 0) {
                     const pd = Math.max(1, Math.floor(dmg * 0.5));
                     behind.hp = Math.max(0, behind.hp - pd);
-                    dngLog('🏹 Perçant : ' + behind.name + ' -' + pd + ' HP', 'dlog-good');
+                    dngLog(t('dng_log_piercing_hit').replace('{name}',behind.name).replace('{n}',pd), 'dlog-good');
                 }
             }
         }
@@ -5334,7 +5811,7 @@ function dungeonBarClick() {
             const e = dungeonState.enemies[rank].find(x=>x===dungeonState.enemy);
             if(e) e.hp=0;
         });
-        dngLog(dungeonState.enemy.name+' vaincu !','dlog-good');
+        dngLog(t('dng_enemy_defeated').replace('{name}',dungeonState.enemy.name),'dlog-good');
         // Ennemi mort → checkAllEnemiesDead gère tout (loot + suite)
         const _tokDead = dungeonState._actionToken;
         setTimeout(function(){
@@ -5370,7 +5847,7 @@ function dungeonBarClick() {
             const anyFrozen = living.some(function(e){ return e._frozen; });
             const wasMiss = zone === 'miss';
             if (wasMiss && anyFrozen) {
-                dngLog('❄ Attaque ratée — les ennemis gelés ne ripostent pas !', 'dlog-good');
+                dngLog(t('dng_log_freeze'), 'dlog-good');
                 endRound(); return;
             }
             startEnemyPhase();
@@ -5382,11 +5859,11 @@ function dungeonBarClick() {
 // ===== ANIMATIONS COMBAT =====
 
 const SPECIAL_DESCS = {
-    poison:       '☠︎ Venin : empoisonne au contact (-1 HP/round, persiste)',
-    stun:         '⊛ Assommeur : sur un 6, stun + attaque supplémentaire',
-    lifesteal:    '⥁ Drain vital : se régénère des dégâts infligés',
-    breath:       '🔥 Souffle : dégâts automatiques tous les 4 rounds',
-    atkreduction: '⚡ Malédiction : réduit votre ATK à chaque frappe',
+    get poison(){       return t('spec_poison'); },
+    get stun(){         return t('spec_stun'); },
+    get lifesteal(){    return t('spec_lifesteal'); },
+    get breath(){       return t('spec_breath'); },
+    get atkreduction(){ return t('spec_atkreduction'); },
 };
 
 function showCombatIntro(enemy, onClose) {
@@ -5399,7 +5876,7 @@ function showCombatIntro(enemy, onClose) {
 
     // Nom principal
     document.getElementById('ci-enemy-name').textContent =
-        isMulti ? total + ' ennemis !' : enemy.name;
+        isMulti ? t('ci_multi_enemies').replace('{n}', total) : enemy.name;
 
     // Image seule si 1 monstre, grille si plusieurs
     const _ciEl   = document.getElementById('ci-enemy-emoji');
@@ -5444,8 +5921,8 @@ function showCombatIntro(enemy, onClose) {
 
     // Stats : résumé multi ou stats simples
     if (isMulti) {
-        let desc = '⚔ Rang avant : ' + front.map(function(e){return e.name;}).join(', ');
-        if (back.length) desc += ' | 🎯 Arrière : ' + back.map(function(e){return e.name;}).join(', ');
+        let desc = t('ci_front_rank') + front.map(function(e){return e.name;}).join(', ');
+        if (back.length) desc += t('ci_back_rank') + back.map(function(e){return e.name;}).join(', ');
         document.getElementById('ci-enemy-stats').textContent = desc;
     } else {
         document.getElementById('ci-enemy-stats').textContent =
@@ -5713,7 +6190,7 @@ function checkAllEnemiesDead() {
         // Tout le back passe devant
         dungeonState.enemies.front = cleanBack;
         dungeonState.enemies.back  = [];
-        dngLog('⚠ Rang avant vide — le rang arrière avance !', 'dlog-info');
+        dngLog(t('dng_log_front_empty'), 'dlog-info');
     } else if (cleanFront.length < cleanBack.length) {
         // Rééquilibrer
         const toMove = cleanBack.length - cleanFront.length;
@@ -5722,7 +6199,7 @@ function checkAllEnemiesDead() {
             if (moved) {
                 dungeonState.enemies.front.push(moved);
                 dungeonState.enemies.back.shift();
-                dngLog(moved.emoji+' '+moved.name+' avance au rang avant !', 'dlog-info');
+                dngLog(t('dng_log_advance').replace('{emoji}',moved.emoji).replace('{name}',moved.name), 'dlog-info');
             }
         }
     }
@@ -5749,18 +6226,18 @@ function enemyAttack(room) {
     // ── Stun : ennemi bloqué ──
     if (room._stunBlock) {
         room._stunTurns = (room._stunTurns || 1) - 1;
-        dngLog('💫 '+room.name+' est stun et ne peut pas attaquer ! ('+room._stunTurns+' tour(s) restant)', 'dlog-good');
+        dngLog(t('dng_log_stun_on').replace('{name}',room.name).replace('{n}',room._stunTurns), 'dlog-good');
         if (room._stunTurns <= 0) {
             room._stunBlock = false;
             room._stunTurns = 0;
-            dngLog('💫 Stun terminé sur '+room.name+' !', 'dlog-info');
+            dngLog(t('dng_log_stun_off').replace('{name}',room.name), 'dlog-info');
         }
         return;
     }
 
     // ── Freeze : ennemi bloqué ──
     if (room._frozen) {
-        dngLog('❄ '+room.name+' est gelé et ne peut pas attaquer !', 'dlog-good');
+        dngLog(t('dng_log_frozen').replace('{name}',room.name), 'dlog-good');
         if (false) { // le compteur est géré dans triggerRoundEffects
             dungeonState._freezeTurns--;
             if (dungeonState._freezeTurns <= 0) {
@@ -5768,7 +6245,7 @@ function enemyAttack(room) {
                 const allE = getAllLivingEnemies ? getAllLivingEnemies() : [];
                 allE.forEach(function(e){ e._frozen = false; });
                 dungeonState._freezeActive = false;
-                dngLog('❄ Freeze terminé ! Les ennemis sont libres.', 'dlog-bad');
+                dngLog(t('dng_log_freeze_end'), 'dlog-bad');
             }
         }
         return;
@@ -5779,19 +6256,19 @@ function enemyAttack(room) {
         if (dungeonState.dragonBreathCounter % 4 === 0) {
             const breathDmg = Math.max(1, room.dmg);
             avatarTakeDamage(breathDmg, 'dragon');
-            dngLog('🔥 '+room.name+' souffle ! -'+breathDmg+' HP (ignore protection)', 'dlog-bad');
+            dngLog(t('dng_log_breath').replace('{name}',room.name).replace('{n}',breathDmg), 'dlog-bad');
             dngShowEffect('🔥', 'SOUFFLE !', '#ff6020', 'dng-avatar-side');
             if (dungeonState.avatarHp <= 0) { setTimeout(function(){ triggerDeath(); }, 300); }
             return; // le souffle remplace l'attaque ce round
         }
         // sinon : attaque normale (ne pas return, continuer le code)
         const roundsToNext = 4 - (dungeonState.dragonBreathCounter % 4);
-        dngLog('🔥 Souffle dans '+roundsToNext+' round(s)...', 'dlog-info');
+        dngLog(t('dng_log_breath_countdown').replace('{n}',roundsToNext), 'dlog-info');
     }
 
     const curseReduction = room._curse || 0;
     const effectiveAtk = Math.max(1, room.atk - curseReduction);
-    if (curseReduction > 0) dngLog('☋ Malédiction : ATK '+room.name+' -'+curseReduction+' ('+effectiveAtk+' effectif)', 'dlog-good');
+    if (curseReduction > 0) dngLog(t('dng_log_curse_atk').replace('{name}',room.name).replace('{n}',curseReduction).replace('{eff}',effectiveAtk), 'dlog-good');
     const et = hitThresholdForEnemy(room, def);
     const er = rollDie(6);
     const ehit = er >= et;
@@ -5805,17 +6282,17 @@ function enemyAttack(room) {
         const ed = calcDamage(room.dmg, protection);
         avatarTakeDamage(ed, 'enemy');
         if (!dungeonState.active) return; // avatar mort pendant l'attaque — stopper
-        dngLog(room.name+' : dé '+er+' ('+et+'+) ✓ → -'+ed+' dégâts','dlog-bad');
+        dngLog(t('dng_log_enemy_hit').replace('{name}',room.name).replace('{die}',er).replace('{thr}',et).replace('{n}',ed),'dlog-bad');
         // Effets spéciaux
         if(room.special==='poison'){
             dungeonState.poisonStacks.push({roundsLeft:3});
-            dngLog('🕷 Venin ! +1 stack poison ('+dungeonState.poisonStacks.length+' dégât(s)/round)','dlog-bad');
+            dngLog(t('dng_log_venom').replace('{n}',dungeonState.poisonStacks.length),'dlog-bad');
             dngShowEffect('☠', 'VENIN x'+dungeonState.poisonStacks.length, '#40ff80', 'dng-avatar-side');
             dungeonShowStatus('☠︎ Poison x'+dungeonState.poisonStacks.length);
         }
         if(room.special==='lifesteal'){
             room.hp=Math.min(room.maxHp,room.hp+ed);
-            dngLog('🧛 Vampire se régénère : +'+ed+' HP','dlog-bad');
+            dngLog(t('dng_log_vampire_regen').replace('{n}',ed),'dlog-bad');
             dngShowEffect('🧛', 'DRAIN +'+ed, '#c060ff', document.getElementById('dng-enemies-zone'));
             document.getElementById('dng-enemy-hp-text').textContent='HP: '+room.hp+'/'+room.maxHp;
             dungeonUpdateHpBar('enemy',room.hp,room.maxHp);
@@ -5827,7 +6304,7 @@ function enemyAttack(room) {
                 dungeonState.licheAtkReduction++;
                 atk = Math.max(1, atk - 1);
                 dungeonState.combatAtkMalus++;
-                dngLog('💀 Malédiction Liche ! ATK héro : '+atk,'dlog-bad');
+                dngLog(t('dng_log_liche_curse').replace('{n}',atk),'dlog-bad');
                 dngShowEffect('💀', 'ATK -1', '#8060ff', 'dng-avatar-side');
                 dngSetupZones();
                 dngUpdateCombatUI();
@@ -5836,7 +6313,7 @@ function enemyAttack(room) {
         }
         if(room.special==='stun'&&er===6){
             if (avatarImmuneStun) {
-                dngLog('💫 Stun résisté ! (immunité anti-stun)', 'dlog-good');
+                dngLog(t('dng_log_stun_resist'), 'dlog-good');
             } else {
                 dngLog('👹 STUN ! Votre prochain tour est annulé — tous les ennemis attaquent !','dlog-bad');
                 dngShowEffect('💫', 'STUN !', '#ffe060', 'dng-avatar-side');
@@ -5851,7 +6328,7 @@ function enemyAttack(room) {
             room._crushDef = (room._crushDef || 0) + crushLvl;
             def = Math.max(1, def - crushLvl);
             dungeonState.combatDefMalus = (dungeonState.combatDefMalus || 0) + crushLvl;
-            dngLog('🔨 '+room.name+' brise l\'armure ! DEF -'+crushLvl+' (héro DEF : '+def+')', 'dlog-bad');
+            dngLog(t('dng_log_armor_break').replace('{name}',room.name).replace('{n}',crushLvl).replace('{d}',def), 'dlog-bad');
             dngShowEffect('🔨', 'ARMOR CRUSH !', '#ff8040', 'dng-avatar-side');
             dngSetupZones();
             dngUpdateAvatarStats();
@@ -5860,11 +6337,11 @@ function enemyAttack(room) {
         // ── Squelette/Liche : sur un 6, réduit ATK de -1 ──
         if ((room.name.includes('quelette') || room.name.includes('Liche')) && er === 6) {
             if (avatarBlessedNecklace) {
-                dngLog('📿 Collier béni résiste à la réduction ATK !', 'dlog-good');
+                dngLog(t('dng_log_collier_beni'), 'dlog-good');
             } else {
             atk = Math.max(1, atk - 1);
             dungeonState.combatAtkMalus++;
-            dngLog('💀 '+room.name+' draine l\'ATK ! ATK héro : '+atk, 'dlog-bad');
+            dngLog(t('dng_log_atk_drain').replace('{name}',room.name).replace('{n}',atk), 'dlog-bad');
             dngShowEffect('💀', 'ATK -1', '#8060ff', 'dng-avatar-side');
             dngSetupZones();
             dngUpdateCombatUI();
@@ -5877,7 +6354,7 @@ function enemyAttack(room) {
             const zapTier = Math.min(4, 1 + Math.floor((currentSeason||1) / 2));
             const zapDmg = zapTier * 2;
             avatarTakeDamage(zapDmg, 'dragon');
-            dngLog('⚡ '+room.name+' Zap démoniaque ! -'+zapDmg+' HP (magie)', 'dlog-bad');
+            dngLog(t('dng_log_zap').replace('{name}',room.name).replace('{n}',zapDmg), 'dlog-bad');
             dngShowEffect('⚡', 'ZAP DÉMONIAQUE !', '#ffff60', 'dng-avatar-side');
         }
 
@@ -5940,8 +6417,8 @@ function avatarTakeDamage(dmg, source) {
         const absorbed = Math.min(dungeonState._manaArmor, dmg);
         dungeonState._manaArmor -= absorbed;
         const remaining = dmg - absorbed;
-        if (absorbed > 0) dngLog('🔷 Armure de mana absorbe '+absorbed+' dégâts !', 'dlog-good');
-        if (dungeonState._manaArmor <= 0) { dungeonState._manaArmor = 0; dngLog('🔷 Armure de mana brisée !', 'dlog-bad'); }
+        if (absorbed > 0) dngLog(t('dng_log_mana_absorb').replace('{n}',absorbed), 'dlog-good');
+        if (dungeonState._manaArmor <= 0) { dungeonState._manaArmor = 0; dngLog(t('dng_log_mana_break'), 'dlog-bad'); }
         if (remaining > 0) { dungeonState.avatarHp -= remaining; dungeonShowDmg('avatar', remaining, '#ff6060'); flashDmgAvatar(); }
         if (absorbed > 0) { dungeonShowDmg('avatar', absorbed, '#4080ff'); } // mana armor
     } else {
@@ -6015,7 +6492,7 @@ function endRound() {
     // Stun : sauter le tour joueur, les ennemis attaquent à nouveau
     if (dungeonState.playerStunned) {
         dungeonState.playerStunned = false;
-        dngLog('💫 Stun ! Votre tour est annulé — phase ennemis !', 'dlog-bad');
+        dngLog(t('dng_log_stun_player'), 'dlog-bad');
         const living = getAllLivingEnemies();
         if (living.length === 0) { endRound(); return; }
         const _tokStun = dungeonState._actionToken;
@@ -6116,7 +6593,7 @@ function triggerRoundEffects() {
         rageRounds--;
         if (rageRounds <= 0) {
             rageActive = false;
-            dngLog('💢 Rage épuisée.', 'dlog-info');
+            dngLog(t('dng_log_rage_end'), 'dlog-info');
         }
     }
 
@@ -6125,7 +6602,7 @@ function triggerRoundEffects() {
         dungeonState._blessRoundsLeft--;
         if (dungeonState._blessRoundsLeft <= 0) {
             timingNormalBonus = false;
-            dngLog('🌟 Bénédiction expirée.', 'dlog-info');
+            dngLog(t('dng_log_bless_end'), 'dlog-info');
         }
     }
 
@@ -6595,7 +7072,7 @@ function dungeonUseSkill(type) {
     const metaMap = { fireball:'Fireball', bless:'Benediction', rage:'Rage', heal:'Soin' };
     const metaId = metaMap[type];
     if (!hasMetaSkill(metaId)) return;
-    if (skillUsed[metaId]) { dngLog('Compétence déjà utilisée ce combat.', 'dlog-info'); return; }
+    if (skillUsed[metaId]) { dngLog(t('skill_already_used'), 'dlog-info'); return; }
     skillUsed[metaId] = true;
     dngLock();
     dngStopAnim();
@@ -6606,19 +7083,19 @@ function dungeonUseSkill(type) {
         const dmg = 3 + fireLvl;
         getAllLivingEnemies().forEach(function(e){ dealDamageToEnemy(e, dmg, '#a060ff'); });
         dngPushHist(dngTiming.histPlayer,'⏳',null); dngRenderHist();
-        dngLog('⏳ Distortion Temporelle ! -'+dmg+' HP à tous les ennemis !', 'dlog-good');
+        dngLog(t('dng_log_distortion').replace('{n}',dmg), 'dlog-good');
         dngShowEffect('⏳', 'DISTORTION !', '#a060ff', document.querySelector('#dng-enemies-zone'));
     } else if (type === 'bless') {
         const blessLvl = getSkillLevel('Benediction') || 1;
         timingNormalBonus = true;
         dungeonState._blessRoundsLeft = 1 + blessLvl;
-        dngLog('🌟 Bénédiction (Niv.'+blessLvl+') ! Zone ×1 → ×1.2 pendant '+(1+blessLvl)+' rounds.', 'dlog-good');
+        dngLog(t('dng_log_bless_cast').replace('{lvl}',blessLvl).replace('{n}',1+blessLvl), 'dlog-good');
         dngShowEffect('🌟', 'BÉNÉ !', '#ffd060', 'dng-avatar-side');
     } else if (type === 'rage') {
         if (rageActive) { dngUnlock(); return; }
         const rageLvl = getSkillLevel('Rage') || 1;
         rageActive = true; rageRounds = 1 + rageLvl;
-        dngLog('💢 Rage (Niv.'+rageLvl+') ! Dégâts ×2 pendant '+rageRounds+' rounds.', 'dlog-good');
+        dngLog(t('dng_log_rage_cast').replace('{lvl}',rageLvl).replace('{n}',rageRounds), 'dlog-good');
         dngShowEffect('💢', 'RAGE !', '#ff8040', 'dng-avatar-side');
     } else if (type === 'heal') {
         const soinLvl = getSkillLevel('Soin') || 1;
@@ -6628,7 +7105,7 @@ function dungeonUseSkill(type) {
         avatarHp = dungeonState.avatarHp;
         document.getElementById('dng-avatar-hp-text').textContent = 'HP: '+Math.max(0,dungeonState.avatarHp)+'/'+dungeonState.avatarMaxHp+(dungeonState._manaArmor?' 🔷'+dungeonState._manaArmor:'');
         dungeonUpdateHpBar('avatar', dungeonState.avatarHp, dungeonState.avatarMaxHp);
-        dngLog('💊 Soin (Niv.'+soinLvl+') ! +'+healed+' HP.', 'dlog-good');
+        dngLog(t('dng_log_heal_cast').replace('{lvl}',soinLvl).replace('{n}',healed), 'dlog-good');
         dngShowEffect('💊', '+'+healed+' HP', '#4cffaa', 'dng-avatar-side');
     }
 
@@ -6673,7 +7150,7 @@ function dungeonFlee() {
             return;
         }
         dngLog('Vous fuyez le donjon !', 'dlog-info');
-        addLog('Donjon : fuite. Butin : ' + (dungeonState.collectedLoot.join(' | ') || 'aucun'));
+        addLog(t('dng_flee_addlog').replace('{loot}', dungeonState.collectedLoot.join(' | ')||t('dng_loot_none')));
         closeDungeon();
     }
 }
@@ -6747,12 +7224,12 @@ function dungeonRoomWon() {
     if (totalMana > 0) parts.push('+'+totalMana+' Mana');
     if (totalDust > 0) parts.push('+'+totalDust+' Poussière'+(totalDust>1?'s':''));
     extras.forEach(x => parts.push(x));
-    const lootText = parts.join(', ') || 'Rien';
+    const lootText = parts.join(', ') || t('dng_loot_none2');
     dungeonState.collectedLoot.push(lootText);
     const room = dungeonState.enemy || allDead[0];
     updateStats();
-    dngLog(`✓ ${room.name} vaincu !`, 'dlog-good');
-    dngLog(`💰 Récompense : ${lootText}`, 'dlog-loot');
+    dngLog(t('dng_enemy_defeated').replace('{name}',room.name), 'dlog-good');
+    dngLog(t('dng_reward_log').replace('{loot}',lootText), 'dlog-loot');
     dngStopAnim();
     ['dng-btn-skill','dng-btn-rage','dng-btn-heal','dng-btn-flee'].forEach(id => {
         const el = document.getElementById(id); if(el) el.disabled = true;
@@ -6761,7 +7238,7 @@ function dungeonRoomWon() {
     const remaining = dungeonState.generatedRooms.filter((_,i) => !dungeonState.visitedRooms[i]);
     const isLast = remaining.length === 0;
 
-    document.getElementById('dr-title').textContent = `${room.name} vaincu !`;
+    document.getElementById('dr-title').textContent = t('dng_enemy_defeated').replace('{name}',room.name);
     document.getElementById('dr-loot').textContent  = lootText;
     document.getElementById('dr-desc').textContent  = room.lootDesc || '';
 
@@ -6770,10 +7247,10 @@ function dungeonRoomWon() {
 
     if (isLast) {
         btnContinue.style.display = 'none';
-        btnFlee.textContent = '🏆 Sortir victorieux';
+        btnFlee.textContent = t('dng_exit_victory');
         btnFlee.onclick = () => {
-            dngLog('🏆 Donjon complété !', 'dlog-loot');
-            addLog('Donjon complété ! Butin : ' + dungeonState.collectedLoot.join(' | '));
+            dngLog(t('dng_complete_loot'), 'dlog-loot');
+            addLog(t('dng_complete_addlog').replace('{loot}', dungeonState.collectedLoot.join(' | ')||t('dng_loot_none')));
             // Coquille si boss hivernal (dernier tour d'exploration = tour 9, hiver)
             const lastRoomIdx = dungeonState.generatedRooms.length - 1;
             const lastRoom = dungeonState.generatedRooms[lastRoomIdx];
@@ -6784,7 +7261,7 @@ function dungeonRoomWon() {
             if (dungeonState.dungeonType === 'ouroboros' && isBossRoom) {
                 const got = awardOuroboros();
                 if (drShell) drShell.style.display = got ? 'block' : 'none';
-                if (got) dngLog('🥚 Coquille d\'Oeuf du Temps ! Ouroboros vaincu !', 'dlog-loot');
+                if (got) dngLog(t('dng_shell_win'), 'dlog-loot');
             } else {
                 if (drShell) drShell.style.display = 'none';
             }
@@ -6798,11 +7275,11 @@ function dungeonRoomWon() {
         };
     } else {
         btnContinue.style.display = 'inline-block';
-        btnContinue.textContent = 'Continuer ▶';
+        btnContinue.textContent = t('dng_continue_reset');
         btnContinue.onclick = () => dungeonBackToDoors();
-        btnFlee.textContent = '🏃 Fuir avec butin';
+        btnFlee.textContent = t('dng_flee_loot');
         btnFlee.onclick = () => {
-            addLog('Donjon : fuite. Butin : ' + dungeonState.collectedLoot.join(' | '));
+            addLog(t('dng_flee_addlog').replace('{loot}', dungeonState.collectedLoot.join(' | ')||t('dng_loot_none')));
             closeDungeon();
         };
     }
@@ -8026,7 +8503,7 @@ function renderTilePreview() {
     const canExplore = exploreTurns.includes(currentTurn) && !window.avatarBlocked;
     const unrevealedCount = tileState.filter((_,i)=>i!==12&&!tileState[i].revealed).length;
     if (unrevealedCount === 0) {
-        el.innerHTML = '<div style="color:#7a6a50;font-size:11px">Toutes les tuiles révélées</div>';
+        el.innerHTML = '<div style="color:#7a6a50;font-size:11px">' + t('tile_all_revealed') + '</div>';
         const btn = document.getElementById('btn-reveal-tile');
         if (btn) btn.disabled = true;
         return;
@@ -8035,12 +8512,12 @@ function renderTilePreview() {
     const tt = TILE_TYPES[nextTileType];
     el.innerHTML =
         '<div style="font-size:28px;flex-shrink:0">' + (tt ? tt.emoji : '?') + '</div>' +
-        '<div><div style="font-size:12px;font-weight:bold;color:#ddd">' + nextTileType + '</div>' +
+        '<div><div style="font-size:12px;font-weight:bold;color:#ddd">' + (tt ? tt.name : nextTileType) + '</div>' +
         '<div style="font-size:9px;color:#888">' + (tt ? tt.desc.split('|')[0].trim() : '') + '</div></div>';
     const hint = document.getElementById('tile-action-hint');
     if (hint) {
         hint.innerHTML = canExplore
-            ? '<span style="color:#c080ff;font-size:10px">✦ Tour exploration — donjon disponible après révélation</span>'
+            ? '<span style="color:#c080ff;font-size:10px">✦ ' + t('tile_exploration_hint') + '</span>'
             : '';
     }
 }
@@ -8074,9 +8551,9 @@ function doRevealTile() {
 function applyTileReveal(idx, forceType) {
     const effects = ['Prairie','Collines','Montagne','Lac','Forêt'];
     const type = forceType || effects[Math.floor(Math.random()*effects.length)];
-    const t = tileState[idx];
-    t.type = type;
-    t.revealed = true;
+    const tile = tileState[idx];
+    tile.type = type;
+    tile.revealed = true;
     const tt = TILE_TYPES[type];
     let logMessage = '';
     switch(type) {
@@ -8119,6 +8596,26 @@ function applyTileReveal(idx, forceType) {
 };
 
 // ---- Section CONSTRUIRE ----
+
+// Helper: translate a stored building name (may be FR) to current language
+function translateBuildingName(storedName) {
+    // First try to find by exact current name (already translated)
+    const match = (window.BUILDING_DEFS||[]).find(function(d){ return d.name === storedName; });
+    if (match) return match.name;
+    // Try to find by checking all FR keys
+    const FR_BLD_KEYS = {
+        'Ferme':'bld_Ferme_name','Mine':'bld_Mine_name','Tour de Mana':'bld_TourMana_name',
+        'Caserne':'bld_Caserne_name','Église':'bld_Eglise_name','Tour de Garde':'bld_TourGarde_name',
+        'Archerie':'bld_Archerie_name','École de Magie':'bld_EcoleMagie_name',
+        'Place du Marché':'bld_PlaceMarche_name','Académie militaire':'bld_Academie_name',
+        'Temple':'bld_Temple_name','Tour de Magie':'bld_TourMagie_name',
+        'Caravansérail':'bld_Caravanserail_name','Cathédrale':'bld_Cathedrale_name',
+        'Autel de Guerre':'bld_AutelGuerre_name','Monolithe de Vigie':'bld_MonolitheVigie_name'
+    };
+    const key = FR_BLD_KEYS[storedName];
+    if (key && typeof t === 'function') return t(key);
+    return storedName;
+}
 function renderBuildPanelList() {
     const el = document.getElementById('build-list');
     if (!el) return;
@@ -8683,7 +9180,8 @@ function renderTileGrid() {
 
             let bldHtml = t.buildings.map(b => {
                 const bns = getTileBonus(t.type, b);
-                return '<div class="tile-bld" style="position:relative;z-index:2;max-width:72px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + b + (bns ? ' ★' : '') + '</div>';
+                const bldLabel = typeof translateBuildingName === 'function' ? translateBuildingName(b) : b;
+                return '<div class="tile-bld" style="position:relative;z-index:2;max-width:72px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + bldLabel + (bns ? ' ★' : '') + '</div>';
             }).join('');
 
             if (imgUrl) {
@@ -8693,7 +9191,7 @@ function renderTileGrid() {
                     '<div class="tile-fallback" style="display:none;position:absolute;inset:0;background:' + (TILE_GRADS_FULL[t.type]||'#222') + ';z-index:0"></div>' +
                     '<div style="position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,0.75) 0%,rgba(0,0,0,0.1) 55%);z-index:1"></div>' +
                     '<div class="tile-emoji" style="position:relative;z-index:2;display:none" data-fallback-emoji="' + (tt?tt.emoji:'?') + '">' + (tt?tt.emoji:'?') + '</div>' +
-                    '<div class="tile-name" style="position:relative;z-index:2;text-shadow:0 1px 3px #000">' + t.type + '</div>' +
+                    '<div class="tile-name" style="position:relative;z-index:2;text-shadow:0 1px 3px #000">' + (tt ? tt.name : t.type) + '</div>' +
                     bldHtml +
                     (placingMode && bonus ? '<div style="position:relative;z-index:2;font-size:8px;color:#ffd060;font-weight:bold">★'+bonus+'</div>' : '') +
                     '<div style="position:absolute;bottom:2px;right:3px;font-size:9px;font-weight:bold;color:'+(freeSlots>0?'#4cffaa':'#ff6060')+';text-shadow:0 0 4px #000;background:rgba(0,0,0,0.6);border-radius:3px;padding:0 2px;z-index:3">' + freeSlots + '/' + (tt?tt.slots:0) + '</div>';
@@ -8701,7 +9199,7 @@ function renderTileGrid() {
                 cell.style.background = TILE_GRADS_FULL[t.type] || '#222';
                 cell.innerHTML =
                     '<div class="tile-emoji">' + (tt?tt.emoji:'?') + '</div>' +
-                    '<div class="tile-name">' + t.type + '</div>' +
+                    '<div class="tile-name">' + (tt ? tt.name : t.type) + '</div>' +
                     bldHtml +
                     (placingMode && bonus ? '<div style="font-size:8px;color:#ffd060;font-weight:bold">★'+bonus+'</div>' : '') +
                     '<div class="tile-slots">' + freeSlots + '/' + (tt?tt.slots:0) + '</div>';
@@ -9251,26 +9749,30 @@ function renderMetaHero() {
     const statLimit = heroStatLimit(1, heroLvl); // ex: niv0→2, niv1→3...
 
     const stats = [
-        { key:'atk',   tier:1, label:'⚔ ATK +1',        desc:'Attaque permanente +1',          val: m.hero.atk   },
-        { key:'hpMax', tier:1, label:'❤ HP Max +3',      desc:'Points de vie max +3',           val: m.hero.hpMax },
-        { key:'dmg',   tier:2, label:'🗡 Dégâts +1',     desc:'Dégâts de base +1',              val: m.hero.dmg   },
-        { key:'prot',  tier:2, label:'🛡 Protection +1', desc:'Absorbe 1 dégât par coup',       val: m.hero.prot  },
-        { key:'def',   tier:3, label:'🔰 DEF +1',        desc:'Défense permanente +1',          val: m.hero.def   },
+        { key:'atk',   tier:1, get label(){ return t('meta_stat_atk'); },  get desc(){ return t('meta_stat_atk_desc'); },  val: m.hero.atk   },
+        { key:'hpMax', tier:1, get label(){ return t('meta_stat_hp'); },   get desc(){ return t('meta_stat_hp_desc'); },   val: m.hero.hpMax },
+        { key:'dmg',   tier:2, get label(){ return t('meta_stat_dmg'); },  get desc(){ return t('meta_stat_dmg_desc'); },  val: m.hero.dmg   },
+        { key:'prot',  tier:2, get label(){ return t('meta_stat_prot'); }, get desc(){ return t('meta_stat_prot_desc'); }, val: m.hero.prot  },
+        { key:'def',   tier:3, get label(){ return t('meta_stat_def'); },  get desc(){ return t('meta_stat_def_desc'); },  val: m.hero.def   },
     ];
 
     // Compétences disponibles (avec tier requis)
     const skillDefs = [
-        { id:'Soin',        tier:1, icon:'💊', label:'Soin mineur',
-          desc: function(lvl){ return '+' + (2+lvl) + ' HP par combat (Niv.'+lvl+')'; },
+        { id:'Soin',        tier:1, icon:'💊',
+          get label(){ return t('meta_skill_soin'); },
+          desc: function(lvl){ return t('meta_skill_soin_desc').replace('{n}',2+lvl).replace('{lvl}',lvl); },
           baseCost:4, upgCost:3 },
-        { id:'Fireball',    tier:1, icon:'⏳', label:'Distortion Temporelle',
-          desc: function(lvl){ return (3+lvl) + ' dégâts directs, ignore armure (Niv.'+lvl+')'; },
+        { id:'Fireball',    tier:1, icon:'⏳',
+          get label(){ return t('meta_skill_fireball'); },
+          desc: function(lvl){ return t('meta_skill_fireball_desc').replace('{n}',3+lvl).replace('{lvl}',lvl); },
           baseCost:8, upgCost:4 },
-        { id:'Rage',        tier:2, icon:'💢', label:'Rage de bataille',
-          desc: function(lvl){ return 'Dégâts x' + (2+lvl-1) + ' pendant ' + (1+lvl) + ' rounds (Niv.'+lvl+')'; },
+        { id:'Rage',        tier:2, icon:'💢',
+          get label(){ return t('meta_skill_rage'); },
+          desc: function(lvl){ return t('meta_skill_rage_desc').replace('{n}',2+lvl-1).replace('{r}',1+lvl).replace('{lvl}',lvl); },
           baseCost:7, upgCost:4 },
-        { id:'Benediction', tier:2, icon:'🌟', label:'Bénédiction',
-          desc: function(lvl){ return 'Zone ×1 → ×' + (1.5 + (lvl-1)*0.25).toFixed(2) + ' timing (Niv.'+lvl+')'; },
+        { id:'Benediction', tier:2, icon:'🌟',
+          get label(){ return t('meta_skill_benediction'); },
+          desc: function(lvl){ return t('meta_skill_benediction_desc').replace('{n}',(1.5+(lvl-1)*0.25).toFixed(2)).replace('{lvl}',lvl); },
           baseCost:10, upgCost:5 },
     ];
 
@@ -9280,7 +9782,7 @@ function renderMetaHero() {
     let html = '';
 
     // ── Section stats ──
-    html += '<div class="meta-cat-title">Stats permanentes <span style="color:var(--text-m);font-weight:normal">(max ' + statLimit + ' par stat)</span></div>';
+    html += '<div class="meta-cat-title">' + t('meta_stats_permanentes') + ' <span style="color:var(--text-m);font-weight:normal">' + t('meta_max_par_stat').replace('{n}',statLimit) + '</span></div>';
     stats.forEach(function(u) {
         const atMax = u.val >= statLimit;
         const cost = metaCost(u.tier, u.val);
@@ -9289,7 +9791,7 @@ function renderMetaHero() {
         html += '<div class="meta-row">' +
             '<div style="flex:1">' +
                 '<div class="meta-row-name" style="color:' + (tierLocked ? 'var(--text-m)' : 'var(--text-b)') + '">' + u.label +
-                (tierLocked ? ' <span style="font-size:9px;color:#e07820">🔒 Tier ' + u.tier + '</span>' : '') + '</div>' +
+                (tierLocked ? ' <span style="font-size:9px;color:#e07820">' + t('meta_tier_locked').replace('{n}',u.tier) + '</span>' : '') + '</div>' +
                 '<div class="meta-row-sub">' + u.desc + '</div>' +
             '</div>' +
             '<div class="meta-row-val" style="margin:0 8px">' + u.val + (atMax ? ' ✓' : '') + '</div>' +
@@ -9309,15 +9811,14 @@ function renderMetaHero() {
 
     if (currentCls) {
         // Classe choisie — compétences avatar masquées (remplacées par compétences de classe)
-        html += '<div class="meta-cat-title" style="margin-top:12px;opacity:0.4">Compétences de départ</div>';
-        html += '<div style="font-size:11px;color:var(--text-m);padding:6px 0;opacity:0.5">🪞 Remplacées par les compétences de classe.</div>';
+        html += '<div class="meta-cat-title" style="margin-top:12px;opacity:0.4">' + t('meta_skills_title') + '</div>';
+        html += '<div style="font-size:11px;color:var(--text-m);padding:6px 0;opacity:0.5">' + t('meta_skills_replaced') + '</div>';
     } else {
         const ownedCount = Object.keys(skillLevels).filter(function(k){ return !k.startsWith('cls_') && skillLevels[k]>0; }).length;
-        html += '<div class="meta-cat-title" style="margin-top:12px">Compétences de départ ' +
-            '<span style="color:var(--text-m);font-weight:normal">(' + ownedCount + '/' + maxSkills + ' — Niv.héros ' + heroLvl + ')</span></div>';
+        html += '<div class="meta-cat-title" style="margin-top:12px">' + t('meta_skills_title') + ' <span style="color:var(--text-m);font-weight:normal">(' + ownedCount + '/' + maxSkills + ' — Niv.' + heroLvl + ')</span></div>';
 
         if (maxSkills === 0) {
-            html += '<div style="font-size:11px;color:var(--text-m);padding:6px 0">🔒 Augmentez le Niveau Héros (onglet Niveau) pour débloquer des compétences.</div>';
+            html += '<div style="font-size:11px;color:var(--text-m);padding:6px 0">' + t('meta_skills_locked_msg') + '</div>';
         }
     }
 
@@ -9332,7 +9833,7 @@ function renderMetaHero() {
         const cost   = metaCost(1, lvl); // lvl=0 → premier achat, lvl=1 → upgrade...
         const canBuy = tierOk && slotOk && !atMax && dustTotal >= cost;
         const locked = !owned && (!tierOk || !slotOk);
-        const btnLabel = owned ? (atMax ? 'Max Niv.'+lvl : '↑ Niv.'+(lvl+1)+' ✨'+cost) : ('Débloquer ✨'+cost);
+        const btnLabel = owned ? (atMax ? t('meta_max')+' Niv.'+lvl : t('meta_upgrade_niv').replace('{n}',lvl+1)+' ✨'+cost) : (t('meta_debloquer')+' ✨'+cost);
 
         html += '<div class="meta-row" style="' + (owned ? 'background:#0a1a0a;border-color:#1e4a1e;' : locked ? 'opacity:0.45;' : '') + '">' +
             '<span style="font-size:18px;margin-right:8px;flex-shrink:0">' + sk.icon + '</span>' +
@@ -9460,14 +9961,14 @@ function renderMetaCity() {
     const upgrades = [
         { key:'fortif',   tier:1, label:'🏰 Fortification +1', desc:'Commence avec +1 fortification', val: m.city.fortif   },
         { key:'power',    tier:1, label:'⚔ Puissance +1',      desc:'+1 puissance de ville fixe',     val: m.city.power    },
-        { key:'gold',     tier:1, label:'🪙 Or de départ +25',    desc:'Or initial : +'+(((m.city.gold||0)*25)+100)+' total', val: m.city.gold||0  },
-        { key:'mana',     tier:1, label:'✨ Mana de départ +25',  desc:'Mana initial : +'+(((m.city.mana||0)*25))+' bonus',  val: m.city.mana||0  },
+        { key:'gold',     tier:1, label:t('meta_city_or'),    desc:'Or initial : +'+(((m.city.gold||0)*25)+100)+' total', val: m.city.gold||0  },
+        { key:'mana',     tier:1, label:t('meta_city_mana'),  desc:'Mana initial : +'+(((m.city.mana||0)*25))+' bonus',  val: m.city.mana||0  },
         { key:'pop',      tier:1, label:'👥 Pop de départ +25',   desc:'Pop initiale : +'+(((m.city.pop||0)*25)+50)+' total',  val: m.city.pop||0   },
-        { key:'conscrit', tier:2, label:'⚔ Conscrit +1',       desc:'Capacité de recrutement +1',     val: m.city.conscrit },
+        { key:'conscrit', tier:2, label:'⚔ Conscrit +1',       desc:t('meta_city_recruit'),     val: m.city.conscrit },
         { key:'space',    tier:2, label:'▦ Espace +1',         desc:'Commence avec +1 espace',        val: m.city.space    },
     ];
 
-    let html = '<div class="meta-cat-title">Améliorations permanentes de la ville</div>';
+    let html = '<div class="meta-cat-title">' + t('meta_city_title') + '</div>';
     upgrades.forEach(function(u) {
         const tierOk = u.tier <= maxTier;
         const cost = metaCost(u.tier, u.val);
@@ -9532,7 +10033,7 @@ function renderMetaLevel() {
     // Niveau héros
     html += '<div class="meta-row" style="margin-bottom:6px">' +
         '<div style="flex:1">' +
-            '<div class="meta-row-name">⚔ Niveau Héros ' + heroLvl + '</div>' +
+            '<div class=\"meta-row-name\">' + t('meta_level_hero_title').replace('{n}',heroLvl) + '</div>' +
             '<div class="meta-row-sub">Débloque: +'  + (heroLvl < HERO_LEVEL_COSTS.length ? 'stats tier ' + (heroLvl+1) + ', +1 compétence' : 'max atteint') + '</div>' +
             '<div class="meta-row-sub" style="color:var(--teal-l)">Actuel: ' + heroSkillLimit(heroLvl) + ' compétence(s), tier ' + heroSkillTierLimit(heroLvl) + ' max</div>' +
         '</div>' +
@@ -9545,7 +10046,7 @@ function renderMetaLevel() {
     // Niveau ville
     html += '<div class="meta-row">' +
         '<div style="flex:1">' +
-            '<div class="meta-row-name">🏰 Niveau Ville ' + cityLvl + '</div>' +
+            '<div class=\"meta-row-name\">' + t('meta_level_city_title').replace('{n}',cityLvl) + '</div>' +
             '<div class="meta-row-sub">Débloque: ' + (cityLvl < CITY_LEVEL_COSTS.length ? 'améliorations tier ' + (cityLvl+1) : 'max atteint') + '</div>' +
         '</div>' +
         (cityNextCost
@@ -9613,7 +10114,7 @@ function showPreDungeonWindow(callback) {
         ['❤','HP', avatarHp+'/'+avatarMaxHp],
         ['⚔','ATK', atk], ['🗡','Dmg', avatarDmg],
         ['🛡','DEF', def], ['💫','Prot', protection],
-        ['🏹','Dist', avatarRanged?'Oui':'Non']
+        ['🏹','Dist', avatarRanged ? t('predng_stat_dist_oui') : t('predng_stat_dist_non')]
     ].map(function(e){
         return '<div style="text-align:center;background:#0c0818;border-radius:5px;padding:3px">'+
                '<div style="font-size:9px;color:#6a5a7a">'+e[0]+' '+e[1]+'</div>'+
@@ -9624,10 +10125,10 @@ function showPreDungeonWindow(callback) {
     if (eq) {
         const gN = getGlyphSlots(), pN = getPotionSlots();
         const _gChargeMap = {Fireball:glyphFireball, Rage:glyphRage, Bless:glyphBless};
-        const _gNameMap   = {Fireball:'Distorsion', Rage:'Rage', Bless:'Bénédiction'};
+        const _gNameMap   = {get Fireball(){ return t('predng_glyph_distorsion'); }, get Rage(){ return t('predng_glyph_rage'); }, get Bless(){ return t('predng_glyph_bene'); }};
         const _gIconMap   = {Fireball:'⏳', Rage:'⚡︎', Bless:'🌟'};
         const _pChargeMap = {PotionSoin:potionHeal, PotionPoison:potionAntiPoison};
-        const _pNameMap   = {PotionSoin:'Soin', PotionPoison:'Anti-Poison'};
+        const _pNameMap   = {get PotionSoin(){ return t('predng_potion_soin'); }, get PotionPoison(){ return t('predng_potion_antipoison'); }};
         const _pIconMap   = {PotionSoin:'🧪', PotionPoison:'🟢'};
         let html = '';
         [['weapon_main','🗡'],['weapon_off','🛡'],['armor','🥻'],['necklace','📿'],['belt','🪢']].forEach(function(s){
@@ -9639,7 +10140,7 @@ function showPreDungeonWindow(callback) {
         const gCounts = {};
         for (let i=0;i<gN;i++) { const id=equippedItems.glyphs[i]; if (id && (_gChargeMap[id]||0)>0) gCounts[id]=(gCounts[id]||0)+1; }
         const gTotal = glyphFireball + glyphRage + glyphBless;
-        html += '<span style="color:'+(gTotal>0?'#c080ff':'#3a2a4a')+'">✨ Glyphes</span>';
+        html += '<span style="color:'+(gTotal>0?'#c080ff':'#3a2a4a')+'">' + t('predng_glyph_label') + '</span>';
         if (gTotal > 0) {
             Object.keys(gCounts).forEach(function(id){
                 html += ' <span style="color:#c080ff">'+(_gIconMap[id]||'✨')+(_gNameMap[id]||id)+'×'+(_gChargeMap[id]||0)+'</span>';
@@ -9650,7 +10151,7 @@ function showPreDungeonWindow(callback) {
         const pCounts = {};
         for (let i=0;i<pN;i++) { const id=equippedItems.potions[i]; if (id && (_pChargeMap[id]||0)>0) pCounts[id]=(pCounts[id]||0)+1; }
         const pTotal = potionHeal + potionAntiPoison;
-        html += '<span style="color:'+(pTotal>0?'#4cffaa':'#3a2a4a')+'">🧪 Potions</span>';
+        html += '<span style="color:'+(pTotal>0?'#4cffaa':'#3a2a4a')+'">' + t('predng_potion_label') + '</span>';
         if (pTotal > 0) {
             Object.keys(pCounts).forEach(function(id){
                 html += ' <span style="color:#4cffaa">'+(_pIconMap[id]||'🧪')+(_pNameMap[id]||id)+'×'+(_pChargeMap[id]||0)+'</span>';
@@ -9664,9 +10165,9 @@ function showPreDungeonWindow(callback) {
         const _s = currentSeason;
         const _t = _s || 1;
         const dungeonTypes = [
-            { id:'tour',       icon:'🏚', name:'Tour Abandonnée',   diff:'Facile',   tierLabel:'Tier '+Math.max(1,_t-1), color:'#6a9a6a', border:'#2a4a2a', note:'Ennemis moins coriaces — butin réduit' },
-            { id:'grotte',     icon:'🕳', name:'Grotte Mystérieuse',diff:'Normale',  tierLabel:'Tier '+_t,               color:'#c0a060', border:'#5a4a2a', note:'Difficulté standard de la saison' },
-            { id:'catacombes', icon:'💀', name:'Catacombes Maudites',diff:'Difficile',tierLabel:'Tier '+(_t+1),          color:'#c06060', border:'#5a2a2a', note:(_t===9||currentTurn===9)?'Récompense de carac. disponible !':'Butin amélioré ×1.25' },
+            { id:'tour',       icon:'🏚', get name(){ return t('predng_tour_name'); },  get diff(){ return t('predng_diff_facile'); },   tierLabel:'Tier '+Math.max(1,_t-1), color:'#6a9a6a', border:'#2a4a2a', get note(){ return t('predng_tour_note'); } },
+            { id:'grotte',     icon:'🕳', get name(){ return t('predng_grotte_name'); }, get diff(){ return t('predng_diff_normale'); },  tierLabel:'Tier '+_t,               color:'#c0a060', border:'#5a4a2a', get note(){ return t('predng_grotte_note'); } },
+            { id:'catacombes', icon:'💀', get name(){ return t('predng_cata_name'); },   get diff(){ return t('predng_diff_difficile'); }, tierLabel:'Tier '+(_t+1),          color:'#c06060', border:'#5a2a2a', get note(){ return (_t===9||currentTurn===9) ? t('predng_cata_note_reward') : t('predng_cata_note_loot'); } },
         ];
         // Ouroboros disponible en S4, S8, S12... mais seulement au tour 9
         const isOuroSeason = _s > 0 && _s % 4 === 0;
@@ -9675,10 +10176,12 @@ function showPreDungeonWindow(callback) {
             const ouroLocked = currentTurn !== 9;
             dungeonTypes.push({
                 id:'ouroboros', icon: ourosDone ? '🐍✓' : '🐍',
-                name:"Aire d'Ouroboros", diff:'Légendaire', tierLabel:'Tier '+(_t+2),
+                get name(){ return t('predng_ouro_name'); },
+                get diff(){ return t('predng_diff_legendaire'); },
+                tierLabel:'Tier '+(_t+2),
                 color: ourosDone ? '#4a3a3a' : ouroLocked ? '#5a4a7a' : '#c080ff',
                 border: ourosDone ? '#2a2a2a' : ouroLocked ? '#3a2a5a' : '#6030a0',
-                note: ourosDone ? 'Déjà conquis cette saison' : ouroLocked ? '⏳ Disponible au tour 9 uniquement' : "🥚 Coquille d'Oeuf du Temps en jeu !",
+                get note(){ return ourosDone ? t('predng_ouro_done') : ouroLocked ? t('predng_ouro_locked') : t('predng_ouro_available'); },
                 disabled: ourosDone || ouroLocked
             });
         }
@@ -9767,8 +10270,8 @@ function renderEquipWindow() {
     if (statsEl) statsEl.innerHTML = [
         ['⚔','ATK',atk],['🗡','Dmg',avatarDmg],['🛡','DEF',def],
         ['💫','Prot',protection],['❤','HP',avatarHp+'/'+avatarMaxHp],
-        avatarRanged?['🏹','Dist','Oui']:null,
-        avatarScythe?['⚰','Faux','Oui']:null,
+        avatarRanged?['🏹','Dist',t('ew_dist_oui')]:null,
+        avatarScythe?['⚰','Faux',t('ew_faux_oui')]:null,
     ].filter(Boolean).map(function(e){
         return '<div style="display:flex;justify-content:space-between">'+
                '<span style="color:#6a5a7a">'+e[0]+' '+e[1]+'</span>'+
@@ -9795,7 +10298,7 @@ function renderEquipWindow() {
     if (gEl) {
         gEl.innerHTML = '';
         const _chargeMap = {Fireball:glyphFireball, Rage:glyphRage, Bless:glyphBless};
-        const _nameMap   = {Fireball:'Distorsion', Rage:'Rage', Bless:'Bénédiction'};
+        const _nameMap   = {get Fireball(){ return t('ew_glyph_distorsion'); }, get Rage(){ return t('ew_glyph_rage'); }, get Bless(){ return t('ew_glyph_bene'); }};
         const _iconMap   = {Fireball:'⏳', Rage:'⚡︎', Bless:'🌟'};
 
         const gUsed = equippedItems.glyphs.filter(function(id){ return !!id && (_chargeMap[id]||0) > 0; }).length;
@@ -9809,7 +10312,7 @@ function renderEquipWindow() {
 
         const gHeader = document.createElement('div');
         gHeader.className = 'ew-slot' + (gUsed > 0 ? ' equipped' : '') + (isGlyphActive ? ' active' : '');
-        gHeader.innerHTML = '✨ Glyphes <span style="font-size:9px;color:'+(gUsed>0?'#4cffaa':'#6a5a7a')+'">'+gUsed+'/'+gN+'</span>';
+        gHeader.innerHTML = t('ew_glyph_header')+' <span style="font-size:9px;color:'+(gUsed>0?'#4cffaa':'#6a5a7a')+'">' +gUsed+'/'+gN+'</span>';
         gHeader.onclick = function(){ ewSelectSlot(gNextSlot); };
         gEl.appendChild(gHeader);
 
@@ -9836,7 +10339,7 @@ function renderEquipWindow() {
     if (pEl) {
         pEl.innerHTML = '';
         const _pChargeMap = {PotionSoin:potionHeal, PotionPoison:potionAntiPoison};
-        const _pNameMap   = {PotionSoin:'Soin', PotionPoison:'Anti-Poison'};
+        const _pNameMap   = {get PotionSoin(){ return t('predng_potion_soin'); }, get PotionPoison(){ return t('predng_potion_antipoison'); }};
         const _pIconMap   = {PotionSoin:'🧪', PotionPoison:'🟢'};
 
         const pUsed = equippedItems.potions.filter(function(id){ return !!id && (_pChargeMap[id]||0) > 0; }).length;
@@ -9849,7 +10352,7 @@ function renderEquipWindow() {
 
         const pHeader = document.createElement('div');
         pHeader.className = 'ew-slot' + (pUsed > 0 ? ' equipped' : '') + (isPotionActive ? ' active' : '');
-        pHeader.innerHTML = '🧪 Potions <span style="font-size:9px;color:'+(pUsed>0?'#4cffaa':'#6a5a7a')+'">'+pUsed+'/'+pN+'</span>';
+        pHeader.innerHTML = t('ew_potion_header')+' <span style="font-size:9px;color:'+(pUsed>0?'#4cffaa':'#6a5a7a')+'">' +pUsed+'/'+pN+'</span>';
         pHeader.onclick = function(){ ewSelectSlot(pNextSlot); };
         pEl.appendChild(pHeader);
 
@@ -11142,7 +11645,7 @@ function dungeonUseGlyph(type) {
         glyphRage--;
         if (glyphRage === 0) equippedItems.glyphs = equippedItems.glyphs.map(function(id){ return id === 'Rage' ? null : id; });
         dungeonState.rageTurns = (dungeonState.rageTurns||0) + 3;
-        dngLog('💢 Glyphe de Rage : +ATK pendant 3 rounds', 'dlog-good');
+        dngLog(t('dng_log_rage_glyph'), 'dlog-good');
     }
     updateStats();
     const _tokG = dungeonState._actionToken;
@@ -11200,9 +11703,9 @@ function formatTraits(traits, useClass) {
     const counts = {};
     traits.forEach(function(t){ counts[t] = (counts[t]||0) + 1; });
     return Object.entries(counts).map(function(e) {
-        const t = e[0], n = e[1];
-        const label = n > 1 ? t + ' ' + (roman[n]||n) : t;
-        const isAnti = t.startsWith('anti');
+        const traitId = e[0], n = e[1];
+        const label = n > 1 ? traitId + ' ' + (roman[n]||n) : traitId;
+        const isAnti = traitId.startsWith('anti');
         if (useClass) {
             return '<span class="unit-trait '+(isAnti?'trait-anti':'trait-normal')+'">'+label+'</span>';
         }
@@ -11970,10 +12473,10 @@ function renderClassSkills() {
         // Skills méta : seulement ceux achetés
         btnRow.innerHTML = '';
         const skillMap = [
-            { id:'fireball', metaId:'Fireball',    icon:'⏳', label:'Distortion Temporelle', fn:"dungeonUseSkill('fireball')", color:'#a060ff', bg:'#0a0418' },
-            { id:'bless',    metaId:'Benediction', icon:'🌟', label:'Bénédiction',    fn:"dungeonUseSkill('bless')",    color:'#ffd060', bg:'#1a1000' },
-            { id:'rage',     metaId:'Rage',        icon:'💢', label:'Rage',           fn:"dungeonUseSkill('rage')",     color:'#ffb080', bg:'#2a0800' },
-            { id:'heal',     metaId:'Soin',        icon:'💊', label:'Soin',           fn:"dungeonUseSkill('heal')",     color:'#80ffb0', bg:'#041a0a' },
+            { id:'fireball', metaId:'Fireball',    icon:'⏳', get label(){ return t('skill_Fireball_label'); },    fn:"dungeonUseSkill('fireball')", color:'#a060ff', bg:'#0a0418' },
+            { id:'bless',    metaId:'Benediction', icon:'🌟', get label(){ return t('skill_Benediction_label'); }, fn:"dungeonUseSkill('bless')",    color:'#ffd060', bg:'#1a1000' },
+            { id:'rage',     metaId:'Rage',        icon:'💢', get label(){ return t('skill_Rage_label'); },        fn:"dungeonUseSkill('rage')",     color:'#ffb080', bg:'#2a0800' },
+            { id:'heal',     metaId:'Soin',        icon:'💊', get label(){ return t('skill_Soin_label'); },        fn:"dungeonUseSkill('heal')",     color:'#80ffb0', bg:'#041a0a' },
         ];
         skillMap.forEach(function(s) {
             var owned = hasMetaSkill(s.metaId);
@@ -11982,7 +12485,7 @@ function renderClassSkills() {
             btn.className = 'dng-btn';
             btn.style.cssText = 'min-width:90px;background:linear-gradient(135deg,'+s.bg+','+s.bg+'88);border:1px solid '+(owned?s.color:'#2a1a2a')+';color:'+(owned?s.color:'#3a2a3a')+(used?';opacity:.4':'')+(owned?'':';cursor:not-allowed');
             btn.disabled = !owned || !!used;
-            btn.title = owned ? '' : 'Non acheté dans la méta';
+            btn.title = owned ? '' : t('skill_not_bought');
             btn.innerHTML = s.icon + ' ' + s.label;
             if (owned) btn.setAttribute('onclick', s.fn);
             btnRow.appendChild(btn);
@@ -12000,7 +12503,7 @@ function renderClassSkills() {
             // Passif : afficher comme badge informatif, pas de bouton
             var badge = document.createElement('div');
             badge.style.cssText = 'font-size:9px;padding:2px 7px;border-radius:10px;background:#0a0818;border:1px dashed '+s.color+';color:'+s.color+';display:flex;align-items:center;gap:3px';
-            badge.innerHTML = s.icon + ' <span style="color:#6a5a7a">' + s.name + '</span> <span style="color:'+s.color+';font-size:8px">(passif actif)</span>';
+            badge.innerHTML = s.icon + ' <span style="color:#6a5a7a">' + s.name + '</span> <span style="color:'+s.color+';font-size:8px">('+t('skill_passif_label')+")</span>";
             btnRow.appendChild(badge);
             return;
         }
@@ -12022,7 +12525,7 @@ function renderClassSkills() {
         btn.disabled = !!used;
         var useLabel = maxU !== null
             ? ' <span style="font-size:8px;color:#aaa">('+uses+'/'+maxU+')</span>'
-            : (s.free ? ' <span style="font-size:8px;color:#aaa">(gratuit)</span>' : '');
+            : (s.free ? ' <span style="font-size:8px;color:#aaa">('+t('skill_gratuit')+')</span>' : '');
         btn.innerHTML = s.icon + ' ' + s.name + useLabel;
         btn.onclick = (function(sid){ return function(){ dungeonUseClassSkill(sid); }; })(s.id);
         btnRow.appendChild(btn);
@@ -12055,13 +12558,13 @@ function dungeonUseClassSkill(skillId) {
     if (skillDef.dynamicUses) {
         const uses2 = dungeonState['skill_'+skillId+'_uses'] || 0;
         const maxU2 = (skillDef.baseUses || 1) + Math.floor(skLv / 2);
-        if (uses2 >= maxU2) { dngLog('Compétence épuisée pour ce combat.', 'dlog-bad'); return; }
+        if (uses2 >= maxU2) { dngLog(t('skill_exhaust'), 'dlog-bad'); return; }
         dungeonState['skill_'+skillId+'_uses'] = uses2 + 1;
         renderClassSkills();
     } else if (!skillDef.free) {
         const maxUses = 1 + Math.floor(skLv / 2);
         const uses3 = dungeonState['skill_'+skillId+'_uses'] || 0;
-        if (uses3 >= maxUses) { dngLog('Compétence épuisée pour ce combat.', 'dlog-bad'); return; }
+        if (uses3 >= maxUses) { dngLog(t('skill_exhaust'), 'dlog-bad'); return; }
         dungeonState['skill_'+skillId+'_uses'] = uses3 + 1;
         renderClassSkills();
     }
@@ -12072,13 +12575,13 @@ function dungeonUseClassSkill(skillId) {
             const col = back.length > 0 && target && back.includes(target) ? back : front;
             const dmg = Math.max(1, atk);
             col.forEach(function(e){ dealDamageToEnemy(e, dmg, '#40c080'); });
-            dngLog('🏹 Volée ! -'+dmg+' HP à '+col.length+' cible(s)', 'dlog-good');
-            dngShowEffect('🏹', 'VOLÉE !', '#80ffb0', document.querySelector('#dng-enemies-zone'));
+            dngLog(t('dng_log_volley').replace('{n}',dmg).replace('{c}',col.length), 'dlog-good');
+            dngShowEffect('🏹', t('dng_log_volley_fx'), '#80ffb0', document.querySelector('#dng-enemies-zone'));
             break;
         }
         case 'piercing': {
             dungeonState._piercingNext = true;
-            dngLog('🎯 Flèche perçante : prochain tir ignore la protection.', 'dlog-good');
+            dngLog(t('dng_log_piercing'), 'dlog-good');
             renderClassSkills();
             break;
         }
@@ -12139,7 +12642,7 @@ function dungeonUseClassSkill(skillId) {
             if (dungeonState.combatAtkMalus > 0) { atk += dungeonState.combatAtkMalus; dungeonState.combatAtkMalus = 0; dungeonState.licheAtkReduction = 0; dngSetupZones(); }
             if (dungeonState.combatDefMalus > 0) { def += dungeonState.combatDefMalus; dungeonState.combatDefMalus = 0; dngSetupZones(); }
             dungeonState.poisonStacks = [];
-            dngLog('⏪ Rewind ! Compétences rechargées (-'+hpCost+' HP directs).', 'dlog-good');
+            dngLog(t('dng_log_rewind').replace('{n}',hpCost), 'dlog-good');
             dngShowEffect('⏪', 'REWIND !', '#c080ff', 'dng-avatar-side');
             if (typeof applyHpUpdate === 'function') applyHpUpdate();
             renderClassSkills();
@@ -12758,7 +13261,7 @@ function ouryCheckDungeonSave() {
     const dmg = target.hp;
     target.hp = 0;
     if (typeof dealDamageToEnemy === 'function') dealDamageToEnemy(target, dmg, '#c080ff');
-    if (typeof dngLog === 'function') dngLog('🐍 Oury surgit et terrasse ' + target.name + ' ! (' + dmg + ' dégâts)', 'dlog-good');
+    if (typeof dngLog === 'function') dngLog(t('oury_dng_save_log').replace('{name}',target.name).replace('{dmg}',dmg), 'dlog-good');
 
     // Restaurer 1 HP au héros et réactiver le combat
     dungeonState.avatarHp = 1;
@@ -12767,14 +13270,7 @@ function ouryCheckDungeonSave() {
     if (typeof avatarHp !== 'undefined') avatarHp = 1;
     if (typeof applyHpUpdate === 'function') applyHpUpdate();
 
-    ouryShowDrama(
-        '✦ OURY INTERVIENT ✦',
-        '*surgit des ombres dans un éclair violet* 🐍⚡<br><br>' +
-        '<strong>"ASSEZ !"</strong><br><br>' +
-        'Oury frappe <em>' + target.name + '</em> avec une précision foudroyante !<br>' +
-        '<span style="color:#c080ff">La mort peut attendre...</span>',
-        2800
-    );
+    ouryShowDrama(t('oury_surge_title'), t('oury_surge_body').replace('{name}', target.name), 2800);
     ouryWiggle();
 
     // Continuer le combat
@@ -12792,12 +13288,7 @@ function ouryCheckHordeBattle() {
     if (typeof hordeP !== 'number') return;
     const diff = hordeP - cityP;
     if (diff > 0 && diff <= 5) {
-        const warnings = [
-            '*sssserre les écailles* Attention ! La horde est plus forte de ' + diff + ' point(s) ! Recrute une unité si tu peux ! 🐍⚠️',
-            "*agite la queue nerveusement* C'essst très sssserré ! " + diff + " point(s) d'écart... Vérifie ton armée et équipe l'avatar ! 🐍",
-            "*siffle d'inquiétude* Sssssi proche ! La horde mène de " + diff + "... Envoie ton avatar en renfort ! 💜🐍",
-            "*se dresse en alerte* SSSSTOPP ! " + diff + " point(s) de différence ! Dernier moment pour recruter ! 🐍⚔️",
-        ];
+        const warnings = [t('oury_horde_warn_1'), t('oury_horde_warn_2'), t('oury_horde_warn_3'), t('oury_horde_warn_4')].map(function(w){ return w.replace(/\{diff\}/g, diff); });
         setTimeout(function() {
             ouryShowBubble(warnings[Math.floor(Math.random() * warnings.length)], 7000);
             ouryWiggle();
@@ -12813,17 +13304,9 @@ function ouryCheckHordeNul(cityPower, hordePower) {
 
     // Oury intervient — combat = nul
     ouryStartRest();
-    ouryShowDrama(
-        '✦ DÉCRET SERPENTIN ✦',
-        '*s\'élance entre les deux armées dans un tourbillon d\'écailles* 🐍✨<br><br>' +
-        '<strong>"HALTE À TOUS !"</strong><br><br>' +
-        'Par décision divine serpentine, ce combat est déclaré...<br>' +
-        '<span style="color:#ffd060;font-size:15px;font-family:Cinzel,serif">⚖ ÉGALITÉ ⚖</span><br>' +
-        '<span style="color:#6a5a7a;font-size:11px">La horde recule. Pour cette fois.</span>',
-        3500
-    );
+    ouryShowDrama(t('oury_horde_decree_title'), t('oury_horde_decree_body'), 3500);
     ouryWiggle();
-    if (typeof addLog === 'function') addLog('🐍 Oury intervient ! Le combat de horde est déclaré NUL — la horde recule !');
+    if (typeof addLog === 'function') addLog(t('oury_horde_null_log'));
     return true; // signale au code appelant de traiter comme nul
 }
 
@@ -14604,10 +15087,10 @@ body.clarity-on #clarity-resbar {
 
     // ---------- poll for state drift ----------
     function pollLoop() {
-        const t = readTurn();
+        const turnNum = readTurn();
         const s = readSeason();
-        if (t !== lastTurn || s !== lastSeason) {
-            lastTurn = t; lastSeason = s;
+        if (turnNum !== lastTurn || s !== lastSeason) {
+            lastTurn = turnNum; lastSeason = s;
             renderStatus();
         } else {
             renderStatus();
@@ -14832,7 +15315,37 @@ body.clarity-on #clarity-resbar {
 
         // first-run tutorial
         setTimeout(() => showTutorial(false), 800);
+
+        // Si la langue a déjà été chargée avant le boot (Firebase rapide),
+        // re-appliquer maintenant que le DOM clarity est prêt
+        setTimeout(function() {
+            if (typeof window.applyLangToUI === 'function') window.applyLangToUI();
+        }, 50);
     }
+
+    // Expose rebuild function for applyLangToUI (script 1)
+    window.rebuildClarityLabels = function() {
+        const isS5 = (typeof window.currentSeason !== 'undefined') && window.currentSeason >= 5;
+        // Banner instruction
+        const instrEl = document.getElementById('cb-instr-span');
+        if (instrEl) instrEl.innerHTML = isS5 ? t('cb_instr_s5') : t('cb_instr_early');
+        // Dock labels (update existing spans, don't recreate the element)
+        const dockLbls = {'cad-lbl-tile':t('cad_reveler'),'cad-lbl-build':t('cad_construire'),'cad-lbl-tax':t('cad_caravane'),'cad-lbl-recruit':t('cad_recruter')};
+        Object.keys(dockLbls).forEach(function(id){ const e=document.getElementById(id); if(e) e.textContent=dockLbls[id]; });
+        // Free rail labels
+        const railLbls = {'cfr-lbl-libre':t('cfr_libre'),'cfr-lbl-recruter':t('cfr_recruter'),'cfr-lbl-donjon':t('cfr_donjon'),'cfr-lbl-equiper':t('cfr_equiper'),'cfr-lbl-armee':t('cfr_mon_armee'),'cfr-lbl-horde':t('cfr_la_horde'),'cfr-toggle-text':t('cfr_clarte_on'),'cfr-monolith-label':t('cfr_scouter'),'cfr-heal-label':t('cfr_soin_hero')};
+        Object.keys(railLbls).forEach(function(id){ const e=document.getElementById(id); if(e) e.textContent=railLbls[id]; });
+        // Resbar labels
+        const resLbls = {'crb-lbl-eco':t('crb_eco'),'crb-lbl-cite':t('crb_cite'),'crb-lbl-avatar':t('crb_avatar'),'crb-name-or':t('crb_or'),'crb-name-mana':t('crb_mana'),'crb-name-pop':t('crb_pop'),'crb-name-fort':t('crb_fort'),'crb-name-cons':t('crb_conscrit'),'crb-name-slots':t('crb_slots'),'crb-name-hp':t('crb_pv'),'crb-name-atk':t('crb_attaque'),'crb-name-def':t('crb_defense')};
+        Object.keys(resLbls).forEach(function(id){ const e=document.getElementById(id); if(e) e.textContent=resLbls[id]; });
+        // Close button title
+        const capClose = document.getElementById('cap-close-btn');
+        if (capClose) capClose.title = t('cap_close_title');
+        // Chips
+        document.querySelectorAll('.clarity-chip.cc-action').forEach(function(chip){ chip.textContent=t('chip_action'); });
+        // Threat
+        try { renderThreat(); } catch(e) {}
+    };
 
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', boot);
