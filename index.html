@@ -1089,7 +1089,7 @@
         <div style="font-family:Cinzel,serif;font-size:28px;color:#c0a060;letter-spacing:3px;text-shadow:0 0 20px rgba(180,140,60,0.4)">⚔ Chronocity — A Roguelite City Builder</div>
         <div id="home-player-info" style="font-size:12px;color:#6a5a7a;margin-top:6px;min-height:18px"></div>
         <button id="home-btn-ladder" onclick="showLadder()" style="margin-top:8px;padding:6px 18px;background:#0a0818;border:1px solid #3a2a5a;border-radius:8px;color:#9a7aaa;font-size:11px;cursor:pointer;font-family:Cinzel,serif">🏆 Classement</button>
-        <div style="font-size:11px;color:#4a3a5a;margin-top:6px;letter-spacing:2px" data-version="0.596">VERSION 0.596</div>
+        <div style="font-size:11px;color:#4a3a5a;margin-top:6px;letter-spacing:2px" data-version="0.597">VERSION 0.597</div>
     </div>
     <div id="home-menu" style="display:flex;flex-direction:column;gap:10px;width:min(340px,90vw)">
         <button id="home-btn-load" onclick="homeLoad()" style="width:100%;padding:16px 0;font-family:Cinzel,serif;font-size:14px;cursor:pointer;border-radius:8px;background:linear-gradient(135deg,#1a1030,#2a1a40);color:#c080ff;border:1px solid #5040a0">📂 Charger une partie</button>
@@ -1252,7 +1252,7 @@
             <div id="ew-stats" style="background:#0a0812;border:1px solid #1a1228;border-radius:6px;padding:5px 7px;font-size:10px;line-height:1.8;margin-bottom:4px"></div>
             <div style="font-size:9px;color:#4a3a5a;letter-spacing:1px;margin:2px 0">ÉQUIPEMENT</div>
             <div class="ew-slot" id="slot-weapon_main" onclick="ewSelectSlot('weapon_main')">🗡 <span data-i18n="ew_slot_weapon">Arme princ.</span><span class="ew-slot-item"></span></div>
-            <div class="ew-slot" id="slot-weapon_off"  onclick="ewSelectSlot('weapon_off')">🛡 Arme/Bouclier<span class="ew-slot-item"></span></div>
+            <div class="ew-slot" id="slot-weapon_off"  onclick="ewSelectSlot('weapon_off')">🛡 <span data-i18n="ew_slot_weapon_off_lbl">Arme/Bouclier</span><span class="ew-slot-item"></span></div>
             <div class="ew-slot" id="slot-armor"       onclick="ewSelectSlot('armor')">🥋 <span data-i18n="ew_slot_armor">Armure</span><span class="ew-slot-item"></span></div>
             <div class="ew-slot" id="slot-necklace"    onclick="ewSelectSlot('necklace')">📿 <span data-i18n="ew_slot_necklace">Collier</span><span class="ew-slot-item"></span></div>
             <div class="ew-slot" id="slot-belt"        onclick="ewSelectSlot('belt')">🪢 <span data-i18n="ew_slot_belt">Ceinture</span><span class="ew-slot-item"></span></div>
@@ -1538,7 +1538,7 @@
 <!-- Frise de progression -->
 <div id="timeline">
     <div id="timeline-season">Saison 1</div>
-    <div style="font-family:Cinzel,serif;font-size:9px;color:#3a3050;margin-left:auto;padding-left:8px;white-space:nowrap">v0.596</div>
+    <div style="font-family:Cinzel,serif;font-size:9px;color:#3a3050;margin-left:auto;padding-left:8px;white-space:nowrap">v0.597</div>
     <div id="timeline-steps"></div>
     <button id="main-menu-btn" onclick="toggleSaveMenu()" style="background:linear-gradient(135deg,#1a1030,#2a1a40);border:1px solid #4a3060;color:#c0a060;font-size:16px;cursor:pointer;padding:2px 10px;border-radius:5px;white-space:nowrap;flex-shrink:0;letter-spacing:1px" title="Menu">☰ Menu</button>
     <button onclick="toggleMetaSummary()" style="background:linear-gradient(135deg,#101a10,#1a2a1a);border:1px solid #2a5a2a;color:#4cffaa;font-size:14px;cursor:pointer;padding:2px 8px;border-radius:5px;white-space:nowrap;flex-shrink:0" title="Résumé méta">✦ Méta</button>
@@ -1559,7 +1559,7 @@
     <div style="display:flex;gap:0;margin-bottom:16px;border-bottom:1px solid #333">
       <button class="army-tab active" id="tab-city"  onclick="armyTab('city')"  data-i18n="army_tab_city_label">⚔ Armée</button>
       <button class="army-tab"        id="tab-horde" onclick="armyTab('horde')" data-i18n="army_tab_horde_label">👹 Horde</button>
-      <button class="army-tab"        id="tab-result"onclick="armyTab('result')"id="tab-result-btn">📊 Résultat prévu</button>
+      <button class="army-tab"        id="tab-result"onclick="armyTab('result')"id="tab-result-btn" data-i18n="army_result_tab">📊 Résultat prévu</button>
     </div>
     <div id="army-tab-city"></div>
     <div id="army-tab-horde"  style="display:none"></div>
@@ -1658,7 +1658,7 @@
             <div class="action-section" id="sec-tile" style="display:flex;flex-direction:column;">
                 <div class="action-section-title" id="sec-title-tuile" data-i18n="sec_tuile">❖ Tuile</div>
                 <div id="tile-preview-card"></div>
-                <button class="action-main-btn" id="btn-reveal-tile" onclick="doRevealTile()">Révéler</button>
+                <button class="action-main-btn" id="btn-reveal-tile" data-i18n="btn_reveler" onclick="doRevealTile()">Révéler</button>
                 <div id="tile-action-hint" class="action-hint" style="flex:1"></div>
             </div>
 
@@ -2710,6 +2710,205 @@ const LANGS = {
         ui_turn_label:'Tour',
         turn_perturbed_desc:'Le chef de la horde perturbe les flux temporels ! Le bonus de caravane n\'est plus que de \u00d71.5.\nRessources disponibles : Or +{g} | Mana +{m} | Pop +{p}',
         turn_resources_avail:'Ressources disponibles : Or +{g} | Mana +{m} | Pop +{p}',
+        ew_click_slot:'Cliquez sur un slot pour voir les items disponibles',
+        ew_slot_weapon_off_lbl:'Arme/Bouclier',
+        ms_run:'Run', ms_unsaved:'Non sauvegardé', ms_deaths:'💀 Morts',
+        ms_dust_spent:'✦ Poussière totale dépensée', ms_shells_avail:'🥚 Coquilles disponibles',
+        ms_dust_total:'🌟 Poussière totale', ms_shells:'🥚 Coquilles',
+        ms_hero:'HÉROS', ms_city:'VILLE',
+        ms_hero_level:'Niveau héros', ms_atk_bonus:'ATK bonus',
+        ms_hp_bonus:'HP max bonus', ms_prot_bonus:'Protection bonus',
+        ms_dmg_bonus:'Dégâts bonus', ms_def_bonus:'DEF bonus',
+        ms_city_level:'Niveau ville', ms_gold_bonus:'Or bonus départ',
+        ms_power_bonus:'Puissance bonus', ms_space_bonus:'Emplacements',
+        ms_pop_bonus:'Pop bonus départ', ms_mana_bonus:'Mana bonus départ',
+        ms_conscrit_bonus:'⚔ Conscrit bonus', ms_fortif_bonus:'🏰 Fortification bonus',
+        ms_skill_niv:'Niv ', ms_skill_Fireball:'⏳ Distorsion Temporelle',
+        ms_skill_Benediction:'✝ Bénédiction', ms_skill_Rage:'⚡ Rage', ms_skill_Soin:'💚 Soin',
+        status_horde_combat:'⚔ COMBAT DE HORDE', status_action_ip:'⏳ Action en cours…',
+        status_action_taken:'✓ Action prise',
+        status_actions_1:'○ {n} action disponible', status_actions_n:'○ {n} actions disponibles',
+
+        // ── Noms bâtiments (FR) ──
+        bld_Ferme_name:'Ferme', bld_Mine_name:'Mine', bld_TourMana_name:'Tour de Mana',
+        bld_Caserne_name:'Caserne', bld_Eglise_name:'Église', bld_TourGarde_name:'Tour de Garde',
+        bld_Archerie_name:'Archerie', bld_EcoleMagie_name:'École de Magie',
+        bld_PlaceMarche_name:'Place du Marché', bld_Academie_name:'Académie militaire',
+        bld_Temple_name:'Temple', bld_TourMagie_name:'Tour de Magie',
+        bld_Caravanserail_name:'Caravansérail', bld_Cathedrale_name:'Cathédrale',
+        bld_AutelGuerre_name:'Autel de Guerre', bld_MonolitheVigie_name:'Monolithe de Vigie',
+        // ── Noms unités (FR) ──
+        unit_Milicien_name:'Milicien', unit_Soldat_name:'Soldat', unit_Lancier_name:'Lancier',
+        unit_Garde_name:'Garde', unit_Archer_name:'Archer', unit_Elementaire_name:'Élémentaire',
+        unit_Hallebardier_name:'Hallebardier', unit_Arbaletrier_name:'Arbalétrier',
+        unit_SoldatPavois_name:'Soldat Pavois', unit_Pretre_name:'Prêtre',
+        unit_ElementaireAir_name:"Élémentaire d'Air", unit_ElementaireTerre_name:'Élémentaire de Terre',
+        unit_ElementaireEau_name:"Élémentaire d'Eau", unit_ElementaireFeu_name:'Élémentaire de Feu',
+        unit_Paladin_name:'Paladin', unit_Dryade_name:'Dryade',
+        unit_Ingenieur_name:'Ingénieur', unit_Inquisiteur_name:'Inquisiteur',
+
+        // ── Missing keys batch ──
+        action_hint_s5: 'Choisis <b>1 action principale</b> ce tour (Révéler · Construire · Caravane · <span style="color:#ffb040">Recruter</span>). Les actions <b style="color:#80c0ff">libres</b> (équiper, sort, donjon) ne consomment pas ton tour.',
+        action_hint_early: 'Choisis <b>1 action principale</b> ce tour (Révéler · Construire · Caravane). Les actions <b style="color:#80c0ff">libres</b> (recruter, équiper, sort, donjon) ne consomment pas ton tour.',
+        bld_Ferme_name:'Ferme', bld_Mine_name:'Mine', bld_TourMana_name:'Tour de Mana',
+        bld_Caserne_name:'Caserne', bld_Eglise_name:'Église', bld_TourGarde_name:'Tour de Garde',
+        bld_Archerie_name:'Archerie', bld_EcoleMagie_name:'École de Magie',
+        bld_PlaceMarche_name:'Place du Marché', bld_Academie_name:'Académie militaire',
+        bld_Temple_name:'Temple', bld_TourMagie_name:'Tour de Magie',
+        bld_Caravanserail_name:'Caravansérail', bld_Cathedrale_name:'Cathédrale',
+        bld_AutelGuerre_name:'Autel de Guerre', bld_MonolitheVigie_name:'Monolithe de Vigie',
+        unit_Milicien_name:'Milicien', unit_Soldat_name:'Soldat', unit_Lancier_name:'Lancier',
+        unit_Garde_name:'Garde', unit_Archer_name:'Archer', unit_Elementaire_name:'Élémentaire',
+        unit_Hallebardier_name:'Hallebardier', unit_Arbaletrier_name:'Arbalétrier',
+        unit_SoldatPavois_name:'Soldat Pavois', unit_Pretre_name:'Prêtre',
+        unit_ElementaireAir_name:"Élémentaire d\'Air", unit_ElementaireTerre_name:'Élémentaire de Terre',
+        unit_ElementaireEau_name:"Élémentaire d\'Eau", unit_ElementaireFeu_name:'Élémentaire de Feu',
+        unit_Paladin_name:'Paladin', unit_Dryade_name:'Dryade',
+        unit_Ingenieur_name:'Ingénieur', unit_Inquisiteur_name:'Inquisiteur',
+        enemy_Araignee:'Araignée Venimeuse', enemy_ArcherGobelin:'Archer Gobelin',
+        enemy_Demon:'Démon', enemy_GoblinBoss:'Chef Gobelin',
+        enemy_Liche:'Liche', enemy_LicheAncienne:'Liche Ancienne', enemy_LicheMineure:'Liche Mineure',
+        enemy_Necromancien:'Nécromancien', enemy_Orc:'Orc', enemy_OrcElite:'Orc Élite',
+        enemy_Squelette:'Squelette', enemy_SqueletteAncien:'Squelette Ancien', enemy_SqueletteRoyal:'Squelette Royal',
+        eq_Epee:'Épée en fer', eq_Epee_desc:'ATK +1, Dmg +1',
+        eq_Dague:'Dague acérée', eq_Dague_desc:'ATK +2, Dmg +1',
+        eq_EpeeRunique:'Épée runique', eq_EpeeRunique_desc:'ATK +2, Dmg +2, Magique',
+        eq_Hache:'Hache de guerre', eq_Hache_desc:'Dmg +2, ATK -1',
+        eq_Arc:'Arc elfique', eq_Arc_desc:'ATK +2, Dmg +2, Distance. Planche de dégâts +0.5.',
+        eq_Arbalete:'Arbalète lourde', eq_Arbalete_desc:'ATK +2, Dmg +2, Distance, Perçant',
+        eq_Faux:'Faux de guerre', eq_Faux_desc:'ATK -1, Dmg +1, Frappe toute la colonne avant',
+        eq_Bouclier:'Bouclier léger', eq_Bouclier_desc:'Protection +1',
+        eq_Pavois:'Pavois', eq_Pavois_desc:'Protection +1, +3 vs Distance',
+        eq_BouclierR:'Bouclier runique', eq_BouclierR_desc:'Prot +2, bonus timing ×0.5→×1',
+        eq_Cuir:'Armure de cuir', eq_Cuir_desc:'DEF +1, HP max +3',
+        eq_Mailles:'Cotte de mailles', eq_Mailles_desc:'DEF +2, Protection +1, HP max +3',
+        eq_CollierDef:'Collier de défense', eq_CollierDef_desc:'DEF +1',
+        eq_CollierAtk:"Collier d\'attaque", eq_CollierAtk_desc:'ATK +1',
+        eq_CollierProt:'Collier de protection', eq_CollierProt_desc:'Protection +1',
+        eq_CollierBeni:'Collier béni', eq_CollierBeni_desc:'Immunité baisse ATK (Liche)',
+        eq_CeintureHP:'Ceinture de vigueur', eq_CeintureHP_desc:'HP max +3',
+        eq_CeinturePoison:'Ceinture anti-poison', eq_CeinturePoison_desc:'Immunité poison (araignée, trappe)',
+        eq_CeintureStun_desc:'Immunité stun (troll)',
+        eq_Robe:'Robe de mage', eq_Robe_desc:"DEF +1 — réservée Mage et Aventurier",
+        eq_CuirLeger:'Armure légère', eq_CuirLeger_desc:'DEF +1, HP max +2',
+        eq_CuirLourd:'Armure lourde', eq_CuirLourd_desc:'DEF +3, Prot +1, HP max +4',
+        eq_Baguette:'Baguette magique', eq_Baguette_desc:'Dégâts fixes 2 (ignore armure), Distance',
+        eq_Baton:'Bâton magique', eq_Baton_desc:'Dégâts fixes 4 (ignore armure), Distance',
+        eq_Fireball:'Glyphe de Distorsion', eq_Fireball_desc:'Distorsion — dégâts sur tous les ennemis',
+        eq_Rage:'Glyphe de Rage', eq_Rage_desc:'Dégâts ×2 pendant 2 rounds',
+        eq_PotionSoin:'Potion de Soin', eq_PotionSoin_desc:'+3 HP en combat, hors action',
+        eq_PotionPoison:'Potion Anti-Poison', eq_PotionPoison_desc:'Annule le poison actif, hors action',
+        eq_Bless_desc:'Zone ×1→×1.5',
+        eq_cat_arme1:'⚔ Armes 1 main', eq_cat_arme2:'⚔ Armes 2 mains',
+        eq_cat_distance:'🏹 Distance', eq_cat_boucliers:'🛡 Boucliers',
+        eq_cat_armures:'🥋 Armures', eq_cat_colliers:'📿 Colliers',
+        eq_cat_ceintures:'🪢 Ceintures', eq_cat_glyphes:'🔮 Glyphes', eq_cat_potions:'🧪 Potions',
+        eq_req_caserne:'Caserne', eq_req_tourmagie:'Tour de Magie', eq_req_archerie:'Archerie',
+        eq_req_eglise:'Église', eq_req_temple:'Temple', eq_req_academie:'Académie militaire',
+        eq_req_caserne_mine:'Caserne + Mine', eq_req_tourmagie_eglise:'Tour de Magie + Église',
+        eq_req_academie_temple:'Académie + Temple',
+        ew_glyph_bene:'Bénédiction', ew_glyph_rage:'Rage',
+        recruit_conscrit_s5:'⚔ Conscription : {c} — Recrues ce tour : {n}/{max}',
+        recruit_conscrit_free:'⚔ Conscription disponible : {c}',
+        recruit_need_caserne:'Construisez une Caserne pour recruter des soldats.',
+        recruit_need_academie:"Nécessite une Académie militaire",
+        recruit_need_caserne2:"Nécessite une Caserne",
+        cad_construire:'Construire', cad_recruter:'Recruter',
+        cap_build:'⚒︎ Construire un bâtiment', cap_recruit:'⚔ Recruter',
+        cfr_recruter:'Recruter', cfr_equiper:'Équiper',
+        cfr_la_horde:'La horde', cfr_soin_hero:'Soin héro',
+        crb_cite:'Cité', crb_avatar:'Avatar', crb_pop:'Population',
+        crb_mana:'Mana', crb_conscrit:'Conscrits', crb_pv:'PV', crb_defense:'Défense',
+        tile_Collines:'Collines', tile_Foret:'Forêt', tile_Montagne:'Montagne', tile_Ville:'Ville',
+        tl_COMBAT:'COMBAT', tl_Conjonction:'Conjonction', tl_Eclaireurs:'Éclaireurs',
+        season_Ete:'Été', season_Hiver:'Hiver',
+        threat_horde:'Horde', threat_tours:'tours',
+        status_action_ip:'⏳ Action en cours…', status_actions_n:'○ {n} actions disponibles',
+        meta_max:'Max', meta_tab_city:'🏰 Ville', meta_tab_legendary:'🥚 Légendaire',
+        meta_stat_atk_desc:'Attaque permanente +1', meta_stat_hp_desc:'Points de vie max +3',
+        meta_stat_dmg_desc:'Dégâts de base +1', meta_stat_prot_desc:'Absorbe 1 dégât par coup',
+        meta_stat_def_desc:'Défense permanente +1',
+        ms_deaths:'💀 Morts', ms_dust_spent:'✦ Poussière totale dépensée',
+        ms_shells_avail:'🥚 Coquilles disponibles', ms_shells:'🥚 Coquilles',
+        ms_city:'VILLE', ms_atk_bonus:'ATK bonus', ms_prot_bonus:'Protection bonus',
+        ms_def_bonus:'DEF bonus', ms_fortif_bonus:'🏰 Fortification bonus',
+        ms_gold_bonus:'Or bonus départ', ms_space_bonus:'Emplacements',
+        ms_mana_bonus:'Mana bonus départ', ms_unsaved:'Non sauvegardé',
+        ms_skill_Fireball:'⏳ Distorsion Temporelle', ms_skill_Rage:'⚡ Rage', ms_skill_Soin:'💚 Soin',
+        predng_diff_normale:'Normale', predng_diff_legendaire:'Légendaire',
+        predng_glyph_rage:'Rage', predng_glyph_bene:'Bénédiction',
+        predng_potion_antipoison:'Anti-Poison', predng_potion_label:'🧪 Potions',
+        predng_stat_dist_non:'Non',
+        predng_tour_note:'Ennemis moins coriaces — butin réduit',
+        predng_grotte_note:'Difficulté standard de la saison',
+        predng_cata_note_reward:'Récompense de carac. disponible !',
+        class_warrior_desc:'Guerrier — maîtrise des armes lourdes et cris de guerre.',
+        class_archer_desc:'Archer — tirs à distance, volées et flèches perçantes.',
+        class_mage_desc:'Mage — sorts offensifs, distorsion et armure de mana.',
+        class_adventurer_desc:"Aventurier — polyvalent, bonus en donjon et exploration.",
+        skill_volley_desc:'Volée : attaque tous les ennemis visibles.',
+        skill_explosive_desc:'Explosive : dégâts en zone sur les adjacents.',
+        skill_piercing_desc:'Perçant : traverse le premier ennemi.',
+        skill_vampiric_desc:'Vampirique : récupère des HP sur les dégâts.',
+        skill_warcry_desc:'Cri de guerre : boost ATK temporaire.',
+        skill_crushing_desc:'Écrasant : réduit la DEF ennemie.',
+        skill_stun_desc:'Étourdissement : chance de stun.',
+        skill_perfect_heal_desc:'Soin parfait : récupère tous les HP.',
+        skill_arcane_desc:'Arcane : dégâts magiques purs.',
+        skill_freeze_desc:'Gel : paralyse les ennemis.',
+        skill_shield_desc:'Armure de mana : absorbe des dégâts.',
+        skill_zap_desc:'Zap : éclair démoniaque.',
+        skill_rewind_desc:'Rewind : recharge les compétences.',
+        skill_mirror_desc:'Miroir : reflète les dégâts.',
+        skill_poison_cloud_desc:'Nuage de poison : empoisonne les ennemis.',
+        skill_blade_trap_desc:'Piège à lames : dégâts au début du combat.',
+        skill_curse_desc:"Malédiction : réduit l\'ATK ennemie.",
+        skill_ScoutHorde_desc:'Scout : révèle la composition de la horde.',
+        leg_grandeTour_desc:'Fortification +2 permanente par saison.',
+        leg_arbreElfique_desc:'Génère des unités elfe chaque saison.',
+        leg_forteresseNaine_desc:'DEF +1 et fortifications renforcées.',
+        leg_sanctuaire_desc:'Bénit les unités au début de chaque saison.',
+        leg_palaisMiroirs_desc:'Reflète une partie des dégâts de horde.',
+        leg_opt_gt_boostAtk_desc:'Boost ATK de toutes les unités.',
+        leg_opt_gt_modifTerrain_desc:'Modifie le terrain en ta faveur.',
+        leg_opt_gt_boostTraits_desc:'Amplifie les traits des unités.',
+        leg_opt_ae_eclaireurs_desc:'Déploie des éclaireurs chaque saison.',
+        leg_opt_ae_fabricant_desc:'Fabrique des équipements bonus.',
+        leg_opt_ae_druidique_desc:'Soins druidiques passifs.',
+        leg_opt_fn_forgeron_desc:"Améliore l\'équipement de l\'avatar.",
+        leg_opt_fn_runes_desc:'Grave des runes sur les unités.',
+        leg_opt_fn_ingenieurs_desc:'Ingénieurs renforcent les fortifications.',
+        leg_opt_sa_aura_desc:"Aura de protection sur l\'armée.",
+        leg_opt_sa_inquisiteurs_desc:'Déploie des inquisiteurs.',
+        leg_opt_sa_benediction_desc:'Bénédiction massive en combat.',
+        army_power_city: '🔵 Puissance ville', army_power_horde: '🔴 Puissance horde',
+        army_total_power: 'Puissance totale estimée : ', army_no_units: 'Aucune unité recrutée.',
+        army_fortif_avatar: 'Fortifications : {f} | Avatar : {a}',
+        army_avatar_avail: 'disponible', army_avatar_unavail: 'indisponible',
+        army_horde_unrevealed: 'Horde non encore révélée (tour 5).',
+        army_horde_prev_title: 'Horde S{s} — renforts de cette saison non encore révélés.',
+        army_horde_prev_label: '⚔ HORDE S{s} ({n} unités connues)',
+        army_horde_scouts_pending: "⚠ Les éclaireurs n\'ont pas encore rapporté les renforts de cette saison…",
+        army_no_unit_line: 'Aucune unité.',
+        army_horde_unknown: '❓ Non identifiées',
+        army_anti_caption: '⚜ Capacités anti-horde :',
+        army_result_tab: '📊 Résultat prévu',
+        army_win: '✓ Prévision : Victoire (+{n})',
+        army_lose: '✗ Prévision : Défaite ({n})',
+        army_lose_fortif: '-{n} fortification(s) en jeu',
+        army_hidden_warn: '⚠ Des troupes non identifiées peuvent changer ce résultat !',
+        army_no_reveal: "La horde n\'a pas encore été révélée.",
+        army_traits_caption: '⚔ Confrontation des traits :',
+        army_trait_horde: 'Trait horde',
+        army_close: 'Fermer',
+        army_unit_col: 'Unité', army_atk_col: 'ATK', army_mag_col: 'Mag',
+        army_trait_col: 'Traits', army_qty_col: 'Qté',
+        army_horde_vs: '⚔ Horde : ', army_city_vs: '🏰 Ville : ',
+        army_scouted: 'scouté',
+        free_action_avail: '🔵 Libre',
+        hero_resting: 'Héro au repos',
+        recruit_window_title: '⚔ Recruter des troupes',
+        dock_action_label: '🟡 1 ACTION / TOUR',
         lang_select_title: '🌐 Choisir la langue',
         lang_fr: '🇫🇷 Français',
         lang_en: '🇬🇧 English',
@@ -3520,6 +3719,187 @@ const LANGS = {
         ui_turn_label:'Turn',
         turn_perturbed_desc:'The horde chief disrupts temporal flows! Caravan bonus \u00d71.5.\nAvailable resources: Gold +{g} | Mana +{m} | Pop +{p}',
         turn_resources_avail:'Available resources: Gold +{g} | Mana +{m} | Pop +{p}',
+        ew_click_slot:'Click a slot to see available items',
+        ew_slot_weapon_off_lbl:'Weapon/Shield',
+        ms_run:'Run', ms_unsaved:'Unsaved', ms_deaths:'💀 Deaths',
+        ms_dust_spent:'✦ Total dust spent', ms_shells_avail:'🥚 Available shells',
+        ms_dust_total:'🌟 Total dust', ms_shells:'🥚 Shells',
+        ms_hero:'HERO', ms_city:'CITY',
+        ms_hero_level:'Hero level', ms_atk_bonus:'ATK bonus',
+        ms_hp_bonus:'HP max bonus', ms_prot_bonus:'Protection bonus',
+        ms_dmg_bonus:'Damage bonus', ms_def_bonus:'DEF bonus',
+        ms_city_level:'City level', ms_gold_bonus:'Starting gold bonus',
+        ms_power_bonus:'Power bonus', ms_space_bonus:'Slots',
+        ms_pop_bonus:'Starting pop bonus', ms_mana_bonus:'Starting mana bonus',
+        ms_conscrit_bonus:'⚔ Conscript bonus', ms_fortif_bonus:'🏰 Fortification bonus',
+        ms_skill_niv:'Lv ', ms_skill_Fireball:'⏳ Temporal Distortion',
+        ms_skill_Benediction:'✝ Blessing', ms_skill_Rage:'⚡ Rage', ms_skill_Soin:'💚 Heal',
+        status_horde_combat:'⚔ HORDE BATTLE', status_action_ip:'⏳ Action in progress…',
+        status_action_taken:'✓ Action taken',
+        status_actions_1:'○ {n} action available', status_actions_n:'○ {n} actions available',
+
+        // ── Missing keys batch ──
+        action_hint_s5: 'Choose <b>1 main action</b> this turn (Reveal · Build · Caravan · <span style="color:#ffb040">Recruit</span>). <b style="color:#80c0ff">Free</b> actions (equip, spell, dungeon) don\'t cost your turn.',
+        action_hint_early: 'Choose <b>1 main action</b> this turn (Reveal · Build · Caravan). <b style="color:#80c0ff">Free</b> actions (recruit, equip, spell, dungeon) don\'t cost your turn.',
+        bld_Ferme_name:'Farm', bld_Mine_name:'Mine', bld_TourMana_name:'Mana Tower',
+        bld_Caserne_name:'Barracks', bld_Eglise_name:'Church', bld_TourGarde_name:'Guard Tower',
+        bld_Archerie_name:'Archery Range', bld_EcoleMagie_name:'Magic School',
+        bld_PlaceMarche_name:'Market Square', bld_Academie_name:'Military Academy',
+        bld_Temple_name:'Temple', bld_TourMagie_name:'Magic Tower',
+        bld_Caravanserail_name:'Caravanserai', bld_Cathedrale_name:'Cathedral',
+        bld_AutelGuerre_name:'War Altar', bld_MonolitheVigie_name:'Watchtower Monolith',
+        unit_Milicien_name:'Militia', unit_Soldat_name:'Soldier', unit_Lancier_name:'Spearman',
+        unit_Garde_name:'Guard', unit_Archer_name:'Archer', unit_Elementaire_name:'Elemental',
+        unit_Hallebardier_name:'Halberdier', unit_Arbaletrier_name:'Crossbowman',
+        unit_SoldatPavois_name:'Pavise Soldier', unit_Pretre_name:'Priest',
+        unit_ElementaireAir_name:'Air Elemental', unit_ElementaireTerre_name:'Earth Elemental',
+        unit_ElementaireEau_name:'Water Elemental', unit_ElementaireFeu_name:'Fire Elemental',
+        unit_Paladin_name:'Paladin', unit_Dryade_name:'Dryad',
+        unit_Ingenieur_name:'Engineer', unit_Inquisiteur_name:'Inquisitor',
+        enemy_Araignee:'Venomous Spider', enemy_ArcherGobelin:'Goblin Archer',
+        enemy_Demon:'Demon', enemy_GoblinBoss:'Goblin Chief',
+        enemy_Liche:'Lich', enemy_LicheAncienne:'Ancient Lich', enemy_LicheMineure:'Lesser Lich',
+        enemy_Necromancien:'Necromancer', enemy_Orc:'Orc', enemy_OrcElite:'Elite Orc',
+        enemy_Squelette:'Skeleton', enemy_SqueletteAncien:'Ancient Skeleton', enemy_SqueletteRoyal:'Royal Skeleton',
+        eq_Epee:'Iron Sword', eq_Epee_desc:'ATK +1, Dmg +1',
+        eq_Dague:'Sharp Dagger', eq_Dague_desc:'ATK +2, Dmg +1',
+        eq_EpeeRunique:'Runic Sword', eq_EpeeRunique_desc:'ATK +2, Dmg +2, Magic',
+        eq_Hache:'War Axe', eq_Hache_desc:'Dmg +2, ATK -1',
+        eq_Arc:'Elven Bow', eq_Arc_desc:'ATK +2, Dmg +2, Ranged. Damage floor +0.5.',
+        eq_Arbalete:'Heavy Crossbow', eq_Arbalete_desc:'ATK +2, Dmg +2, Ranged, Piercing',
+        eq_Faux:'War Scythe', eq_Faux_desc:'ATK -1, Dmg +1, Hits entire front column',
+        eq_Bouclier:'Light Shield', eq_Bouclier_desc:'Protection +1',
+        eq_Pavois:'Pavise', eq_Pavois_desc:'Protection +1, +3 vs Ranged',
+        eq_BouclierR:'Runic Shield', eq_BouclierR_desc:'Prot +2, timing bonus ×0.5→×1',
+        eq_Cuir:'Leather Armor', eq_Cuir_desc:'DEF +1, HP max +3',
+        eq_Mailles:'Chainmail', eq_Mailles_desc:'DEF +2, Protection +1, HP max +3',
+        eq_CollierDef:'Defense Necklace', eq_CollierDef_desc:'DEF +1',
+        eq_CollierAtk:'Attack Necklace', eq_CollierAtk_desc:'ATK +1',
+        eq_CollierProt:'Protection Necklace', eq_CollierProt_desc:'Protection +1',
+        eq_CollierBeni:'Blessed Necklace', eq_CollierBeni_desc:'Immunity to ATK reduction (Lich)',
+        eq_CeintureHP:'Vigor Belt', eq_CeintureHP_desc:'HP max +3',
+        eq_CeinturePoison:'Anti-Poison Belt', eq_CeinturePoison_desc:'Poison immunity (spider, trap)',
+        eq_CeintureStun_desc:'Stun immunity (troll)',
+        eq_Robe:'Mage Robe', eq_Robe_desc:'DEF +1 — Mage and Adventurer only',
+        eq_CuirLeger:'Light Armor', eq_CuirLeger_desc:'DEF +1, HP max +2',
+        eq_CuirLourd:'Heavy Armor', eq_CuirLourd_desc:'DEF +3, Prot +1, HP max +4',
+        eq_Baguette:'Magic Wand', eq_Baguette_desc:'Fixed 2 damage (ignores armor), Ranged',
+        eq_Baton:'Magic Staff', eq_Baton_desc:'Fixed 4 damage (ignores armor), Ranged',
+        eq_Fireball:'Distortion Glyph', eq_Fireball_desc:'Distortion — damage to all enemies',
+        eq_Rage:'Rage Glyph', eq_Rage_desc:'Damage ×2 for 2 rounds',
+        eq_PotionSoin:'Healing Potion', eq_PotionSoin_desc:'+3 HP in combat, free action',
+        eq_PotionPoison:'Anti-Poison Potion', eq_PotionPoison_desc:'Cancels active poison, free action',
+        eq_Bless_desc:'Zone ×1→×1.5',
+        eq_cat_arme1:'⚔ 1-hand Weapons', eq_cat_arme2:'⚔ 2-hand Weapons',
+        eq_cat_distance:'🏹 Ranged', eq_cat_boucliers:'🛡 Shields',
+        eq_cat_armures:'🥋 Armors', eq_cat_colliers:'📿 Necklaces',
+        eq_cat_ceintures:'🪢 Belts', eq_cat_glyphes:'🔮 Glyphs', eq_cat_potions:'🧪 Potions',
+        eq_req_caserne:'Barracks', eq_req_tourmagie:'Magic Tower', eq_req_archerie:'Archery Range',
+        eq_req_eglise:'Church', eq_req_temple:'Temple', eq_req_academie:'Military Academy',
+        eq_req_caserne_mine:'Barracks + Mine', eq_req_tourmagie_eglise:'Magic Tower + Church',
+        eq_req_academie_temple:'Academy + Temple',
+        ew_glyph_bene:'Blessing', ew_glyph_rage:'Rage',
+        recruit_conscrit_s5:'⚔ Conscription: {c} — Recruits this turn: {n}/{max}',
+        recruit_conscrit_free:'⚔ Available conscription: {c}',
+        recruit_need_caserne:'Build a Barracks to recruit soldiers.',
+        recruit_need_academie:'Requires a Military Academy',
+        recruit_need_caserne2:'Requires a Barracks',
+        cad_construire:'Build', cad_recruter:'Recruit',
+        cap_build:'⚒︎ Build a building', cap_recruit:'⚔ Recruit',
+        cfr_recruter:'Recruit', cfr_equiper:'Equip',
+        cfr_la_horde:'The horde', cfr_soin_hero:'Hero heal',
+        crb_cite:'City', crb_avatar:'Avatar', crb_pop:'Population',
+        crb_mana:'Mana', crb_conscrit:'Conscripts', crb_pv:'HP', crb_defense:'Defense',
+        tile_Collines:'Hills', tile_Foret:'Forest', tile_Montagne:'Mountain', tile_Ville:'City',
+        tl_COMBAT:'BATTLE', tl_Conjonction:'Conjunction', tl_Eclaireurs:'Scouts',
+        season_Ete:'Summer', season_Hiver:'Winter',
+        threat_horde:'Horde', threat_tours:'turns',
+        status_action_ip:'⏳ Action in progress…', status_actions_n:'○ {n} actions available',
+        meta_max:'Max', meta_tab_city:'🏰 City', meta_tab_legendary:'🥚 Legendary',
+        meta_stat_atk_desc:'Permanent attack +1', meta_stat_hp_desc:'Max hit points +3',
+        meta_stat_dmg_desc:'Base damage +1', meta_stat_prot_desc:'Absorbs 1 damage per hit',
+        meta_stat_def_desc:'Permanent defense +1',
+        ms_deaths:'💀 Deaths', ms_dust_spent:'✦ Total dust spent',
+        ms_shells_avail:'🥚 Available shells', ms_shells:'🥚 Shells',
+        ms_city:'CITY', ms_atk_bonus:'ATK bonus', ms_prot_bonus:'Protection bonus',
+        ms_def_bonus:'DEF bonus', ms_fortif_bonus:'🏰 Fortification bonus',
+        ms_gold_bonus:'Starting gold bonus', ms_space_bonus:'Slots',
+        ms_mana_bonus:'Starting mana bonus', ms_unsaved:'Unsaved',
+        ms_skill_Fireball:'⏳ Temporal Distortion', ms_skill_Rage:'⚡ Rage', ms_skill_Soin:'💚 Heal',
+        predng_diff_normale:'Normal', predng_diff_legendaire:'Legendary',
+        predng_glyph_rage:'Rage', predng_glyph_bene:'Blessing',
+        predng_potion_antipoison:'Anti-Poison', predng_potion_label:'🧪 Potions',
+        predng_stat_dist_non:'No',
+        predng_tour_note:'Weaker enemies — reduced loot',
+        predng_grotte_note:'Standard difficulty for the season',
+        predng_cata_note_reward:'Stat reward available!',
+        class_warrior_desc:'Warrior — masters heavy weapons and war cries.',
+        class_archer_desc:'Archer — ranged shots, volleys and piercing arrows.',
+        class_mage_desc:'Mage — offensive spells, distortion and mana armor.',
+        class_adventurer_desc:'Adventurer — versatile, dungeon and exploration bonuses.',
+        skill_volley_desc:'Volley: attack all visible enemies.',
+        skill_explosive_desc:'Explosive: area damage to adjacent enemies.',
+        skill_piercing_desc:'Piercing: passes through the first enemy.',
+        skill_vampiric_desc:'Vampiric: recover HP from damage dealt.',
+        skill_warcry_desc:'War Cry: temporary ATK boost.',
+        skill_crushing_desc:'Crushing: reduces enemy DEF.',
+        skill_stun_desc:'Stun: chance to stun.',
+        skill_perfect_heal_desc:'Perfect Heal: recover all HP.',
+        skill_arcane_desc:'Arcane: pure magic damage.',
+        skill_freeze_desc:'Freeze: paralyzes enemies.',
+        skill_shield_desc:'Mana Armor: absorbs damage.',
+        skill_zap_desc:'Zap: demonic lightning.',
+        skill_rewind_desc:'Rewind: recharge all skills.',
+        skill_mirror_desc:'Mirror: reflects damage.',
+        skill_poison_cloud_desc:'Poison Cloud: poisons all enemies.',
+        skill_blade_trap_desc:'Blade Trap: damage at start of combat.',
+        skill_curse_desc:"Curse: reduces enemy ATK.",
+        skill_ScoutHorde_desc:'Scout: reveals the horde composition.',
+        leg_grandeTour_desc:'Permanent +2 fortification per season.',
+        leg_arbreElfique_desc:'Generates elf units each season.',
+        leg_forteresseNaine_desc:'DEF +1 and reinforced fortifications.',
+        leg_sanctuaire_desc:'Blesses units at the start of each season.',
+        leg_palaisMiroirs_desc:'Reflects a portion of horde damage.',
+        leg_opt_gt_boostAtk_desc:'Boost ATK of all units.',
+        leg_opt_gt_modifTerrain_desc:'Modifies terrain in your favor.',
+        leg_opt_gt_boostTraits_desc:'Amplifies unit traits.',
+        leg_opt_ae_eclaireurs_desc:'Deploy scouts each season.',
+        leg_opt_ae_fabricant_desc:'Crafts bonus equipment.',
+        leg_opt_ae_druidique_desc:'Passive druidic healing.',
+        leg_opt_fn_forgeron_desc:"Upgrades avatar equipment.",
+        leg_opt_fn_runes_desc:'Engraves runes on units.',
+        leg_opt_fn_ingenieurs_desc:'Engineers reinforce fortifications.',
+        leg_opt_sa_aura_desc:'Protection aura on the army.',
+        leg_opt_sa_inquisiteurs_desc:'Deploys inquisitors.',
+        leg_opt_sa_benediction_desc:'Mass blessing in combat.',
+        army_power_city: '🔵 City power', army_power_horde: '🔴 Horde power',
+        army_total_power: 'Estimated total power: ', army_no_units: 'No units recruited.',
+        army_fortif_avatar: 'Fortifications: {f} | Avatar: {a}',
+        army_avatar_avail: 'available', army_avatar_unavail: 'unavailable',
+        army_horde_unrevealed: 'Horde not yet revealed (turn 5).',
+        army_horde_prev_title: 'Horde S{s} — this season reinforcements not yet revealed.',
+        army_horde_prev_label: '⚔ HORDE S{s} ({n} known units)',
+        army_horde_scouts_pending: '⚠ Scouts have not yet reported this season\'s reinforcements…',
+        army_no_unit_line: 'No units.',
+        army_horde_unknown: '❓ Unidentified',
+        army_anti_caption: '⚜ Anti-horde capabilities:',
+        army_result_tab: '📊 Projected result',
+        army_win: '✓ Forecast: Victory (+{n})',
+        army_lose: '✗ Forecast: Defeat ({n})',
+        army_lose_fortif: '-{n} fortification(s) at stake',
+        army_hidden_warn: '⚠ Unidentified troops may change this result!',
+        army_no_reveal: 'The horde has not been revealed yet.',
+        army_traits_caption: '⚔ Trait matchup:',
+        army_trait_horde: 'Horde trait',
+        army_close: 'Close',
+        army_unit_col: 'Unit', army_atk_col: 'ATK', army_mag_col: 'Mag',
+        army_trait_col: 'Traits', army_qty_col: 'Qty',
+        army_horde_vs: '⚔ Horde: ', army_city_vs: '🏰 City: ',
+        army_scouted: 'scouted',
+        free_action_avail: '🔵 Free',
+        hero_resting: 'Hero resting',
+        recruit_window_title: '⚔ Recruit troops',
+        dock_action_label: '🟡 1 ACTION / TURN',
         lang_select_title: '🌐 Choose Language',
         lang_fr: '🇫🇷 Français',
         lang_en: '🇬🇧 English',
@@ -3632,6 +4012,10 @@ function applyLangToUI() {
             armyTab(tabId);
         }
     }
+    // Re-render army content with new language
+    if (typeof renderArmyTabCity === 'function') renderArmyTabCity();
+    if (typeof renderArmyTabHorde === 'function') renderArmyTabHorde();
+    if (typeof renderArmyTabResult === 'function') renderArmyTabResult();
 
     // Panel recrutement (si ouvert)
     if (typeof renderRecruitList === 'function') {
@@ -7595,18 +7979,18 @@ function buyEquipment(name, costGold, costMana=0, costPop=0) {
 // Catalogue des unités défensives
 const UNIT_CATALOG = [
     // === Sans prérequis ===
-    { id:'Milicien',      name:'Milicien',         icon:'🪚', atk:1, atkMag:0, traits:['anti-pillard'],
+    { id:'Milicien',      get name(){ return t('unit_Milicien_name'); },         icon:'🪚', atk:1, atkMag:0, traits:['anti-pillard'],
       gold:15, pop:3,  mana:0,  req:null,
       desc:'Protège la ville des pillards. Aucun prérequis.' },
     // === Caserne (T1) ===
-    { id:'Soldat',        name:'Soldat',            icon:'🗡', atk:3, atkMag:0, traits:['infanterie'],
+    { id:'Soldat',        get name(){ return t('unit_Soldat_name'); },            icon:'🗡', atk:3, atkMag:0, traits:['infanterie'],
       gold:30, pop:5,  mana:0,  req:'caserne',
       desc:'Infanterie de base solide.' },
-    { id:'Lancier',       name:'Lancier',            icon:'⚔', atk:2, atkMag:0, traits:['anti-cavalerie'],
+    { id:'Lancier',       get name(){ return t('unit_Lancier_name'); },            icon:'⚔', atk:2, atkMag:0, traits:['anti-cavalerie'],
       gold:30, pop:5,  mana:0,  req:'caserne',
       desc:'Brise les charges de cavalerie.' },
     // === Tour de Garde (T2) ===
-    { id:'Garde',         name:'Garde',              icon:'🛡', atk:4, atkMag:0, traits:['infanterie','anti-pillard'],
+    { id:'Garde',         get name(){ return t('unit_Garde_name'); },              icon:'🛡', atk:4, atkMag:0, traits:['infanterie','anti-pillard'],
       gold:15, pop:3,  mana:0,  req:'tourdeGarde',
       desc:'ATK 4 | Infanterie | Anti-Pillard. Requiert Tour de Garde.' },
     // === Archerie (T2) ===
@@ -7614,34 +7998,34 @@ const UNIT_CATALOG = [
       gold:25, pop:5,  mana:0,  req:'archerie',
       desc:'Abat les créatures volantes. Peut cibler rang arrière.' },
     // === École de Magie (T2) ===
-    { id:'Elementaire',   name:'Élémentaire',        icon:'✨', atk:2, atkMag:0, traits:['infanterie','invocation'],
+    { id:'Elementaire',   get name(){ return t('unit_Elementaire_name'); },        icon:'✨', atk:2, atkMag:0, traits:['infanterie','invocation'],
       gold:0,  pop:10, mana:40, req:'ecoleMagie',
       desc:'Invoqué. ATK 2 | Infanterie. Requiert École de Magie.' },
     // === Académie militaire (T3) ===
-    { id:'Hallebardier',  name:'Hallebardier',       icon:'🪖', atk:4, atkMag:0, traits:['infanterie','anti-cavalerie','anti-cavalerie'], antiWeight:{'anti-cavalerie':2}, elite:true,
+    { id:'Hallebardier',  get name(){ return t('unit_Hallebardier_name'); },       icon:'🪖', atk:4, atkMag:0, traits:['infanterie','anti-cavalerie','anti-cavalerie'], antiWeight:{'anti-cavalerie':2}, elite:true,
       gold:40, pop:8,  mana:0,  req:'academie',
       desc:'ATK 4 | Infanterie | Anti-Cavalerie II. Élite.' },
-    { id:'Arbaletrier',   name:'Arbalétrier',        icon:'🏹', atk:3, atkMag:0, traits:['anti-vol','anti-vol','distance'], antiWeight:{'anti-vol':2},
+    { id:'Arbaletrier',   get name(){ return t('unit_Arbaletrier_name'); },        icon:'🏹', atk:3, atkMag:0, traits:['anti-vol','anti-vol','distance'], antiWeight:{'anti-vol':2},
       gold:40, pop:6,  mana:0,  req:'academie',
       desc:'ATK 3 | Anti-Vol II | Distance.' },
-    { id:'SoldatPavois',  name:'Soldat Pavois',      icon:'🛡', atk:2, atkMag:0, traits:['anti-distance'],
+    { id:'SoldatPavois',  get name(){ return t('unit_SoldatPavois_name'); },      icon:'🛡', atk:2, atkMag:0, traits:['anti-distance'],
       gold:35, pop:8,  mana:0,  req:'academie',
       desc:'Neutralise les attaques à distance.' },
     // === Église (T1) ===
-    { id:'Pretre',        name:'Prêtre',             icon:'✝', atk:1, atkMag:3, traits:['anti-demon'],
+    { id:'Pretre',        get name(){ return t('unit_Pretre_name'); },             icon:'✝', atk:1, atkMag:3, traits:['anti-demon'],
       gold:25, pop:5,  mana:15, req:'temple',
       desc:'Repousse les forces démoniaques. Requiert Temple.' },
     // === Tour de Magie (T3) ===
     { id:'ElementaireAir',  name:'Élémentaire d\'Air',  icon:'💨', atk:3, atkMag:0, traits:['anti-vol','invocation'],
       gold:0, pop:15, mana:50, req:'tourMagie',
       desc:'ATK 3 | Anti-Vol | Invocation. Requiert Tour de Magie.' },
-    { id:'ElementaireTerre', name:'Élémentaire de Terre', icon:'🪨', atk:3, atkMag:0, traits:['anti-distance','invocation'],
+    { id:'ElementaireTerre', get name(){ return t('unit_ElementaireTerre_name'); }, icon:'🪨', atk:3, atkMag:0, traits:['anti-distance','invocation'],
       gold:0, pop:15, mana:50, req:'tourMagie',
       desc:'ATK 3 | Anti-Distance | Invocation. Requiert Tour de Magie.' },
     { id:'ElementaireEau',  name:'Élémentaire d\'Eau',  icon:'💧', atk:3, atkMag:0, traits:['anti-pillard','invocation'],
       gold:0, pop:15, mana:50, req:'tourMagie',
       desc:'ATK 3 | Anti-Pillard | Invocation. Requiert Tour de Magie.' },
-    { id:'ElementaireFeu',  name:'Élémentaire de Feu',  icon:'🔥', atk:3, atkMag:0, traits:['anti-cavalerie','invocation'],
+    { id:'ElementaireFeu',  get name(){ return t('unit_ElementaireFeu_name'); },  icon:'🔥', atk:3, atkMag:0, traits:['anti-cavalerie','invocation'],
       gold:0, pop:15, mana:50, req:'tourMagie',
       desc:'ATK 3 | Anti-Cavalerie | Invocation. Requiert Tour de Magie.' },
     // === Cathédrale (T4) ===
@@ -7649,13 +8033,13 @@ const UNIT_CATALOG = [
       gold:55, pop:10, mana:10, req:'cathedrale',
       desc:'Élite : anti-cavalerie et anti-mort-vivant. Requiert Cathédrale.' },
     // ── Unités Légendaires ──
-    { id:'Dryade',        name:'Dryade',             icon:'🌿', atk:6, atkMag:0, traits:['infanterie','elite','invocation'], elite:true,
+    { id:'Dryade',        get name(){ return t('unit_Dryade_name'); },             icon:'🌿', atk:6, atkMag:0, traits:['infanterie','elite','invocation'], elite:true,
       gold:0, pop:30, mana:80, req:'ae_druidique',
       desc:'Elite elfique. Invocation. Requiert Cercle Druidique.' },
-    { id:'Ingenieur',     name:'Ingénieur',          icon:'⚙',  atk:4, atkMag:0, traits:['anti-sapeur','anti-sapeur','anti-distance','anti-distance'], elite:true,
+    { id:'Ingenieur',     get name(){ return t('unit_Ingenieur_name'); },          icon:'⚙',  atk:4, atkMag:0, traits:['anti-sapeur','anti-sapeur','anti-distance','anti-distance'], elite:true,
       gold:80, pop:20, mana:30, req:'fn_ingenieurs',
       desc:'Anti-Sapeur II, Anti-Distance II. Requiert Ingénieurs.' },
-    { id:'Inquisiteur',   name:'Inquisiteur',        icon:'⚜',  atk:6, atkMag:0, traits:['anti-demon','anti-demon','anti-demon'], elite:true,
+    { id:'Inquisiteur',   get name(){ return t('unit_Inquisiteur_name'); },        icon:'⚜',  atk:6, atkMag:0, traits:['anti-demon','anti-demon','anti-demon'], elite:true,
       gold:120, pop:25, mana:60, req:'sa_inquisiteurs',
       desc:'ATK 6, Anti-Démon III. Requiert Inquisiteurs.' },
     // ── Wards (unités spéciales Cathédrale, non recrutables) ──
@@ -7911,12 +8295,12 @@ function calcAntiTotals(units) {
 function renderArmyTabCity() {
     const el = document.getElementById('army-tab-city');
     const cp = calcCityPower();
-    let html = '<p style="font-size:13px;color:#9a8a6a;margin-bottom:10px">Puissance totale estimée : <b style="color:#4cffaa">'+cp+'</b></p>';
+    let html = '<p style="font-size:13px;color:#9a8a6a;margin-bottom:10px">'+t('army_total_power')+'<b style="color:#4cffaa">'+cp+'</b></p>';
     if (cityArmy.length === 0) {
-        html += '<p style="color:#9a8a6a;font-style:italic">Aucune unité recrutée.</p>';
+        html += '<p style="color:#9a8a6a;font-style:italic">'+t('army_no_units')+'</p>';
     } else {
         html += '<table style="width:100%;font-size:12px;border-collapse:collapse">';
-        html += '<tr style="color:#9a8a6a;border-bottom:1px solid #333"><th style="text-align:left">Unité</th><th>ATK</th><th>Mag</th><th>Traits</th><th>Qté</th></tr>';
+        html += '<tr style="color:#9a8a6a;border-bottom:1px solid #333"><th style="text-align:left">'+t('army_unit_col')+'</th><th>'+t('army_atk_col')+'</th><th>'+t('army_mag_col')+'</th><th>'+t('army_trait_col')+'</th><th>'+t('army_qty_col')+'</th></tr>';
         const counts = {};
         cityArmy.forEach(u => { counts[u.id] = (counts[u.id]||{u,n:0}); counts[u.id].n++; });
         Object.values(counts).forEach(({u,n}) => {
@@ -7935,7 +8319,7 @@ function renderArmyTabCity() {
         const antiTotals = calcAntiTotals(cityArmy);
         const hordeTotals = calcTraitTotals(hordeArmy);
         html += '<div style="margin-top:10px;padding:8px;background:#0a0a14;border-radius:6px">';
-        html += '<div style="font-size:10px;color:#9a8a6a;margin-bottom:4px">⚜ Capacités anti-horde :</div>';
+        html += '<div style="font-size:10px;color:#9a8a6a;margin-bottom:4px">'+t('army_anti_caption')+'</div>';
         html += '<div style="display:flex;flex-wrap:wrap;gap:4px">';
         Object.entries(antiTotals).forEach(function([t,n]) {
             const hordeT = COUNTER_RULES[t] || '';
@@ -7947,22 +8331,22 @@ function renderArmyTabCity() {
         });
         html += '</div></div>';
     }
-    html += '<p style="font-size:11px;color:#9a8a6a;margin-top:8px">Fortifications : '+fortifications+' | Avatar : '+(window.avatarBlocked?'indisponible':'disponible')+'</p>';
+    html += '<p style="font-size:11px;color:#9a8a6a;margin-top:8px">' + t('army_fortif_avatar').replace('{f}',fortifications).replace('{a}', window.avatarBlocked ? t('army_avatar_unavail') : t('army_avatar_avail')) + '</p>';
     el.innerHTML = html;
 }
 
 function renderHordeTable(units, countered_fn, hiddenCount) {
-    if (units.length === 0 && !hiddenCount) return '<p style="color:#666;font-style:italic;font-size:11px">Aucune unité.</p>';
+    if (units.length === 0 && !hiddenCount) return '<p style="color:#666;font-style:italic;font-size:11px">'+t('army_no_unit_line')+'</p>';
     let h = '<table style="width:100%;font-size:12px;border-collapse:collapse">';
-    h += '<tr style="color:#9a8a6a;border-bottom:1px solid #333"><th style="text-align:left">Unité</th><th>ATK</th><th>Mag</th><th>Trait</th><th>Qté</th></tr>';
+    h += '<tr style="color:#9a8a6a;border-bottom:1px solid #333"><th style="text-align:left">'+t('army_unit_col')+'</th><th>'+t('army_atk_col')+'</th><th>'+t('army_mag_col')+'</th><th>'+t('army_trait_col')+'</th><th>'+t('army_qty_col')+'</th></tr>';
     const counts = {};
     units.forEach(function(u) { const k=u.name; counts[k]=(counts[k]||{u,n:0}); counts[k].n++; });
     Object.values(counts).forEach(function(obj) {
         const u=obj.u, n=obj.n;
-        const scoutBadge = u._scouted ? ' <span style="font-size:9px;color:#40c0ff" title="Scouté">🔭 scouté</span>' : '';
+        const scoutBadge = u._scouted ? ' <span style="font-size:9px;color:#40c0ff" title="'+t('army_scouted')+'">🔭 '+t('army_scouted')+'</span>' : '';
         // traits affichés dans la cellule
         h += '<tr style="border-bottom:1px solid #1a1a2a'+(u._scouted?';opacity:0.85':'')+'">'+ 
-            '<td style="padding:3px 0">'+u.icon+' '+u.name+scoutBadge+'</td>'+
+            '<td style="padding:3px 0">'+u.icon+' '+(u.name||u.id)+''+scoutBadge+'</td>'+
             '<td style="text-align:center;color:#ff8080">'+u.atk+'</td>'+
             '<td style="text-align:center;color:#cc88ff">'+u.atkMag+'</td>'+
             '<td><div style="display:flex;flex-wrap:wrap;gap:2px">'+u.traits.filter(function(tr){return tr!=='infanterie';}).map(function(tr,ti){
@@ -7974,7 +8358,7 @@ function renderHordeTable(units, countered_fn, hiddenCount) {
     // Unités cachées dans la même table
     if (hiddenCount > 0) {
         h += '<tr style="border-bottom:1px solid #1a1a2a;color:#9a8a6a;font-style:italic">'+
-            '<td style="padding:3px 0">❓ Non identifiées</td>'+
+            '<td style="padding:3px 0">'+t('army_horde_unknown')+'</td>'+
             '<td style="text-align:center">?</td>'+
             '<td style="text-align:center">?</td>'+
             '<td>?</td>'+
@@ -7991,9 +8375,9 @@ function renderArmyTabHorde() {
     const _cityPow = calcCityPower();
     const _diff = (typeof _hordePow === 'number' && typeof _cityPow === 'number') ? _cityPow - _hordePow : null;
     const _powerBar = '<div style="display:flex;gap:8px;margin-bottom:10px;font-size:11px">'+
-        '<span style="color:#ff6060">⚔ Horde : <b>'+_hordePow+'</b></span>'+
+        '<span style="color:#ff6060">'+t('army_horde_vs')+'<b>'+_hordePow+'</b></span>'+
         '<span style="color:#9a8a6a">vs</span>'+
-        '<span style="color:#4cffaa">🏰 Ville : <b>'+_cityPow+'</b></span>'+
+        '<span style="color:#4cffaa">'+t('army_city_vs')+'<b>'+_cityPow+'</b></span>'+
         (_diff!==null?'<span style="color:'+(_diff>=0?'#4cffaa':'#ff6060')+'">('+((_diff>=0)?'+':'')+_diff+')</span>':'')+
         '</div>';
     if (!hordeRevealed) {
@@ -8012,14 +8396,14 @@ function renderArmyTabHorde() {
                 if ((antiCounts2[ct]||0) > traitUsed2[ct]) { traitUsed2[ct]++; return true; }
                 return false;
             };
-            let h = '<p style="font-size:12px;color:#9a8a6a;margin-bottom:8px">Horde S'+(currentSeason-1)+' — renforts de cette saison non encore révélés.</p>';
-            h += '<div style="font-family:Cinzel,serif;font-size:9px;color:#9a8060;letter-spacing:1px;padding:3px 0 2px;border-bottom:1px solid #2a1a0a;margin-bottom:4px">⚔ HORDE S'+(currentSeason-1)+' ('+hordePrevSeason.length+' unités connues)</div>';
+            let h = '<p style="font-size:12px;color:#9a8a6a;margin-bottom:8px">'+t('army_horde_prev_title').replace('{s}',currentSeason-1)+'</p>';
+            h += '<div style="font-family:Cinzel,serif;font-size:9px;color:#9a8060;letter-spacing:1px;padding:3px 0 2px;border-bottom:1px solid #2a1a0a;margin-bottom:4px">'+t('army_horde_prev_label').replace('{s}',currentSeason-1).replace('{n}',hordePrevSeason.length)+'</div>';
             h = _powerBar + h;
             h += renderHordeTable(hordePrevSeason, countered2);
-            h += '<div style="font-size:10px;color:#6a5a4a;font-style:italic;padding:6px 0;text-align:center">⚠ Les éclaireurs n\'ont pas encore rapporté les renforts de cette saison…</div>';
+            h += '<div style="font-size:10px;color:#6a5a4a;font-style:italic;padding:6px 0;text-align:center">'+t('army_horde_scouts_pending')+'</div>';
             el.innerHTML = h;
         } else {
-            el.innerHTML = _powerBar + '<p style="color:#9a8a6a;font-style:italic">Horde non encore révélée (tour 5).</p>';
+            el.innerHTML = _powerBar + '<p style="color:#9a8a6a;font-style:italic">'+t('army_horde_unrevealed')+'</p>';
         }
         return;
     }
@@ -8046,7 +8430,7 @@ function renderArmyTabHorde() {
     let html = '<div style="display:flex;gap:8px;align-items:center;margin-bottom:10px;font-size:11px;padding:6px;background:#0a0a14;border-radius:6px">'+
         '<span style="color:#ff6060">⚔ Horde : <b>'+hp+'</b>'+(hordeHiddenUnits.length>0?' <span style="color:#888">(+?)</span>':'')+'</span>'+
         '<span style="color:#9a8a6a">vs</span>'+
-        '<span style="color:#4cffaa">🏰 Ville : <b>'+cp2+'</b></span>'+
+        '<span style="color:#4cffaa">'+t('army_city_vs')+'<b>'+cp2+'</b></span>'+
         (diff2!==null?'<span style="font-weight:bold;color:'+(diff2>=0?'#4cffaa':'#ff6060')+'">('+(diff2>=0?'+':'')+diff2+')</span>':'')+
         '</div>';
 
@@ -8084,33 +8468,33 @@ function renderArmyTabResult() {
     const diff = typeof hordeP === 'number' ? cityP - hordeP : '?';
     let html = '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">';
     html += '<div style="background:#0a1a0a;border-radius:8px;padding:10px;text-align:center">'+
-        '<div style="font-size:11px;color:#9a8a6a">🔵 Puissance ville</div>'+
+        '<div style="font-size:11px;color:#9a8a6a">'+t('army_power_city')+'</div>'+
         '<div style="font-size:24px;font-weight:bold;color:#4cffaa">'+cityP+'</div></div>';
     html += '<div style="background:#1a0a0a;border-radius:8px;padding:10px;text-align:center">'+
-        '<div style="font-size:11px;color:#9a8a6a">🔴 Puissance horde</div>'+
+        '<div style="font-size:11px;color:#9a8a6a">'+t('army_power_horde')+'</div>'+
         '<div style="font-size:24px;font-weight:bold;color:#ff6060">'+(typeof hordeP==='number'?hordeP:'?')+(hordeHiddenUnits.length>0?'<span style="font-size:12px;color:#888"> +???</span>':'')+'</div></div>';
     html += '</div>';
     if (typeof diff === 'number') {
         const won = diff >= 0;
         html += '<div style="text-align:center;padding:12px;border-radius:8px;background:'+(won?'#0a2a0a':'#2a0a0a')+'">'+
             '<div style="font-size:16px;font-weight:bold;color:'+(won?'#4cffaa':'#ff6060')+'">'+
-            (won ? '✓ Prévision : Victoire (+'+diff+')' : '✗ Prévision : Défaite ('+diff+')')+'</div>'+
-            (!won ? '<div style="font-size:12px;color:#e08080;margin-top:4px">-'+Math.abs(diff)+' fortification(s) en jeu</div>' : '')+
+            (won ? t('army_win').replace('{n}',diff) : t('army_lose').replace('{n}',diff))+'</div>'+
+            (!won ? '<div style="font-size:12px;color:#e08080;margin-top:4px">'+t('army_lose_fortif').replace('{n}',Math.abs(diff))+'</div>' : '')+
         '</div>';
         if (hordeHiddenUnits.length > 0) {
-            html += '<p style="font-size:11px;color:#e07820;margin-top:8px;text-align:center">⚠ Des troupes non identifiées peuvent changer ce résultat !</p>';
+            html += '<p style="font-size:11px;color:#e07820;margin-top:8px;text-align:center">'+t('army_hidden_warn')+'</p>';
         }
     } else {
-        html += '<p style="color:#9a8a6a;text-align:center">La horde n\'a pas encore été révélée.</p>';
+        html += '<p style="color:#9a8a6a;text-align:center">'+t('army_no_reveal')+'</p>';
     }
     // Tableau confrontation traits
     if (hordeRevealed && hordeArmy.length > 0) {
         const hTotals = calcTraitTotals(hordeArmy);
         const aTotals = calcAntiTotals(cityArmy);
         html += '<div style="margin-top:12px;padding:8px;background:#0a0a14;border-radius:6px">';
-        html += '<div style="font-size:10px;color:#9a8a6a;margin-bottom:6px">⚔ Confrontation des traits :</div>';
+        html += '<div style="font-size:10px;color:#9a8a6a;margin-bottom:6px">'+t('army_traits_caption')+'</div>';
         html += '<table style="width:100%;font-size:10px;border-collapse:collapse">';
-        html += '<tr style="color:#9a8a6a;font-size:9px"><th style="text-align:left">Trait horde</th><th>Horde</th><th>Ville</th><th>Net</th><th></th></tr>';
+        html += '<tr style="color:#9a8a6a;font-size:9px"><th style="text-align:left">'+t('army_trait_horde')+'</th><th>'+t('army_power_horde').replace('🔴 ','')+'</th><th>'+t('army_city_vs').replace('🏰 ','').replace(': ','')+'</th><th>Net</th><th></th></tr>';
         Object.entries(hTotals).forEach(function([trait, hCount]) {
             if (trait === 'infanterie') return;
             const antiKey = Object.keys(COUNTER_RULES).find(function(k){ return COUNTER_RULES[k]===trait; });
@@ -8204,7 +8588,7 @@ function renderRecruitList() {
     powerDiv.innerHTML =
         '<span style="color:#ff6060">⚔ Horde : <b>'+_hp2+'</b></span>'+
         '<span style="color:#9a8a6a">vs</span>'+
-        '<span style="color:#4cffaa">🏰 Ville : <b>'+_cp+'</b></span>'+
+        '<span style="color:#4cffaa">'+t('army_city_vs')+'<b>'+_cp+'</b></span>'+
         (_diff2!==null?'<span style="font-weight:bold;color:'+(_diff2>=0?'#4cffaa':'#ff6060')+'">('+((_diff2>=0)?'+':'')+_diff2+')</span>':'');
     el.appendChild(powerDiv);
     if (!hasCaserne) {
@@ -9302,7 +9686,7 @@ function renderRecruitListIn(el) {
     powerDiv.innerHTML =
         '<span style="color:#ff6060">⚔ Horde : <b>'+_hp2+'</b></span>'+
         '<span style="color:#9a8a6a">vs</span>'+
-        '<span style="color:#4cffaa">🏰 Ville : <b>'+_cp+'</b></span>'+
+        '<span style="color:#4cffaa">'+t('army_city_vs')+'<b>'+_cp+'</b></span>'+
         (_diff2!==null?'<span style="font-weight:bold;color:'+(_diff2>=0?'#4cffaa':'#ff6060')+'">('+((_diff2>=0)?'+':'')+_diff2+')</span>':'');
     stickyHeader.appendChild(powerDiv);
     // Boutons Terminer / Annuler en S5+
@@ -9347,7 +9731,7 @@ function renderRecruitListIn(el) {
     el.appendChild(stickyHeader);
     if (!hasCaserne) {
         const p=document.createElement('p');p.style.cssText='color:#9a8a6a;font-size:12px;font-style:italic';
-        p.textContent='Construisez une Caserne pour recruter des soldats.';el.appendChild(p);
+        p.textContent=t('recruit_need_caserne');el.appendChild(p);
     }
     // Trier : disponibles+finançables en premier, puis disponibles, puis reste
     const _units = UNIT_CATALOG.filter(u => !u.special);
@@ -10437,7 +10821,7 @@ function renderEwCatalog() {
 
     el.innerHTML = '';
     if (!slot) {
-        el.innerHTML = '<div style="color:#4a3a5a;font-size:11px;text-align:center;padding:20px">Cliquez sur un slot pour voir les items disponibles</div>';
+        el.innerHTML = '<div style="color:#4a3a5a;font-size:11px;text-align:center;padding:20px">'+t('ew_click_slot')+'</div>';
         return;
     }
 
@@ -10949,7 +11333,7 @@ function renderMetaSummary() {
     const el = document.getElementById('meta-summary-content');
     if (!el) return;
     const m = getMeta();
-    const slot = activeSlot !== null ? 'Slot ' + (activeSlot+1) : 'Non sauvegardé';
+    const slot = activeSlot !== null ? t('slot_label')+' '+(activeSlot+1) : t('ms_unsaved');
 
     function row(label, val, color) {
         return '<div style="display:flex;justify-content:space-between;align-items:center;padding:2px 0;border-bottom:1px solid #0a1a0a">'
@@ -10962,23 +11346,23 @@ function renderMetaSummary() {
     }
 
     let html = row('Run', slot, '#9a8a6a');
-    html += row('💀 Morts', runDeaths, runDeaths===0?'#4cffaa':'#ff6060');
-    html += row('✦ Poussière totale dépensée', (typeof calcTotalDustSpent === 'function' ? calcTotalDustSpent(getMeta()) : (getMeta().totalDustSpent||0)) + ' ✦', '#ffd060');
-    html += row('🥚 Coquilles disponibles', (getMeta().shells||0), '#e0c080');
+    html += row(t('ms_deaths'), runDeaths, runDeaths===0?'#4cffaa':'#ff6060');
+    html += row(t('ms_dust_spent'), (typeof calcTotalDustSpent === 'function' ? calcTotalDustSpent(getMeta()) : (getMeta().totalDustSpent||0)) + ' ✦', '#ffd060');
+   html += row(t('ms_shells_avail'), (getMeta().shells||0), '#e0c080');
 
-    html += row('🌟 Poussière totale', m.dust + ' ✦', '#ffd060');
-    html += row('🥚 Coquilles', (m.shells||0) + ' 🥚', '#e0c080');
+    html += row(t('ms_dust_total'), m.dust + ' ✦', '#ffd060');
+    html += row(t('ms_shells'), (m.shells||0) + ' 🥚', '#e0c080');
 
-    html += section('HÉROS');
-    html += row('Niveau héros', m.heroLevel || 0);
-    html += row('ATK bonus', '+' + (m.hero.atk||0));
-    html += row('HP max bonus', '+' + ((m.hero.hpMax||0)*3) + ' HP');
-    html += row('Protection bonus', '+' + (m.hero.prot||0));
-    html += row('Dégâts bonus', '+' + (m.hero.dmg||0));
-    html += row('DEF bonus', '+' + (m.hero.def||0));
+    html += section(t('ms_hero'));
+    html += row(t('ms_hero_level'), m.heroLevel || 0);
+    html += row(t('ms_atk_bonus'), '+' + (m.hero.atk||0));
+    html += row(t('ms_hp_bonus'), '+' + ((m.hero.hpMax||0)*3) + ' HP');
+    html += row(t('ms_prot_bonus'), '+' + (m.hero.prot||0));
+    html += row(t('ms_dmg_bonus'), '+' + (m.hero.dmg||0));
+    html += row(t('ms_def_bonus'), '+' + (m.hero.def||0));
 
     const skills = m.hero.skillLevels || {};
-    const skillNames = {'Fireball':'⏳ Distorsion Temporelle','Benediction':'✝ Bénédiction','Rage':'⚡ Rage','Soin':'💚 Soin'};
+    const skillNames = {'Fireball':t('ms_skill_Fireball'),'Benediction':t('ms_skill_Benediction'),'Rage':t('ms_skill_Rage'),'Soin':t('ms_skill_Soin')};
     // Résoudre les noms des compétences de classe (cls_*)
     function resolveSkillName(k) {
         if (skillNames[k]) return skillNames[k];
@@ -10992,18 +11376,18 @@ function renderMetaSummary() {
         return k;
     }
     Object.keys(skills).forEach(function(k) {
-        if (skills[k]) html += row(resolveSkillName(k), 'Niv '+skills[k], '#c080ff');
+        if (skills[k]) html += row(resolveSkillName(k), t('ms_skill_niv')+skills[k], '#c080ff');
     });
 
-    html += section('VILLE');
-    html += row('Niveau ville', m.cityLevel || 0);
-    html += row('Or bonus départ', '+' + (m.city.gold||0));
-    html += row('Puissance bonus', '+' + (m.city.power||0));
-    html += row('Emplacements', '+' + (m.city.space||0));
-    html += row('Pop bonus départ', '+' + (m.city.pop||0));
-    html += row('Mana bonus départ', '+' + (m.city.mana||0));
-    html += row('⚔ Conscrit bonus', '+' + (m.city.conscrit||0));
-    html += row('🏰 Fortification bonus', '+' + (m.city.fortif||0));
+    html += section(t('ms_city'));
+    html += row(t('ms_city_level'), m.cityLevel || 0);
+    html += row(t('ms_gold_bonus'), '+' + (m.city.gold||0));
+    html += row(t('ms_power_bonus'), '+' + (m.city.power||0));
+    html += row(t('ms_space_bonus'), '+' + (m.city.space||0));
+    html += row(t('ms_pop_bonus'), '+' + (m.city.pop||0));
+    html += row(t('ms_mana_bonus'), '+' + (m.city.mana||0));
+    html += row(t('ms_conscrit_bonus'), '+' + (m.city.conscrit||0));
+    html += row(t('ms_fortif_bonus'), '+' + (m.city.fortif||0));
 
     el.innerHTML = html;
 }
@@ -14053,13 +14437,8 @@ body.clarity-on #clarity-action-dock {
     justify-content: flex-start;
 }
 body.clarity-on #clarity-action-dock::before {
-    content: "🟡 1 ACTION / TOUR";
-    font-family: 'Cinzel', serif;
-    font-size: 10px;
-    font-weight: 700;
-    color: #ffd060;
-    letter-spacing: 1.4px;
-    text-align: center;
+    content: none;
+    display: none;
     padding-bottom: 8px;
     border-bottom: 1px solid #4a3614;
     margin-bottom: 4px;
@@ -14492,6 +14871,7 @@ body.clarity-on #clarity-resbar {
         const d = document.createElement('div');
         d.id = 'clarity-action-dock';
         d.innerHTML = `
+            <div id="cad-action-label" style="font-family:'Cinzel',serif;font-size:10px;font-weight:700;color:#ffd060;letter-spacing:1.4px;text-align:center;padding-bottom:8px;width:100%">${t('dock_action_label')}</div>
             <button class="cad-btn" data-action="tile">
                 <span class="cad-ico">❖</span><span class="cad-label" id="cad-lbl-tile">${t('cad_reveler')}</span>
             </button>
@@ -14941,20 +15321,19 @@ body.clarity-on #clarity-resbar {
             const dungeonUsed = window.dungeonUsedThisTurn === true;
             const available = exploreTurns.includes(turn) && !window.avatarBlocked && !dungeonUsed;
             const blocked = window.avatarBlocked;
-            // Sauvegarder le contenu original une seule fois
-            if (!btn._origHTML) btn._origHTML = btn.innerHTML;
             if (blocked) {
                 btn.style.display = '';
                 btn.style.opacity = '0.4';
                 btn.style.cursor = 'not-allowed';
                 btn.disabled = true;
-                btn.innerHTML = '<span class="cfr-ico" style="color:#ff8080;font-variant-emoji:text">😴</span> Héro au repos';
+                btn.innerHTML = '<span class="cfr-ico" style="color:#ff8080;font-variant-emoji:text">😴</span> ' + t('hero_resting');
             } else {
                 btn.style.display = available ? '' : 'none';
                 btn.style.opacity = '';
                 btn.style.cursor = '';
                 btn.disabled = false;
-                btn.innerHTML = btn._origHTML;
+                // Always rebuild with current language
+                btn.innerHTML = '<span class="cfr-ico" style="color:#a0c8e8;font-variant-emoji:text">🗝</span> <span id="cfr-lbl-donjon">' + t('cfr_donjon') + '</span>';
             }
         }
 
@@ -15003,7 +15382,7 @@ body.clarity-on #clarity-resbar {
         const season = readSeason();
         const seasonNames = [t('season_Printemps'), t('season_Ete'), t('season_Automne'), t('season_Hiver')];
         const seasonName = seasonNames[(season - 1) % 4];
-        turnEl.textContent = `Tour ${turn} / 10 · Saison ${season} — ${seasonName}`;
+        turnEl.textContent = t('ui_turn_label')+' '+turn+' / 10 · '+t('ui_season')+' '+season+' — '+seasonName;
         // Masquer l'affichage redondant de la timeline
         const tlSeason = document.getElementById('timeline-season');
         if (tlSeason) tlSeason.style.display = 'none';
@@ -15013,16 +15392,16 @@ body.clarity-on #clarity-resbar {
 
         let actionLabel, actionCls;
         if (turn === 10) {
-            actionLabel = '⚔ COMBAT DE HORDE';
+            actionLabel = t('status_horde_combat');
             actionCls   = 'action-busy';
         } else if (busy) {
-            actionLabel = '⏳ Action en cours…';
+            actionLabel = t('status_action_ip');
             actionCls   = 'action-busy';
         } else if (actions <= 0) {
-            actionLabel = '✓ Action prise';
+            actionLabel = t('status_action_taken');
             actionCls   = 'action-spent';
         } else {
-            actionLabel = `○ ${actions} action${actions > 1 ? 's' : ''} disponible${actions > 1 ? 's' : ''}`;
+            actionLabel = actions>1 ? t('status_actions_n').replace('{n}',actions) : t('status_actions_1').replace('{n}',actions);
             actionCls   = 'action-avail';
         }
 
@@ -15076,7 +15455,7 @@ body.clarity-on #clarity-resbar {
 
         s.innerHTML = `
             <span class="cb-pill ${actionCls}">🟡 ${actionLabel}</span>
-            <span class="cb-pill free">🔵 Libre dispo</span>
+            <span class="cb-pill free">${t('free_action_avail')}</span>
         `;
 
         document.body.classList.toggle('clarity-spent', actions <= 0 || busy);
@@ -15206,7 +15585,7 @@ body.clarity-on #clarity-resbar {
                 <div class="crm-backdrop"></div>
                 <div class="crm-card">
                     <div class="crm-header">
-                        <span class="crm-title">⚔ Recruter des troupes</span>
+                        <span class="crm-title">${t('recruit_window_title')}</span>
                         <button class="crm-close" type="button">×</button>
                     </div>
                     <div class="crm-body" id="crm-body"></div>
@@ -15361,6 +15740,9 @@ body.clarity-on #clarity-resbar {
         // Banner instruction
         const instrEl = document.getElementById('cb-instr-span');
         if (instrEl) instrEl.innerHTML = isS5 ? t('cb_instr_s5') : t('cb_instr_early');
+        // Dock action label
+        const dockLbl = document.getElementById('cad-action-label');
+        if (dockLbl) dockLbl.textContent = t('dock_action_label');
         // Dock labels (update existing spans, don't recreate the element)
         const dockLbls = {'cad-lbl-tile':t('cad_reveler'),'cad-lbl-build':t('cad_construire'),'cad-lbl-tax':t('cad_caravane'),'cad-lbl-recruit':t('cad_recruter')};
         Object.keys(dockLbls).forEach(function(id){ const e=document.getElementById(id); if(e) e.textContent=dockLbls[id]; });
@@ -15377,6 +15759,8 @@ body.clarity-on #clarity-resbar {
         document.querySelectorAll('.clarity-chip.cc-action').forEach(function(chip){ chip.textContent=t('chip_action'); });
         // Threat
         try { renderThreat(); } catch(e) {}
+        // Re-render status (Tour→Turn etc)
+        try { renderStatus(); } catch(e) {}
     };
 
     if (document.readyState === 'loading') {
