@@ -336,7 +336,7 @@
             #dng-enemy-grid .cell-thr { font-size:8px !important; }
             .dng-btn { font-size:11px !important; padding:5px 6px !important; min-width:60px !important; }
             /* ── Combat mobile portrait ── */
-            #dungeon-screen { display:flex !important; flex-direction:column !important; overflow-y:auto !important; }
+            #dungeon-screen.show { display:flex !important; flex-direction:column !important; overflow-y:auto !important; }
             #dungeon-body { flex:0 0 auto !important; flex-direction:row !important; align-items:flex-start !important; padding:5px !important; gap:4px !important; }
             #dng-avatar-side { flex:0 0 85px !important; }
             #dng-avatar-side img { width:65px !important; height:65px !important; }
@@ -14109,11 +14109,16 @@ body.clarity-on.clarity-spent #sec-tax {
     justify-content: center;
     backdrop-filter: blur(3px);
     animation: ctFade 0.25s ease;
+    padding: 16px;
+    box-sizing: border-box;
 }
 @keyframes ctFade { from { opacity: 0; } to { opacity: 1; } }
 #clarity-tutorial .ct-card {
     width: 560px;
     max-width: 92vw;
+    max-height: 85vh;
+    display: flex;
+    flex-direction: column;
     background: linear-gradient(180deg, #0e0c10, #08070c);
     border: 1px solid #3a2c10;
     border-radius: 14px;
@@ -14121,6 +14126,7 @@ body.clarity-on.clarity-spent #sec-tax {
     box-shadow: 0 20px 80px rgba(0,0,0,0.8), 0 0 60px rgba(196,146,32,0.08);
     color: #cebf9a;
     font-family: 'Crimson Text', Georgia, serif;
+    overflow: hidden;
 }
 #clarity-tutorial .ct-step {
     font-family: 'Cinzel', serif;
@@ -14141,6 +14147,10 @@ body.clarity-on.clarity-spent #sec-tax {
     font-size: 14px;
     line-height: 1.65;
     color: #cebf9a;
+    overflow-y: auto;
+    flex: 1;
+    min-height: 0;
+    -webkit-overflow-scrolling: touch;
 }
 #clarity-tutorial .ct-body p { margin: 0 0 10px; }
 #clarity-tutorial .ct-body b { color: #ffd060; }
@@ -14166,6 +14176,7 @@ body.clarity-on.clarity-spent #sec-tax {
 #clarity-tutorial .ct-rule.r-free b { color: #80c0ff; }
 #clarity-tutorial .ct-rule.r-battle b { color: #e07070; }
 #clarity-tutorial .ct-actions {
+    flex-shrink: 0;
     display: flex;
     gap: 10px;
     justify-content: space-between;
@@ -15556,6 +15567,9 @@ body.clarity-on #clarity-resbar {
             ).join('');
             overlay.querySelector('#ct-next').textContent =
                 tutStep === TUTORIAL_STEPS.length - 1 ? t('tut_finish') : t('tut_next');
+            // Reset scroll to top on each step (iOS)
+            const bodyEl = overlay.querySelector('#ct-body');
+            if (bodyEl) bodyEl.scrollTop = 0;
         };
 
         const close = () => {
