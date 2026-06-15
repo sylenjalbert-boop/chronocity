@@ -1089,7 +1089,7 @@
         <div style="font-family:Cinzel,serif;font-size:28px;color:#c0a060;letter-spacing:3px;text-shadow:0 0 20px rgba(180,140,60,0.4)">⚔ Chronocity — A Roguelite City Builder</div>
         <div id="home-player-info" style="font-size:12px;color:#6a5a7a;margin-top:6px;min-height:18px"></div>
         <button id="home-btn-ladder" onclick="showLadder()" style="margin-top:8px;padding:6px 18px;background:#0a0818;border:1px solid #3a2a5a;border-radius:8px;color:#9a7aaa;font-size:11px;cursor:pointer;font-family:Cinzel,serif">🏆 Classement</button>
-        <div style="font-size:11px;color:#4a3a5a;margin-top:6px;letter-spacing:2px" data-version="0.597">VERSION 0.597</div>
+        <div style="font-size:11px;color:#4a3a5a;margin-top:6px;letter-spacing:2px" data-version="0.598">VERSION 0.598</div>
     </div>
     <div id="home-menu" style="display:flex;flex-direction:column;gap:10px;width:min(340px,90vw)">
         <button id="home-btn-load" onclick="homeLoad()" style="width:100%;padding:16px 0;font-family:Cinzel,serif;font-size:14px;cursor:pointer;border-radius:8px;background:linear-gradient(135deg,#1a1030,#2a1a40);color:#c080ff;border:1px solid #5040a0">📂 Charger une partie</button>
@@ -1538,7 +1538,7 @@
 <!-- Frise de progression -->
 <div id="timeline">
     <div id="timeline-season">Saison 1</div>
-    <div style="font-family:Cinzel,serif;font-size:9px;color:#3a3050;margin-left:auto;padding-left:8px;white-space:nowrap">v0.597</div>
+    <div style="font-family:Cinzel,serif;font-size:9px;color:#3a3050;margin-left:auto;padding-left:8px;white-space:nowrap">v0.598</div>
     <div id="timeline-steps"></div>
     <button id="main-menu-btn" onclick="toggleSaveMenu()" style="background:linear-gradient(135deg,#1a1030,#2a1a40);border:1px solid #4a3060;color:#c0a060;font-size:16px;cursor:pointer;padding:2px 10px;border-radius:5px;white-space:nowrap;flex-shrink:0;letter-spacing:1px" title="Menu">☰ Menu</button>
     <button onclick="toggleMetaSummary()" style="background:linear-gradient(135deg,#101a10,#1a2a1a);border:1px solid #2a5a2a;color:#4cffaa;font-size:14px;cursor:pointer;padding:2px 8px;border-radius:5px;white-space:nowrap;flex-shrink:0" title="Résumé méta">✦ Méta</button>
@@ -5119,83 +5119,109 @@ const MONSTER_IMAGES = {
     orc_archer:     'img/orc_archer.jpg',
     orc:            'img/orc.jpg',
 };
-function getMonsterImg(name) {
-    const n = (name || '').toLowerCase();
-    // Gobelins
-    if (n.includes('archer') && n.includes('gobelin')) return MONSTER_IMAGES.gobelin_archer;
-    if (n.includes('seigneur') || n.includes('capitaine') && n.includes('gobelin')) return MONSTER_IMAGES.gobelin_captain;
-    if (n.includes('gobelin')) return MONSTER_IMAGES.gobelin;
-    // Nécromorts
-    if (n.includes('nécromancien') || n.includes('necromancien')) return MONSTER_IMAGES.necromancien;
-    if (n.includes('liche')) return MONSTER_IMAGES.liche;
-    if (n.includes('royal') || n.includes('armé')) return MONSTER_IMAGES.squelette_royal;
-    if (n.includes('squelette')) return MONSTER_IMAGES.squelette;
-    // Orcs
-    if (n.includes('capitaine') && n.includes('orc')) return MONSTER_IMAGES.orc_chef;
-    if (n.includes('boss') && n.includes('orc')) return MONSTER_IMAGES.orc_chef;
-    if (n.includes('cavalier')) return MONSTER_IMAGES.orc_archer;
-    if (n.includes('archer') && n.includes('orc')) return MONSTER_IMAGES.orc_archer;
+// Map enemy i18n key → image (language-independent)
+const MONSTER_IMG_MAP = {
+    enemy_ArcherGobelin:    () => MONSTER_IMAGES.gobelin_archer,
+    enemy_GoblinSoldat:     () => MONSTER_IMAGES.gobelin,
+    enemy_GoblinBoss:       () => MONSTER_IMAGES.gobelin_captain,
+    enemy_ChefGobelin:      () => MONSTER_IMAGES.gobelin_captain,
+    enemy_Gobelin:          () => MONSTER_IMAGES.gobelin,
+    enemy_Necromancien:     () => MONSTER_IMAGES.necromancien,
+    enemy_LicheMineure:     () => MONSTER_IMAGES.liche,
+    enemy_LicheAncienne:    () => MONSTER_IMAGES.liche,
+    enemy_Liche:            () => MONSTER_IMAGES.liche,
+    enemy_SqueletteRoyal:   () => MONSTER_IMAGES.squelette_royal,
+    enemy_SqueletteAncien:  () => MONSTER_IMAGES.squelette_royal,
+    enemy_SqueletteMaudit:  () => MONSTER_IMAGES.squelette,
+    enemy_Squelette:        () => MONSTER_IMAGES.squelette,
+    enemy_OrcElite:         () => MONSTER_IMAGES.orc_chef,
+    enemy_OrcBoss:          () => MONSTER_IMAGES.orc_chef,
+    enemy_OrcCavalier:      () => MONSTER_IMAGES.orc_archer,
+    enemy_OrcArcher:        () => MONSTER_IMAGES.orc_archer,
+    enemy_Orc:              () => MONSTER_IMAGES.orc,
+    enemy_Vampire:          () => MONSTER_IMAGES.vampire,
+    enemy_Troll:            () => MONSTER_IMAGES.troll,
+    enemy_Dragon:           () => MONSTER_IMAGES.dragon_noir,
+    enemy_Demon:            () => MONSTER_IMAGES.demon,
+    enemy_Araignee:         () => MONSTER_IMAGES.araignee,
+};
+
+function getMonsterImg(nameOrKey) {
+    const n = (nameOrKey || '').toLowerCase();
+    // Try key-based lookup first (language-independent)
+    for (const key of Object.keys(MONSTER_IMG_MAP)) {
+        if (n === key.toLowerCase() || n === key) return MONSTER_IMG_MAP[key]();
+    }
+    // Fallback: name-based (FR or EN)
+    if (n.includes('archer') && (n.includes('gobelin') || n.includes('goblin'))) return MONSTER_IMAGES.gobelin_archer;
+    if (n.includes('seigneur') || n.includes('lord') || (n.includes('captain') || n.includes('capitaine')) && (n.includes('gobelin') || n.includes('goblin'))) return MONSTER_IMAGES.gobelin_captain;
+    if (n.includes('gobelin') || n.includes('goblin')) return MONSTER_IMAGES.gobelin;
+    if (n.includes('nécromancien') || n.includes('necromancien') || n.includes('necromancer')) return MONSTER_IMAGES.necromancien;
+    if (n.includes('liche') || n.includes('lich')) return MONSTER_IMAGES.liche;
+    if (n.includes('royal') || n.includes('armé') || n.includes('ancient')) return MONSTER_IMAGES.squelette_royal;
+    if (n.includes('squelette') || n.includes('skeleton')) return MONSTER_IMAGES.squelette;
+    if ((n.includes('capitaine') || n.includes('captain') || n.includes('boss') || n.includes('elite')) && (n.includes('orc'))) return MONSTER_IMAGES.orc_chef;
+    if (n.includes('cavalier') || (n.includes('archer') && n.includes('orc'))) return MONSTER_IMAGES.orc_archer;
     if (n.includes('orc')) return MONSTER_IMAGES.orc;
-    // Autres
     if (n.includes('vampire')) return MONSTER_IMAGES.vampire;
     if (n.includes('troll')) return MONSTER_IMAGES.troll;
     if (n.includes('dragon')) return MONSTER_IMAGES.dragon_noir;
     if (n.includes('démon') || n.includes('demon')) return MONSTER_IMAGES.demon;
-    if (n.includes('araignée') || n.includes('araignee')) return MONSTER_IMAGES.araignee;
+    if (n.includes('araignée') || n.includes('araignee') || n.includes('spider')) return MONSTER_IMAGES.araignee;
     return null;
 }
 
 // Pool de monstres organisé par tier et saison
 const MONSTER_POOL = [
     // ===== TIER 1 (S1-S2) =====
-    { get name(){ return t('enemy_Gobelin'); },         tier:1, emoji:'👺', atk:2, dmg:1, def:2, protection:0, hp:6,  maxHp:6,  rank:'front',
+    { get name(){ return t('enemy_Gobelin'); }, _nameKey: 'enemy_Gobelin',         tier:1, emoji:'👺', atk:2, dmg:1, def:2, protection:0, hp:6,  maxHp:6,  rank:'front',
       loot:()=>{ gold+=5;  dust += 1; return '+5 '+t('crb_or')+', +1 '+t('meta_dust').replace('✨ ','').replace(' disponible',''); },  get lootDesc(){return t('ld_pieces');} },
-    { get name(){ return t('enemy_Orc'); },             tier:1, emoji:'👊', atk:3, dmg:2, def:2, protection:0, hp:8,  maxHp:8,  rank:'front',
+    { get name(){ return t('enemy_Orc'); }, _nameKey: 'enemy_Orc',             tier:1, emoji:'👊', atk:3, dmg:2, def:2, protection:0, hp:8,  maxHp:8,  rank:'front',
       loot:()=>{ gold+=8;  dust += 1; return '+8 '+t('crb_or')+', +1 '+t('loot_dust'); },  get lootDesc(){return t('ld_orc');} },
-    { get name(){ return t('enemy_Squelette'); },       tier:1, emoji:'💀', atk:2, dmg:1, def:2, protection:0, hp:6,  maxHp:6,  rank:'front',
+    { get name(){ return t('enemy_Squelette'); }, _nameKey: 'enemy_Squelette',       tier:1, emoji:'💀', atk:2, dmg:1, def:2, protection:0, hp:6,  maxHp:6,  rank:'front',
       loot:()=>{ gold+=6;  dust += 1; return '+6 '+t('crb_or')+', +1 '+t('loot_dust'); },  get lootDesc(){return t('ld_bones');} },
     // ===== TIER 2 (S2-S3) =====
-    { get name(){ return t('enemy_GoblinSoldat'); },  tier:2, emoji:'👺', atk:3, dmg:2, def:3, protection:1, hp:9,  maxHp:9,  rank:'front',
+    { get name(){ return t('enemy_GoblinSoldat'); }, _nameKey: 'enemy_GoblinSoldat',  tier:2, emoji:'👺', atk:3, dmg:2, def:3, protection:1, hp:9,  maxHp:9,  rank:'front',
       loot:()=>{ gold+=12; dust += 1; return '+12 '+t('crb_or')+', +1 '+t('loot_dust'); }, get lootDesc(){return t('ld_rusty_sword');} },
-    { get name(){ return t('enemy_OrcElite'); },       tier:2, emoji:'👊', atk:4, dmg:3, def:3, protection:1, hp:12, maxHp:12, rank:'front',
+    { get name(){ return t('enemy_OrcElite'); }, _nameKey: 'enemy_OrcElite',       tier:2, emoji:'👊', atk:4, dmg:3, def:3, protection:1, hp:12, maxHp:12, rank:'front',
       loot:()=>{ gold+=15; dust += 1; return '+15 '+t('crb_or')+', +1 '+t('loot_dust'); }, get lootDesc(){return t('ld_orc_armor');} },
-    { get name(){ return t('enemy_SqueletteArme'); },  tier:2, emoji:'💀', atk:3, dmg:2, def:3, protection:1, hp:9,  maxHp:9,  rank:'front',
+    { get name(){ return t('enemy_SqueletteArme'); }, _nameKey: 'enemy_SqueletteArme',  tier:2, emoji:'💀', atk:3, dmg:2, def:3, protection:1, hp:9,  maxHp:9,  rank:'front',
       loot:()=>{ gold+=10; mana+=5; dust += 1; return '+10 '+t('crb_or')+', +5 '+t('crb_mana')+', +1 '+t('loot_dust'); }, get lootDesc(){return t('ld_broken_armor');} },
-    { get name(){ return t('enemy_Araignee'); },        tier:2, emoji:'🕷', atk:3, dmg:1, def:1, protection:0, hp:8,  maxHp:8,  rank:'front',
+    { get name(){ return t('enemy_Araignee'); }, _nameKey: 'enemy_Araignee',        tier:2, emoji:'🕷', atk:3, dmg:1, def:1, protection:0, hp:8,  maxHp:8,  rank:'front',
       special:'poison',
       loot:()=>{ mana+=15; dust += 1; return '+15 '+t('crb_mana')+', +1 '+t('loot_dust'); }, get lootDesc(){return t('ld_magic_gland');} },
     // ===== TIER 3 (S3-S4) =====
-    { get name(){ return t('enemy_Troll'); },           tier:3, emoji:'👹', atk:3, dmg:2, def:3, protection:1, hp:12, maxHp:12, rank:'front',
+    { get name(){ return t('enemy_Troll'); }, _nameKey: 'enemy_Troll',           tier:3, emoji:'👹', atk:3, dmg:2, def:3, protection:1, hp:12, maxHp:12, rank:'front',
       special:'stun',
       loot:()=>{ gold+=15; mana+=15; dust += 1; return '+15 '+t('crb_or')+', +15 '+t('crb_mana')+', +1 '+t('loot_dust'); }, get lootDesc(){return t('ld_troll_loot');} },
-    { get name(){ return t('enemy_ArcherGobelin'); },  tier:3, emoji:'🏹', atk:4, dmg:2, def:1, protection:0, hp:7,  maxHp:7,  rank:'back', isRanged:true,
+    { get name(){ return t('enemy_ArcherGobelin'); }, _nameKey: 'enemy_ArcherGobelin',  tier:3, emoji:'🏹', atk:4, dmg:2, def:1, protection:0, hp:7,  maxHp:7,  rank:'back', isRanged:true,
       loot:()=>{ gold+=12; dust += 1; return '+12 '+t('crb_or')+', +1 '+t('loot_dust'); }, get lootDesc(){return t('ld_short_bow');} },
-    { get name(){ return t('enemy_Vampire'); },         tier:3, emoji:'🧛', atk:4, dmg:2, def:3, protection:1, hp:10, maxHp:10, rank:'front',
+    { get name(){ return t('enemy_Vampire'); }, _nameKey: 'enemy_Vampire',         tier:3, emoji:'🧛', atk:4, dmg:2, def:3, protection:1, hp:10, maxHp:10, rank:'front',
       special:'lifesteal',
       loot:()=>{ const healed=Math.min(3,dungeonState.avatarMaxHp-dungeonState.avatarHp); dungeonState.avatarHp=Math.min(dungeonState.avatarMaxHp,dungeonState.avatarHp+3); avatarHp=dungeonState.avatarHp; dust += 1; document.getElementById('dng-avatar-hp-text').textContent='HP: '+dungeonState.avatarHp+'/'+dungeonState.avatarMaxHp; dungeonUpdateHpBar('avatar',dungeonState.avatarHp,dungeonState.avatarMaxHp); return '+'+healed+' HP, +1 Poussière'; },
       get lootDesc(){return t('ld_blood');} },
     // ===== TIER 4 (S4+) =====
-    { get name(){ return t('enemy_Demon'); },           tier:4, emoji:'😈', atk:4, dmg:3, def:3, protection:2, hp:14, maxHp:14, rank:'front',
+    { get name(){ return t('enemy_Demon'); }, _nameKey: 'enemy_Demon',           tier:4, emoji:'😈', atk:4, dmg:3, def:3, protection:2, hp:14, maxHp:14, rank:'front',
       loot:()=>{ gold+=20; dust += 1; return '+20 '+t('crb_or')+', +1 '+t('loot_dust'); }, get lootDesc(){return t('ld_demon_orb');} },
-    { get name(){ return t('enemy_SeigneurGobelin'); },tier:4, emoji:'👺', atk:4, dmg:3, def:3, protection:2, hp:14, maxHp:14, rank:'front',
+    { get name(){ return t('enemy_SeigneurGobelin'); }, _nameKey: 'enemy_SeigneurGobelin',tier:4, emoji:'👺', atk:4, dmg:3, def:3, protection:2, hp:14, maxHp:14, rank:'front',
       loot:()=>{ gold+=18; dust += 1; return '+18 '+t('crb_or')+', +1 '+t('loot_dust'); }, get lootDesc(){return t('ld_crown');} },
-    { get name(){ return t('enemy_Necromancien'); },    tier:4, emoji:'🧙', atk:3, dmg:2, def:4, protection:1, hp:12, maxHp:12, rank:'back', isRanged:true, special:'necromancer',
+    { get name(){ return t('enemy_Necromancien'); }, _nameKey: 'enemy_Necromancien',    tier:4, emoji:'🧙', atk:3, dmg:2, def:4, protection:1, hp:12, maxHp:12, rank:'back', isRanged:true, special:'necromancer',
       loot:()=>{ mana+=30; dust += 1; return '+30 '+t('crb_mana')+', +1 '+t('loot_dust'); }, get lootDesc(){return t('ld_necro_tome');} },
     // ===== TIER 5 (S5+) =====
-    { get name(){ return t('enemy_OrcBriseur'); },      tier:5, emoji:'👊', atk:5, dmg:4, def:4, protection:2, hp:16, maxHp:16, rank:'front', special:'crush_passive',
+    { get name(){ return t('enemy_OrcBriseur'); }, _nameKey: 'enemy_OrcBriseur',      tier:5, emoji:'👊', atk:5, dmg:4, def:4, protection:2, hp:16, maxHp:16, rank:'front', special:'crush_passive',
       loot:()=>{ gold+=22; dust+=2; return '+22 '+t('crb_or')+', +2 '+t('loot_dust'); }, get lootDesc(){return t('ld_pauldron');} },
-    { get name(){ return t('enemy_GoblinBoss'); },     tier:5, emoji:'👺', atk:4, dmg:3, def:3, protection:2, hp:15, maxHp:15, rank:'front', special:'goblincall',
+    { get name(){ return t('enemy_GoblinBoss'); }, _nameKey: 'enemy_GoblinBoss',     tier:5, emoji:'👺', atk:4, dmg:3, def:3, protection:2, hp:15, maxHp:15, rank:'front', special:'goblincall',
       loot:()=>{ gold+=20; dust+=2; return '+20 '+t('crb_or')+', +2 '+t('loot_dust'); }, get lootDesc(){return t('ld_goblin_scepter');} },
-    { get name(){ return t('enemy_AraigneeGeante'); },  tier:5, emoji:'🕷', atk:4, dmg:2, def:2, protection:1, hp:14, maxHp:14, rank:'front', special:'poison',
+    { get name(){ return t('enemy_AraigneeGeante'); }, _nameKey: 'enemy_AraigneeGeante',  tier:5, emoji:'🕷', atk:4, dmg:2, def:2, protection:1, hp:14, maxHp:14, rank:'front', special:'poison',
       loot:()=>{ mana+=25; dust+=2; return '+25 '+t('crb_mana')+', +2 '+t('loot_dust'); }, get lootDesc(){return t('ld_venom_gland');} },
-    { get name(){ return t('enemy_LicheMineure'); },    tier:5, emoji:'💀', atk:4, dmg:3, def:4, protection:2, hp:13, maxHp:13, rank:'back', isRanged:true, special:'atkreduction',
+    { get name(){ return t('enemy_LicheMineure'); }, _nameKey: 'enemy_LicheMineure',    tier:5, emoji:'💀', atk:4, dmg:3, def:4, protection:2, hp:13, maxHp:13, rank:'back', isRanged:true, special:'atkreduction',
       loot:()=>{ mana+=28; dust+=2; return '+28 '+t('crb_mana')+', +2 '+t('loot_dust'); }, get lootDesc(){return t('ld_phylactery');} },
     // ===== TIER 6 (S7+) =====
-    { get name(){ return t('enemy_DemonArcaniste'); },  tier:6, emoji:'😈', atk:5, dmg:4, def:4, protection:3, hp:18, maxHp:18, rank:'back', isRanged:true, special:'zap_passive',
+    { get name(){ return t('enemy_DemonArcaniste'); }, _nameKey: 'enemy_DemonArcaniste',  tier:6, emoji:'😈', atk:5, dmg:4, def:4, protection:3, hp:18, maxHp:18, rank:'back', isRanged:true, special:'zap_passive',
       loot:()=>{ gold+=28; mana+=14; dust+=3; return '+28 '+t('crb_or')+', +14 '+t('crb_mana')+', +3 '+t('loot_dust'); }, get lootDesc(){return t('ld_demon_crystal');} },
-    { get name(){ return t('enemy_SqueletteAncien'); }, tier:6, emoji:'💀', atk:5, dmg:4, def:5, protection:2, hp:17, maxHp:17, rank:'front', special:'atkreduction',
+    { get name(){ return t('enemy_SqueletteAncien'); }, _nameKey: 'enemy_SqueletteAncien', tier:6, emoji:'💀', atk:5, dmg:4, def:5, protection:2, hp:17, maxHp:17, rank:'front', special:'atkreduction',
       loot:()=>{ mana+=30; dust+=3; return '+30 '+t('crb_mana')+', +3 '+t('loot_dust'); }, get lootDesc(){return t('ld_old_bone');} },
-    { get name(){ return t('enemy_TrollAbysses'); },tier:6, emoji:'👹', atk:5, dmg:4, def:4, protection:2, hp:20, maxHp:20, rank:'front', special:'stun',
+    { get name(){ return t('enemy_TrollAbysses'); }, _nameKey: 'enemy_TrollAbysses',tier:6, emoji:'👹', atk:5, dmg:4, def:4, protection:2, hp:20, maxHp:20, rank:'front', special:'stun',
       loot:()=>{ gold+=30; dust+=3; return '+30 '+t('crb_or')+', +3 '+t('loot_dust'); }, get lootDesc(){return t('ld_troll_stone');} },
 ];
 
@@ -6303,7 +6329,7 @@ function showCombatIntro(enemy, onClose) {
         if (ciGrid)   ciGrid.style.display   = 'none';
         if (ciLabels) ciLabels.style.display = 'none';
         if (_ciEl)    _ciEl.style.display    = '';
-        const _ciImg = getMonsterImg(enemy.name);
+        const _ciImg = getMonsterImg(enemy._nameKey || enemy.name);
         if (_ciImg) {
             _ciEl.innerHTML  = '<img src="'+_ciImg+'" style="width:110px;height:110px;object-fit:contain;border-radius:8px">';
             _ciEl.style.fontSize = '';
@@ -6324,7 +6350,7 @@ function showCombatIntro(enemy, onClose) {
                 const cell = document.createElement('div');
                 cell.style.cssText = 'border:1px solid '+(e?'#2a1a3a':'#0a0808')+';border-radius:5px;padding:3px;min-height:68px;background:'+(e?'#0a0808':'#050505')+';opacity:'+(e?'1':'0.15');
                 if (e) {
-                    const img = getMonsterImg(e.name);
+                    const img = getMonsterImg(e._nameKey || e.name);
                     cell.innerHTML = img
                         ? '<img src="'+img+'" style="width:100%;height:50px;object-fit:contain;border-radius:3px;display:block">'
                         : '<div style="height:50px"></div>';
@@ -6469,7 +6495,7 @@ function makeGridCell(e, isBack, row) {
 
     const isTarget = (e === dungeonState.enemy);
     const canTarget = !isBack || avatarRanged;
-    const imgSrc = getMonsterImg(e.name);
+    const imgSrc = getMonsterImg(e._nameKey || e.name);
 
     // Calculer seuil pour toucher (ennemi vers avatar)
     const et = hitThresholdForEnemy(e, def);
@@ -12973,12 +12999,12 @@ function dungeonUseClassSkill(skillId) {
     const skLv = getClassSkillLevel ? (getClassSkillLevel(skillId)||0) : 0;
     if (skillDef.dynamicUses) {
         const uses2 = dungeonState['skill_'+skillId+'_uses'] || 0;
-        const maxU2 = (skillDef.baseUses || 1) + Math.floor(skLv / 2);
+        const maxU2 = (skillDef.baseUses || 1) + skLv;
         if (uses2 >= maxU2) { dngLog(t('skill_exhaust'), 'dlog-bad'); return; }
         dungeonState['skill_'+skillId+'_uses'] = uses2 + 1;
         renderClassSkills();
     } else if (!skillDef.free) {
-        const maxUses = 1 + Math.floor(skLv / 2);
+        const maxUses = 1 + skLv;
         const uses3 = dungeonState['skill_'+skillId+'_uses'] || 0;
         if (uses3 >= maxUses) { dngLog(t('skill_exhaust'), 'dlog-bad'); return; }
         dungeonState['skill_'+skillId+'_uses'] = uses3 + 1;
