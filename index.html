@@ -4282,9 +4282,9 @@ function showCityPanel() {
                 cats.forEach(function(cat) {
                     let catHtml = '';
                     tiers.forEach(function(tier) {
-                        const bInTier = BDEFS.filter(function(b){ return b.tab===cat.tab && b.tier===tier && (buildingCounts[b.name]||0)>0; });
+                        const bInTier = BDEFS.filter(function(b){ return b.tab===cat.tab && b.tier===tier && (buildingCounts[b.id||b.name]||0)>0; });
                         if (bInTier.length === 0) return;
-                        const items = bInTier.map(function(b){ const n=buildingCounts[b.name]; return b.icon+' '+b.name+(n>1?' <span style="color:#4cffaa">×'+n+'</span>':''); }).join(' &nbsp; ');
+                        const items = bInTier.map(function(b){ const n=buildingCounts[b.id||b.name]; return b.icon+' '+b.name+(n>1?' <span style="color:#4cffaa">×'+n+'</span>':''); }).join(' &nbsp; ');
                         catHtml += '<div style="margin:2px 0;font-size:10px"><span style="color:#7a6a50;min-width:18px;display:inline-block">'+tierLabels[tier]+'</span> '+items+'</div>';
                     });
                     if (catHtml) {
@@ -9042,7 +9042,7 @@ function applyTileReveal(idx, forceType) {
 // Helper: translate a stored building name (may be FR) to current language
 function translateBuildingName(storedName) {
     // First try to find by exact current name (already translated)
-    const match = (window.BUILDING_DEFS||[]).find(function(d){ return d.name === storedName; });
+    const match = (window.BUILDING_DEFS||[]).find(function(d){ return (d.id||d.name) === storedName; });
     if (match) return match.name;
     // Try to find by checking all FR keys
     const FR_BLD_KEYS = {
@@ -9077,25 +9077,25 @@ function renderBuildPanelList() {
     }
     const buildings = window.BUILDING_DEFS = [
         // TIER I
-        { get name(){ return t('bld_Ferme_name'); },             tab:'eco',  tier:1, gold:30,  pop:0,  mana:0,   icon:'🌾', bonus:'+10 Pop | +5/Conj' },
-        { get name(){ return t('bld_Mine_name'); },              tab:'eco',  tier:1, gold:0,   pop:20, mana:0,   icon:'⛏',  bonus:'+20 Or | +10/Conj' },
-        { get name(){ return t('bld_TourMana_name'); },      tab:'eco',  tier:1, gold:40,  pop:5,  mana:20,  icon:'💧', bonus:'+10 Mana/Conj' },
-        { get name(){ return t('bld_Caserne_name'); },           tab:'mil',  tier:1, gold:110, pop:10, mana:0,   icon:'⚔',  bonus:'+2 Conscription' },
-        { get name(){ return t('bld_Eglise_name'); },            tab:'mag',  tier:1, gold:70,  pop:5,  mana:20,  icon:'⛪', bonus:'Soin héro (30 Or + 20 Mana)' },
+        { id:'Ferme', get name(){ return t('bld_Ferme_name'); },             tab:'eco',  tier:1, gold:30,  pop:0,  mana:0,   icon:'🌾', bonus:'+10 Pop | +5/Conj' },
+        { id:'Mine', get name(){ return t('bld_Mine_name'); },              tab:'eco',  tier:1, gold:0,   pop:20, mana:0,   icon:'⛏',  bonus:'+20 Or | +10/Conj' },
+        { id:'Tour de Mana', get name(){ return t('bld_TourMana_name'); },      tab:'eco',  tier:1, gold:40,  pop:5,  mana:20,  icon:'💧', bonus:'+10 Mana/Conj' },
+        { id:'Caserne', get name(){ return t('bld_Caserne_name'); },           tab:'mil',  tier:1, gold:110, pop:10, mana:0,   icon:'⚔',  bonus:'+2 Conscription' },
+        { id:'Église', get name(){ return t('bld_Eglise_name'); },            tab:'mag',  tier:1, gold:70,  pop:5,  mana:20,  icon:'⛪', bonus:'Soin héro (30 Or + 20 Mana)' },
         // TIER II
-        { get name(){ return t('bld_TourGarde_name'); },     tab:'mil',  tier:2, gold:90,  pop:10, mana:0,   icon:'🗼', bonus:'+2 Conscr. | +2 Fort. | Gardes', req:'1 Caserne',    prereq:()=>(buildingCounts['Caserne']||0)>=1 },
-        { get name(){ return t('bld_Archerie_name'); },          tab:'mil',  tier:2, gold:90,  pop:10, mana:0,   icon:'🏹', bonus:'+2 Conscr. | Archers', req:'1 Caserne',    prereq:()=>(buildingCounts['Caserne']||0)>=1 },
-        { get name(){ return t('bld_EcoleMagie_name'); },    tab:'mag',  tier:2, gold:80,  pop:10, mana:30,  icon:'🔮', bonus:'+2 Conscr. | Élémentaires', req:'1 Tour de Mana', prereq:()=>(buildingCounts['Tour de Mana']||0)>=1 },
-        { get name(){ return t('bld_PlaceMarche_name'); },   tab:'eco',  tier:2, gold:60,  pop:10, mana:0,   icon:'🏪', bonus:'Caravane +20%', req:'1 Mine + 1 Ferme + 1 Tour de Mana', prereq:()=>(buildingCounts['Mine']||0)>=1 && (buildingCounts['Ferme']||0)>=1 && (buildingCounts['Tour de Mana']||0)>=1 },
+        { id:'Tour de Garde', get name(){ return t('bld_TourGarde_name'); },     tab:'mil',  tier:2, gold:90,  pop:10, mana:0,   icon:'🗼', bonus:'+2 Conscr. | +2 Fort. | Gardes', req:'1 Caserne',    prereq:()=>(buildingCounts['Caserne']||0)>=1 },
+        { id:'Archerie', get name(){ return t('bld_Archerie_name'); },          tab:'mil',  tier:2, gold:90,  pop:10, mana:0,   icon:'🏹', bonus:'+2 Conscr. | Archers', req:'1 Caserne',    prereq:()=>(buildingCounts['Caserne']||0)>=1 },
+        { id:'École de Magie', get name(){ return t('bld_EcoleMagie_name'); },    tab:'mag',  tier:2, gold:80,  pop:10, mana:30,  icon:'🔮', bonus:'+2 Conscr. | Élémentaires', req:'1 Tour de Mana', prereq:()=>(buildingCounts['Tour de Mana']||0)>=1 },
+        { id:'Place du Marché', get name(){ return t('bld_PlaceMarche_name'); },   tab:'eco',  tier:2, gold:60,  pop:10, mana:0,   icon:'🏪', bonus:'Caravane +20%', req:'1 Mine + 1 Ferme + 1 Tour de Mana', prereq:()=>(buildingCounts['Mine']||0)>=1 && (buildingCounts['Ferme']||0)>=1 && (buildingCounts['Tour de Mana']||0)>=1 },
         // TIER III
-        { get name(){ return t('bld_Academie_name'); },tab:'mil',  tier:3, gold:160, pop:30, mana:40,  icon:'🏛', bonus:'+4 Conscr. | Hallebardier, Arbalétrier, Pavois', req:'1 Caserne + 1 Tour de Garde + 1 Archerie', prereq:()=>(buildingCounts['Caserne']||0)>=1 && (buildingCounts['Tour de Garde']||0)>=1 && (buildingCounts['Archerie']||0)>=1 },
-        { get name(){ return t('bld_Temple_name'); },            tab:'mag',  tier:3, gold:130, pop:20, mana:40,  icon:'🛕', bonus:'Prêtres', req:'1 Église', prereq:()=>(buildingCounts['Église']||0)>=1 },
-        { get name(){ return t('bld_TourMagie_name'); },     tab:'mag',  tier:3, gold:120, pop:20, mana:60,  icon:'✨', bonus:'+10 Mana/Conj | Élémentaires Majeurs', req:'1 École de Magie', prereq:()=>(buildingCounts['École de Magie']||0)>=1 },
-        { get name(){ return t('bld_Caravanserail_name'); },     tab:'eco',  tier:3, gold:100, pop:20, mana:0,   icon:'🏕', bonus:'Caravane +50%', req:'1 Place du Marché', prereq:()=>(buildingCounts['Place du Marché']||0)>=1 },
+        { id:'Académie militaire', get name(){ return t('bld_Academie_name'); },tab:'mil',  tier:3, gold:160, pop:30, mana:40,  icon:'🏛', bonus:'+4 Conscr. | Hallebardier, Arbalétrier, Pavois', req:'1 Caserne + 1 Tour de Garde + 1 Archerie', prereq:()=>(buildingCounts['Caserne']||0)>=1 && (buildingCounts['Tour de Garde']||0)>=1 && (buildingCounts['Archerie']||0)>=1 },
+        { id:'Temple', get name(){ return t('bld_Temple_name'); },            tab:'mag',  tier:3, gold:130, pop:20, mana:40,  icon:'🛕', bonus:'Prêtres', req:'1 Église', prereq:()=>(buildingCounts['Église']||0)>=1 },
+        { id:'Tour de Magie', get name(){ return t('bld_TourMagie_name'); },     tab:'mag',  tier:3, gold:120, pop:20, mana:60,  icon:'✨', bonus:'+10 Mana/Conj | Élémentaires Majeurs', req:'1 École de Magie', prereq:()=>(buildingCounts['École de Magie']||0)>=1 },
+        { id:'Caravansérail', get name(){ return t('bld_Caravanserail_name'); },     tab:'eco',  tier:3, gold:100, pop:20, mana:0,   icon:'🏕', bonus:'Caravane +50%', req:'1 Place du Marché', prereq:()=>(buildingCounts['Place du Marché']||0)>=1 },
         // TIER IV — Unique
-        { get name(){ return t('bld_Cathedrale_name'); },        tab:'mag',  tier:4, slotsRequired:2, gold:200, pop:30, mana:80,  icon:'⛩', bonus:'Wards (40 Or + 30 Mana) | Paladin', req:'1 Temple', unique:true, prereq:()=>(buildingCounts['Temple']||0)>=1 && !(buildingCounts['Cathédrale']||0) },
-        { get name(){ return t('bld_AutelGuerre_name'); },   tab:'mil',  tier:4, slotsRequired:2, gold:180, pop:30, mana:0,   icon:'⚔', bonus:'+6 Conscr. | Achat Conscrit | Hallebardier', req:'1 Académie militaire', unique:true, prereq:()=>(buildingCounts['Académie militaire']||0)>=1 && !(buildingCounts['Autel de Guerre']||0) },
-        { get name(){ return t('bld_MonolitheVigie_name'); },tab:'mag',  tier:4, slotsRequired:2, gold:250, pop:50, mana:100, icon:'🔭', bonus:'Révèle horde (150 Or + 100 Mana)', req:'1 Archerie + 1 Caravansérail + 1 Tour de Magie', unique:true, prereq:()=>(buildingCounts['Archerie']||0)>=1 && (buildingCounts['Caravansérail']||0)>=1 && (buildingCounts['Tour de Magie']||0)>=1 && !(buildingCounts['Monolithe de Vigie']||0) },
+        { id:'Cathédrale', get name(){ return t('bld_Cathedrale_name'); },        tab:'mag',  tier:4, slotsRequired:2, gold:200, pop:30, mana:80,  icon:'⛩', bonus:'Wards (40 Or + 30 Mana) | Paladin', req:'1 Temple', unique:true, prereq:()=>(buildingCounts['Temple']||0)>=1 && !(buildingCounts['Cathédrale']||0) },
+        { id:'Autel de Guerre', get name(){ return t('bld_AutelGuerre_name'); },   tab:'mil',  tier:4, slotsRequired:2, gold:180, pop:30, mana:0,   icon:'⚔', bonus:'+6 Conscr. | Achat Conscrit | Hallebardier', req:'1 Académie militaire', unique:true, prereq:()=>(buildingCounts['Académie militaire']||0)>=1 && !(buildingCounts['Autel de Guerre']||0) },
+        { id:'Monolithe de Vigie', get name(){ return t('bld_MonolitheVigie_name'); },tab:'mag',  tier:4, slotsRequired:2, gold:250, pop:50, mana:100, icon:'🔭', bonus:'Révèle horde (150 Or + 100 Mana)', req:'1 Archerie + 1 Caravansérail + 1 Tour de Magie', unique:true, prereq:()=>(buildingCounts['Archerie']||0)>=1 && (buildingCounts['Caravansérail']||0)>=1 && (buildingCounts['Tour de Magie']||0)>=1 && !(buildingCounts['Monolithe de Vigie']||0) },
     ];
 
     // Tabs
@@ -9108,7 +9108,7 @@ function renderBuildPanelList() {
 
     const evaluated = buildings.map(b => {
         const prereqOk = !b.prereq || b.prereq();
-        const _bReq = getBuildingSlotsRequired(b.name);
+        const _bReq = getBuildingSlotsRequired(b.id||b.name);
         const totalFreeSlots = tileState.reduce((s, _, i) => s + (getTileFreeSlots(i) >= _bReq ? 1 : 0), 0);
         const canAfford = gold>=b.gold && population>=b.pop && mana>=b.mana && totalFreeSlots > 0;
         const ok = canAfford && prereqOk;
@@ -9135,13 +9135,13 @@ function renderBuildPanelList() {
         let tileBonusAvail = null;
         Object.entries(TILE_TYPES).forEach(function(e) {
             const tileType = e[0], tileDef = e[1];
-            if (tileDef.bonuses && tileDef.bonuses[b.name]) {
+            if (tileDef.bonuses && tileDef.bonuses[b.id||b.name]) {
                 // Vérifier si au moins une tuile de ce type a des emplacements libres
                 const hasTile = tileState.some(function(t) {
                     return t.type === tileType && t.revealed && getTileFreeSlots(tileState.indexOf(t)) >= (b.slotsRequired||1);
                 });
                 if (hasTile) {
-                    tileBonusAvail = { type: tileType, bonus: tileDef.bonuses[b.name], emoji: tileDef.emoji };
+                    tileBonusAvail = { type: tileType, bonus: tileDef.bonuses[b.id||b.name], emoji: tileDef.emoji };
                 }
             }
         });
@@ -9158,14 +9158,14 @@ function renderBuildPanelList() {
         card.innerHTML =
             '<div class="bld-header" style="gap:6px;'+dimStyle+'">'+
                 '<span style="font-size:16px">'+b.icon+'</span>'+
-                '<span class="bld-name" style="font-size:11px;color:'+(b.ok?'#ede0c0':b.prereqOk?'#9a8a6a':'#6a5a48')+'">'+b.name+tierLabel+(buildingCounts[b.name]>0?' <span style="color:#4cffaa;font-size:12px;font-weight:bold">×'+buildingCounts[b.name]+'</span>':'')+  '</span>'+
+                '<span class="bld-name" style="font-size:11px;color:'+(b.ok?'#ede0c0':b.prereqOk?'#9a8a6a':'#6a5a48')+'">'+b.name+tierLabel+(buildingCounts[b.id||b.name]>0?' <span style="color:#4cffaa;font-size:12px;font-weight:bold">×'+buildingCounts[b.id||b.name]+'</span>':'')+  '</span>'+
                 '<span style="font-size:9px;color:#9a8a6a;margin-left:auto">'+costs+'</span>'+
             '</div>'+
             '<div style="font-size:9px;color:#7a6a50;margin-top:1px">'+b.bonus+'</div>'+
             tileBonusHtml+
             (b.req&&!b.prereqOk?'<div style="font-size:10px;color:#ff8040;margin-top:2px">🔒 '+b.req+'</div>':'')+(b.slotsRequired>=2?'<div style="font-size:10px;color:#a0c0ff;margin-top:2px">🔲🔲 Nécessite 2 emplacements</div>':'')+
             (!b.canAfford&&b.prereqOk?'<div style="font-size:9px;color:#884400;'+dimStyle+'"> — ressources insuffisantes</div>':'');
-        if (b.ok) { card.onclick = () => selectBuildingForPlacement(b.name); card.style.cursor='pointer'; }
+        if (b.ok) { card.onclick = () => selectBuildingForPlacement(b.id||b.name); card.style.cursor='pointer'; }
         container.appendChild(card);
     });
 
@@ -11735,7 +11735,7 @@ function buildGloData() {
     [1,2,3,4].forEach(function(tier) {
         bldHtml += '<div class="glo-title" style="margin-top:10px">' + t('glo_batiments_title_t'+tier) + '</div>';
         byTier[tier].forEach(function(b) {
-            var descKey = BLD_DESC_KEYS[b.name];
+            var descKey = BLD_DESC_KEYS[b.id||b.name];
             var desc = descKey ? t(descKey) : '';
             if (b.req) desc += (desc?' ':'')+t('glo_req')+' '+b.req+'.';
             if (b.unique) desc += ' ('+t('glo_unique')+')';
