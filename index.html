@@ -10074,29 +10074,10 @@ function runCombatHorde() {
 
 function buyBuilding(name, tileIdx) {
     if (turnProcessing) return;
-    const buildings = [
-        // T1
-        { get name(){ return t('bld_Ferme_name'); },              gold:30,  pop:0,  mana:0   },
-        { get name(){ return t('bld_Mine_name'); },               gold:0,   pop:20, mana:0   },
-        { get name(){ return t('bld_TourMana_name'); },       gold:40,  pop:5,  mana:20  },
-        { get name(){ return t('bld_Caserne_name'); },            gold:110, pop:10, mana:0   },
-        { get name(){ return t('bld_Eglise_name'); },             gold:70,  pop:5,  mana:20  },
-        // T2
-        { get name(){ return t('bld_TourGarde_name'); },      gold:90,  pop:10, mana:0   },
-        { get name(){ return t('bld_Archerie_name'); },           gold:90,  pop:10, mana:0   },
-        { get name(){ return t('bld_EcoleMagie_name'); },     gold:80,  pop:10, mana:30  },
-        { get name(){ return t('bld_PlaceMarche_name'); },    gold:60,  pop:10, mana:0   },
-        // T3
-        { get name(){ return t('bld_Academie_name'); }, gold:160, pop:30, mana:40  },
-        { get name(){ return t('bld_Temple_name'); },             gold:130, pop:20, mana:40  },
-        { get name(){ return t('bld_TourMagie_name'); },      gold:120, pop:20, mana:60  },
-        { get name(){ return t('bld_Caravanserail_name'); },      gold:100, pop:20, mana:0   },
-        // T4
-        { get name(){ return t('bld_Cathedrale_name'); },         gold:200, pop:30, mana:80,  slotsRequired:2 },
-        { get name(){ return t('bld_AutelGuerre_name'); },    gold:180, pop:30, mana:0,   slotsRequired:2 },
-        { get name(){ return t('bld_MonolitheVigie_name'); }, gold:250, pop:50, mana:100, slotsRequired:2 },
-    ];
-    const b = buildings.find(x => x.name === name);
+    // 'name' est en réalité l'id FR (transmis depuis selectBuildingForPlacement(b.id||b.name)).
+    // On cherche dans BUILDING_DEFS par id — jamais par .name traduit, qui change selon la langue.
+    const buildings = window.BUILDING_DEFS || [];
+    const b = buildings.find(x => (x.id||x.name) === name);
     if (!b) { addLog('Bâtiment inconnu : ' + name); setTurnProcessing(false); return; }
     if (gold < b.gold || population < b.pop || mana < b.mana) {
         showErrorPopup(name, b.gold, b.pop, b.mana);
@@ -11150,21 +11131,27 @@ function restoreGameState(s) {
         if (!Array.isArray(equippedItems.glyphs))  equippedItems.glyphs  = [];
         if (!Array.isArray(equippedItems.potions)) equippedItems.potions = [];
         // Restaurer les équipements des slots fixes — les stats sont déjà dans avatarMaxHp etc.
-        // PAS d'appel à apply() : les valeurs sauvegardées incluent déjà les bonus équipements
+        // PAS d'appel à apply() : les valeurs sauvegardées incluent déjà les bonus numériques (def, atk, HP...)
+        // On restaure ici UNIQUEMENT les flags booléens/passifs, par id (les propriétés génériques
+        // isRanged/isPiercing/immuneStun etc. n'existent pas sur EQUIPMENT_CATALOG — seul item.armorType existe).
         ['weapon_main','weapon_off','armor','necklace','belt'].forEach(function(slot) {
             const id = equippedItems[slot];
             if (!id) return;
             const item = allItems.find(function(i){ return i.id === id; });
             if (!item) return;
-            // Restaurer uniquement les flags non-numériques (type d'armure, ranged, etc.)
             if (item.armorType) avatarArmorType = item.armorType;
-            if (item.isRanged) avatarRanged = true;
-            if (item.isPiercing) avatarPiercing = true;
-            if (item.isMagicWeapon) avatarMagicWeapon = true;
-            if (item.isAntiRange) avatarAntiRange = true;
-            if (item.isBlessedNecklace) avatarBlessedNecklace = true;
-            if (item.immunePoison) avatarImmunePoison = true;
-            if (item.immuneStun) avatarImmuneStun = true;
+            switch (id) {
+                case 'EpeeRunique': avatarMagicWeapon = true; break;
+                case 'Arc': avatarRanged = true; window._arcElfique = true; break;
+                case 'Arbalete': avatarRanged = true; avatarPiercing = true; break;
+                case 'Faux': avatarScythe = true; break;
+                case 'Pavois': avatarAntiRange = true; break;
+                case 'BouclierR': timingHalfBonus = true; break;
+                case 'CollierBeni': avatarBlessedNecklace = true; break;
+                case 'CeinturePoison': avatarImmunePoison = true; break;
+                case 'CeintureStun': avatarImmuneStun = true; break;
+                case 'Baguette': case 'Baton': avatarRanged = true; break;
+            }
         });
         // Appliquer les glyphes équipés (charges déjà dans glyphFireball etc.)
         // Pas d'apply pour glyphes/potions au chargement (charges gérées séparément)
